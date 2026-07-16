@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Python / Django
+.venv/
+__pycache__/
+*.pyc
+db.sqlite3
+
+# Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Claude local settings
+.claude/settings.local.json
