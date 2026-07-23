@@ -45,19 +45,30 @@ python manage.py import_blueprint data/cbt_blueprint.csv
 
 ## 2a. 直接執筆 — `author_core_batch.py`（API を使わない同梱バッチ）
 
-API を呼ばずに問題を用意する経路。`scripts/author_core_batch.py` に問題本文を
-インラインで持ち、`backend/quiz/management/commands/data/cbt_batch_core_2026.json`
-を生成する。同梱の初期問題バンク（10分野の単問50問＋四連問2セット＝58問）は
-この方法で作成している。正解キーは明示的に配置して検証器の数値ゲート
-（A〜E各15〜25%、正解＝最長 40%未満）を満たすようにしてある。
+API を呼ばずに問題を用意する経路。`scripts/author_core_batch.py` が問題本文を
+組み立て、`backend/quiz/management/commands/data/cbt_batch_core_2026.json`
+を生成する。問題本文は2系統から供給する:
+
+1. **インラインの中核50問＋四連問2セット** — `M` / `SETS` に直接記述（各解説に
+   臨床のポイント `PEARLS_*` を付す）。
+2. **分野別の追加問題** — `scripts/authored_content/*.json`（1ファイル＝1分野群、
+   各要素は `{code, area_title, disease, difficulty, stem, correct,
+   distractors:[{text, why}×4], explanation}`）。
+
+同梱の初期問題バンクは**15診療科・300問超（＋四連問2セット）**で、循環器・呼吸器・
+消化器・腎/内分泌代謝・神経・血液・感染症・免疫膠原病・救急/中毒に加え、精神科・
+皮膚科・眼科・耳鼻咽喉科・整形外科（運動器）・産婦人科・小児科・泌尿器科を含む。
+正解キー(A〜E)はビルダが**中央でラウンドロビン割当**して全体を均等（各20%）にし、
+「正解＝最長選択肢」バイアスも検証器のゲート（40%未満）内に収める。
 
 ```bash
 python scripts/author_core_batch.py     # data/cbt_batch_core_2026.json を再生成
 python scripts/validate_questions.py --file backend/quiz/management/commands/data/cbt_batch_core_2026.json
 ```
 
-問題を増やす・直すときは `author_core_batch.py` の `M`（単問）/ `SETS`（四連問）/
-`PEARLS_*`（解説に付す臨床のポイント）を編集して再生成し、検証器を通す。
+問題を増やす・直すときは、中核問題なら `author_core_batch.py` の `M` / `SETS` /
+`PEARLS_*` を、分野別追加なら `scripts/authored_content/` に JSON ファイルを
+足して再生成し、検証器を通す（不正な要素は理由付きでスキップ・報告される）。
 このバッチは `tests/test_questions.py::TestBundledCoreBatch` が CI で検証し、
 `import_questions` では他の生成物と同様に **status=pending** で取り込まれる
 （デモ表示のみ `seed_demo --with-batch` が published として投入する）。

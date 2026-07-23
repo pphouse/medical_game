@@ -39,3 +39,6 @@ dist-ssr/
 
 # Claude local settings
 .claude/settings.local.json
+
+# validate_questions.py の検証レポート出力
+*.report.json

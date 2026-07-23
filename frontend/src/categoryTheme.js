@@ -30,6 +30,9 @@ const RULES = [
   { match: "咽喉", letter: "耳", key: "amber" },
   { match: "口腔", letter: "耳", key: "amber" },
   { match: "精神", letter: "精", key: "violet" },
+  { match: "産婦", letter: "産", key: "rose" },
+  { match: "小児", letter: "小", key: "amber" },
+  { match: "泌尿器", letter: "泌", key: "sky" },
   // E（全身におよぶ生理的変化、病態、診断、治療）
   { match: "感染", letter: "感", key: "mint" },
   { match: "腫瘍", letter: "腫", key: "violet" },
