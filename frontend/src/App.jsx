@@ -1,14 +1,15 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import BottomNav from "./components/BottomNav";
-import Home from "./components/Home";
 import MyPage from "./components/MyPage";
 import QuestionPicker from "./components/QuestionPicker";
 import ReviewDeck from "./components/ReviewDeck";
 import { ProfileProvider } from "./context/ProfileContext";
 import { useSession } from "./hooks/useSession";
 import Auth from "./routes/Auth";
-import Battle from "./components/Battle";
+import Menu from "./routes/Menu";
+import Placeholder from "./routes/Placeholder";
 import QuizSession from "./routes/QuizSession";
+import Solo from "./routes/Solo";
 import "./App.css";
 
 /** Auth guard: everything below requires a Supabase session. */
@@ -55,9 +56,13 @@ export default function App() {
         <Route path="/auth" element={<Auth />} />
         <Route element={<Protected />}>
           <Route element={<TabShell />}>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Menu />} />
+            <Route path="/solo" element={<Solo />} />
             <Route path="/review" element={<ReviewDeck />} />
-            <Route path="/battle" element={<Battle />} />
+            <Route path="/battle" element={<Placeholder title="対戦モード" phase="フェーズ4" />} />
+            <Route path="/exams" element={<Placeholder title="模試" phase="フェーズ5" />} />
+            <Route path="/ranking" element={<Placeholder title="ランキング" phase="フェーズ3" />} />
+            <Route path="/create" element={<Placeholder title="問題をつくる" phase="フェーズ7" />} />
             <Route path="/mypage" element={<MyPage />} />
           </Route>
           <Route element={<FullScreenShell />}>

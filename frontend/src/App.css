@@ -1070,3 +1070,60 @@
 .bottom-nav-item {
   text-decoration: none;
 }
+
+/* Mode-selection menu (phase 1) */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.menu-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 14px;
+  border-radius: 18px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.08s ease;
+}
+
+.menu-tile:active {
+  transform: scale(0.98);
+}
+
+.menu-tile-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.menu-tile-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.menu-tile-title {
+  font-weight: 800;
+  color: var(--text-h);
+  font-size: 15px;
+}
+
+.menu-tile-desc {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.menu-tile.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
