@@ -725,6 +725,80 @@ def build_choices(correct, distractors, key):
     return choices, rationale
 
 
+DIFFICULTY_ALLOWED = {"easy", "standard", "hard"}
+# 分野別の追加問題（authored_content/*.json）。各ファイルは
+# {code, area_title, disease, difficulty, stem, correct,
+#  distractors:[{text, why} x4], explanation} の配列。正解キーはここで
+# ラウンドロビン割当し、全体の A〜E 均等（各20%）を保証する。
+CONTENT_DIR = Path(__file__).resolve().parent / "authored_content"
+
+
+def load_authored_content(start_index):
+    """authored_content/*.json を読み、キーをラウンドロビン割当して
+    question dict のリストを返す。(questions, errors) を返す。"""
+    questions, errors = [], []
+    if not CONTENT_DIR.is_dir():
+        return questions, errors
+
+    idx = 0
+    seq = start_index
+    for path in sorted(CONTENT_DIR.glob("*.json")):
+        try:
+            items = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(f"{path.name}: JSON parse error: {exc}")
+            continue
+        if not isinstance(items, list):
+            errors.append(f"{path.name}: top-level is not a list")
+            continue
+        for n, item in enumerate(items):
+            problem = _content_problem(item)
+            if problem:
+                errors.append(f"{path.name}[{n}] ({item.get('disease', '?')}): {problem}")
+                continue
+            distractors = [(d["text"].strip(), d["why"].strip()) for d in item["distractors"]]
+            key = KEYS[idx % len(KEYS)]
+            idx += 1
+            seq += 1
+            choices, rationale = build_choices(item["correct"].strip(), distractors, key)
+            difficulty = str(item["difficulty"]).strip().lower()
+            questions.append({
+                "id": f"core2026-{seq:03d}",
+                "question_type": "M",
+                "exam_type": "CBT",
+                "blueprint_code": str(item["code"]).strip(),
+                "category": str(item["area_title"]).strip(),
+                "disease": str(item["disease"]).strip(),
+                "class_group": "",
+                "difficulty": difficulty if difficulty in DIFFICULTY_ALLOWED else "standard",
+                "question_text": item["stem"].strip(),
+                "choices": choices,
+                "correct_choice_id": key,
+                "explanation": item["explanation"].strip(),
+                "distractor_rationale": rationale,
+            })
+    return questions, errors
+
+
+def _content_problem(item):
+    if not isinstance(item, dict):
+        return "not an object"
+    for field in ("code", "area_title", "disease", "difficulty", "stem", "correct",
+                  "distractors", "explanation"):
+        if not item.get(field):
+            return f"missing/empty field '{field}'"
+    ds = item["distractors"]
+    if not isinstance(ds, list) or len(ds) != 4:
+        return f"distractors must be 4 (got {len(ds) if isinstance(ds, list) else type(ds).__name__})"
+    for d in ds:
+        if not isinstance(d, dict) or not d.get("text") or not d.get("why"):
+            return "each distractor needs non-empty text and why"
+    texts = [item["correct"].strip()] + [d["text"].strip() for d in ds]
+    if len(set(texts)) != len(texts):
+        return "choice texts not unique (correct duplicates a distractor)"
+    return None
+
+
 def main():
     questions = []
     for i, item in enumerate(M, start=1):
@@ -744,6 +818,13 @@ def main():
             "explanation": item["explanation"] + PEARLS_M[i - 1],
             "distractor_rationale": rationale,
         })
+
+    content_questions, content_errors = load_authored_content(len(M))
+    questions.extend(content_questions)
+    if content_errors:
+        print(f"WARNING: {len(content_errors)} content item(s) skipped:")
+        for e in content_errors:
+            print("  -", e)
 
     question_sets = []
     step_i = 0
