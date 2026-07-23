@@ -1,8 +1,11 @@
-from django.db.models import Avg, Case, Count, When
+from django.db.models import Avg, Case, Count, F, When
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import exceptions
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from accounts.models import Profile
@@ -13,6 +16,7 @@ from .serializers import (
     CategorySerializer,
     HomeSummarySerializer,
     QuestionSerializer,
+    ReviewQuestionSerializer,
     ReviewScheduleSerializer,
     SubmitAnswerSerializer,
     SubmitMasterySerializer,
@@ -27,6 +31,19 @@ NEEDS_REVIEW_LEVELS = {
     AnswerHistory.MasteryLevel.CROSS,
     AnswerHistory.MasteryLevel.UNSTUDIED,
 }
+
+# spec §5-5: correct_rate is no longer recomputed on every answer — the
+# per-answer write only increments answer_count, and the rate is refreshed
+# every N answers (plus the daily recalc_correct_rates batch).
+CORRECT_RATE_RECALC_EVERY = 10
+
+
+class IsModerator(BasePermission):
+    message = "モデレーター権限が必要です。"
+
+    def has_permission(self, request, view):
+        profile = request.user
+        return bool(getattr(profile, "is_moderator", False))
 
 
 def update_review_schedule(user, question, mastery_level):
@@ -57,19 +74,37 @@ def update_review_schedule(user, question, mastery_level):
     )
 
 
-class HomeSummaryView(APIView):
-    """Overall progress % plus live-computed in-university/national rank by
-    accuracy, shown at the top of the home screen.
+def latest_answers(profile):
+    """Rows that are each question's most recent attempt by this user,
+    resolved in SQL via a DISTINCT ON subquery (spec §5-7: don't pull every
+    question id into Python).
 
-    Note: this is a lightweight live computation for the home-screen widget,
-    distinct from the spec's `MonthlyRanking` (a batch-computed, monthly,
-    questions_solved>=1000-gated leaderboard planned for phase 2).
+    The DISTINCT ON runs inside the inner subquery, so callers can safely
+    add further .filter(...) on mastery_level etc. — a filter applied
+    directly to a .distinct("question_id") queryset would be evaluated
+    BEFORE the distinct and resurrect older attempts.
+    """
+    latest_ids = (
+        AnswerHistory.objects.filter(user=profile)
+        .order_by("question_id", "-answered_at", "-id")
+        .distinct("question_id")
+        .values("id")
+    )
+    return AnswerHistory.objects.filter(id__in=latest_ids)
+
+
+class HomeSummaryView(APIView):
+    """Overall progress % plus in-university/national rank by accuracy,
+    shown at the top of the home screen.
+
+    Note: the rank part is a lightweight live computation kept until the
+    RankingSnapshot-based /api/ranking/ lands (phase 3), at which point it
+    reads the snapshot instead.
     """
 
-    permission_classes = [IsAuthenticated]
-
     def get(self, request):
-        total_questions = Question.objects.count()
+        visible = Question.objects.visible_to(request.user)
+        total_questions = visible.count()
         answered_question_ids = set(
             AnswerHistory.objects.filter(user=request.user).values_list(
                 "question_id", flat=True
@@ -91,7 +126,9 @@ class HomeSummaryView(APIView):
         )
 
         national_rank = self._rank_of(request.user, ranked_users)
-        university_users = [u for u in ranked_users if u.university_id == request.user.university_id]
+        university_users = [
+            u for u in ranked_users if u.university_id == request.user.university_id
+        ]
         university_rank = (
             self._rank_of(request.user, university_users)
             if request.user.university_id
@@ -121,11 +158,10 @@ class HomeSummaryView(APIView):
 
 
 class CategoryListView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def get(self, request):
         rows = (
-            Question.objects.values("category")
+            Question.objects.visible_to(request.user)
+            .values("category")
             .annotate(count=Count("id"))
             .order_by("category")
         )
@@ -134,32 +170,27 @@ class CategoryListView(APIView):
 
 class CategoryProgressView(APIView):
     """Per-category breakdown of the learner's 5-level mastery self-ratings,
-    used to render the QB-style category list with segmented progress bars
-    on the home screen."""
-
-    permission_classes = [IsAuthenticated]
+    used to render the QB-style category list with segmented progress bars."""
 
     def get(self, request):
+        visible = Question.objects.visible_to(request.user)
         categories = (
-            Question.objects.values("category")
-            .annotate(total=Count("id"))
-            .order_by("category")
+            visible.values("category").annotate(total=Count("id")).order_by("category")
         )
 
         histories = (
-            AnswerHistory.objects.filter(user=request.user)
-            .order_by("question_id", "-answered_at")
+            latest_answers(request.user)
+            .filter(question__in=visible)
             .values_list("question_id", "question__category", "mastery_level")
         )
-        # Keep only the most recent attempt per question (first row per
-        # question_id, since histories are ordered by -answered_at).
-        latest_by_question = {}
-        for question_id, category, mastery_level in histories:
-            if question_id not in latest_by_question:
-                latest_by_question[question_id] = (category, mastery_level)
+        latest_by_question = {
+            question_id: (category, mastery_level)
+            for question_id, category, mastery_level in histories
+        }
 
         def empty_counts():
             return {level: 0 for level in AnswerHistory.MasteryLevel.values}
+
         counts_by_category = {}
         answered_by_category = {}
         for category, mastery_level in latest_by_question.values():
@@ -171,12 +202,12 @@ class CategoryProgressView(APIView):
             category, total = row["category"], row["total"]
             counts = counts_by_category.get(category, empty_counts())
             answered = answered_by_category.get(category, 0)
-            counts["unstudied"] += total - answered
+            counts["unstudied"] += max(total - answered, 0)
             results.append(
                 {
                     "category": category,
                     "total": total,
-                    "remaining": total - answered,
+                    "remaining": max(total - answered, 0),
                     "counts": counts,
                 }
             )
@@ -184,11 +215,16 @@ class CategoryProgressView(APIView):
         return Response(CategoryProgressSerializer(results, many=True).data)
 
 
-class QuestionListView(APIView):
-    permission_classes = [IsAuthenticated]
+class QuestionPagination(PageNumberPagination):
+    page_size_query_param = "page_size"
+    # QuestionPicker needs the whole category at once for its mastery-filter
+    # chips; categories are far below this bound.
+    max_page_size = 500
 
+
+class QuestionListView(APIView):
     def get(self, request):
-        qs = Question.objects.all()
+        qs = Question.objects.visible_to(request.user)
         category = request.query_params.get("category")
         exam_type = request.query_params.get("exam_type")
         mastery_level = request.query_params.get("mastery_level")
@@ -197,43 +233,45 @@ class QuestionListView(APIView):
         if exam_type:
             qs = qs.filter(exam_type=exam_type)
 
-        question_ids = list(qs.values_list("id", flat=True))
-        histories = (
-            AnswerHistory.objects.filter(user=request.user, question_id__in=question_ids)
-            .order_by("question_id", "-answered_at")
-            .values_list("question_id", "mastery_level")
-        )
-        mastery_by_question = {}
-        for question_id, level in histories:
-            if question_id not in mastery_by_question:
-                mastery_by_question[question_id] = level
-
+        latest = latest_answers(request.user)
         if mastery_level:
             if mastery_level == "unstudied":
-                qs = qs.exclude(id__in=[qid for qid, lvl in mastery_by_question.items() if lvl != "unstudied"])
+                # Never answered, or the latest attempt was reset to 未演習.
+                qs = qs.exclude(
+                    id__in=latest.exclude(mastery_level="unstudied").values("question_id")
+                )
             else:
-                matching_ids = [qid for qid, lvl in mastery_by_question.items() if lvl == mastery_level]
-                qs = qs.filter(id__in=matching_ids)
+                qs = qs.filter(
+                    id__in=latest.filter(mastery_level=mastery_level).values("question_id")
+                )
 
-        serializer = QuestionSerializer(
-            qs.order_by("id"),
-            many=True,
-            context={"mastery_by_question": mastery_by_question},
+        paginator = QuestionPagination()
+        page = paginator.paginate_queryset(
+            qs.select_related("question_set").order_by("id"), request
         )
-        return Response(serializer.data)
+
+        mastery_by_question = dict(
+            latest.filter(question_id__in=[q.id for q in page]).values_list(
+                "question_id", "mastery_level"
+            )
+        )
+        serializer = QuestionSerializer(
+            page, many=True, context={"mastery_by_question": mastery_by_question}
+        )
+        return paginator.get_paginated_response(serializer.data)
 
 
 class ReviewDeckView(APIView):
     """spec: 間違えた問題だけを集めた自分専用の復習デッキ (SM-2ベースで出題タイミングを自動調整)"""
 
-    permission_classes = [IsAuthenticated]
-
     def get(self, request):
         qs = (
             ReviewSchedule.objects.filter(
-                user=request.user, next_review_at__lte=timezone.now()
+                user=request.user,
+                next_review_at__lte=timezone.now(),
+                question__in=Question.objects.visible_to(request.user),
             )
-            .select_related("question")
+            .select_related("question", "question__question_set")
             .order_by("next_review_at")
         )
         return Response(ReviewScheduleSerializer(qs, many=True).data)
@@ -250,14 +288,17 @@ class SubmitAnswerView(APIView):
     whether the guess happened to be correct).
     """
 
-    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "submit-answer"
 
     def post(self, request):
         payload = SubmitAnswerSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
         data = payload.validated_data
 
-        question = get_object_or_404(Question, pk=data["question_id"])
+        question = get_object_or_404(
+            Question.objects.visible_to(request.user), pk=data["question_id"]
+        )
         is_correct = data["selected_choice_key"] == question.correct_choice_key
         auto_mastery = (
             AnswerHistory.MasteryLevel.CIRCLE
@@ -273,13 +314,19 @@ class SubmitAnswerView(APIView):
             response_time_ms=data["response_time_ms"],
         )
 
-        # correct_rate is described in the spec as batch-updated; recomputed
-        # inline here (no scheduler in this demo) so the UI reflects reality.
-        agg = question.answer_histories.aggregate(
-            correct_rate=Avg(Case(When(correct=True, then=1), default=0))
+        # spec §5-5: no per-answer full recomputation. Increment the
+        # denominator and refresh correct_rate only every Nth answer
+        # (recalc_correct_rates covers the rest daily).
+        Question.objects.filter(pk=question.pk).update(
+            answer_count=F("answer_count") + 1
         )
-        question.correct_rate = round((agg["correct_rate"] or 0) * 100, 1)
-        question.save(update_fields=["correct_rate"])
+        question.refresh_from_db(fields=["answer_count", "correct_rate"])
+        if question.answer_count % CORRECT_RATE_RECALC_EVERY == 0:
+            agg = question.answer_histories.aggregate(
+                rate=Avg(Case(When(correct=True, then=1.0), default=0.0))
+            )
+            question.correct_rate = round((agg["rate"] or 0) * 100, 1)
+            question.save(update_fields=["correct_rate"])
 
         review_schedule = update_review_schedule(request.user, question, auto_mastery)
 
@@ -289,7 +336,7 @@ class SubmitAnswerView(APIView):
                 "correct": is_correct,
                 "correct_choice_key": question.correct_choice_key,
                 "explanation": question.explanation,
-                "correct_rate": question.correct_rate,
+                "correct_rate": question.public_correct_rate,
                 "mastery_level": auto_mastery,
                 "next_review_at": review_schedule.next_review_at if review_schedule else None,
             }
@@ -300,8 +347,6 @@ class SubmitMasteryView(APIView):
     """Override the auto-assigned mastery: only reachable by the learner
     explicitly tapping ◎ / △ / 分からない. Re-runs the SM-2 scheduling with
     the new self-assessment."""
-
-    permission_classes = [IsAuthenticated]
 
     def post(self, request, answer_history_id):
         payload = SubmitMasterySerializer(data=request.data)
@@ -323,3 +368,57 @@ class SubmitMasteryView(APIView):
                 "next_review_at": review_schedule.next_review_at if review_schedule else None,
             }
         )
+
+
+class ReviewQueueView(APIView):
+    """審査待ち問題の一覧（モデレーター専用）。
+
+    医学的正確性の最終判断は人間が行う。LLM 生成問題を無審査で published に
+    してはならない (spec 2-4)。承認は ReviewActionView から。
+    """
+
+    permission_classes = [IsModerator]
+
+    def get(self, request):
+        status_filter = request.query_params.get("status", Question.Status.PENDING)
+        qs = (
+            Question.objects.filter(status=status_filter)
+            .select_related("question_set")
+            .order_by("created_at")
+        )
+        paginator = QuestionPagination()
+        page = paginator.paginate_queryset(qs, request)
+        return paginator.get_paginated_response(
+            ReviewQuestionSerializer(page, many=True).data
+        )
+
+
+class ReviewActionView(APIView):
+    """承認/却下。reviewed_by / reviewed_at を記録する (spec 2-4)."""
+
+    permission_classes = [IsModerator]
+
+    def post(self, request, question_id, action):
+        if action not in ("approve", "reject"):
+            raise exceptions.ValidationError("action は approve / reject のみ")
+        question = get_object_or_404(Question, pk=question_id)
+        question.status = (
+            Question.Status.PUBLISHED if action == "approve" else Question.Status.REJECTED
+        )
+        question.reviewed_by = request.user
+        question.reviewed_at = timezone.now()
+        question.save(update_fields=["status", "reviewed_by", "reviewed_at"])
+
+        # タイプQはセット単位で公開状態を揃える
+        if question.question_set_id:
+            siblings = question.question_set.questions.exclude(pk=question.pk)
+            if action == "approve" and not siblings.exclude(
+                status=Question.Status.PUBLISHED
+            ).exists():
+                question.question_set.status = Question.Status.PUBLISHED
+                question.question_set.save(update_fields=["status"])
+            if action == "reject":
+                question.question_set.status = Question.Status.REJECTED
+                question.question_set.save(update_fields=["status"])
+
+        return Response(ReviewQuestionSerializer(question).data)

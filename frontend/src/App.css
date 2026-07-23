@@ -1127,3 +1127,15 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* タイプQ: 症例導入文 (phase 2) */
+.case-stem {
+  background: var(--accent-bg);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text-h);
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+}

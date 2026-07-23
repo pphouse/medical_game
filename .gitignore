@@ -16,6 +16,11 @@ db.sqlite3
 # Generated question batches awaiting review
 data/generated/
 
+# Full blueprint CSV extracted from the CATO PDF — regenerate locally with
+# scripts/extract_blueprint.py; do not commit the original text (copyright).
+data/cbt_blueprint.csv
+data/class_groups_draft.tsv
+
 # Frontend
 node_modules/
 dist/

@@ -231,6 +231,10 @@ class Command(BaseCommand):
                     choices=q["choices"],
                     correct_choice_key=q["correct_choice_key"],
                     visibility=Question.Visibility.PUBLIC,
+                    # Hand-written demo questions: human-authored, so publish
+                    # directly (the pending-review gate is for LLM/user 投稿).
+                    status=Question.Status.PUBLISHED,
+                    source=Question.Source.OFFICIAL,
                 ),
             )
             created_count += int(was_created)

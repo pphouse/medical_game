@@ -131,8 +131,14 @@ export default function QuizScreen({ title, questions, onBack }) {
         <div className="badges">
           <span className="badge">{EXAM_TYPE_LABEL[question.exam_type]}</span>
           <span className="badge">難易度: {DIFFICULTY_LABEL[question.difficulty]}</span>
-          <span className="badge">正答率: {question.correct_rate}%</span>
+          <span className="badge">
+            {question.correct_rate == null ? "正答率: 集計中" : `正答率: ${question.correct_rate}%`}
+          </span>
+          {question.question_type === "Q" && (
+            <span className="badge">四連問 {question.set_order}/4</span>
+          )}
         </div>
+        {question.case_stem && <p className="case-stem">{question.case_stem}</p>}
         <p className="question-text">
           {question.question_text || "次の設問に最も適切なものを選んでください。"}
         </p>

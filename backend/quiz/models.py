@@ -1,4 +1,102 @@
 from django.db import models
+from django.db.models import Q
+
+
+class QuestionSet(models.Model):
+    """タイプQ（順次解答四連問）の親。同一症例で 医療面接→身体診察→検査→
+    病態生理/診断 の4問が set_order 順にぶら下がる (spec 2.2)."""
+
+    title = models.CharField(max_length=255)
+    blueprint_code = models.CharField(max_length=32, blank=True, db_index=True)
+    case_stem = models.TextField(help_text="症例導入文")
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("draft", "下書き"),
+            ("pending", "審査待ち"),
+            ("published", "公開"),
+            ("rejected", "却下"),
+        ],
+        default="draft",
+    )
+    source = models.CharField(
+        max_length=20,
+        choices=[("official", "公式"), ("llm", "LLM生成"), ("user", "ユーザー作成")],
+        default="official",
+    )
+    creator = models.ForeignKey(
+        "accounts.Profile",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_question_sets",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "四連問セット"
+        verbose_name_plural = "四連問セット"
+
+    def __str__(self):
+        return f"[Q] {self.title}"
+
+
+class CBTBlueprint(models.Model):
+    """CBT 出題基準（令和7年版）の索引 (spec 3).
+
+    著作権上の注意: `objective_text`（到達目標の原文）は問題生成プロンプト
+    の内部用途に限定する。クライアントへ返す API では code / area_title /
+    subsection_title（分野名レベル）のみ公開すること (spec 3.2-3)。
+    """
+
+    code = models.CharField(primary_key=True, max_length=32, help_text='例 "D-5-4)-(2)-③"')
+    section = models.CharField(max_length=2, help_text="大区分 A〜F")
+    area = models.CharField(max_length=8, db_index=True, help_text='例 "D-5"')
+    area_title = models.CharField(max_length=100, help_text='例 "循環器系"')
+    subsection_title = models.CharField(max_length=255, blank=True)
+    objective_text = models.TextField(
+        blank=True, help_text="到達目標の原文。生成プロンプト専用・API非公開"
+    )
+    depth = models.CharField(
+        max_length=20, blank=True, help_text="説明できる / 概説できる / 列挙できる"
+    )
+    class_group = models.CharField(
+        max_length=2, blank=True, choices=[("I", "Ⅰ群"), ("II", "Ⅱ群")]
+    )
+    disease_names = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        verbose_name = "CBT出題基準"
+        verbose_name_plural = "CBT出題基準"
+
+    def __str__(self):
+        return f"{self.code} {self.subsection_title or self.area_title}"
+
+
+class QuestionQuerySet(models.QuerySet):
+    def published(self):
+        return self.filter(status=Question.Status.PUBLISHED)
+
+    def visible_to(self, profile):
+        """演習に出してよい問題: published かつ (公開 or 同一大学の学内限定).
+
+        学内限定は「同一大学かつ学生証認証済み」のみ (spec フェーズ7)。
+        Django 側の防御。RLS 側にも同じ条件を実装する（多重防御）。
+        """
+        qs = self.published()
+        if (
+            profile is not None
+            and getattr(profile, "student_verified", False)
+            and profile.university_id
+        ):
+            return qs.filter(
+                Q(visibility=Question.Visibility.PUBLIC)
+                | Q(
+                    visibility=Question.Visibility.UNIVERSITY_ONLY,
+                    university_id=profile.university_id,
+                )
+            )
+        return qs.filter(visibility=Question.Visibility.PUBLIC)
 
 
 class Question(models.Model):
@@ -23,6 +121,21 @@ class Question(models.Model):
         EASY = 1, "易"
         NORMAL = 2, "標準"
         HARD = 3, "難"
+
+    class QuestionType(models.TextChoices):
+        MULTIPLE_CHOICE = "M", "多選択肢択一"
+        SEQUENTIAL = "Q", "順次解答四連問"
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "下書き"
+        PENDING = "pending", "審査待ち"
+        PUBLISHED = "published", "公開"
+        REJECTED = "rejected", "却下"
+
+    class Source(models.TextChoices):
+        OFFICIAL = "official", "公式"
+        LLM = "llm", "LLM生成"
+        USER = "user", "ユーザー作成"
 
     category = models.CharField(max_length=100)
     topic = models.CharField(
@@ -64,14 +177,100 @@ class Question(models.Model):
     correct_rate = models.FloatField(
         default=0.0, help_text="バッチ集計される全体正答率"
     )
+    answer_count = models.PositiveIntegerField(
+        default=0, help_text="correct_rate の分母（解答時にインクリメント）"
+    )
+    question_type = models.CharField(
+        max_length=1, choices=QuestionType.choices, default=QuestionType.MULTIPLE_CHOICE
+    )
+    blueprint_code = models.CharField(
+        max_length=32, blank=True, db_index=True, help_text='例 "D-5-4)-(2)-③"'
+    )
+    class_group = models.CharField(
+        max_length=2, blank=True, choices=[("I", "Ⅰ群"), ("II", "Ⅱ群")]
+    )
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.DRAFT
+    )
+    source = models.CharField(
+        max_length=20, choices=Source.choices, default=Source.OFFICIAL
+    )
+    question_set = models.ForeignKey(
+        QuestionSet,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="questions",
+    )
+    set_order = models.PositiveSmallIntegerField(
+        null=True, blank=True, help_text="タイプQ内の1〜4"
+    )
+    reviewed_by = models.ForeignKey(
+        "accounts.Profile",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_questions",
+        help_text="医学的正確性レビュー者",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = QuestionQuerySet.as_manager()
+
+    # correct_rate は解答数がこの値に達するまで API では null を返す
+    # （少数解答での誤解を避ける, spec 2.1）
+    MIN_ANSWERS_FOR_CORRECT_RATE = 10
 
     class Meta:
         verbose_name = "問題"
         verbose_name_plural = "問題"
+        indexes = [
+            models.Index(fields=["status", "visibility", "category"]),
+        ]
 
     def __str__(self):
         return f"[{self.category}] {self.id}"
+
+    @property
+    def public_correct_rate(self):
+        if self.answer_count >= self.MIN_ANSWERS_FOR_CORRECT_RATE:
+            return self.correct_rate
+        return None
+
+
+class QuestionReport(models.Model):
+    """問題の通報（ユーザー作成問題の品質担保, spec 2.2）。同一問題に
+    3件以上付くと自動で pending に戻し出題から外す (spec フェーズ7)."""
+
+    AUTO_UNPUBLISH_THRESHOLD = 3
+
+    class Reason(models.TextChoices):
+        WRONG_ANSWER = "wrong_answer", "正解が誤っている"
+        AMBIGUOUS = "ambiguous", "設問が曖昧"
+        TYPO = "typo", "誤字脱字"
+        INAPPROPRIATE = "inappropriate", "不適切な内容"
+        OTHER = "other", "その他"
+
+    question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, related_name="reports"
+    )
+    reporter = models.ForeignKey(
+        "accounts.Profile", on_delete=models.CASCADE, related_name="question_reports"
+    )
+    reason = models.CharField(max_length=20, choices=Reason.choices)
+    detail = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "問題通報"
+        verbose_name_plural = "問題通報"
+        # 同一ユーザーの重複通報を防ぐ（3件閾値を実質3人にする）
+        unique_together = ("question", "reporter")
+
+    def __str__(self):
+        return f"Q{self.question_id} - {self.reason}"
 
 
 class AnswerHistory(models.Model):

@@ -67,9 +67,12 @@ export const api = {
   categories: () => get("/quiz/categories/"),
   progress: () => get("/quiz/progress/"),
   summary: () => get("/quiz/summary/"),
-  questions: (category, params = {}) => {
-    const query = new URLSearchParams({ category, ...params });
-    return get(`/quiz/questions/?${query}`);
+  questions: async (category, params = {}) => {
+    // The endpoint is paginated (spec §6); the picker needs the whole
+    // category at once for its mastery chips, so request the max page.
+    const query = new URLSearchParams({ category, page_size: 500, ...params });
+    const data = await get(`/quiz/questions/?${query}`);
+    return data.results ?? data;
   },
   reviewDeck: () => get("/quiz/review-deck/"),
   submitAnswer: (payload) => post("/quiz/answers/", payload),

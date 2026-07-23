@@ -1,0 +1,168 @@
+import json
+
+import pytest
+from django.core.management import call_command
+
+from accounts.models import Profile
+from quiz.models import Question, QuestionSet
+from quiz.views import CORRECT_RATE_RECALC_EVERY
+
+from .helpers import auth_client, make_question
+
+pytestmark = pytest.mark.django_db
+
+
+def answer(client, question, key="A"):
+    return client.post(
+        "/api/quiz/answers/",
+        {"question_id": question.id, "selected_choice_key": key, "response_time_ms": 1000},
+        format="json",
+    )
+
+
+class TestPublicationGate:
+    def test_only_published_questions_are_listed(self):
+        client, _ = auth_client()
+        make_question(question_text="公開済み")
+        for status in ("draft", "pending", "rejected"):
+            make_question(question_text=f"非公開 {status}", status=status)
+
+        res = client.get("/api/quiz/questions/?category=循環器")
+        assert res.status_code == 200
+        texts = [q["question_text"] for q in res.json()["results"]]
+        assert texts == ["公開済み"]
+
+    def test_unpublished_question_cannot_be_answered(self):
+        client, _ = auth_client()
+        question = make_question(status="pending")
+        assert answer(client, question).status_code == 404
+
+    def test_pending_llm_question_requires_moderator_approval(self):
+        question = make_question(status="pending", source="llm")
+        student_client, _ = auth_client()
+        assert (
+            student_client.post(f"/api/quiz/review/questions/{question.id}/approve/").status_code
+            == 403
+        )
+
+        mod_client, moderator = auth_client(role=Profile.Role.MODERATOR)
+        res = mod_client.post(f"/api/quiz/review/questions/{question.id}/approve/")
+        assert res.status_code == 200
+        question.refresh_from_db()
+        assert question.status == Question.Status.PUBLISHED
+        assert question.reviewed_by == moderator
+        assert question.reviewed_at is not None
+
+    def test_review_queue_lists_pending(self):
+        make_question(status="pending", question_text="審査待ちの設問")
+        make_question(question_text="公開済みの設問")
+        mod_client, _ = auth_client(role=Profile.Role.MODERATOR)
+        res = mod_client.get("/api/quiz/review/questions/")
+        rows = res.json()["results"]
+        assert [q["question_text"] for q in rows] == ["審査待ちの設問"]
+        # moderation serializer exposes the answer for review
+        assert rows[0]["correct_choice_key"] == "A"
+
+
+class TestCorrectRate:
+    def test_correct_rate_null_until_min_answers(self):
+        client, _ = auth_client()
+        question = make_question()
+        res = answer(client, question)
+        assert res.json()["correct_rate"] is None
+
+        list_res = client.get("/api/quiz/questions/?category=循環器")
+        assert list_res.json()["results"][0]["correct_rate"] is None
+
+    def test_answer_count_increments_and_rate_recalcs_every_n(self):
+        client, _ = auth_client()
+        question = make_question()
+        for i in range(CORRECT_RATE_RECALC_EVERY):
+            key = "A" if i % 2 == 0 else "B"  # 半分正解
+            answer(client, question, key=key)
+        question.refresh_from_db()
+        assert question.answer_count == CORRECT_RATE_RECALC_EVERY
+        assert question.correct_rate == 50.0
+        # 10問到達後は API でも公開される
+        res = client.get("/api/quiz/questions/?category=循環器")
+        assert res.json()["results"][0]["correct_rate"] == 50.0
+
+
+class TestMasteryFilter:
+    def test_latest_answer_wins_with_distinct_on(self):
+        client, _ = auth_client()
+        question = make_question()
+        answer(client, question, key="B")  # 不正解 -> cross
+        answer(client, question, key="A")  # 正解 -> circle が最新
+
+        res = client.get("/api/quiz/questions/?category=循環器&mastery_level=cross")
+        assert res.json()["results"] == []
+        res = client.get("/api/quiz/questions/?category=循環器&mastery_level=circle")
+        assert [q["id"] for q in res.json()["results"]] == [question.id]
+
+    def test_unstudied_filter_excludes_answered(self):
+        client, _ = auth_client()
+        answered = make_question(question_text="解答済み")
+        unanswered = make_question(question_text="未解答")
+        answer(client, answered)
+
+        res = client.get("/api/quiz/questions/?category=循環器&mastery_level=unstudied")
+        assert [q["id"] for q in res.json()["results"]] == [unanswered.id]
+
+
+class TestImportCommand:
+    def test_import_forces_pending_and_creates_sets(self, tmp_path):
+        batch = {
+            "meta": {"generated_at": "2026-07-23T00:00:00Z", "generator": "test", "batch_id": "t"},
+            "questions": [
+                {
+                    "id": "t-001",
+                    "exam_type": "CBT",
+                    "category": "循環器",
+                    "disease": "心不全",
+                    "question_text": "テスト設問" * 10,
+                    "choices": [{"id": k, "text": f"選択肢{k}"} for k in "ABCDE"],
+                    "correct_choice_id": "B",
+                    "explanation": "解説" * 50,
+                    "distractor_rationale": {"A": "誤り", "C": "誤り", "D": "誤り", "E": "誤り"},
+                }
+            ],
+            "question_sets": [
+                {
+                    "id": "t-set-001",
+                    "category": "消化器",
+                    "disease": "急性虫垂炎",
+                    "case_stem": "18歳男性。12時間前からの臍周囲痛で来院した。",
+                    "steps": [
+                        {
+                            "set_order": order,
+                            "phase": phase,
+                            "question_text": f"{phase}で最も適切なのはどれか。",
+                            "choices": [{"id": k, "text": f"{phase}{k}"} for k in "ABCDE"],
+                            "correct_choice_id": "C",
+                            "explanation": "解説" * 50,
+                        }
+                        for order, phase in enumerate(
+                            ["医療面接", "身体診察", "検査", "病態生理"], start=1
+                        )
+                    ],
+                }
+            ],
+        }
+        path = tmp_path / "batch.json"
+        path.write_text(json.dumps(batch, ensure_ascii=False), encoding="utf-8")
+
+        call_command("import_questions", "--file", str(path))
+
+        imported = Question.objects.get(question_text="テスト設問" * 10)
+        assert imported.status == Question.Status.PENDING  # 強制 (spec 2-1)
+        assert imported.source == Question.Source.LLM
+        assert "誤答選択肢の解説" in imported.explanation
+        # choices are converted to the DB-canonical {"key","text"} form
+        assert imported.choices[0] == {"key": "A", "text": "選択肢A"}
+
+        qset = QuestionSet.objects.get()
+        steps = list(qset.questions.order_by("set_order"))
+        assert [s.set_order for s in steps] == [1, 2, 3, 4]
+        assert all(s.status == Question.Status.PENDING for s in steps)
+        assert all(s.question_type == Question.QuestionType.SEQUENTIAL for s in steps)

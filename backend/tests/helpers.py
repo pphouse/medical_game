@@ -38,3 +38,27 @@ def auth_client(profile=None, **profile_kwargs):
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {make_token(profile.id)}")
     return client, profile
+
+
+def make_question(**overrides):
+    from quiz.models import Question
+
+    defaults = dict(
+        category="循環器",
+        exam_type="CBT",
+        difficulty=2,
+        question_text="テスト設問",
+        choices=[
+            {"key": "A", "text": "選択肢A"},
+            {"key": "B", "text": "選択肢B"},
+            {"key": "C", "text": "選択肢C"},
+            {"key": "D", "text": "選択肢D"},
+            {"key": "E", "text": "選択肢E"},
+        ],
+        correct_choice_key="A",
+        explanation="テスト解説",
+        status=Question.Status.PUBLISHED,
+        source=Question.Source.OFFICIAL,
+    )
+    defaults.update(overrides)
+    return Question.objects.create(**defaults)

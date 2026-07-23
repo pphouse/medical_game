@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import AnswerHistory, Question, ReviewSchedule
+from .models import AnswerHistory, Question, QuestionReport, ReviewSchedule
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -8,6 +8,8 @@ class QuestionSerializer(serializers.ModelSerializer):
     explanation so the client can't see the answer before submitting."""
 
     mastery_level = serializers.SerializerMethodField()
+    correct_rate = serializers.SerializerMethodField()
+    case_stem = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
@@ -17,6 +19,11 @@ class QuestionSerializer(serializers.ModelSerializer):
             "topic",
             "difficulty",
             "exam_type",
+            "question_type",
+            "blueprint_code",
+            "question_set_id",
+            "set_order",
+            "case_stem",
             "question_text",
             "choices",
             "correct_rate",
@@ -26,6 +33,52 @@ class QuestionSerializer(serializers.ModelSerializer):
     def get_mastery_level(self, obj):
         mastery_by_question = self.context.get("mastery_by_question", {})
         return mastery_by_question.get(obj.id, "unstudied")
+
+    def get_correct_rate(self, obj):
+        # null until answer_count >= 10 (spec 2.1: 少数解答での誤解を避ける)
+        return obj.public_correct_rate
+
+    def get_case_stem(self, obj):
+        if obj.question_set_id:
+            return obj.question_set.case_stem
+        return None
+
+
+class ReviewQuestionSerializer(serializers.ModelSerializer):
+    """Moderator-only: includes the answer and review metadata."""
+
+    case_stem = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "category",
+            "topic",
+            "difficulty",
+            "exam_type",
+            "question_type",
+            "blueprint_code",
+            "class_group",
+            "question_set_id",
+            "set_order",
+            "case_stem",
+            "question_text",
+            "choices",
+            "correct_choice_key",
+            "explanation",
+            "status",
+            "source",
+            "visibility",
+            "reviewed_by",
+            "reviewed_at",
+            "created_at",
+        ]
+
+    def get_case_stem(self, obj):
+        if obj.question_set_id:
+            return obj.question_set.case_stem
+        return None
 
 
 class CategorySerializer(serializers.Serializer):
@@ -68,6 +121,13 @@ class SubmitAnswerSerializer(serializers.Serializer):
 
 class SubmitMasterySerializer(serializers.Serializer):
     mastery_level = serializers.ChoiceField(choices=AnswerHistory.MasteryLevel.choices)
+
+
+class QuestionReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuestionReport
+        fields = ["id", "question", "reason", "detail", "created_at"]
+        read_only_fields = ["id", "question", "created_at"]
 
 
 class ReviewScheduleSerializer(serializers.ModelSerializer):
