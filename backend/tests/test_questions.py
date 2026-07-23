@@ -166,3 +166,50 @@ class TestImportCommand:
         assert [s.set_order for s in steps] == [1, 2, 3, 4]
         assert all(s.status == Question.Status.PENDING for s in steps)
         assert all(s.question_type == Question.QuestionType.SEQUENTIAL for s in steps)
+
+
+class TestBundledCoreBatch:
+    """同梱の編集バッチ(cbt_batch_core_2026.json)が検証器の必須ゲートを
+    通ることを CI で保証する。問題バンクの品質デグレをここで検出する。"""
+
+    def _load_validator(self):
+        import importlib.util
+        from pathlib import Path
+
+        scripts_dir = Path(__file__).resolve().parents[2] / "scripts"
+        spec = importlib.util.spec_from_file_location(
+            "validate_questions", scripts_dir / "validate_questions.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def _batch_path(self):
+        from pathlib import Path
+
+        return (
+            Path(__file__).resolve().parents[1]
+            / "quiz" / "management" / "commands" / "data" / "cbt_batch_core_2026.json"
+        )
+
+    def test_bundled_batch_passes_validator(self):
+        validator = self._load_validator()
+        batch = json.loads(self._batch_path().read_text(encoding="utf-8"))
+
+        report = validator.Report()
+        validator.validate_schema(batch, report)
+        validator.validate_items(batch, report)
+
+        # 構造・長さ・禁止語・重複・キー分布の必須ゲートに fail がないこと
+        assert report.failures == [], report.failures
+
+    def test_bundled_batch_imports_as_pending(self):
+        call_command(
+            "import_questions", "--file", str(self._batch_path())
+        )
+        imported = Question.objects.filter(source=Question.Source.LLM)
+        # すべて審査待ちで入る（人手レビュー前に出題されない, spec 2-1）
+        assert imported.count() >= 58
+        assert not imported.exclude(status=Question.Status.PENDING).exists()
+        # 四連問が2セット取り込まれている
+        assert QuestionSet.objects.count() == 2

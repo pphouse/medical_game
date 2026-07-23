@@ -7,7 +7,7 @@ from django.db import transaction
 from quiz.models import Question, QuestionSet
 
 DEFAULT_DATA_FILE = (
-    Path(__file__).resolve().parent / "data" / "cbt_batch_digestive_cardio.json"
+    Path(__file__).resolve().parent / "data" / "cbt_batch_core_2026.json"
 )
 
 DIFFICULTY_MAP = {

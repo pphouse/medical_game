@@ -214,16 +214,16 @@ SAMPLE_QUESTIONS = [
 class Command(BaseCommand):
     help = (
         "Seed demo University + sample Question data for local development. "
-        "--with-batch additionally loads the bundled 100-question demo batch "
-        "as published official questions (デモ専用: 本番の LLM 生成問題は "
-        "import_questions + 人手レビューを必ず通すこと)."
+        "--with-batch additionally loads the bundled editorial demo batch "
+        "(cbt_batch_core_2026.json) as published official questions (デモ専用: "
+        "本番の LLM 生成問題は import_questions + 人手レビューを必ず通すこと)."
     )
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--with-batch",
             action="store_true",
-            help="Load the bundled cbt_batch_digestive_cardio.json as published demo data",
+            help="Load the bundled cbt_batch_core_2026.json (58問+2四連問) as published demo data",
         )
 
     def handle(self, *args, **options):
@@ -261,34 +261,79 @@ class Command(BaseCommand):
         )
 
     def _load_bundled_batch(self):
-        """デモ用: リポジトリ同梱の100問バッチを published で直接投入する。
+        """デモ用: リポジトリ同梱の編集バッチを published で直接投入する。
 
         通常の LLM 生成問題は import_questions（強制 pending）→ 人手レビューを
-        通すこと。この同梱バッチはリポジトリ初期から含まれるデモ表示用データ。
+        通すこと。この同梱バッチはデモ表示用に人手確認済みとして扱う。
+        単問（questions）と四連問（question_sets）の両方を公開する。
         """
         import json
         from pathlib import Path
 
+        from quiz.models import QuestionSet
+
+        from .import_questions import (
+            DIFFICULTY_MAP,
+            build_explanation,
+            convert_choices,
+        )
+
         data_path = (
-            Path(__file__).resolve().parent / "data" / "cbt_batch_digestive_cardio.json"
+            Path(__file__).resolve().parent / "data" / "cbt_batch_core_2026.json"
         )
         payload = json.loads(data_path.read_text(encoding="utf-8"))
         created = 0
-        for q in payload["questions"]:
+
+        for q in payload.get("questions", []):
             _, was_created = Question.objects.get_or_create(
                 category=q["category"],
                 question_text=q["question_text"],
                 defaults=dict(
                     topic=q.get("disease", ""),
                     exam_type=q["exam_type"],
-                    difficulty=2,
-                    choices=[{"key": c["id"], "text": c["text"]} for c in q["choices"]],
+                    difficulty=DIFFICULTY_MAP.get(q.get("difficulty", "standard"), 2),
+                    question_type=q.get("question_type", Question.QuestionType.MULTIPLE_CHOICE),
+                    blueprint_code=q.get("blueprint_code", ""),
+                    class_group=q.get("class_group", ""),
+                    choices=convert_choices(q["choices"]),
                     correct_choice_key=q["correct_choice_id"],
-                    explanation=q["explanation"],
+                    explanation=build_explanation(q),
                     visibility=Question.Visibility.PUBLIC,
                     status=Question.Status.PUBLISHED,
                     source=Question.Source.OFFICIAL,
                 ),
             )
             created += int(was_created)
+
+        for s in payload.get("question_sets", []):
+            if QuestionSet.objects.filter(case_stem=s["case_stem"]).exists():
+                continue
+            question_set = QuestionSet.objects.create(
+                title=s.get("title") or f"{s.get('disease', s['id'])}の四連問",
+                blueprint_code=s.get("blueprint_code", ""),
+                case_stem=s["case_stem"],
+                status=Question.Status.PUBLISHED,
+                source=Question.Source.OFFICIAL,
+            )
+            for step in s["steps"]:
+                Question.objects.create(
+                    category=s["category"],
+                    topic=s.get("disease", ""),
+                    exam_type=s.get("exam_type", Question.ExamType.CBT),
+                    difficulty=DIFFICULTY_MAP.get(s.get("difficulty", "standard"), 2),
+                    question_type=Question.QuestionType.SEQUENTIAL,
+                    blueprint_code=s.get("blueprint_code", ""),
+                    class_group=s.get("class_group", ""),
+                    question_set=question_set,
+                    set_order=step["set_order"],
+                    question_text=step["question_text"],
+                    choices=convert_choices(step["choices"]),
+                    correct_choice_key=step["correct_choice_id"],
+                    explanation=build_explanation(step),
+                    visibility=Question.Visibility.PUBLIC,
+                    status=Question.Status.PUBLISHED,
+                    source=Question.Source.OFFICIAL,
+                )
+                created += 1
+
         return created

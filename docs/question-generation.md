@@ -43,7 +43,26 @@ DB への取り込み（模試の分野比率編成と審査画面の分野表�
 python manage.py import_blueprint data/cbt_blueprint.csv
 ```
 
-## 2. 生成 — `generate_questions.py`
+## 2a. 直接執筆 — `author_core_batch.py`（API を使わない同梱バッチ）
+
+API を呼ばずに問題を用意する経路。`scripts/author_core_batch.py` に問題本文を
+インラインで持ち、`backend/quiz/management/commands/data/cbt_batch_core_2026.json`
+を生成する。同梱の初期問題バンク（10分野の単問50問＋四連問2セット＝58問）は
+この方法で作成している。正解キーは明示的に配置して検証器の数値ゲート
+（A〜E各15〜25%、正解＝最長 40%未満）を満たすようにしてある。
+
+```bash
+python scripts/author_core_batch.py     # data/cbt_batch_core_2026.json を再生成
+python scripts/validate_questions.py --file backend/quiz/management/commands/data/cbt_batch_core_2026.json
+```
+
+問題を増やす・直すときは `author_core_batch.py` の `M`（単問）/ `SETS`（四連問）/
+`PEARLS_*`（解説に付す臨床のポイント）を編集して再生成し、検証器を通す。
+このバッチは `tests/test_questions.py::TestBundledCoreBatch` が CI で検証し、
+`import_questions` では他の生成物と同様に **status=pending** で取り込まれる
+（デモ表示のみ `seed_demo --with-batch` が published として投入する）。
+
+## 2b. 生成 — `generate_questions.py`（LLM API を使う場合）
 
 ```bash
 export ANTHROPIC_API_KEY=...
