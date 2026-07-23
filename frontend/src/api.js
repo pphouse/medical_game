@@ -76,6 +76,16 @@ export const api = {
   },
   reviewDeck: () => get("/quiz/review-deck/"),
 
+  // battle (phase 4)
+  battleCreate: (payload) => post("/battle/rooms/", payload),
+  battleJoin: (code) => post(`/battle/rooms/${code}/join/`),
+  battleStart: (code) => post(`/battle/rooms/${code}/start/`),
+  battleState: (code) => get(`/battle/rooms/${code}/state/`),
+  battleResult: (code) => get(`/battle/rooms/${code}/result/`),
+  battleBuzz: (roundId) => post(`/battle/rounds/${roundId}/buzz/`),
+  battleAnswer: (roundId, selectedChoiceKey) =>
+    post(`/battle/rounds/${roundId}/answer/`, { selected_choice_key: selectedChoiceKey }),
+
   // rankings (phase 3)
   ranking: ({ scope, metric, period }) => {
     const query = new URLSearchParams({ scope, metric, period });

@@ -275,7 +275,12 @@ class QuestionReport(models.Model):
 
 class AnswerHistory(models.Model):
     """spec: AnswerHistory: id, user_id, question_id, mastery_level, correct,
-    answered_at, response_time_ms"""
+    answered_at, response_time_ms
+
+    context (spec フェーズ4): どのモードでの解答か。ランキングの「解いた
+    問題数」には solo/review のみを含める（対戦の連打・模試での水増しを
+    防ぐ）。battle/mock はサーバ側でのみ設定される。
+    """
 
     class MasteryLevel(models.TextChoices):
         DOUBLE_CIRCLE = "double_circle", "◎"
@@ -283,6 +288,12 @@ class AnswerHistory(models.Model):
         TRIANGLE = "triangle", "△"
         CROSS = "cross", "✕"
         UNSTUDIED = "unstudied", "未演習"
+
+    class Context(models.TextChoices):
+        SOLO = "solo", "ソロ"
+        BATTLE = "battle", "対戦"
+        MOCK = "mock", "模試"
+        REVIEW = "review", "復習"
 
     user = models.ForeignKey(
         "accounts.Profile", on_delete=models.CASCADE, related_name="answer_histories"
@@ -298,6 +309,9 @@ class AnswerHistory(models.Model):
     correct = models.BooleanField()
     answered_at = models.DateTimeField(auto_now_add=True)
     response_time_ms = models.IntegerField()
+    context = models.CharField(
+        max_length=10, choices=Context.choices, default=Context.SOLO
+    )
 
     class Meta:
         verbose_name = "解答履歴"

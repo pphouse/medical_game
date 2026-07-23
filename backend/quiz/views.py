@@ -307,6 +307,7 @@ class SubmitAnswerView(APIView):
             mastery_level=auto_mastery,
             correct=is_correct,
             response_time_ms=data["response_time_ms"],
+            context=data["context"],
         )
 
         # spec §5-5: no per-answer full recomputation. Increment the

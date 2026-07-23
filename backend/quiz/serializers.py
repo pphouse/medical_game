@@ -117,6 +117,12 @@ class SubmitAnswerSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     selected_choice_key = serializers.CharField(max_length=4)
     response_time_ms = serializers.IntegerField(min_value=0)
+    # クライアントが指定できるのは solo / review のみ。battle / mock は
+    # それぞれのサーバフローでのみ記録される (spec フェーズ4)。
+    context = serializers.ChoiceField(
+        choices=[AnswerHistory.Context.SOLO, AnswerHistory.Context.REVIEW],
+        default=AnswerHistory.Context.SOLO,
+    )
 
 
 class SubmitMasterySerializer(serializers.Serializer):

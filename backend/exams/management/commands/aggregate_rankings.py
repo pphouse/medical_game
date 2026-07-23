@@ -33,8 +33,8 @@ from exams.constants import (
 )
 from exams.models import RankingSnapshot
 
-# フェーズ4で AnswerHistory.context が入ったら solo/review に限定する
-RANKED_CONTEXTS_SQL = ""
+# ランキングに数えるのは solo/review のみ（battle/mock の水増し防止, spec 4-2）
+RANKED_CONTEXTS = ("solo", "review")
 
 
 def month_bounds(period):
@@ -50,12 +50,12 @@ def fetch_user_stats(period):
 
     初回解答は DISTINCT ON (user_id, question_id) ORDER BY answered_at で確定。
     """
-    where = ""
-    params = []
+    where = "WHERE context = ANY(%s)"
+    params = [list(RANKED_CONTEXTS)]
     if period != "all":
         start, end = month_bounds(period)
-        where = "WHERE answered_at >= %s AND answered_at <= %s"
-        params = [start, end]
+        where += " AND answered_at >= %s AND answered_at <= %s"
+        params += [start, end]
 
     sql = f"""
         SELECT user_id,
@@ -82,8 +82,8 @@ def fetch_university_unique_solved(period, member_ids):
     """大学メンバー全体でのユニーク解答問題数（question_id の和集合）。"""
     if not member_ids:
         return 0
-    where = "WHERE user_id = ANY(%s)"
-    params = [list(member_ids)]
+    where = "WHERE user_id = ANY(%s) AND context = ANY(%s)"
+    params = [list(member_ids), list(RANKED_CONTEXTS)]
     if period != "all":
         start, end = month_bounds(period)
         where += " AND answered_at >= %s AND answered_at <= %s"

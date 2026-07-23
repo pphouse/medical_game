@@ -6,6 +6,8 @@ import ReviewDeck from "./components/ReviewDeck";
 import { ProfileProvider } from "./context/ProfileContext";
 import { useSession } from "./hooks/useSession";
 import Auth from "./routes/Auth";
+import Lobby from "./routes/Battle/Lobby";
+import BattleRoom from "./routes/Battle/Room";
 import Menu from "./routes/Menu";
 import Placeholder from "./routes/Placeholder";
 import QuizSession from "./routes/QuizSession";
@@ -60,7 +62,7 @@ export default function App() {
             <Route path="/" element={<Menu />} />
             <Route path="/solo" element={<Solo />} />
             <Route path="/review" element={<ReviewDeck />} />
-            <Route path="/battle" element={<Placeholder title="対戦モード" phase="フェーズ4" />} />
+            <Route path="/battle" element={<Lobby />} />
             <Route path="/exams" element={<Placeholder title="模試" phase="フェーズ5" />} />
             <Route path="/ranking" element={<Ranking />} />
             <Route path="/create" element={<Placeholder title="問題をつくる" phase="フェーズ7" />} />
@@ -69,6 +71,7 @@ export default function App() {
           <Route element={<FullScreenShell />}>
             <Route path="/solo/:category" element={<QuestionPicker />} />
             <Route path="/quiz" element={<QuizSession />} />
+            <Route path="/battle/:code" element={<BattleRoom />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
