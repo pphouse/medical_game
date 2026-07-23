@@ -2,7 +2,6 @@ import datetime
 import zoneinfo
 
 import pytest
-from django.core.management import call_command
 from django.utils import timezone
 
 from accounts.models import NotificationPreference, PushSubscription
