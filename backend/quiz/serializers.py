@@ -46,6 +46,7 @@ class CategoryProgressSerializer(serializers.Serializer):
     total = serializers.IntegerField()
     remaining = serializers.IntegerField()
     counts = MasteryCountsSerializer()
+    correct_rate = serializers.FloatField()
 
 
 class RankSerializer(serializers.Serializer):

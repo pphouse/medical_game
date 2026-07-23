@@ -165,6 +165,15 @@ class CategoryProgressView(APIView):
             counts_by_category.setdefault(category, empty_counts())[mastery_level] += 1
             answered_by_category[category] = answered_by_category.get(category, 0) + 1
 
+        correct_rate_by_category = {
+            row["question__category"]: round((row["correct_rate"] or 0) * 100, 1)
+            for row in (
+                AnswerHistory.objects.filter(user=request.user)
+                .values("question__category")
+                .annotate(correct_rate=Avg(Case(When(correct=True, then=1), default=0)))
+            )
+        }
+
         results = []
         for row in categories:
             category, total = row["category"], row["total"]
@@ -177,6 +186,7 @@ class CategoryProgressView(APIView):
                     "total": total,
                     "remaining": total - answered,
                     "counts": counts,
+                    "correct_rate": correct_rate_by_category.get(category, 0.0),
                 }
             )
 
