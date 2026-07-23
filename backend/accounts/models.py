@@ -88,6 +88,83 @@ class Profile(models.Model):
         return self.role in (self.Role.MODERATOR, self.Role.ADMIN)
 
 
+class StudentVerification(models.Model):
+    """学生証審査 (spec 2.2 / フェーズ7).
+
+    画像そのものは private バケット (settings.STUDENT_ID_BUCKET) にあり、
+    Django はパスだけを保持する。アップロードは signed upload URL 経由
+    （画像を Django で受けない）。レビュー時のみ短期 signed URL を発行。
+
+    保持期間の最小化 (spec): 却下時は即削除、承認後は
+    STUDENT_ID_RETENTION_DAYS (90日) で cleanup_student_id_images が削除。
+    """
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "アップロード待ち"
+        PENDING = "pending", "審査待ち"
+        APPROVED = "approved", "承認"
+        REJECTED = "rejected", "却下"
+
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name="student_verifications"
+    )
+    university = models.ForeignKey(
+        University,
+        on_delete=models.SET_NULL,
+        null=True,
+        help_text="申請時に本人が選択。承認時に Profile.university に確定される",
+    )
+    image_path = models.CharField(max_length=500, help_text="バケット内のオブジェクトパス")
+    image_deleted_at = models.DateTimeField(null=True, blank=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
+    reviewed_by = models.ForeignKey(
+        Profile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_student_verifications",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reject_reason = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "学生証審査"
+        verbose_name_plural = "学生証審査"
+
+    def __str__(self):
+        return f"{self.profile_id} - {self.status}"
+
+    def approve(self, reviewed_by=None):
+        """承認: Profile.student_verified=True + university 確定 (spec フェーズ7)."""
+        from django.utils import timezone
+
+        self.status = self.Status.APPROVED
+        self.reviewed_by = reviewed_by
+        self.reviewed_at = timezone.now()
+        self.save(update_fields=["status", "reviewed_by", "reviewed_at"])
+        self.profile.student_verified = True
+        if self.university_id:
+            self.profile.university_id = self.university_id
+        self.profile.save(update_fields=["student_verified", "university"])
+
+    def reject(self, reason="", reviewed_by=None):
+        """却下: 画像を即削除する (spec フェーズ7)."""
+        from django.utils import timezone
+
+        from .storage import delete_student_id_image
+
+        self.status = self.Status.REJECTED
+        self.reject_reason = reason
+        self.reviewed_by = reviewed_by
+        self.reviewed_at = timezone.now()
+        self.save(update_fields=["status", "reject_reason", "reviewed_by", "reviewed_at"])
+        if delete_student_id_image(self.image_path):
+            self.image_deleted_at = timezone.now()
+            self.save(update_fields=["image_deleted_at"])
+
+
 class PushSubscription(models.Model):
     """Web Push (VAPID) の購読情報 (spec フェーズ6)."""
 

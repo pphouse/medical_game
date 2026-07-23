@@ -87,6 +87,20 @@ export const api = {
       body: JSON.stringify({ endpoint }),
     }),
 
+  // user question creation (phase 7)
+  createQuestion: (payload) => post("/quiz/questions/", payload),
+  myQuestions: () => get("/quiz/my-questions/"),
+  updateQuestion: (id, payload) => patch(`/quiz/questions/${id}/`, payload),
+  deleteQuestion: (id) => request(`/quiz/questions/${id}/`, { method: "DELETE" }),
+  submitQuestionForReview: (id) => post(`/quiz/questions/${id}/submit/`),
+  reportQuestion: (id, payload) => post(`/quiz/questions/${id}/report/`, payload),
+
+  // student verification (phase 7)
+  verificationStatus: () => get("/auth/student-verification/"),
+  applyVerification: (universityId) =>
+    post("/auth/student-verification/", { university_id: universityId }),
+  completeVerification: (id) => patch(`/auth/student-verification/${id}/complete/`, {}),
+
   // mock exams (phase 5)
   exams: () => get("/exams/"),
   examStart: (id) => post(`/exams/${id}/start/`),

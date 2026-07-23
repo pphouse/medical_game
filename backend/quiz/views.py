@@ -3,12 +3,13 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import exceptions
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from .models import AnswerHistory, Question, ReviewSchedule
+from config.permissions import IsModerator
+
+from .models import AnswerHistory, Question, QuestionReport, ReviewSchedule
 from .serializers import (
     CategoryProgressSerializer,
     CategorySerializer,
@@ -18,6 +19,7 @@ from .serializers import (
     ReviewScheduleSerializer,
     SubmitAnswerSerializer,
     SubmitMasterySerializer,
+    UserQuestionSerializer,
 )
 from .sm2 import MASTERY_TO_QUALITY, schedule_next_review
 
@@ -34,14 +36,6 @@ NEEDS_REVIEW_LEVELS = {
 # per-answer write only increments answer_count, and the rate is refreshed
 # every N answers (plus the daily recalc_correct_rates batch).
 CORRECT_RATE_RECALC_EVERY = 10
-
-
-class IsModerator(BasePermission):
-    message = "モデレーター権限が必要です。"
-
-    def has_permission(self, request, view):
-        profile = request.user
-        return bool(getattr(profile, "is_moderator", False))
 
 
 def update_review_schedule(user, question, mastery_level):
@@ -218,6 +212,36 @@ class QuestionPagination(PageNumberPagination):
 
 
 class QuestionListView(APIView):
+    """GET: 演習用の公開問題一覧 / POST: ユーザー問題の作成 (spec フェーズ7)."""
+
+    throttle_scope = "question-create"
+
+    def get_throttles(self):
+        if self.request.method == "POST":
+            return [ScopedRateThrottle()]
+        return []
+
+    def post(self, request):
+        if not request.user.student_verified:
+            raise exceptions.PermissionDenied("問題の作成には学生証認証が必要です。")
+        serializer = UserQuestionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        university = None
+        if serializer.validated_data.get("visibility") == Question.Visibility.UNIVERSITY_ONLY:
+            if not request.user.university_id:
+                raise exceptions.ValidationError("学内限定にするには所属大学の設定が必要です。")
+            # クライアント指定を信用せず作成者の所属で強制上書き (spec フェーズ7)
+            university = request.user.university
+
+        question = serializer.save(
+            creator=request.user,
+            source=Question.Source.USER,
+            status=Question.Status.DRAFT,
+            university=university,
+        )
+        return Response(UserQuestionSerializer(question).data, status=201)
+
     def get(self, request):
         qs = Question.objects.visible_to(request.user)
         category = request.query_params.get("category")
@@ -392,6 +416,108 @@ class SubmitMasteryView(APIView):
                 "next_review_at": review_schedule.next_review_at if review_schedule else None,
             }
         )
+
+
+class MyQuestionsView(APIView):
+    """自分が作成した問題の一覧（下書き/審査中/公開の管理, spec フェーズ7）。"""
+
+    def get(self, request):
+        qs = Question.objects.filter(creator=request.user).order_by("-created_at")
+        return Response(UserQuestionSerializer(qs, many=True).data)
+
+
+class QuestionDetailView(APIView):
+    """PATCH/DELETE は作成者本人と moderator のみ (spec フェーズ7)。
+
+    既に解答履歴がある問題（answer_count > 0）は本文の破壊的編集を禁止し、
+    解説の追記のみ許可する。
+    """
+
+    EXPLANATION_ONLY_FIELDS = {"explanation"}
+
+    def _get_editable(self, request, question_id):
+        question = get_object_or_404(Question, pk=question_id)
+        if question.creator_id != request.user.id and not request.user.is_moderator:
+            raise exceptions.PermissionDenied("編集できるのは作成者かモデレーターのみです。")
+        return question
+
+    def patch(self, request, question_id):
+        question = self._get_editable(request, question_id)
+        if question.answer_count > 0:
+            extra = set(request.data.keys()) - self.EXPLANATION_ONLY_FIELDS
+            if extra:
+                raise exceptions.ValidationError(
+                    "解答履歴のある問題は本文を編集できません（解説の追記のみ可能）。"
+                )
+        serializer = UserQuestionSerializer(question, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        # 公開済み問題の本文編集は再審査に回す（作成者による差し替え防止）
+        content_changed = bool(set(request.data.keys()) - self.EXPLANATION_ONLY_FIELDS)
+        if (
+            question.status == Question.Status.PUBLISHED
+            and content_changed
+            and not request.user.is_moderator
+        ):
+            serializer.save(status=Question.Status.PENDING)
+        else:
+            serializer.save()
+        return Response(UserQuestionSerializer(question).data)
+
+    def delete(self, request, question_id):
+        question = self._get_editable(request, question_id)
+        if question.answer_count > 0 and not request.user.is_moderator:
+            raise exceptions.ValidationError(
+                "解答履歴のある問題は削除できません（モデレーターに依頼してください）。"
+            )
+        question.delete()
+        return Response(status=204)
+
+
+class QuestionSubmitForReviewView(APIView):
+    """POST .../submit/ — 下書きを審査待ちにする (spec フェーズ7)."""
+
+    def post(self, request, question_id):
+        question = get_object_or_404(Question, pk=question_id, creator=request.user)
+        if question.status != Question.Status.DRAFT:
+            raise exceptions.ValidationError("下書きのみ提出できます。")
+        question.status = Question.Status.PENDING
+        question.save(update_fields=["status"])
+        return Response(UserQuestionSerializer(question).data)
+
+
+class QuestionReportView(APIView):
+    """通報 (spec フェーズ7): 同一問題に3人以上の通報が付いたら自動で
+    pending に戻し出題から外す。"""
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "question-report"
+
+    def post(self, request, question_id):
+        question = get_object_or_404(
+            Question.objects.visible_to(request.user), pk=question_id
+        )
+        reason = request.data.get("reason")
+        if reason not in QuestionReport.Reason.values:
+            raise exceptions.ValidationError(
+                f"reason は {', '.join(QuestionReport.Reason.values)} のいずれか"
+            )
+        if QuestionReport.objects.filter(question=question, reporter=request.user).exists():
+            raise exceptions.ValidationError("この問題はすでに通報済みです。")
+        QuestionReport.objects.create(
+            question=question,
+            reporter=request.user,
+            reason=reason,
+            detail=request.data.get("detail", ""),
+        )
+        report_count = question.reports.count()
+        if (
+            report_count >= QuestionReport.AUTO_UNPUBLISH_THRESHOLD
+            and question.status == Question.Status.PUBLISHED
+        ):
+            question.status = Question.Status.PENDING
+            question.save(update_fields=["status"])
+        return Response({"reported": True, "report_count": report_count}, status=201)
 
 
 class ReviewQueueView(APIView):

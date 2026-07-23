@@ -129,6 +129,66 @@ class SubmitMasterySerializer(serializers.Serializer):
     mastery_level = serializers.ChoiceField(choices=AnswerHistory.MasteryLevel.choices)
 
 
+VALID_CHOICE_KEYS = ["A", "B", "C", "D", "E"]
+
+
+class UserQuestionSerializer(serializers.ModelSerializer):
+    """ユーザー投稿問題の作成/編集 (spec フェーズ7).
+
+    university はクライアント指定を信用せず、visibility=university_only の
+    場合に作成者の所属で強制上書きする（ビュー側で設定）。
+    """
+
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "category",
+            "topic",
+            "exam_type",
+            "difficulty",
+            "question_text",
+            "choices",
+            "correct_choice_key",
+            "explanation",
+            "visibility",
+            "status",
+            "answer_count",
+            "created_at",
+        ]
+        read_only_fields = ["id", "status", "answer_count", "created_at"]
+
+    def validate_choices(self, value):
+        if not isinstance(value, list) or len(value) != 5:
+            raise serializers.ValidationError("選択肢はA〜Eの5個が必要です。")
+        keys = []
+        for choice in value:
+            if not isinstance(choice, dict) or set(choice.keys()) != {"key", "text"}:
+                raise serializers.ValidationError('各選択肢は {"key","text"} 形式です。')
+            if choice["key"] not in VALID_CHOICE_KEYS:
+                raise serializers.ValidationError("選択肢キーはA〜Eのみ。")
+            if not str(choice["text"]).strip():
+                raise serializers.ValidationError("選択肢テキストが空です。")
+            keys.append(choice["key"])
+        if sorted(keys) != VALID_CHOICE_KEYS:
+            raise serializers.ValidationError("選択肢キーはA〜Eを1つずつ。")
+        texts = [c["text"] for c in value]
+        if len(set(texts)) != len(texts):
+            raise serializers.ValidationError("選択肢テキストが重複しています。")
+        return value
+
+    def validate(self, attrs):
+        choices = attrs.get("choices", getattr(self.instance, "choices", None))
+        correct = attrs.get(
+            "correct_choice_key", getattr(self.instance, "correct_choice_key", None)
+        )
+        if choices and correct not in [c["key"] for c in choices]:
+            raise serializers.ValidationError(
+                {"correct_choice_key": "正解キーが選択肢に存在しません。"}
+            )
+        return attrs
+
+
 class QuestionReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionReport

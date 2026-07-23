@@ -8,15 +8,17 @@ import { useSession } from "./hooks/useSession";
 import Auth from "./routes/Auth";
 import Lobby from "./routes/Battle/Lobby";
 import BattleRoom from "./routes/Battle/Room";
+import MyQuestions from "./routes/Create/MyQuestions";
+import QuestionForm from "./routes/Create/QuestionForm";
 import ExamList from "./routes/Exams/List";
 import ExamResult from "./routes/Exams/Result";
 import ExamSession from "./routes/Exams/Session";
 import Menu from "./routes/Menu";
 import NotificationSettings from "./routes/NotificationSettings";
-import Placeholder from "./routes/Placeholder";
 import QuizSession from "./routes/QuizSession";
 import Ranking from "./routes/Ranking";
 import Solo from "./routes/Solo";
+import Verify from "./routes/Verify";
 import "./App.css";
 
 /** Auth guard: everything below requires a Supabase session. */
@@ -69,12 +71,15 @@ export default function App() {
             <Route path="/battle" element={<Lobby />} />
             <Route path="/exams" element={<ExamList />} />
             <Route path="/ranking" element={<Ranking />} />
-            <Route path="/create" element={<Placeholder title="問題をつくる" phase="フェーズ7" />} />
+            <Route path="/create" element={<MyQuestions />} />
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/settings/notifications" element={<NotificationSettings />} />
+            <Route path="/settings/verification" element={<Verify />} />
           </Route>
           <Route element={<FullScreenShell />}>
             <Route path="/solo/:category" element={<QuestionPicker />} />
+            <Route path="/create/new" element={<QuestionForm />} />
+            <Route path="/create/:questionId/edit" element={<QuestionForm />} />
             <Route path="/quiz" element={<QuizSession />} />
             <Route path="/battle/:code" element={<BattleRoom />} />
             <Route path="/exams/:examId" element={<ExamSession />} />

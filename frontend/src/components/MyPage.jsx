@@ -189,6 +189,18 @@ export default function MyPage() {
         </button>
       </div>
 
+      {!user.student_verified && (
+        <div className="mypage-section">
+          <button
+            className="toolbar-btn"
+            style={{ width: "100%" }}
+            onClick={() => navigate("/settings/verification")}
+          >
+            🎓 学生証認証を申請
+          </button>
+        </div>
+      )}
+
       <div className="mypage-section">
         <button className="signout-button" onClick={handleSignOut}>
           ログアウト

@@ -23,7 +23,7 @@ const MASTERY_DISPLAY = {
 const EXAM_TYPE_LABEL = { CBT: "CBT", KOKUSHI: "医師国家試験" };
 const DIFFICULTY_LABEL = { 1: "易", 2: "標準", 3: "難" };
 
-export default function QuizScreen({ title, questions, onBack }) {
+export default function QuizScreen({ title, questions, onBack, previewMode = false }) {
   const [index, setIndex] = useState(0);
   const [selectedKey, setSelectedKey] = useState(null);
   const [result, setResult] = useState(null); // grading response
@@ -75,6 +75,19 @@ export default function QuizScreen({ title, questions, onBack }) {
 
   async function handleSubmit() {
     if (!selectedKey || submitting) return;
+    // previewMode (問題作成のプレビュー, phase 7): API を呼ばずローカル採点
+    if (previewMode) {
+      const correct = selectedKey === question.correct_choice_key;
+      setResult({
+        correct,
+        correct_choice_key: question.correct_choice_key,
+        explanation: question.explanation,
+        mastery_level: correct ? "circle" : "cross",
+      });
+      setMasteryLevel(correct ? "circle" : "cross");
+      setScore((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
+      return;
+    }
     setSubmitting(true);
     try {
       const responseTimeMs = Math.round(performance.now() - startedAt);
@@ -82,6 +95,7 @@ export default function QuizScreen({ title, questions, onBack }) {
         question_id: question.id,
         selected_choice_key: selectedKey,
         response_time_ms: responseTimeMs,
+        context: title?.startsWith("復習") ? "review" : "solo",
       });
       setResult(res);
       setMasteryLevel(res.mastery_level);
@@ -99,6 +113,7 @@ export default function QuizScreen({ title, questions, onBack }) {
   async function handleOverride(level) {
     if (!result) return;
     setMasteryLevel(level);
+    if (previewMode) return;
     try {
       await api.submitMastery(result.answer_history_id, level);
     } catch (e) {

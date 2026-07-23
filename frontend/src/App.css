@@ -1500,3 +1500,56 @@
   background: var(--card-bg);
   color: var(--text-h);
 }
+
+/* User question creation + student verification (phase 7) */
+.create-form { display: flex; flex-direction: column; gap: 12px; }
+
+.auth-field textarea,
+.auth-field input[type="file"] {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-h);
+}
+
+.auth-field textarea { resize: vertical; }
+
+.auth-field textarea:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+
+.create-choice-row { gap: 6px; }
+
+.create-choice-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.create-choice-head input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+.create-actions { display: flex; gap: 10px; }
+.create-actions .cta-button { flex: 1.4; margin-top: 0; }
+.create-actions .toolbar-btn { flex: 1; }
+
+.create-question-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.create-status-draft { background: var(--accent-bg); color: var(--text); }
+.create-status-pending { background: #fef3c7; color: #b45309; }
+.create-status-published { background: var(--correct-bg); color: var(--correct); }
+.create-status-rejected { background: var(--incorrect-bg); color: var(--incorrect); }
+
+.verify-done { border: 1px solid var(--correct); }
+.verify-rejected { border: 1px solid var(--incorrect); }
