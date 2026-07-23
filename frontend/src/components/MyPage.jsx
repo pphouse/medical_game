@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../api";
+import { useProfile } from "../context/ProfileContext";
+import { supabase } from "../lib/supabase";
 
 const ICONS = {
   rank: (
@@ -56,16 +59,31 @@ function SectionHeading({ icon, title }) {
   );
 }
 
-export default function MyPage({ user }) {
+export default function MyPage() {
+  const { profile } = useProfile();
+  const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
 
   useEffect(() => {
     api.summary().then(setSummary).catch(() => {});
   }, []);
 
-  const fullName =
-    user.last_name || user.first_name ? `${user.last_name} ${user.first_name}` : user.username;
-  const initial = (user.last_name || user.username || "?").charAt(0);
+  async function handleSignOut() {
+    if (supabase) await supabase.auth.signOut();
+    navigate("/auth", { replace: true });
+  }
+
+  if (!profile) {
+    return (
+      <div className="screen">
+        <p>読み込み中...</p>
+      </div>
+    );
+  }
+
+  const user = profile;
+  const fullName = user.display_name || "表示名未設定";
+  const initial = (user.display_name || "?").charAt(0);
 
   return (
     <div className="screen">
@@ -118,7 +136,7 @@ export default function MyPage({ user }) {
           <div className="profile-row">
             <span className="profile-label">
               <span className="mypage-section-icon">{ICONS.profile}</span>
-              氏名
+              表示名
             </span>
             <span className="profile-value">{fullName}</span>
           </div>
@@ -159,6 +177,12 @@ export default function MyPage({ user }) {
           </div>
           <p>詳細は近日公開予定です。</p>
         </div>
+      </div>
+
+      <div className="mypage-section">
+        <button className="signout-button" onClick={handleSignOut}>
+          ログアウト
+        </button>
       </div>
     </div>
   );

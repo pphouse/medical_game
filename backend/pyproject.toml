@@ -1,0 +1,15 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py"]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+# E731 included on purpose (spec §5-8: no lambda assignments).
+select = ["E", "F", "W", "I", "B", "DJ", "UP"]
+ignore = ["E501"]

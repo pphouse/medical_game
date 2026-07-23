@@ -1,83 +1,72 @@
-import { useEffect, useState } from "react";
-import { api } from "./api";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import BottomNav from "./components/BottomNav";
 import Home from "./components/Home";
-import Battle from "./components/Battle";
 import MyPage from "./components/MyPage";
 import QuestionPicker from "./components/QuestionPicker";
-import QuizScreen from "./components/QuizScreen";
 import ReviewDeck from "./components/ReviewDeck";
-import BottomNav from "./components/BottomNav";
+import { ProfileProvider } from "./context/ProfileContext";
+import { useSession } from "./hooks/useSession";
+import Auth from "./routes/Auth";
+import Battle from "./components/Battle";
+import QuizSession from "./routes/QuizSession";
 import "./App.css";
 
-// tab: "home" | "review" | "battle" | "mypage"
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [error, setError] = useState(null);
-  const [tab, setTab] = useState("home");
-  const [pickerCategory, setPickerCategory] = useState(null);
-  const [quizSession, setQuizSession] = useState(null); // { title, questions } | null
-
-  useEffect(() => {
-    api
-      .demoLogin()
-      .then(setUser)
-      .catch((e) => setError(e.message));
-  }, []);
-
-  if (error) {
-    return (
-      <div className="screen">
-        <h2>接続エラー</h2>
-        <p className="error">{error}</p>
-        <p>Djangoサーバー（http://127.0.0.1:8000）が起動しているか確認してください。</p>
-      </div>
-    );
-  }
-
-  if (!user) {
+/** Auth guard: everything below requires a Supabase session. */
+function Protected() {
+  const session = useSession();
+  if (session === undefined) {
     return (
       <div className="screen">
         <p>読み込み中...</p>
       </div>
     );
   }
+  if (!session) return <Navigate to="/auth" replace />;
+  return (
+    <ProfileProvider>
+      <Outlet />
+    </ProfileProvider>
+  );
+}
 
-  if (quizSession) {
-    return (
-      <div className="app-shell">
-        <QuizScreen
-          title={quizSession.title}
-          questions={quizSession.questions}
-          onBack={() => setQuizSession(null)}
-        />
-      </div>
-    );
-  }
-
-  if (pickerCategory) {
-    return (
-      <div className="app-shell">
-        <QuestionPicker
-          category={pickerCategory}
-          onBack={() => setPickerCategory(null)}
-          onStart={(session) => {
-            setPickerCategory(null);
-            setQuizSession(session);
-          }}
-        />
-      </div>
-    );
-  }
-
+/** Layout for the main tabs (adds the bottom navigation bar). */
+function TabShell() {
   return (
     <div className="app-shell with-bottom-nav">
-      {tab === "home" && <Home user={user} onSelectCategory={setPickerCategory} />}
-      {tab === "review" && (
-        <ReviewDeck onBack={() => setQuizSession(null)} onStartSession={setQuizSession} />
-      )}
-      {tab === "battle" && <Battle />}
-      {tab === "mypage" && <MyPage user={user} />}
-      <BottomNav active={tab} onChange={setTab} />
+      <Outlet />
+      <BottomNav />
     </div>
+  );
+}
+
+/** Layout for full-screen flows (question picker, quiz session). */
+function FullScreenShell() {
+  return (
+    <div className="app-shell">
+      <Outlet />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route element={<Protected />}>
+          <Route element={<TabShell />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/review" element={<ReviewDeck />} />
+            <Route path="/battle" element={<Battle />} />
+            <Route path="/mypage" element={<MyPage />} />
+          </Route>
+          <Route element={<FullScreenShell />}>
+            <Route path="/solo/:category" element={<QuestionPicker />} />
+            <Route path="/quiz" element={<QuizSession />} />
+          </Route>
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

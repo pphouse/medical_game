@@ -1,3 +1,1 @@
-from django.shortcuts import render
-
-# Create your views here.
+# Mock-exam API is implemented in phase 5.

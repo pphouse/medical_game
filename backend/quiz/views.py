@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import User
+from accounts.models import Profile
 
 from .models import AnswerHistory, Question, ReviewSchedule
 from .serializers import (
@@ -82,7 +82,7 @@ class HomeSummaryView(APIView):
         )
 
         ranked_users = list(
-            User.objects.annotate(
+            Profile.objects.annotate(
                 answered=Count("answer_histories"),
                 acc=Avg(Case(When(answer_histories__correct=True, then=1), default=0)),
             )
@@ -158,7 +158,8 @@ class CategoryProgressView(APIView):
             if question_id not in latest_by_question:
                 latest_by_question[question_id] = (category, mastery_level)
 
-        empty_counts = lambda: {level: 0 for level in AnswerHistory.MasteryLevel.values}
+        def empty_counts():
+            return {level: 0 for level in AnswerHistory.MasteryLevel.values}
         counts_by_category = {}
         answered_by_category = {}
         for category, mastery_level in latest_by_question.values():

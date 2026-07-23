@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 
 from quiz.models import Question
@@ -18,7 +17,7 @@ class BattleRoom(models.Model):
         FINISHED = "finished", "終了"
 
     host = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="hosted_battle_rooms"
+        "accounts.Profile", on_delete=models.CASCADE, related_name="hosted_battle_rooms"
     )
     room_code = models.CharField(max_length=8, unique=True)
     status = models.CharField(
@@ -41,7 +40,7 @@ class BattleParticipant(models.Model):
         BattleRoom, on_delete=models.CASCADE, related_name="participants"
     )
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="battle_participations"
+        "accounts.Profile", on_delete=models.CASCADE, related_name="battle_participations"
     )
     score = models.IntegerField(default=0)
 
@@ -49,6 +48,9 @@ class BattleParticipant(models.Model):
         verbose_name = "対戦参加者"
         verbose_name_plural = "対戦参加者"
         unique_together = ("room", "user")
+
+    def __str__(self):
+        return f"{self.room_id} - {self.user_id} ({self.score}点)"
 
 
 class BattleAnswer(models.Model):
@@ -59,7 +61,7 @@ class BattleAnswer(models.Model):
         BattleRoom, on_delete=models.CASCADE, related_name="answers"
     )
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="battle_answers"
+        "accounts.Profile", on_delete=models.CASCADE, related_name="battle_answers"
     )
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     answered_at = models.DateTimeField(auto_now_add=True)
@@ -69,3 +71,6 @@ class BattleAnswer(models.Model):
         verbose_name = "対戦回答"
         verbose_name_plural = "対戦回答"
         ordering = ["answered_at"]
+
+    def __str__(self):
+        return f"{self.room_id} - {self.user_id} - {'○' if self.is_correct else '✕'}"

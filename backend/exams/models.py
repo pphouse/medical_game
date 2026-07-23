@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 
 from quiz.models import Question
@@ -34,12 +33,15 @@ class MockQuestion(models.Model):
         unique_together = ("mock_exam", "order")
         ordering = ["order"]
 
+    def __str__(self):
+        return f"{self.mock_exam_id} - 第{self.order}問"
+
 
 class MockResult(models.Model):
     """spec: MockResult: id, user_id, mock_exam_id, score, rank"""
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="mock_results"
+        "accounts.Profile", on_delete=models.CASCADE, related_name="mock_results"
     )
     mock_exam = models.ForeignKey(
         MockExam, on_delete=models.CASCADE, related_name="results"
@@ -52,13 +54,16 @@ class MockResult(models.Model):
         verbose_name_plural = "模試結果"
         unique_together = ("user", "mock_exam")
 
+    def __str__(self):
+        return f"{self.mock_exam_id} - {self.user_id} ({self.score}点)"
+
 
 class MonthlyRanking(models.Model):
     """spec: MonthlyRanking: user_id, university_id, month, questions_solved,
     correct_rate（questions_solved >= 1000のユーザーのみ算出対象）"""
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="monthly_rankings"
+        "accounts.Profile", on_delete=models.CASCADE, related_name="monthly_rankings"
     )
     university = models.ForeignKey(
         "accounts.University", on_delete=models.CASCADE, related_name="monthly_rankings"
@@ -75,3 +80,6 @@ class MonthlyRanking(models.Model):
         verbose_name = "月間ランキング"
         verbose_name_plural = "月間ランキング"
         unique_together = ("user", "month")
+
+    def __str__(self):
+        return f"{self.month:%Y-%m} - {self.user_id}"

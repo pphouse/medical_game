@@ -1,3 +1,5 @@
+import { NavLink } from "react-router-dom";
+
 const ICONS = {
   home: (
     <svg viewBox="0 0 24 24" fill="none">
@@ -55,24 +57,25 @@ const ICONS = {
 };
 
 const TABS = [
-  { key: "home", label: "ホーム" },
-  { key: "review", label: "復習問題" },
-  { key: "battle", label: "対戦" },
-  { key: "mypage", label: "マイページ" },
+  { to: "/", icon: "home", label: "ホーム" },
+  { to: "/review", icon: "review", label: "復習問題" },
+  { to: "/battle", icon: "battle", label: "対戦" },
+  { to: "/mypage", icon: "mypage", label: "マイページ" },
 ];
 
-export default function BottomNav({ active, onChange }) {
+export default function BottomNav() {
   return (
     <nav className="bottom-nav">
       {TABS.map((tab) => (
-        <button
-          key={tab.key}
-          className={`bottom-nav-item${active === tab.key ? " active" : ""}`}
-          onClick={() => onChange(tab.key)}
+        <NavLink
+          key={tab.to}
+          to={tab.to}
+          end={tab.to === "/"}
+          className={({ isActive }) => `bottom-nav-item${isActive ? " active" : ""}`}
         >
-          <span className="bottom-nav-icon">{ICONS[tab.key]}</span>
+          <span className="bottom-nav-icon">{ICONS[tab.icon]}</span>
           <span className="bottom-nav-label">{tab.label}</span>
-        </button>
+        </NavLink>
       ))}
     </nav>
   );

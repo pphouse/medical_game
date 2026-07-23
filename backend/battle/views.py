@@ -1,3 +1,1 @@
-from django.shortcuts import render
-
-# Create your views here.
+# Battle room / buzzer API is implemented in phase 4.

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../api";
+import { useProfile } from "../context/ProfileContext";
 import ProgressBar from "./ProgressBar";
 
 function RankStat({ label, rankInfo }) {
@@ -12,7 +14,9 @@ function RankStat({ label, rankInfo }) {
   );
 }
 
-export default function Home({ user, onSelectCategory }) {
+export default function Home() {
+  const { profile } = useProfile();
+  const navigate = useNavigate();
   const [progress, setProgress] = useState(null);
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState(null);
@@ -29,9 +33,9 @@ export default function Home({ user, onSelectCategory }) {
           <span className="title-main">CBT・国試対策クイズ</span>
           <span className="title-sub">AIが弱点を見抜く、あなただけの合格戦略。</span>
         </h1>
-        {user && (
+        {profile && (
           <p className="user-line">
-            {user.username} さん（{user.university?.name ?? "所属大学未設定"}）
+            {profile.display_name || "名無し"} さん（{profile.university?.name ?? "所属大学未設定"}）
           </p>
         )}
       </div>
@@ -57,7 +61,7 @@ export default function Home({ user, onSelectCategory }) {
           <button
             key={p.category}
             className="course-row"
-            onClick={() => onSelectCategory(p.category)}
+            onClick={() => navigate(`/solo/${encodeURIComponent(p.category)}`)}
           >
             <div className="course-row-top">
               <span className="course-letter">{String.fromCharCode(65 + i)}</span>

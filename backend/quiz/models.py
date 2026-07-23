@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 
 
@@ -44,7 +43,7 @@ class Question(models.Model):
     correct_choice_key = models.CharField(max_length=4)
     explanation = models.TextField()
     creator = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "accounts.Profile",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -87,7 +86,7 @@ class AnswerHistory(models.Model):
         UNSTUDIED = "unstudied", "未演習"
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="answer_histories"
+        "accounts.Profile", on_delete=models.CASCADE, related_name="answer_histories"
     )
     question = models.ForeignKey(
         Question, on_delete=models.CASCADE, related_name="answer_histories"
@@ -117,7 +116,7 @@ class ReviewSchedule(models.Model):
     interval_days, ease_factor（SM-2アルゴリズムベース）"""
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="review_schedules"
+        "accounts.Profile", on_delete=models.CASCADE, related_name="review_schedules"
     )
     question = models.ForeignKey(
         Question, on_delete=models.CASCADE, related_name="review_schedules"

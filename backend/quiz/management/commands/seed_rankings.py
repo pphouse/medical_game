@@ -3,12 +3,13 @@ import random
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from accounts.models import University, User
+from accounts.provisioning import ensure_profile
 from quiz.models import AnswerHistory, Question
 
-# Demo-only sample students (username prefix "sample_") used purely to give
-# the 学内順位/全国順位 ranking widgets real data to display. Not real users,
-# never selectable via demo-login.
+# Demo-only sample students used purely to give the 学内順位/全国順位
+# ranking widgets real data to display. Provisioned via
+# accounts.provisioning.ensure_profile: real Supabase auth users when the
+# Admin API is configured, local-only Profile rows otherwise.
 SAMPLE_STUDENTS = [
     ("sample_taro", "サンプル医科大学", 0.85),
     ("sample_hanako", "サンプル医科大学", 0.55),
@@ -41,16 +42,13 @@ class Command(BaseCommand):
         now = timezone.now()
 
         for username, university_name, target_accuracy in SAMPLE_STUDENTS:
-            university, _ = University.objects.get_or_create(name=university_name)
-            user, was_created = User.objects.get_or_create(
-                username=username,
-                defaults={
-                    "email": f"{username}@example.com",
-                    "university": university,
-                    "student_verified": True,
-                },
+            user = ensure_profile(
+                email=f"{username}@example.com",
+                display_name=username,
+                university_name=university_name,
+                student_verified=True,
             )
-            created_users += int(was_created)
+            created_users += 1
 
             if user.answer_histories.exists():
                 continue  # already seeded in a previous run
