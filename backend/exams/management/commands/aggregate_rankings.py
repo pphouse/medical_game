@@ -187,7 +187,7 @@ class Command(BaseCommand):
         for profile, s in individuals:
             if profile.university_id:
                 by_university.setdefault(profile.university_id, []).append((profile, s))
-        for university_id, members in by_university.items():
+        for members in by_university.values():
             build_individual(
                 RankingSnapshot.Scope.UNIVERSITY,
                 members[0][0].university,
@@ -196,7 +196,7 @@ class Command(BaseCommand):
 
         # --- 大学別（大学を1単位とする集計ランキング） -----------------------
         aggregates = []
-        for university_id, members in by_university.items():
+        for members in by_university.values():
             eligible = [
                 (p, s)
                 for p, s in members
