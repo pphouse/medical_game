@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { shuffle } from "../shuffle";
 
 const FILTERS = [
   { key: "all", label: "すべて" },
@@ -19,15 +20,6 @@ const MASTERY_LABEL = {
   cross: "✕",
   unstudied: "－",
 };
-
-function shuffle(array) {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
 
 export default function QuestionPicker({ category, onBack, onStart }) {
   const [questions, setQuestions] = useState(null);
@@ -63,36 +55,38 @@ export default function QuestionPicker({ category, onBack, onStart }) {
       <button className="back-link" onClick={onBack}>
         ← メニューに戻る
       </button>
-      <h2>{category}：どの問題を解くか選ぶ</h2>
+      <div className="picker-controls">
+        <h2>{category}：どの問題を解くか選ぶ</h2>
 
-      <div className="filter-chip-row">
-        {FILTERS.map((f) => (
+        <div className="filter-chip-row">
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              className={`filter-chip${filter === f.key ? " active" : ""}`}
+              onClick={() => setFilter(f.key)}
+            >
+              {f.label}
+              <span className="filter-chip-count">{counts[f.key]}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="start-button-row">
           <button
-            key={f.key}
-            className={`filter-chip${filter === f.key ? " active" : ""}`}
-            onClick={() => setFilter(f.key)}
+            className="cta-button"
+            disabled={filtered.length === 0}
+            onClick={() => startSession(filtered)}
           >
-            {f.label}
-            <span className="filter-chip-count">{counts[f.key]}</span>
+            {filtered.length === 0 ? "対象の問題がありません" : "最初から始める"}
           </button>
-        ))}
-      </div>
-
-      <div className="start-button-row">
-        <button
-          className="cta-button"
-          disabled={filtered.length === 0}
-          onClick={() => startSession(filtered)}
-        >
-          {filtered.length === 0 ? "対象の問題がありません" : "演習を始める"}
-        </button>
-        <button
-          className="cta-button cta-button-secondary"
-          disabled={filtered.length === 0}
-          onClick={() => startSession(shuffle(filtered))}
-        >
-          シャッフルして始める
-        </button>
+          <button
+            className="cta-button"
+            disabled={filtered.length === 0}
+            onClick={() => startSession(shuffle(filtered))}
+          >
+            シャッフルして始める
+          </button>
+        </div>
       </div>
 
       {filtered.length > 0 && (

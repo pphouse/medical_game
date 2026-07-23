@@ -57,6 +57,8 @@ class RankSerializer(serializers.Serializer):
 class HomeSummarySerializer(serializers.Serializer):
     overall_progress_pct = serializers.FloatField()
     overall_correct_rate = serializers.FloatField()
+    answered_count = serializers.IntegerField()
+    total_count = serializers.IntegerField()
     university_rank = RankSerializer()
     national_rank = RankSerializer()
 

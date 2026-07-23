@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import { getCategoryTheme } from "../categoryTheme";
 
-// ◎ and △ are only ever reached if the learner explicitly taps them; ○/✕
-// are auto-assigned from correctness right after grading. 分からない is a
-// distinct override that resets the question to unstudied (separate from a
-// plain wrong answer, which auto-becomes ✕).
+// ○/✕ are auto-assigned from correctness right after grading, but the
+// learner can still explicitly override to any of the 5 mastery levels.
 const OVERRIDE_OPTIONS = [
   { level: "double_circle", label: "◎", hint: "完璧" },
+  { level: "circle", label: "○", hint: "正解" },
   { level: "triangle", label: "△", hint: "あいまい" },
-  { level: "unstudied", label: "分からない", hint: "未演習に戻す" },
+  { level: "cross", label: "✕", hint: "不正解" },
+  { level: "unstudied", label: "－", hint: "未演習に戻す" },
 ];
 
 const MASTERY_DISPLAY = {

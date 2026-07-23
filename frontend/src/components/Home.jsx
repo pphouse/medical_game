@@ -1,18 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { sortByCategoryOrder } from "../categoryOrder";
 
-const CATEGORY_ORDER = [
-  "基礎医学", "公衆衛生", "臨床医学総論", "循環器", "呼吸器", "消化器", "腎臓",
-  "内分泌代謝", "神経", "血液", "免疫", "感染症", "中毒・環境異常症", "救急",
-  "小児", "産科", "婦人科", "泌尿器", "眼科", "耳鼻咽喉科", "皮膚", "精神",
-  "整形", "麻酔", "放射線", "多選択肢", "四連問",
-];
-
-function sortByCategoryOrder(progress) {
-  return [...progress].sort(
-    (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category)
-  );
-}
+const MASTERY_LEVELS = ["double_circle", "circle", "triangle", "cross", "unstudied"];
 
 function RankStat({ label, rankInfo }) {
   const display = rankInfo && rankInfo.rank ? `${rankInfo.rank}位 / ${rankInfo.out_of}人中` : "ランキング対象外";
@@ -51,8 +41,15 @@ export default function Home({ user, onSelectCategory }) {
       {summary && (
         <div className="summary-card">
           <div className="summary-pct">
-            <span className="summary-pct-value">{summary.overall_progress_pct}%</span>
-            <span className="summary-pct-label">全体進捗（正答率 {summary.overall_correct_rate}%）</span>
+            <span className="summary-ring" style={{ "--pct": summary.overall_progress_pct }}>
+              <span className="summary-ring-value">{summary.overall_progress_pct}%</span>
+            </span>
+            <div className="summary-pct-col">
+              <span className="summary-pct-value">
+                {summary.answered_count}/{summary.total_count}問
+              </span>
+              <span className="summary-pct-label">全体進捗（正答率 {summary.overall_correct_rate}%）</span>
+            </div>
           </div>
           <div className="summary-ranks">
             <RankStat label="学内順位" rankInfo={summary.university_rank} />
@@ -67,6 +64,7 @@ export default function Home({ user, onSelectCategory }) {
       <div className="course-list">
         {progress && sortByCategoryOrder(progress).map((p, i) => {
           const answered = p.total - p.remaining;
+          const progressPct = p.total > 0 ? Math.round((answered / p.total) * 100) : 0;
           return (
             <button
               key={p.category}
@@ -76,6 +74,21 @@ export default function Home({ user, onSelectCategory }) {
               <div className="qb-top">
                 <span className="qb-bullet">{String.fromCharCode(65 + i)}</span>
                 <span className="qb-name">{p.category}</span>
+                <span className="qb-progress-wrap">
+                  <span className="qb-progress-bar">
+                    {MASTERY_LEVELS.map(
+                      (level) =>
+                        p.counts[level] > 0 && (
+                          <span
+                            key={level}
+                            className={`progress-seg seg-${level}`}
+                            style={{ width: `${(p.counts[level] / p.total) * 100}%` }}
+                          />
+                        )
+                    )}
+                  </span>
+                  <span className="qb-progress-pct">{progressPct}%</span>
+                </span>
                 <span className="qb-count-badge">全{p.total}問</span>
                 <span className="qb-arrow">→</span>
               </div>

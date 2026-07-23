@@ -94,14 +94,52 @@
 
 .summary-pct {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   flex-shrink: 0;
 }
 
+.summary-ring {
+  position: relative;
+  box-sizing: border-box;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: conic-gradient(#1d4ed8 calc(var(--pct) * 1%), white 0);
+}
+
+.summary-ring::before {
+  content: "";
+  position: absolute;
+  box-sizing: border-box;
+  inset: 5px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, var(--bg-a) 0%, var(--bg-b) 55%, var(--bg-c) 100%);
+}
+
+.summary-ring-value {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 11px;
+  font-weight: 800;
+  color: #1d4ed8;
+}
+
+.summary-pct-col {
+  display: flex;
+  flex-direction: column;
+}
+
 .summary-pct-value {
-  font-size: 30px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .summary-pct-label {
@@ -220,55 +258,6 @@
   border-color: var(--accent);
 }
 
-.course-row-all {
-  background: var(--accent-bg);
-  border-color: var(--accent);
-}
-
-.course-row-all .course-letter {
-  background: var(--accent-grad);
-  color: white;
-}
-
-.course-row-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.course-letter {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--accent-bg);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.course-name {
-  flex: 1;
-  font-weight: 700;
-  color: var(--text-h);
-  font-size: 15px;
-}
-
-.course-count {
-  font-weight: 400;
-  color: var(--text);
-  font-size: 13px;
-}
-
-.course-remaining {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--accent);
-}
-
 /* QB-style category row (問題一覧) */
 .qb-row {
   gap: 0;
@@ -277,6 +266,8 @@
 .qb-top {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 6px;
   gap: 10px;
 }
 
@@ -295,16 +286,57 @@
 }
 
 .qb-name {
-  flex: 1;
+  flex: 0 0 76px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 800;
   font-size: 16px;
   color: var(--text-h);
 }
 
+.qb-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.qb-progress-bar {
+  display: flex;
+  width: 210px;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--border);
+  border: 1px solid var(--card-border);
+  flex-shrink: 0;
+}
+
+.qb-progress-bar .seg-unstudied {
+  background: transparent;
+}
+
+.qb-progress-pct {
+  flex-shrink: 0;
+  width: 30px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
 .qb-count-badge {
+  flex-shrink: 0;
+  width: 68px;
+  box-sizing: border-box;
+  text-align: center;
   border: 1px solid var(--card-border);
   border-radius: 6px;
-  padding: 4px 10px;
+  padding: 4px 6px;
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
@@ -496,6 +528,58 @@
   box-shadow: none;
 }
 
+.start-button-row .cta-button {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  box-shadow: 0 8px 20px rgba(29, 78, 216, 0.32);
+}
+
+.picker-controls {
+  padding: 16px;
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--accent) 22%, var(--card-bg));
+}
+
+.picker-controls h2 {
+  margin-top: 0;
+}
+
+/* Review deck category multi-select box */
+.review-select-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--accent) 22%, var(--card-bg));
+}
+
+.review-select-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.review-select-all {
+  padding: 4px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.review-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 /* Question picker filter chips */
 .filter-chip-row {
   display: flex;
@@ -540,7 +624,6 @@
   color: white;
 }
 
-/* Start / shuffle buttons */
 .start-button-row {
   display: flex;
   gap: 10px;
@@ -549,10 +632,6 @@
 .start-button-row .cta-button {
   margin-top: 8px;
   flex: 1;
-}
-
-.cta-button-secondary {
-  background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
 }
 
 /* Question list (per-question preview before starting practice) */
@@ -577,7 +656,7 @@
   padding: 14px;
   border: 1px solid var(--card-border);
   border-radius: 16px;
-  background: var(--accent-bg);
+  background: var(--card-bg);
   text-align: left;
   box-shadow: var(--shadow-sm);
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
@@ -597,7 +676,7 @@
   gap: 6px;
   padding: 12px 10px;
   border-radius: 12px;
-  background: var(--card-bg);
+  background: var(--accent-bg);
   box-shadow: var(--shadow-sm);
 }
 
@@ -753,11 +832,15 @@
 }
 
 .mastery-button.double_circle:hover { border-color: var(--m-double); background: var(--accent-bg); }
+.mastery-button.circle:hover { border-color: var(--m-circle); background: var(--accent-bg); }
 .mastery-button.triangle:hover { border-color: var(--m-triangle); background: #fff9ec; }
+.mastery-button.cross:hover { border-color: var(--m-cross); background: var(--incorrect-bg); }
 .mastery-button.unstudied:hover { border-color: var(--m-cross); background: var(--incorrect-bg); }
 
 .mastery-button.double_circle.active { border-color: var(--m-double); background: var(--accent-bg); }
+.mastery-button.circle.active { border-color: var(--m-circle); background: var(--accent-bg); }
 .mastery-button.triangle.active { border-color: var(--m-triangle); background: #fff9ec; }
+.mastery-button.cross.active { border-color: var(--m-cross); background: var(--incorrect-bg); }
 .mastery-button.unstudied.active { border-color: var(--m-cross); background: var(--incorrect-bg); }
 
 .mastery-emoji {
