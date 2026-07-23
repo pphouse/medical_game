@@ -8,6 +8,9 @@ import { useSession } from "./hooks/useSession";
 import Auth from "./routes/Auth";
 import Lobby from "./routes/Battle/Lobby";
 import BattleRoom from "./routes/Battle/Room";
+import ExamList from "./routes/Exams/List";
+import ExamResult from "./routes/Exams/Result";
+import ExamSession from "./routes/Exams/Session";
 import Menu from "./routes/Menu";
 import Placeholder from "./routes/Placeholder";
 import QuizSession from "./routes/QuizSession";
@@ -63,7 +66,7 @@ export default function App() {
             <Route path="/solo" element={<Solo />} />
             <Route path="/review" element={<ReviewDeck />} />
             <Route path="/battle" element={<Lobby />} />
-            <Route path="/exams" element={<Placeholder title="模試" phase="フェーズ5" />} />
+            <Route path="/exams" element={<ExamList />} />
             <Route path="/ranking" element={<Ranking />} />
             <Route path="/create" element={<Placeholder title="問題をつくる" phase="フェーズ7" />} />
             <Route path="/mypage" element={<MyPage />} />
@@ -72,6 +75,8 @@ export default function App() {
             <Route path="/solo/:category" element={<QuestionPicker />} />
             <Route path="/quiz" element={<QuizSession />} />
             <Route path="/battle/:code" element={<BattleRoom />} />
+            <Route path="/exams/:examId" element={<ExamSession />} />
+            <Route path="/exams/:examId/result" element={<ExamResult />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

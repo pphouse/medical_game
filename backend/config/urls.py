@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/auth/', include('accounts.urls')),
     path('api/quiz/', include('quiz.urls')),
     path('api/battle/', include('battle.urls')),
+    path('api/exams/', include('exams.urls')),
     path('api/ranking/', include('exams.urls_ranking')),
     path('api/internal/aggregate/', InternalAggregateView.as_view(), name='internal-aggregate'),
 ]

@@ -76,6 +76,14 @@ export const api = {
   },
   reviewDeck: () => get("/quiz/review-deck/"),
 
+  // mock exams (phase 5)
+  exams: () => get("/exams/"),
+  examStart: (id) => post(`/exams/${id}/start/`),
+  examQuestions: (id) => get(`/exams/${id}/questions/`),
+  examAnswer: (id, payload) => post(`/exams/${id}/answers/`, payload),
+  examSubmit: (id) => post(`/exams/${id}/submit/`),
+  examResult: (id) => get(`/exams/${id}/result/`),
+
   // battle (phase 4)
   battleCreate: (payload) => post("/battle/rooms/", payload),
   battleJoin: (code) => post(`/battle/rooms/${code}/join/`),
