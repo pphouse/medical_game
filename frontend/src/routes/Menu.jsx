@@ -88,10 +88,15 @@ const MODES = [
 export default function Menu() {
   const { profile } = useProfile();
   const [summary, setSummary] = useState(null);
+  const [reviewDue, setReviewDue] = useState(0);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     api.summary().then(setSummary).catch((e) => setError(e.message));
+    api
+      .reviewSummary()
+      .then((s) => setReviewDue(s.due_now))
+      .catch(() => {});
   }, []);
 
   return (
@@ -136,7 +141,12 @@ export default function Menu() {
           }
           return (
             <Link key={mode.to} to={mode.to} className="menu-tile">
-              <span className="menu-tile-icon">{MODE_ICONS[mode.icon]}</span>
+              <span className="menu-tile-icon">
+                {MODE_ICONS[mode.icon]}
+                {mode.to === "/review" && reviewDue > 0 && (
+                  <span className="menu-badge">{reviewDue > 99 ? "99+" : reviewDue}</span>
+                )}
+              </span>
               <span className="menu-tile-title">{mode.title}</span>
               <span className="menu-tile-desc">{mode.desc}</span>
             </Link>

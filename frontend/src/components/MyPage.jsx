@@ -180,6 +180,16 @@ export default function MyPage() {
       </div>
 
       <div className="mypage-section">
+        <button
+          className="toolbar-btn"
+          style={{ width: "100%" }}
+          onClick={() => navigate("/settings/notifications")}
+        >
+          🔔 復習リマインド設定
+        </button>
+      </div>
+
+      <div className="mypage-section">
         <button className="signout-button" onClick={handleSignOut}>
           ログアウト
         </button>

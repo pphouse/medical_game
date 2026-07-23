@@ -12,6 +12,7 @@ import ExamList from "./routes/Exams/List";
 import ExamResult from "./routes/Exams/Result";
 import ExamSession from "./routes/Exams/Session";
 import Menu from "./routes/Menu";
+import NotificationSettings from "./routes/NotificationSettings";
 import Placeholder from "./routes/Placeholder";
 import QuizSession from "./routes/QuizSession";
 import Ranking from "./routes/Ranking";
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/ranking" element={<Ranking />} />
             <Route path="/create" element={<Placeholder title="問題をつくる" phase="フェーズ7" />} />
             <Route path="/mypage" element={<MyPage />} />
+            <Route path="/settings/notifications" element={<NotificationSettings />} />
           </Route>
           <Route element={<FullScreenShell />}>
             <Route path="/solo/:category" element={<QuestionPicker />} />

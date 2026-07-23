@@ -75,6 +75,17 @@ export const api = {
     return data.results ?? data;
   },
   reviewDeck: () => get("/quiz/review-deck/"),
+  reviewSummary: () => get("/quiz/review-deck/summary/"),
+
+  // notifications (phase 6)
+  notificationPreference: () => get("/auth/notifications/"),
+  updateNotificationPreference: (payload) => patch("/auth/notifications/", payload),
+  registerPushSubscription: (payload) => post("/auth/push-subscriptions/", payload),
+  deletePushSubscription: (endpoint) =>
+    request("/auth/push-subscriptions/", {
+      method: "DELETE",
+      body: JSON.stringify({ endpoint }),
+    }),
 
   // mock exams (phase 5)
   exams: () => get("/exams/"),

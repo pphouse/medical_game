@@ -1444,3 +1444,59 @@
 .exam-review-head { font-weight: 800; color: var(--text-h); }
 .exam-review-text { font-size: 13px; }
 .exam-review-answer { font-size: 13px; font-weight: 700; }
+
+/* Notification settings + review badge (phase 6) */
+.menu-tile-icon { position: relative; }
+
+.menu-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--incorrect);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
+.notification-card { display: flex; flex-direction: column; gap: 14px; }
+
+.notification-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notification-title { font-weight: 700; color: var(--text-h); margin: 0; }
+.notification-desc { font-size: 12px; margin: 4px 0 0; }
+
+.notification-toggle {
+  min-width: 64px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.notification-toggle.on {
+  background: var(--accent-grad);
+  border: none;
+  color: white;
+}
+
+.notification-select {
+  font: inherit;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-h);
+}

@@ -272,6 +272,34 @@ class ReviewDeckView(APIView):
         return Response(ReviewScheduleSerializer(qs, many=True).data)
 
 
+class ReviewDeckSummaryView(APIView):
+    """GET /api/quiz/review-deck/summary/ — 今日/明日/今週の復習件数
+    (spec フェーズ6)。アプリ内バッジにも使う。"""
+
+    def get(self, request):
+        now = timezone.now()
+        local = timezone.localtime(now)
+        end_of_today = local.replace(hour=23, minute=59, second=59, microsecond=999999)
+        end_of_tomorrow = end_of_today + timezone.timedelta(days=1)
+        end_of_week = end_of_today + timezone.timedelta(days=6 - local.weekday())
+
+        qs = ReviewSchedule.objects.filter(
+            user=request.user,
+            question__in=Question.objects.visible_to(request.user),
+        )
+        due_now = qs.filter(next_review_at__lte=now).count()
+        return Response(
+            {
+                "due_now": due_now,
+                "today": qs.filter(next_review_at__lte=end_of_today).count(),
+                "tomorrow": qs.filter(
+                    next_review_at__gt=end_of_today, next_review_at__lte=end_of_tomorrow
+                ).count(),
+                "this_week": qs.filter(next_review_at__lte=end_of_week).count(),
+            }
+        )
+
+
 class SubmitAnswerView(APIView):
     """Step 1: grade the selected choice, record the attempt, and
     auto-classify mastery from correctness (correct -> ○, incorrect -> ✕).

@@ -239,6 +239,30 @@ class Question(models.Model):
         return None
 
 
+class ReviewReminder(models.Model):
+    """復習リマインドの送信記録 (spec 2.2)。1日1回までの重複送信防止に使う。"""
+
+    class Channel(models.TextChoices):
+        PUSH = "push", "Web Push"
+        EMAIL = "email", "メール"
+
+    profile = models.ForeignKey(
+        "accounts.Profile", on_delete=models.CASCADE, related_name="review_reminders"
+    )
+    scheduled_for = models.DateTimeField()
+    channel = models.CharField(max_length=10, choices=Channel.choices)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    question_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "復習リマインド"
+        verbose_name_plural = "復習リマインド"
+        indexes = [models.Index(fields=["profile", "scheduled_for"])]
+
+    def __str__(self):
+        return f"{self.profile_id} {self.scheduled_for:%Y-%m-%d %H:%M} ({self.channel})"
+
+
 class QuestionReport(models.Model):
     """問題の通報（ユーザー作成問題の品質担保, spec 2.2）。同一問題に
     3件以上付くと自動で pending に戻し出題から外す (spec フェーズ7)."""

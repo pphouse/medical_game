@@ -6,6 +6,7 @@ from .views import (
     HomeSummaryView,
     QuestionListView,
     ReviewActionView,
+    ReviewDeckSummaryView,
     ReviewDeckView,
     ReviewQueueView,
     SubmitAnswerView,
@@ -18,6 +19,7 @@ urlpatterns = [
     path("summary/", HomeSummaryView.as_view(), name="home-summary"),
     path("questions/", QuestionListView.as_view(), name="question-list"),
     path("review-deck/", ReviewDeckView.as_view(), name="review-deck"),
+    path("review-deck/summary/", ReviewDeckSummaryView.as_view(), name="review-deck-summary"),
     path("answers/", SubmitAnswerView.as_view(), name="submit-answer"),
     path(
         "answers/<int:answer_history_id>/mastery/",

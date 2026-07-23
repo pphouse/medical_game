@@ -86,3 +86,41 @@ class Profile(models.Model):
     @property
     def is_moderator(self):
         return self.role in (self.Role.MODERATOR, self.Role.ADMIN)
+
+
+class PushSubscription(models.Model):
+    """Web Push (VAPID) の購読情報 (spec フェーズ6)."""
+
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name="push_subscriptions"
+    )
+    endpoint = models.TextField(unique=True)
+    keys = models.JSONField(help_text='{"p256dh": "...", "auth": "..."}')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Push購読"
+        verbose_name_plural = "Push購読"
+
+    def __str__(self):
+        return f"{self.profile_id} {self.endpoint[:40]}"
+
+
+class NotificationPreference(models.Model):
+    """復習リマインドのユーザー設定。**オプトインは既定 off** (spec フェーズ6)."""
+
+    profile = models.OneToOneField(
+        Profile, on_delete=models.CASCADE, related_name="notification_preference"
+    )
+    enabled = models.BooleanField(default=False)
+    preferred_hour = models.PositiveSmallIntegerField(
+        default=20, help_text="通知を送る時刻（0〜23, ユーザーのタイムゾーン基準）"
+    )
+    timezone = models.CharField(max_length=50, default="Asia/Tokyo")
+
+    class Meta:
+        verbose_name = "通知設定"
+        verbose_name_plural = "通知設定"
+
+    def __str__(self):
+        return f"{self.profile_id} enabled={self.enabled} {self.preferred_hour}時"
