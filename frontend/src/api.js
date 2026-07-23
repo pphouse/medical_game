@@ -75,6 +75,13 @@ export const api = {
     return data.results ?? data;
   },
   reviewDeck: () => get("/quiz/review-deck/"),
+
+  // rankings (phase 3)
+  ranking: ({ scope, metric, period }) => {
+    const query = new URLSearchParams({ scope, metric, period });
+    return get(`/ranking/?${query}`);
+  },
+  rankingExams: () => get("/ranking/exams/"),
   submitAnswer: (payload) => post("/quiz/answers/", payload),
   submitMastery: (answerHistoryId, masteryLevel) =>
     post(`/quiz/answers/${answerHistoryId}/mastery/`, { mastery_level: masteryLevel }),

@@ -212,7 +212,19 @@ SAMPLE_QUESTIONS = [
 
 
 class Command(BaseCommand):
-    help = "Seed demo University + sample Question data for local development."
+    help = (
+        "Seed demo University + sample Question data for local development. "
+        "--with-batch additionally loads the bundled 100-question demo batch "
+        "as published official questions (デモ専用: 本番の LLM 生成問題は "
+        "import_questions + 人手レビューを必ず通すこと)."
+    )
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--with-batch",
+            action="store_true",
+            help="Load the bundled cbt_batch_digestive_cardio.json as published demo data",
+        )
 
     def handle(self, *args, **options):
         university, created = University.objects.get_or_create(name="サンプル医科大学")
@@ -239,8 +251,44 @@ class Command(BaseCommand):
             )
             created_count += int(was_created)
 
+        if options["with_batch"]:
+            created_count += self._load_bundled_batch()
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seeded {created_count} new questions (total in DB: {Question.objects.count()})."
             )
         )
+
+    def _load_bundled_batch(self):
+        """デモ用: リポジトリ同梱の100問バッチを published で直接投入する。
+
+        通常の LLM 生成問題は import_questions（強制 pending）→ 人手レビューを
+        通すこと。この同梱バッチはリポジトリ初期から含まれるデモ表示用データ。
+        """
+        import json
+        from pathlib import Path
+
+        data_path = (
+            Path(__file__).resolve().parent / "data" / "cbt_batch_digestive_cardio.json"
+        )
+        payload = json.loads(data_path.read_text(encoding="utf-8"))
+        created = 0
+        for q in payload["questions"]:
+            _, was_created = Question.objects.get_or_create(
+                category=q["category"],
+                question_text=q["question_text"],
+                defaults=dict(
+                    topic=q.get("disease", ""),
+                    exam_type=q["exam_type"],
+                    difficulty=2,
+                    choices=[{"key": c["id"], "text": c["text"]} for c in q["choices"]],
+                    correct_choice_key=q["correct_choice_id"],
+                    explanation=q["explanation"],
+                    visibility=Question.Visibility.PUBLIC,
+                    status=Question.Status.PUBLISHED,
+                    source=Question.Source.OFFICIAL,
+                ),
+            )
+            created += int(was_created)
+        return created

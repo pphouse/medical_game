@@ -304,6 +304,8 @@ class AnswerHistory(models.Model):
         verbose_name_plural = "解答履歴"
         indexes = [
             models.Index(fields=["user", "question"]),
+            # ランキング集計の期間フィルタ用 (spec §6)
+            models.Index(fields=["user", "answered_at"]),
         ]
 
     def __str__(self):

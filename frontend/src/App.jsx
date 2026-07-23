@@ -9,6 +9,7 @@ import Auth from "./routes/Auth";
 import Menu from "./routes/Menu";
 import Placeholder from "./routes/Placeholder";
 import QuizSession from "./routes/QuizSession";
+import Ranking from "./routes/Ranking";
 import Solo from "./routes/Solo";
 import "./App.css";
 
@@ -61,7 +62,7 @@ export default function App() {
             <Route path="/review" element={<ReviewDeck />} />
             <Route path="/battle" element={<Placeholder title="対戦モード" phase="フェーズ4" />} />
             <Route path="/exams" element={<Placeholder title="模試" phase="フェーズ5" />} />
-            <Route path="/ranking" element={<Placeholder title="ランキング" phase="フェーズ3" />} />
+            <Route path="/ranking" element={<Ranking />} />
             <Route path="/create" element={<Placeholder title="問題をつくる" phase="フェーズ7" />} />
             <Route path="/mypage" element={<MyPage />} />
           </Route>

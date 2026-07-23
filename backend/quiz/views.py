@@ -8,8 +8,6 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from accounts.models import Profile
-
 from .models import AnswerHistory, Question, ReviewSchedule
 from .serializers import (
     CategoryProgressSerializer,
@@ -94,49 +92,53 @@ def latest_answers(profile):
 
 
 class HomeSummaryView(APIView):
-    """Overall progress % plus in-university/national rank by accuracy,
-    shown at the top of the home screen.
+    """Overall progress % plus in-university/national rank shown at the top
+    of the home screen.
 
-    Note: the rank part is a lightweight live computation kept until the
-    RankingSnapshot-based /api/ranking/ lands (phase 3), at which point it
-    reads the snapshot instead.
+    spec §5-6: the old implementation annotated & sorted ALL profiles in
+    memory on every request; ranks now come from RankingSnapshot (batch),
+    and only the caller's own rows are queried live.
     """
 
     def get(self, request):
+        from exams.models import RankingSnapshot
+
         visible = Question.objects.visible_to(request.user)
         total_questions = visible.count()
-        answered_question_ids = set(
-            AnswerHistory.objects.filter(user=request.user).values_list(
-                "question_id", flat=True
-            )
+        answered_count = (
+            AnswerHistory.objects.filter(user=request.user)
+            .values("question_id")
+            .distinct()
+            .count()
         )
         overall_progress_pct = (
-            round(len(answered_question_ids) / total_questions * 100, 1)
-            if total_questions
-            else 0.0
+            round(answered_count / total_questions * 100, 1) if total_questions else 0.0
         )
 
-        ranked_users = list(
-            Profile.objects.annotate(
-                answered=Count("answer_histories"),
-                acc=Avg(Case(When(answer_histories__correct=True, then=1), default=0)),
+        own = AnswerHistory.objects.filter(user=request.user).aggregate(
+            acc=Avg(Case(When(correct=True, then=1.0), default=0.0))
+        )
+        overall_correct_rate = round((own["acc"] or 0) * 100, 1)
+
+        def snapshot_rank(scope, **extra):
+            qs = RankingSnapshot.objects.filter(
+                scope=scope,
+                period="all",
+                metric=RankingSnapshot.Metric.SOLVED,
+                **extra,
             )
-            .filter(answered__gt=0)
-            .order_by("-acc")
-        )
+            row = qs.filter(profile=request.user).first()
+            return {"rank": row.rank if row else None, "out_of": qs.count()}
 
-        national_rank = self._rank_of(request.user, ranked_users)
-        university_users = [
-            u for u in ranked_users if u.university_id == request.user.university_id
-        ]
+        national_rank = snapshot_rank(RankingSnapshot.Scope.NATIONAL)
         university_rank = (
-            self._rank_of(request.user, university_users)
+            snapshot_rank(
+                RankingSnapshot.Scope.UNIVERSITY,
+                university_id=request.user.university_id,
+            )
             if request.user.university_id
             else {"rank": None, "out_of": 0}
         )
-
-        own_stats = next((u for u in ranked_users if u.id == request.user.id), None)
-        overall_correct_rate = round((own_stats.acc or 0) * 100, 1) if own_stats else 0.0
 
         return Response(
             HomeSummarySerializer(
@@ -148,13 +150,6 @@ class HomeSummaryView(APIView):
                 }
             ).data
         )
-
-    @staticmethod
-    def _rank_of(user, ranked_list):
-        for i, u in enumerate(ranked_list):
-            if u.id == user.id:
-                return {"rank": i + 1, "out_of": len(ranked_list)}
-        return {"rank": None, "out_of": len(ranked_list)}
 
 
 class CategoryListView(APIView):
