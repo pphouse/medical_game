@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CBT question batch (generate_questions.py output / import_questions input)",
+  "type": "object",
+  "anyOf": [{ "required": ["questions"] }, { "required": ["question_sets"] }],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["generated_at", "generator", "batch_id"],
+      "properties": {
+        "generated_at": { "type": "string" },
+        "generator": { "type": "string" },
+        "blueprint_version": { "type": "string" },
+        "batch_id": { "type": "string" }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/question" }
+    },
+    "question_sets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/question_set" }
+    }
+  },
+  "$defs": {
+    "choice": {
+      "type": "object",
+      "required": ["id", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "enum": ["A", "B", "C", "D", "E"] },
+        "text": { "type": "string", "minLength": 1 }
+      }
+    },
+    "choices": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/choice" }
+    },
+    "question": {
+      "type": "object",
+      "required": [
+        "id",
+        "exam_type",
+        "category",
+        "question_text",
+        "choices",
+        "correct_choice_id",
+        "explanation"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "question_type": { "enum": ["M"] },
+        "exam_type": { "enum": ["CBT", "KOKUSHI"] },
+        "blueprint_code": { "type": "string" },
+        "category": { "type": "string", "minLength": 1 },
+        "disease": { "type": "string" },
+        "class_group": { "enum": ["I", "II", ""] },
+        "difficulty": { "enum": ["easy", "standard", "hard"] },
+        "question_text": { "type": "string", "minLength": 1 },
+        "choices": { "$ref": "#/$defs/choices" },
+        "correct_choice_id": { "enum": ["A", "B", "C", "D", "E"] },
+        "explanation": { "type": "string", "minLength": 1 },
+        "distractor_rationale": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "question_set": {
+      "type": "object",
+      "required": ["id", "category", "case_stem", "steps"],
+      "properties": {
+        "id": { "type": "string" },
+        "blueprint_code": { "type": "string" },
+        "exam_type": { "enum": ["CBT", "KOKUSHI"] },
+        "category": { "type": "string", "minLength": 1 },
+        "disease": { "type": "string" },
+        "class_group": { "enum": ["I", "II", ""] },
+        "difficulty": { "enum": ["easy", "standard", "hard"] },
+        "case_stem": { "type": "string", "minLength": 20 },
+        "steps": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": [
+              "set_order",
+              "question_text",
+              "choices",
+              "correct_choice_id",
+              "explanation"
+            ],
+            "properties": {
+              "set_order": { "type": "integer", "minimum": 1, "maximum": 4 },
+              "phase": { "type": "string" },
+              "question_text": { "type": "string", "minLength": 1 },
+              "choices": { "$ref": "#/$defs/choices" },
+              "correct_choice_id": { "enum": ["A", "B", "C", "D", "E"] },
+              "explanation": { "type": "string", "minLength": 1 },
+              "distractor_rationale": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

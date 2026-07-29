@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 
 function groupByCategory(entries) {
@@ -13,7 +14,10 @@ function groupByCategory(entries) {
     .sort((a, b) => a.category.localeCompare(b.category, "ja"));
 }
 
-export default function ReviewDeck({ onStartSession }) {
+export default function ReviewDeck() {
+  const navigate = useNavigate();
+  const onStartSession = (session) =>
+    navigate("/quiz", { state: { ...session, backTo: "/review" } });
   const [entries, setEntries] = useState(null);
   const [error, setError] = useState(null);
 

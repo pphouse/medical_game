@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../api";
 
 const FILTERS = [
@@ -10,7 +11,9 @@ const FILTERS = [
   { key: "double_circle", label: "◎" },
 ];
 
-export default function QuestionPicker({ category, onBack, onStart }) {
+export default function QuestionPicker() {
+  const { category } = useParams();
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState(null);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState("all");
@@ -33,7 +36,7 @@ export default function QuestionPicker({ category, onBack, onStart }) {
 
   return (
     <div className="screen">
-      <button className="back-link" onClick={onBack}>
+      <button className="back-link" onClick={() => navigate(-1)}>
         ← メニューに戻る
       </button>
       <h2>{category}：どの問題を解くか選ぶ</h2>
@@ -54,7 +57,11 @@ export default function QuestionPicker({ category, onBack, onStart }) {
       <button
         className="cta-button"
         disabled={filtered.length === 0}
-        onClick={() => onStart({ title: `分野別演習: ${category}`, questions: filtered })}
+        onClick={() =>
+          navigate("/quiz", {
+            state: { title: `分野別演習: ${category}`, questions: filtered, backTo: "/" },
+          })
+        }
       >
         {filtered.length === 0 ? "対象の問題がありません" : `この内容で演習を始める（${filtered.length}問）`}
       </button>

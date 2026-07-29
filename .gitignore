@@ -6,6 +6,20 @@
 __pycache__/
 *.pyc
 db.sqlite3
+.pytest_cache/
+.ruff_cache/
+
+# Secrets (commit only the *.example files)
+.env
+.env.local
+
+# Generated question batches awaiting review
+data/generated/
+
+# Full blueprint CSV extracted from the CATO PDF — regenerate locally with
+# scripts/extract_blueprint.py; do not commit the original text (copyright).
+data/cbt_blueprint.csv
+data/class_groups_draft.tsv
 
 # Frontend
 node_modules/
@@ -25,3 +39,9 @@ dist-ssr/
 
 # Claude local settings
 .claude/settings.local.json
+
+# validate_questions.py の検証レポート出力
+*.report.json
+
+# Vercel local link metadata
+.vercel

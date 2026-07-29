@@ -1,0 +1,7 @@
+# Offline question-generation pipeline (scripts/*.py) and the CI guard test
+# that imports scripts/validate_questions.py. NOT required by the web runtime,
+# so it is excluded from the serverless deploy bundle.
+-r requirements.txt
+anthropic==0.118.0
+pdfplumber==0.11.10
+jsonschema==4.26.0

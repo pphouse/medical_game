@@ -1,3 +1,5 @@
+import { NavLink } from "react-router-dom";
+
 const ICONS = {
   home: (
     <svg viewBox="0 0 24 24" fill="none">
@@ -17,17 +19,28 @@ const ICONS = {
       />
     </svg>
   ),
-  review: (
+  solo: (
     <svg viewBox="0 0 24 24" fill="none">
       <path
-        d="M4 12a8 8 0 1 1 2.6 5.9"
+        d="M5 6.5A2.5 2.5 0 0 1 7.5 4H19v14.5H7.5A2.5 2.5 0 0 0 5 21V6.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path d="M5 18.5A2.5 2.5 0 0 1 7.5 16H19" stroke="currentColor" strokeWidth="2" />
+      <path d="M9.5 8.5h5M9.5 12h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  ),
+  ranking: (
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path
+        d="M7 5H4.5A1.5 1.5 0 0 0 3 6.5 4 4 0 0 0 7 10M17 5h2.5A1.5 1.5 0 0 1 21 6.5 4 4 0 0 1 17 10"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
-        strokeLinejoin="round"
       />
-      <path d="M4 17v-4h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M12 8.5V12l2.5 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 13v4M9 20.5h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
   ),
   battle: (
@@ -55,24 +68,26 @@ const ICONS = {
 };
 
 const TABS = [
-  { key: "home", label: "ホーム" },
-  { key: "review", label: "復習問題" },
-  { key: "battle", label: "対戦" },
-  { key: "mypage", label: "マイページ" },
+  { to: "/", icon: "home", label: "ホーム" },
+  { to: "/solo", icon: "solo", label: "ソロ" },
+  { to: "/battle", icon: "battle", label: "対戦" },
+  { to: "/ranking", icon: "ranking", label: "ランキング" },
+  { to: "/mypage", icon: "mypage", label: "マイページ" },
 ];
 
-export default function BottomNav({ active, onChange }) {
+export default function BottomNav() {
   return (
     <nav className="bottom-nav">
       {TABS.map((tab) => (
-        <button
-          key={tab.key}
-          className={`bottom-nav-item${active === tab.key ? " active" : ""}`}
-          onClick={() => onChange(tab.key)}
+        <NavLink
+          key={tab.to}
+          to={tab.to}
+          end={tab.to === "/"}
+          className={({ isActive }) => `bottom-nav-item${isActive ? " active" : ""}`}
         >
-          <span className="bottom-nav-icon">{ICONS[tab.key]}</span>
+          <span className="bottom-nav-icon">{ICONS[tab.icon]}</span>
           <span className="bottom-nav-label">{tab.label}</span>
-        </button>
+        </NavLink>
       ))}
     </nav>
   );
