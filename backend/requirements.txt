@@ -1,15 +1,13 @@
-# Runtime dependencies (Python 3.12+; Django 6.0 requires >=3.12)
+# Web runtime dependencies (Python 3.12+; Django 6.0 requires >=3.12).
+# Kept lean for serverless deploys — the offline question-pipeline deps live
+# in requirements-scripts.txt and are NOT needed to serve API requests.
 django==6.0.7
 djangorestframework==3.17.1
 django-cors-headers==4.9.0
 django-environ==0.14.0
 dj-database-url==3.1.2
 PyJWT==2.13.0
+cryptography==49.0.0  # RS256/ES256 JWT verification (Supabase signing keys)
 psycopg[binary]==3.3.4
 requests==2.34.2
 pywebpush==2.3.0
-
-# Question-pipeline scripts (scripts/*.py)
-anthropic==0.118.0
-pdfplumber==0.11.10
-jsonschema==4.26.0

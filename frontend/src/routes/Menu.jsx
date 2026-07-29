@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
 import { useProfile } from "../context/ProfileContext";
+import { STUDENT_VERIFICATION_ENABLED } from "../features";
 
 function RankStat({ label, rankInfo }) {
   const display =
@@ -128,7 +129,9 @@ export default function Menu() {
       {error && <p className="error">{error}</p>}
 
       <div className="menu-grid">
-        {MODES.map((mode) => {
+        {MODES.filter(
+          (mode) => STUDENT_VERIFICATION_ENABLED || !mode.requiresVerification,
+        ).map((mode) => {
           const locked = mode.requiresVerification && !profile?.student_verified;
           if (locked) {
             return (

@@ -150,7 +150,19 @@ SUPABASE_ANON_KEY = env("SUPABASE_ANON_KEY", default="")
 # Service role key: backend only. NEVER expose to the frontend bundle.
 SUPABASE_SERVICE_ROLE_KEY = env("SUPABASE_SERVICE_ROLE_KEY", default="")
 # Legacy HS256 JWT secret (Dashboard > Project Settings > API > JWT Secret).
+# Optional once the project uses asymmetric signing keys (below).
 SUPABASE_JWT_SECRET = env("SUPABASE_JWT_SECRET", default="")
+# Asymmetric verification (recommended): the project's JWKS endpoint, whose
+# public keys verify RS256/ES256 tokens. Defaults to the standard Supabase
+# path derived from SUPABASE_URL; override with SUPABASE_JWKS_URL if needed.
+SUPABASE_JWKS_URL = env(
+    "SUPABASE_JWKS_URL",
+    default=(
+        f"{SUPABASE_URL.rstrip('/')}/auth/v1/.well-known/jwks.json"
+        if SUPABASE_URL
+        else ""
+    ),
+)
 SUPABASE_JWT_AUDIENCE = "authenticated"
 
 # Shared secret protecting /api/internal/* endpoints (called by the

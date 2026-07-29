@@ -1,5 +1,6 @@
 import uuid
 
+import jwt
 import pytest
 from rest_framework.test import APIClient
 
@@ -94,3 +95,100 @@ def test_grade_out_of_range_rejected():
     client, _ = auth_client()
     res = client.patch("/api/auth/me/", {"grade": 9}, format="json")
     assert res.status_code == 400
+
+
+# --- Asymmetric signing keys (RS256 via JWKS) --------------------------------
+# Supabase's recommended, more secure scheme: tokens are signed with a private
+# signing key that never leaves Supabase; the backend verifies with the public
+# key fetched from the project JWKS endpoint (cached in-process).
+
+def _rsa_keypair():
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    return private_key, private_key.public_key()
+
+
+def _rs256_token(private_key, *, sub=None, expires_in=3600, audience="authenticated"):
+    import datetime
+
+    now = datetime.datetime.now(datetime.UTC)
+    return jwt.encode(
+        {
+            "sub": str(sub or uuid.uuid4()),
+            "aud": audience,
+            "email": "rs256@example.com",
+            "role": "authenticated",
+            "iat": now,
+            "exp": now + datetime.timedelta(seconds=expires_in),
+        },
+        private_key,
+        algorithm="RS256",
+        headers={"kid": "test-signing-key"},
+    )
+
+
+class _FakeSigningKey:
+    def __init__(self, key):
+        self.key = key
+
+
+class _FakeJWKSClient:
+    """Stand-in for PyJWKClient that returns a fixed public key (no network)."""
+
+    def __init__(self, public_key):
+        self._public_key = public_key
+
+    def get_signing_key_from_jwt(self, token):
+        return _FakeSigningKey(self._public_key)
+
+
+def test_rs256_token_verified_via_jwks(monkeypatch):
+    private_key, public_key = _rsa_keypair()
+    monkeypatch.setattr(
+        "config.authentication._get_jwks_client",
+        lambda: _FakeJWKSClient(public_key),
+    )
+    sub = uuid.uuid4()
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {_rs256_token(private_key, sub=sub)}")
+    res = client.get("/api/auth/me/")
+    assert res.status_code == 200
+    assert res.json()["id"] == str(sub)
+    assert Profile.objects.filter(id=sub).exists()
+
+
+def test_rs256_token_signed_with_wrong_key_is_rejected(monkeypatch):
+    attacker_key, _ = _rsa_keypair()
+    _, legit_public = _rsa_keypair()
+    # The server's JWKS returns the *legit* public key, but the token was
+    # signed by the attacker's private key -> signature check must fail.
+    monkeypatch.setattr(
+        "config.authentication._get_jwks_client",
+        lambda: _FakeJWKSClient(legit_public),
+    )
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {_rs256_token(attacker_key)}")
+    assert client.get("/api/auth/me/").status_code == 401
+
+
+def test_rs256_token_expired_is_rejected(monkeypatch):
+    private_key, public_key = _rsa_keypair()
+    monkeypatch.setattr(
+        "config.authentication._get_jwks_client",
+        lambda: _FakeJWKSClient(public_key),
+    )
+    client = APIClient()
+    client.credentials(
+        HTTP_AUTHORIZATION=f"Bearer {_rs256_token(private_key, expires_in=-60)}"
+    )
+    assert client.get("/api/auth/me/").status_code == 401
+
+
+def test_rs256_without_jwks_configured_is_rejected(monkeypatch):
+    private_key, _ = _rsa_keypair()
+    # No JWKS client available (SUPABASE_URL / SUPABASE_JWKS_URL unset).
+    monkeypatch.setattr("config.authentication._get_jwks_client", lambda: None)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {_rs256_token(private_key)}")
+    assert client.get("/api/auth/me/").status_code == 401

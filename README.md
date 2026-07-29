@@ -108,6 +108,11 @@ python manage.py aggregate_rankings         # スナップショット集計
 - [docs/architecture.md](docs/architecture.md) — 全体構成、認証、セキュリティ設計、集計定義
 - [docs/supabase-setup.md](docs/supabase-setup.md) — Supabase プロジェクトの設定手順
 - [docs/question-generation.md](docs/question-generation.md) — LLM 問題生成パイプライン
+- [docs/deploy-vercel.md](docs/deploy-vercel.md) — Vercel（フロント + バックエンド）へのデプロイ手順
+
+認証は Supabase Auth の**非対称署名鍵（RS256/ES256, JWKS）**に対応（`SUPABASE_URL`
+から JWKS を自動解決してローカル検証）。レガシー HS256（共有シークレット）も
+ローカル開発用にフォールバックとして利用可能です。
 
 ## 運用コマンド（抜粋）
 

@@ -718,7 +718,7 @@ def build_choices(correct, distractors, key):
     other_keys = [k for k in KEYS if k != key]
     choices = [{"id": key, "text": correct}]
     rationale = {}
-    for k, (text, why) in zip(other_keys, distractors):
+    for k, (text, why) in zip(other_keys, distractors, strict=True):
         choices.append({"id": k, "text": text})
         rationale[k] = why
     choices.sort(key=lambda c: c["id"])

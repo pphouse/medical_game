@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useProfile } from "../context/ProfileContext";
+import { STUDENT_VERIFICATION_ENABLED } from "../features";
 import { supabase } from "../lib/supabase";
 
 const ICONS = {
@@ -189,7 +190,7 @@ export default function MyPage() {
         </button>
       </div>
 
-      {!user.student_verified && (
+      {STUDENT_VERIFICATION_ENABLED && !user.student_verified && (
         <div className="mypage-section">
           <button
             className="toolbar-btn"

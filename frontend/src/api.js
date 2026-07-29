@@ -1,6 +1,9 @@
 import { supabase } from "./lib/supabase";
 
-const BASE_URL = "/api";
+// Same-origin "/api" by default (dev proxy / same-domain deploy). Set
+// VITE_API_BASE_URL to the backend origin when the Django API is hosted on a
+// different domain than the frontend (e.g. a separate Vercel project).
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 
 export class ApiError extends Error {
   constructor(status, message) {

@@ -1,4 +1,5 @@
--r requirements.txt
+# Dev/CI: everything the runtime + scripts need, plus test/lint tooling.
+-r requirements-scripts.txt
 pytest==9.1.1
 pytest-django==4.12.0
 ruff==0.15.22
