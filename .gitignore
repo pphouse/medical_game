@@ -42,3 +42,6 @@ dist-ssr/
 
 # validate_questions.py の検証レポート出力
 *.report.json
+
+# Vercel local link metadata
+.vercel
