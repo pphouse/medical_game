@@ -23,8 +23,8 @@ const MASTERY_DISPLAY = {
 const EXAM_TYPE_LABEL = { CBT: "CBT", KOKUSHI: "医師国家試験" };
 const DIFFICULTY_LABEL = { 1: "易", 2: "標準", 3: "難" };
 
-export default function QuizScreen({ title, questions, onBack, previewMode = false }) {
-  const [index, setIndex] = useState(0);
+export default function QuizScreen({ title, questions, onBack, previewMode = false, startIndex = 0 }) {
+  const [index, setIndex] = useState(startIndex);
   const [selectedKey, setSelectedKey] = useState(null);
   const [result, setResult] = useState(null); // grading response
   const [masteryLevel, setMasteryLevel] = useState(null); // current (auto or overridden)

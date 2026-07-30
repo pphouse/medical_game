@@ -11,6 +11,16 @@ const FILTERS = [
   { key: "double_circle", label: "◎" },
 ];
 
+const MASTERY_ICON = {
+  double_circle: "◎",
+  circle: "○",
+  triangle: "△",
+  cross: "✕",
+  unstudied: "－",
+};
+
+const DIFFICULTY_LABEL = { 1: "易", 2: "標準", 3: "難" };
+
 export default function QuestionPicker() {
   const { category } = useParams();
   const navigate = useNavigate();
@@ -65,6 +75,34 @@ export default function QuestionPicker() {
       >
         {filtered.length === 0 ? "対象の問題がありません" : `この内容で演習を始める（${filtered.length}問）`}
       </button>
+
+      <div className="question-list">
+        {filtered.map((q, i) => (
+          <button
+            key={q.id}
+            className="question-row"
+            onClick={() =>
+              navigate("/quiz", {
+                state: {
+                  title: `分野別演習: ${category}`,
+                  questions: filtered,
+                  backTo: "/",
+                  startIndex: i,
+                },
+              })
+            }
+          >
+            <span className="question-row-no">{i + 1}</span>
+            <span className="question-row-stem">
+              {q.case_stem || q.question_text || "（本文なし）"}
+            </span>
+            <span className={`question-row-mastery mastery-${q.mastery_level}`}>
+              {MASTERY_ICON[q.mastery_level]}
+            </span>
+            <span className="question-row-difficulty">{DIFFICULTY_LABEL[q.difficulty]}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
