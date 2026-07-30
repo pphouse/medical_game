@@ -21,10 +21,10 @@
   --incorrect-border: #fda4af;
 
   --m-double: #1e3a8a;
-  --m-circle: #7dd3fc;
-  --m-triangle: #facc15;
+  --m-circle: #38bdf8;
+  --m-triangle: #f97316;
   --m-cross: #ef4444;
-  --m-unstudied: var(--card-bg);
+  --m-unstudied: #cbd5e1;
 
   font: 16px/145% "Hiragino Maru Gothic ProN", "Rounded Mplus 1c",
     system-ui, "Segoe UI", Roboto, sans-serif;
@@ -56,10 +56,10 @@
     --incorrect-border: #9d2a41;
 
     --m-double: #1e3a8a;
-    --m-circle: #7dd3fc;
-    --m-triangle: #facc15;
+    --m-circle: #38bdf8;
+    --m-triangle: #f97316;
     --m-cross: #ef4444;
-    --m-unstudied: var(--card-bg);
+    --m-unstudied: #475569;
   }
 }
 

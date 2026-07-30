@@ -53,6 +53,8 @@ class BattleParticipant(models.Model):
     score = models.IntegerField(default=0)
     # 切断検知: 30秒以上応答がなければラウンドをスキップ扱いにする (spec 4-2)
     last_seen_at = models.DateTimeField(default=timezone.now)
+    # ルーム終了時に確定する対戦ランクポイントの増減（一度だけ適用する）
+    points_delta = models.IntegerField(null=True, blank=True)
 
     class Meta:
         verbose_name = "対戦参加者"
@@ -109,3 +111,40 @@ class BattleBuzz(models.Model):
 
     def __str__(self):
         return f"{self.round_id} #{self.rank} {self.profile_id}"
+
+
+class MatchmakingTicket(models.Model):
+    """クイックマッチの待機列 (spec: 同ランク優先、1分でAI対戦フォールバック)。
+
+    POST /battle/quickmatch/ で作成 → 同条件で待機中の他ユーザーを探す →
+    見つかればその場でルームを作成/開始する。見つからない間は
+    GET /battle/quickmatch/{id}/ のポーリングごとに再探索し、作成から
+    MATCH_TIMEOUT_SECONDS 経過していたら AI 対戦相手でルームを作る。
+    """
+
+    class Status(models.TextChoices):
+        WAITING = "waiting", "対戦相手を探索中"
+        MATCHED = "matched", "マッチ成立（人間）"
+        AI_MATCHED = "ai_matched", "マッチ成立（AI）"
+        CANCELLED = "cancelled", "キャンセル"
+
+    user = models.ForeignKey(
+        "accounts.Profile", on_delete=models.CASCADE, related_name="matchmaking_tickets"
+    )
+    question_count = models.PositiveSmallIntegerField(default=10)
+    tier_snapshot = models.CharField(
+        max_length=4, blank=True, help_text="発行時点のランク（SS/S/A/B/C/D、未ランクは空）"
+    )
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.WAITING)
+    room = models.ForeignKey(
+        BattleRoom, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "マッチメイキング待機"
+        verbose_name_plural = "マッチメイキング待機"
+        indexes = [models.Index(fields=["status", "question_count", "created_at"])]
+
+    def __str__(self):
+        return f"{self.user_id} {self.status} ({self.tier_snapshot or '未ランク'})"

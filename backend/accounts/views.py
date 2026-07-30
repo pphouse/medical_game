@@ -4,6 +4,7 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import exceptions
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -11,6 +12,7 @@ from config.permissions import IsModerator
 
 from .models import (
     NotificationPreference,
+    Profile,
     PushSubscription,
     StudentVerification,
     University,
@@ -237,3 +239,32 @@ class PushSubscriptionView(APIView):
             profile=request.user, endpoint=endpoint
         ).delete()
         return Response({"deleted": bool(deleted)})
+
+
+class InternalAdvanceGradesView(APIView):
+    """POST /api/internal/advance-grades/ — 全学生の学年を1つ繰り上げる。
+
+    毎年4月の年度切り替えに合わせて pg_cron / Vercel Cron から叩く運用を
+    想定（exams.InternalAggregateView と同じ X-Internal-Token 認証）。
+    """
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        import hmac
+
+        token = request.headers.get("X-Internal-Token", "")
+        if not settings.INTERNAL_API_TOKEN or not hmac.compare_digest(
+            token, settings.INTERNAL_API_TOKEN
+        ):
+            raise exceptions.AuthenticationFailed("invalid internal token")
+
+        from django.db.models import F
+
+        from accounts.management.commands.advance_grades import MAX_GRADE
+
+        updated = Profile.objects.filter(grade__isnull=False, grade__lt=MAX_GRADE).update(
+            grade=F("grade") + 1
+        )
+        return Response({"status": "ok", "updated": updated})

@@ -5,7 +5,8 @@ const SCOPES = [
   { key: "national", label: "全国" },
   { key: "university", label: "学内" },
   { key: "university_aggregate", label: "大学別" },
-  { key: "exams", label: "模試" },
+  { key: "points", label: "対戦・模試" },
+  { key: "exams", label: "模試履歴" },
 ];
 
 const METRICS = [
@@ -57,6 +58,73 @@ function RankingTable({ data, metric }) {
   );
 }
 
+function PointsRanking() {
+  const [scope, setScope] = useState("national");
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setData(null);
+    setError(null);
+    api.pointsRanking(scope).then(setData).catch((e) => setError(e.message));
+  }, [scope]);
+
+  return (
+    <>
+      <div className="filter-chip-row">
+        <button
+          className={`filter-chip${scope === "national" ? " active" : ""}`}
+          onClick={() => setScope("national")}
+        >
+          全国
+        </button>
+        <button
+          className={`filter-chip${scope === "university" ? " active" : ""}`}
+          onClick={() => setScope("university")}
+        >
+          学内
+        </button>
+      </div>
+
+      {error && <p className="error">{error}</p>}
+
+      {data?.me && (
+        <div className="ranking-me-card">
+          {data.me.eligible === false ? (
+            <span className="ranking-me-reason">{data.me.reason}</span>
+          ) : (
+            <>
+              <span className="ranking-me-label">あなたのランク</span>
+              <span className="ranking-me-rank">{data.me.tier ?? "未ランク"}</span>
+              <span className="ranking-me-value">{data.me.points}pt</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {!data ? (
+        <p>読み込み中...</p>
+      ) : data.entries.length === 0 ? (
+        <div className="empty-card">まだ対戦・模試でポイントを獲得したユーザーがいません。</div>
+      ) : (
+        <div className="ranking-list">
+          {data.entries.map((entry) => (
+            <div key={`${entry.rank}-${entry.display_name}`} className={`ranking-row${entry.is_me ? " me" : ""}`}>
+              <span className={`ranking-rank${entry.rank <= 3 ? " top" : ""}`}>{entry.rank}</span>
+              <span className="ranking-name">
+                {entry.display_name}
+                {entry.university && <span className="ranking-univ">{entry.university}</span>}
+              </span>
+              <span className="badge">{entry.tier ?? "―"}</span>
+              <span className="ranking-value">{entry.points}pt</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 function ExamHistory() {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState(null);
@@ -95,7 +163,7 @@ export default function Ranking() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (scope === "exams") return;
+    if (scope === "exams" || scope === "points") return;
     setData(null);
     setError(null);
     api
@@ -122,6 +190,8 @@ export default function Ranking() {
 
       {scope === "exams" ? (
         <ExamHistory />
+      ) : scope === "points" ? (
+        <PointsRanking />
       ) : (
         <>
           <div className="filter-chip-row">
