@@ -14,6 +14,108 @@
 
 ---
 
+## クイックスタート: フロントだけ動いている状態から完成させる
+
+フロントエンドは Vercel にデプロイ済みだがバックエンドが未デプロイ、という状態から
+始める場合の実手順です。この状態では画面は開けてログインもできますが、問題の読み込みで
+`Unexpected token '<'` が出ます。フロントの `VITE_API_BASE_URL` が未設定で相対パス
+`/api` にフォールバックし、静的ホスティングが HTML を返すためです。
+
+### 症状から現状を切り分ける
+
+| 確認 | コマンド / 手順 | 期待 |
+|---|---|---|
+| フロントが生きているか | `curl -I https://<frontend>.vercel.app` | 200 |
+| バックエンドが存在するか | `curl -I https://<backend>.vercel.app` | 404 なら未作成 |
+| フロントに API URL が埋まっているか | ビルド済み JS に `vercel.app/api` の文字列があるか | 無ければ未設定 |
+| DB のマイグレーション状況 | Supabase SQL Editor で `select count(*) from django_migrations;` | リポジトリの migration 数以上 |
+
+### A. DB パスワードを用意する
+
+Supabase → **Settings → Database → Reset database password**。生成された値を控え、
+接続文字列を組み立てる（**transaction pooler / 6543** を使う。5432 直結はサーバーレスに不向き）:
+
+```
+postgresql://postgres.<project-ref>:<PASSWORD>@<region>.pooler.supabase.com:6543/postgres?sslmode=require
+```
+
+### B. バックエンドを Vercel プロジェクトとして作る
+
+**Add New → Project → Import** でこのリポジトリを選び、
+
+- **Project Name**: 例 `medical-game-api`
+- **Root Directory**: **`backend`**（← 必ず変更する。`backend/vercel.json` が効く）
+- **Framework Preset**: Other
+
+環境変数（すべて Production）は「[環境変数チェックリスト](#環境変数チェックリスト)」の
+backend 側をすべて設定する。`DJANGO_ALLOWED_HOSTS` は `.vercel.app`、
+`CORS_ALLOWED_ORIGINS` はフロントの本番 URL を入れる。
+
+`DJANGO_SECRET_KEY` と `INTERNAL_API_TOKEN` はその場で生成する:
+
+```bash
+python3 -c "import secrets,string; a=string.ascii_letters+string.digits; print(''.join(secrets.choice(a) for _ in range(64)))"
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Deploy 後、`curl -I https://<backend>.vercel.app/api/quiz/questions/` が
+HTML ではなく JSON を返すことを確認する。
+
+### C. フロントをバックエンドに向ける
+
+フロントの Vercel プロジェクト → Settings → Environment Variables に
+
+| 変数 | 値 |
+|---|---|
+| `VITE_API_BASE_URL` | `https://<backend>.vercel.app/api` |
+
+を追加し、**Deployments → 最新 → Redeploy**。
+
+> Vite の `import.meta.env.*` は**ビルド時に値を埋め込む**ため、環境変数を足しただけでは
+> 反映されません。再デプロイが必須です。
+
+### D. 問題バンクを投入する
+
+`import_questions` は Postgres への直結が要るため、**ローカルから 1 コマンド**で流します
+（サーバーレス側では実行しない）。
+
+```bash
+cd backend
+DATABASE_URL='postgresql://postgres.<ref>:<PASSWORD>@<region>.pooler.supabase.com:6543/postgres?sslmode=require' \
+DJANGO_SECRET_KEY='(何でもよい・ローカル実行用)' \
+  python manage.py import_questions --file quiz/management/commands/data/cbt_batch_core_2026.json
+```
+
+`(category, question_text)` で重複判定するので、**何度流しても既存分は増えません**。
+新規分だけが入ります。
+
+### E. レビューして公開する
+
+取り込んだ問題は **`status=pending`（審査待ち）で入り、そのままでは出題されません**（spec 2-1）。
+公開するには Django admin か `POST /api/quiz/review/questions/<id>/approve/` で承認します。
+医学的内容の妥当性は人の目で確認してから公開してください。
+
+現在の状態は SQL で確認できます:
+
+```sql
+select status, count(*) from quiz_question group by status;
+```
+
+### シークレットの扱い
+
+**サーバー専用**（フロントに置かない・共有しない・リポジトリに入れない）:
+`DJANGO_SECRET_KEY` / `SUPABASE_SERVICE_ROLE_KEY` / `INTERNAL_API_TOKEN` / DB パスワード。
+
+`SUPABASE_ANON_KEY` はフロントのバンドルに埋め込まれる前提の公開鍵です。RLS が
+効いていることが安全性の前提になるので、`supabase/migrations/*.sql` の適用状況を
+必ず確認してください（Django で新テーブルを追加するたびに再適用が必要）。
+
+シークレットが漏れた疑いがあるときは、Supabase の API キーをローテートし、
+`DJANGO_SECRET_KEY` と `INTERNAL_API_TOKEN` を再生成して Vercel の環境変数を
+更新のうえ再デプロイします。
+
+---
+
 ## 0. Supabase を用意する（デプロイ前に一度だけ）
 
 1. Supabase でプロジェクト作成。`Settings > API` と `Settings > Database` から
