@@ -4,7 +4,9 @@ from pathlib import Path
 
 import pytest
 from django.db import connection, connections
+from django.utils import timezone
 
+from accounts.models import Profile
 from battle.models import BattleBuzz, BattleRoom, BattleRound
 from battle.scoring import CORRECT_POINTS, FIRST_BUZZ_BONUS, WRONG_PENALTY
 from exams.management.commands.aggregate_rankings import fetch_user_stats
@@ -142,6 +144,17 @@ class TestBattleFlow:
         assert result["standings"][0]["correct_count"] == 5
         assert result["standings"][0]["score"] == 5 * (CORRECT_POINTS + FIRST_BUZZ_BONUS)
         assert result["standings"][1]["rank"] == 2
+
+        # 対戦ランクポイント (spec: 対戦＋模試の合算ポイントでSS〜Dランク) が
+        # ルーム終了時に一度だけ確定し、勝者が敗者より多くもらう。
+        assert result["standings"][0]["points_delta"] == 25  # 1位（2人中）
+        assert result["standings"][1]["points_delta"] == -15  # 最下位
+        host_profile = Profile.objects.get(display_name="勝者")
+        guest_profile = Profile.objects.get(display_name="敗者")
+        assert host_profile.points == 1025
+        assert guest_profile.points == 985
+        assert host_profile.ranked_matches == 1
+        assert guest_profile.ranked_matches == 1
 
     def test_first_buzz_bonus(self):
         for i in range(5):
@@ -320,3 +333,65 @@ def timezone_delta(seconds):
     import datetime
 
     return datetime.timedelta(seconds=seconds)
+
+
+class TestQuickMatch:
+    def test_two_humans_are_matched_by_quickmatch(self):
+        for i in range(5):
+            make_question(question_text=f"QM設問{i}", correct_choice_key="A")
+        c1, p1 = auth_client(display_name="アリス", grade=4)
+        c2, p2 = auth_client(display_name="ボブ", grade=4)
+
+        res1 = c1.post("/api/battle/quickmatch/", {"question_count": 5}, format="json")
+        assert res1.status_code == 201
+        assert res1.json()["status"] == "waiting"
+        ticket1_id = res1.json()["ticket_id"]
+
+        res2 = c2.post("/api/battle/quickmatch/", {"question_count": 5}, format="json")
+        assert res2.json()["status"] == "matched"
+        assert res2.json()["room_code"]
+        assert res2.json()["opponent"]["display_name"] == "アリス"
+
+        poll1 = c1.get(f"/api/battle/quickmatch/{ticket1_id}/").json()
+        assert poll1["status"] == "matched"
+        assert poll1["room_code"] == res2.json()["room_code"]
+        assert poll1["opponent"]["display_name"] == "ボブ"
+
+        room = BattleRoom.objects.get(room_code=poll1["room_code"])
+        assert room.status == BattleRoom.Status.IN_PROGRESS
+        assert room.participants.count() == 2
+
+    def test_timeout_falls_back_to_ai_opponent(self):
+        for i in range(5):
+            make_question(question_text=f"AI設問{i}", correct_choice_key="A")
+        client, profile = auth_client(display_name="ソロ待機", grade=4)
+        ticket_id = client.post(
+            "/api/battle/quickmatch/", {"question_count": 5}, format="json"
+        ).json()["ticket_id"]
+
+        from battle.models import MatchmakingTicket
+
+        MatchmakingTicket.objects.filter(pk=ticket_id).update(
+            created_at=timezone.now() - timezone_delta(61)
+        )
+
+        poll = client.get(f"/api/battle/quickmatch/{ticket_id}/").json()
+        assert poll["status"] == "ai_matched"
+        assert poll["opponent"]["is_ai"] is True
+        room = BattleRoom.objects.get(room_code=poll["room_code"])
+        assert room.participants.filter(user__is_ai=True).exists()
+
+        # AIは人間側のポーリングのたびに1手ずつ進む（早押し→次のポーリングで解答）。
+        # 実運用は1.5秒間隔のポーリングで実時間が経過するが、テストでは連続で
+        # 叩くため経過時間を作れない。ラウンドタイムアウト(30秒)を偽装して
+        # 強制的に進行させる（AIの正誤に関わらず、いずれこの経路でも閉じる）。
+        for _ in range(10):
+            state = client.get(f"/api/battle/rooms/{room.room_code}/state/").json()
+            if state["room"]["status"] == "finished":
+                break
+            open_round = room.rounds.filter(closed_at__isnull=True).order_by("round_number").first()
+            if open_round and open_round.revealed_at:
+                BattleRound.objects.filter(pk=open_round.pk).update(
+                    revealed_at=timezone.now() - timezone_delta(31)
+                )
+        assert state["room"]["status"] == "finished"

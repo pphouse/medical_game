@@ -473,6 +473,83 @@
   color: white;
 }
 
+/* Question list (per-question rows shown after subject selection) */
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.question-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: var(--card-bg);
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.question-row:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent);
+}
+
+.question-row-no {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.question-row-stem {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-h);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.question-row-mastery {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.question-row-mastery.mastery-double_circle { background: var(--m-double); }
+.question-row-mastery.mastery-circle { background: var(--m-circle); }
+.question-row-mastery.mastery-triangle { background: var(--m-triangle); }
+.question-row-mastery.mastery-cross { background: var(--m-cross); }
+.question-row-mastery.mastery-unstudied { background: var(--m-unstudied); }
+
+.question-row-difficulty {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+}
+
 .choice.correct {
   border-color: var(--correct-border);
   background: var(--correct-bg);
@@ -548,7 +625,7 @@
 
 .mastery-buttons {
   display: flex;
-  gap: 10px;
+  gap: 6px;
 }
 
 .mastery-button {
@@ -557,7 +634,7 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 12px 4px;
+  padding: 10px 2px;
   border: 2px solid var(--border);
   border-radius: 16px;
   background: var(--card-bg);
@@ -570,12 +647,16 @@
 }
 
 .mastery-button.double_circle:hover { border-color: var(--m-double); background: var(--accent-bg); }
+.mastery-button.circle:hover { border-color: var(--m-circle); background: var(--accent-bg); }
 .mastery-button.triangle:hover { border-color: var(--m-triangle); background: #fff9ec; }
-.mastery-button.unstudied:hover { border-color: var(--m-cross); background: var(--incorrect-bg); }
+.mastery-button.cross:hover { border-color: var(--m-cross); background: var(--incorrect-bg); }
+.mastery-button.unstudied:hover { border-color: var(--text); background: var(--border); }
 
 .mastery-button.double_circle.active { border-color: var(--m-double); background: var(--accent-bg); }
+.mastery-button.circle.active { border-color: var(--m-circle); background: var(--accent-bg); }
 .mastery-button.triangle.active { border-color: var(--m-triangle); background: #fff9ec; }
-.mastery-button.unstudied.active { border-color: var(--m-cross); background: var(--incorrect-bg); }
+.mastery-button.cross.active { border-color: var(--m-cross); background: var(--incorrect-bg); }
+.mastery-button.unstudied.active { border-color: var(--text); background: var(--border); }
 
 .mastery-emoji {
   font-size: 20px;

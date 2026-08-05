@@ -49,6 +49,12 @@ const ICONS = {
       <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.8" />
     </svg>
   ),
+  exams: (
+    <svg viewBox="0 0 24 24" fill="none">
+      <rect x="3.5" y="6" width="17" height="12" rx="2" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M3.5 10h17" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  ),
 };
 
 function SectionHeading({ icon, title }) {
@@ -60,14 +66,26 @@ function SectionHeading({ icon, title }) {
   );
 }
 
+const EXAM_KIND_LABEL = { monthly: "月次模試", large: "大型模試" };
+
 export default function MyPage() {
   const { profile } = useProfile();
   const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
+  const [pointsInfo, setPointsInfo] = useState(null);
+  const [examHistory, setExamHistory] = useState(null);
 
   useEffect(() => {
     api.summary().then(setSummary).catch(() => {});
+    api.pointsRanking("national").then(setPointsInfo).catch(() => {});
+    api.rankingExams().then(setExamHistory).catch(() => {});
   }, []);
+
+  const seiseki = examHistory
+    ? examHistory.filter(
+        (r) => (r.kind === "monthly" || r.kind === "large") && r.submitted !== false
+      )
+    : null;
 
   async function handleSignOut() {
     if (supabase) await supabase.auth.signOut();
@@ -124,6 +142,14 @@ export default function MyPage() {
                 </span>
                 <span className="rank-tile-label">全国順位 / {summary.national_rank.out_of}人中</span>
               </div>
+              <div className="rank-tile">
+                <span className="rank-tile-value">
+                  {pointsInfo?.me?.eligible ? pointsInfo.me.tier : "―"}
+                </span>
+                <span className="rank-tile-label">
+                  対戦・模試ランク{pointsInfo?.me?.eligible ? `（${pointsInfo.me.points}pt）` : "（未ランク）"}
+                </span>
+              </div>
             </div>
           ) : (
             <p>読み込み中...</p>
@@ -155,6 +181,35 @@ export default function MyPage() {
             </span>
             <span className="profile-value">{user.grade ? `${user.grade}年` : "未設定"}</span>
           </div>
+        </div>
+      </div>
+
+      <div className="mypage-section">
+        <SectionHeading icon="exams" title="成績" />
+        <div className="mypage-card">
+          {seiseki === null ? (
+            <p>読み込み中...</p>
+          ) : seiseki.length === 0 ? (
+            <p>まだ月次模試・大型模試の受験記録はありません。</p>
+          ) : (
+            seiseki.map((r) => (
+              <div key={r.mock_exam_id} className="profile-row">
+                <span className="profile-label">
+                  {r.title}
+                  <span className="profile-value" style={{ fontWeight: 400, marginLeft: 6 }}>
+                    {EXAM_KIND_LABEL[r.kind]} ・ {new Date(r.start_at).toLocaleDateString("ja-JP")}
+                  </span>
+                </span>
+                <button
+                  className="profile-value"
+                  style={{ background: "none", border: "none", color: "var(--accent)", fontWeight: 700 }}
+                  onClick={() => navigate(`/exams/${r.mock_exam_id}/result`)}
+                >
+                  {r.score != null ? `${r.score}点 →` : "結果を見る →"}
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

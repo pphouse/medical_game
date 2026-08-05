@@ -204,7 +204,7 @@ class TestScheduledExamCommand:
             make_question(question_text=f"循{i}", category="循環器", blueprint_code="D-5-1)-①")
         for i in range(6):
             make_question(question_text=f"消{i}", category="消化器", blueprint_code="D-7-1)-①")
-        call_command("create_scheduled_exam", "--open-now", "--count", "8")
+        call_command("create_scheduled_exam", "--kind", "cbt_once", "--open-now", "--count", "8")
         exam = MockExam.objects.get()
         assert exam.mock_questions.count() == 8
         areas = {
@@ -212,3 +212,107 @@ class TestScheduledExamCommand:
         }
         assert areas == {"D-5", "D-7"}
         assert exam.effective_status() == MockExam.Status.OPEN
+
+
+class TestCbtOnceExam:
+    """CBT模試（生涯1回）: 提出と同時に個別採点され、二度目は受験できない。"""
+
+    def test_immediate_grading_and_single_attempt(self):
+        client, profile = auth_client(grade=3)
+        exam = make_exam(n_questions=4, kind=MockExam.Kind.CBT_ONCE, exam_type="CBT")
+        start_and_answer_all(client, exam)
+
+        result = MockResult.objects.get(user=profile, mock_exam=exam)
+        assert result.score == 4  # all answered "A" == correct_choice_key
+        assert result.irt_theta is not None
+        assert result.irt_scaled_score is not None
+        assert result.points_delta is None  # CBT模試はポイント対象外
+
+        res = client.get(f"/api/exams/{exam.id}/result/")
+        assert res.status_code == 200
+        assert res.json()["status"] == "graded"
+        assert res.json()["irt_scaled_score"] == result.irt_scaled_score
+
+        other_exam = make_exam(n_questions=2, kind=MockExam.Kind.CBT_ONCE, exam_type="CBT")
+        blocked = client.post(f"/api/exams/{other_exam.id}/start/")
+        assert blocked.status_code == 400
+
+
+class TestWeeklyMonthlyPoints:
+    def test_grading_awards_points_and_updates_rank_pool(self):
+        exam = make_exam(n_questions=4, kind=MockExam.Kind.WEEKLY, exam_type="CBT")
+        c1, p1 = auth_client()
+        c2, p2 = auth_client()
+        start_and_answer_all(c1, exam, key="A")  # 全問正解
+        start_and_answer_all(c2, exam, key="B")  # 全問不正解（correct_choice_keyはA）
+
+        call_command("grade_mock_exam", "--exam-id", exam.id, "--force")
+        p1.refresh_from_db()
+        p2.refresh_from_db()
+
+        assert p1.ranked_matches == 1
+        assert p2.ranked_matches == 1
+        r1 = MockResult.objects.get(user=p1, mock_exam=exam)
+        r2 = MockResult.objects.get(user=p2, mock_exam=exam)
+        assert r1.points_delta > r2.points_delta
+        assert p1.points == 1000 + r1.points_delta
+        assert p2.points == 1000 + r2.points_delta
+
+
+class TestLargeExamDetail:
+    def test_section_deviation_and_distribution(self):
+        exam = make_exam(n_questions=4, kind=MockExam.Kind.LARGE, exam_type="KOKUSHI")
+        c1, p1 = auth_client()
+        c2, p2 = auth_client()
+        start_and_answer_all(c1, exam, key="A")
+        start_and_answer_all(c2, exam, key="B")
+        call_command("grade_mock_exam", "--exam-id", exam.id, "--force")
+
+        r1 = MockResult.objects.get(user=p1, mock_exam=exam)
+        assert r1.points_delta is None  # 大型模試はポイント対象外
+        assert r1.section_deviation_scores  # 分野別偏差値が入っている
+        assert r1.score_distribution["buckets"]
+        assert r1.score_distribution["my_bucket"] is not None
+
+
+class TestPointsRanking:
+    def test_only_ranked_users_are_listed(self):
+        client, profile = auth_client()
+        unranked_client, _ = auth_client()  # ranked_matches=0 のまま
+        profile.points = 1200
+        profile.ranked_matches = 3
+        profile.save(update_fields=["points", "ranked_matches"])
+
+        res = client.get("/api/ranking/points/")
+        assert res.status_code == 200
+        body = res.json()
+        names = [e["display_name"] for e in body["entries"]]
+        assert len(body["entries"]) == 1  # 未ランクのユーザーは含まれない
+        assert body["me"]["eligible"] is True
+        assert body["me"]["tier"] == "SS"  # 母集団1人なら自分が最上位
+
+
+class TestPointsRankingScope:
+    def test_university_scope_filters_and_reports_reason_when_unset(self):
+        from accounts.models import University
+
+        uni = University.objects.create(name="ランキング大学")
+        client, profile = auth_client(university=uni)
+        profile.points = 1100
+        profile.ranked_matches = 2
+        profile.save(update_fields=["points", "ranked_matches"])
+
+        other_client, other = auth_client()  # 別大学（未設定）、こちらもランク対象
+        other.points = 1300
+        other.ranked_matches = 1
+        other.save(update_fields=["points", "ranked_matches"])
+
+        res = client.get("/api/ranking/points/?scope=university")
+        assert res.status_code == 200
+        body = res.json()
+        assert len(body["entries"]) == 1  # 他大学のユーザーは含まれない
+        assert body["entries"][0]["display_name"] != ""
+
+        no_uni_client, _ = auth_client()
+        res2 = no_uni_client.get("/api/ranking/points/?scope=university")
+        assert res2.json()["me"]["eligible"] is False
