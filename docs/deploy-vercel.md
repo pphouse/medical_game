@@ -159,7 +159,17 @@ vercel deploy --prod --token "$VERCEL_TOKEN"   # 初回は vercel link でプロ
 ```
 
 **注意（サーバーレスの制約）**:
-- ランタイムは Python 3.12（Django 6 要件）。Vercel の Python バージョン設定を合わせる。
+- **関数のリージョンを DB と同じリージョンに置く**。`backend/vercel.json` の `regions` で
+  指定する（既定は `icn1` = ソウル。Supabase が `ap-northeast-2` のため）。
+  `conn_max_age=0` でリクエストごとに接続を張り直すうえ、1リクエストで複数クエリを
+  発行するため、関数と DB が別大陸にあると往復遅延がそのまま積み上がる。
+  実測では `iad1`（米国東部）から `ap-northeast-2` の DB を叩くと 1 リクエスト
+  2.4〜2.8 秒だったものが、`icn1` へ移すと 0.47〜0.96 秒になった（約5倍）。
+  **Supabase のリージョンを変えたら `regions` も必ず合わせること。**
+- ランタイムは Python 3.12（Django 6 要件。`backend/.python-version` で固定）。
+- `backend/` に `pyproject.toml` を置かないこと。Vercel の Python ビルドは `uv` を使い、
+  `[project]` テーブルの無い `pyproject.toml` を見つけると `uv lock` が失敗する。
+  ruff/pytest の設定は `ruff.toml` / `pytest.ini` に置き、依存は `requirements.txt` に集約する。
 - DB は必ず **transaction pooler (6543)** を使う（`conn_max_age=0` 済み。サーバーレス向き）。
 - `migrate` はビルドで走らせない（手順0で実施済み）。
 - `/admin/` の静的ファイルは配信されない（API 用途では不要）。管理画面が必要なら
