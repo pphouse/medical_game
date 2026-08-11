@@ -71,6 +71,8 @@ const RULES = [
   { match: "医療の質", letter: "安", key: "rose" },
   { match: "倫理", letter: "倫", key: "slate" },
   { match: "科学的探究", letter: "探", key: "violet" },
+  // 国試取り込みで分野を特定できなかったもの（レビューで再分類する）
+  { match: "国家試験", letter: "国", key: "slate" },
   // A〜C（基本事項・社会と医学・医療・医学一般）
   { match: "資質", letter: "基", key: "slate" },
   { match: "社会", letter: "社", key: "slate" },
