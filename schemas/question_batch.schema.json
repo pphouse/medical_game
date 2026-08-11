@@ -66,6 +66,11 @@
         "distractor_rationale": {
           "type": "object",
           "additionalProperties": { "type": "string" }
+        },
+        "source_note": {
+          "type": "string",
+          "minLength": 1,
+          "description": "外部の公表物から逐語で取り込んだ場合の出典表記。原文を書き換えられないため、この項目を持つ設問には作問スタイル系の検査（禁止語・設問文の下限字数）を適用しない。"
         }
       }
     },
