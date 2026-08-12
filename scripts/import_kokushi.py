@@ -463,6 +463,42 @@ def _crossref_table(path: Path) -> dict[tuple[str, int], str]:
     return learned
 
 
+# 組合せ問題（"蕁麻疹 —— H1受容体拮抗薬内服"）の左右2列の間隔。実測では
+# 列の境目が 73〜109pt あるのに対し、行内のふつうの字間は 2.5pt しかない。
+# 20pt に置けばどちらとも十分に離れている。
+COLUMN_GAP = 20.0
+COLUMN_SEPARATOR = "—"
+
+# 添字・上付きを本文と同じ行として扱うための許容量。既定の 3pt では
+# "H1受容体拮抗薬" の 1 が行から外れて "H 受容体拮抗薬内服" + "1" になる。
+# 行送りは約20ptあるので、6pt では隣の行と混ざらない。
+LINE_Y_TOLERANCE = 6.0
+
+# 均等割りで開いた字間（"疥 癬"）。列の区切りは上で COLUMN_SEPARATOR に
+# 置き換えたあとなので、ここに残る和文どうしの1個の空白は字間調整でしかない。
+KINSOKU_SPACE = re.compile(r"(?<=[ぁ-んァ-ヶ一-龥々]) (?=[ぁ-んァ-ヶ一-龥々])")
+
+
+def _with_column_separators(chars: list[dict]) -> list[dict]:
+    """左右2列に組まれた箇所へ区切りを差し込む。
+
+    extract_text() は語を1個の空白でつなぐため、そのままでは列の境目が
+    字間と区別できなくなる（"疥 癬 外陰部" が「疥/癬/外陰部」に見える）。
+    間隔が空いている箇所に印を入れてから渡す。
+    """
+    out: list[dict] = []
+    for ch in sorted(chars, key=lambda c: (round(c["top"] / LINE_Y_TOLERANCE), c["x0"])):
+        if out:
+            prev = out[-1]
+            same_line = abs(prev["top"] - ch["top"]) < LINE_Y_TOLERANCE
+            if same_line and ch["x0"] - prev["x1"] > COLUMN_GAP:
+                mid = (prev["x1"] + ch["x0"]) / 2
+                out.append({**prev, "text": COLUMN_SEPARATOR,
+                            "x0": mid - 1, "x1": mid + 1})
+        out.append(ch)
+    return out
+
+
 def _pdfplumber_lines(path: Path) -> list[str]:
     """pdfplumber の行構造のまま、解決できなかったグリフを埋めて返す。
 
@@ -495,7 +531,12 @@ def _pdfplumber_lines(path: Path) -> list[str]:
                     if fixed != ch["text"]:
                         ch = {**ch, "text": fixed}
                 chars.append(ch)
-            pages.append(extract_text(chars) if chars else "")
+            if not chars:
+                pages.append("")
+                continue
+            text = extract_text(_with_column_separators(chars),
+                                y_tolerance=LINE_Y_TOLERANCE)
+            pages.append(KINSOKU_SPACE.sub("", text))
     return _clean([ln for page in pages for ln in page.split("\n")])
 
 
