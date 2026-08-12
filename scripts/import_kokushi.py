@@ -11,6 +11,29 @@
 第三者の過去問サイト（問題の整形・分類・解説を独自に加えた編集著作物）からは
 取得しない。取得元は厚労省の公式PDFのみに限定する。
 
+グリフの解決
+------------
+国試PDFの本文フォントは ToUnicode CMap を持たない部分集合が混ざっており、
+抽出器はそこを埋められない。pdfplumber は "(cid:9479)" を、PyMuPDF は生の
+コード（"\\x02"）を返す。後者は一見ふつうの日本語に紛れるため見落としやすく、
+実際に第114〜116回の268問が "\\x02か月の乳児"（正しくは "2か月の乳児"）の
+形で取り込まれていた。さらに ToUnicode を持っていてもその中身が誤っている
+フォントがあり、"RhD(安)"（正しくは "RhD(−)"）、"全身Ø怠感"（倦怠感）、
+"末Ü神経"（末梢神経）のように何食わぬ顔で別の字になる。
+
+そこで次の順に解決し、決まらなかった文字を含む設問は取り込まない。
+
+1. 抽出器が解決できたものはそれを使う（記号フォントの既知の誤りだけ補正）。
+2. /Encoding /Differences のグリフ名から復元する。ただし信用するのは実際に
+   描画して同定した Adobe-Japan1 のCID名（cNNNN）と AGL の標準名だけで、
+   uniXXXX を名乗る名前は使わない（ToUnicode が採用しなかった名前は字形と
+   食い違う。同じ 〈 が uni002D.c00F4 / uni6B63 / uni81D3 と別名で現れる）。
+3. もう一方の抽出器が解決できていれば座標で突き合わせて借りる。
+4. それでも決まらなければ設問ごと落とす。
+
+最後に「出てよい文字」の白名簿で本文を通し、外れたら落とす。化け方は回ごと・
+フォントごとに変わるため、化けた字を列挙する方式では次の回で漏れる。
+
 取り込まないもの
 ----------------
 - 別冊（画像）を参照する問題: 別冊PDFは患者写真等を含み PDL1.0 の対象外に
@@ -20,8 +43,8 @@
   共有する形式。設問文が「診断はどれか。」だけになり単独で成立しない。
 - 複数選択（「2つ選べ」等）と計算問題: 現行スキーマが「選択肢ちょうど5個・
   正解1つ」のため入らない。
-- 本文の抽出に失敗したもの: "(cid:7674)" が残るもの、およびグリフが別の字に
-  化けたもの。誤読の原因になるため落とす。
+- 本文の抽出に失敗したもの: グリフを解決できなかった箇所が残るもの、および
+  グリフが別の字に化けたもの。誤読の原因になるため落とす。
 - 選択肢が ａ〜ｅ の5個そろわないもの: 抽出失敗の可能性があるため落とす。
 
 使い方
@@ -87,15 +110,91 @@ SERIES_HEAD = re.compile(r"次の文を読み[、,]\s*([0-9０-９、,〜～\-]+
 # pdfplumber がグリフを解決できなかった箇所。本文に "(cid:7674)" の形で残る。
 CID_ARTIFACT = re.compile(r"\(cid:\d+\)")
 
-# 解決はされたが別の字に化けた箇所。第116回の "持続的気道陽圧法 ̋CPAP—" のように
-# 括弧が U+030B（結合二重アキュート）等に置き換わる。全705問中5箇所と少ないので
-# 置換規則を当てずに該当問ごと落とす（誤った置換で本文を壊すほうが害が大きい）。
-# ギリシャ文字・é/ö・U+2212（マイナス）は医学用語や人名で正当に使われるため
-# ここには含めない。
-BROKEN_GLYPH = re.compile(r"[̋¢]")
+# 解決できなかった1文字を表す番人。ここに残ったまま出力されることは無く、
+# UNRESOLVED を含む設問は取り込み時に必ず落とす（後述の is_unusable）。
+UNRESOLVED = "�"
+
+# 抽出に失敗した痕跡。PDFのフォントが ToUnicode を持たないとき、pdfplumber は
+# "(cid:N)" を、PyMuPDF は生のコード（制御文字）をそのまま出す。制御文字は
+# 一見ふつうの日本語に紛れるため見落としやすく、実際に第114〜116回で268問が
+# "\x02か月の乳児"（正しくは "2か月の乳児"）のような形で取り込まれていた。
+# 解決の網から漏れた文字は必ずここで捕まえて設問ごと落とす。
+#
+# 範囲を \x00-\x1f で書くと C1（\x80-\x9f）が漏れる。実際に "全身\x8b怠感" が
+# それで素通りしたので、Unicode の分類で判定する（Cc 制御・Cf 書式・Cn 未割当・
+# Co 私用領域・Cs サロゲート）。タブと改行は行の組み立てに使うので除く。
+_UNUSABLE_CATEGORIES = frozenset({"Cc", "Cf", "Cn", "Co", "Cs"})
+_CID_LEFTOVER = re.compile(r"\(cid:\d+\)")
+
+
+def is_unusable(text: str) -> bool:
+    """抽出に失敗した文字を含むか。
+
+    UNRESOLVED（U+FFFD）は分類が So で _UNUSABLE_CATEGORIES に入らないため
+    明示的に見る。ここを category 判定だけにしていて35問取りこぼした。
+    """
+    if UNRESOLVED in text or _CID_LEFTOVER.search(text):
+        return True
+    return any(
+        ch not in "\t\n" and unicodedata.category(ch) in _UNUSABLE_CATEGORIES
+        for ch in text
+    )
+
+# 解決はされたが別の字に化けた箇所。フォントの ToUnicode が誤っている場合、
+# 抽出器は何食わぬ顔で別の字を返すので (cid:) や制御文字の網に掛からない。
+# 実際に "筋萎縮性側索硬化症ÕALS×"（正しくは 〈ALS〉）、"全身Ø怠感"（倦怠感）、
+# "末Ü神経"（末梢神経）のような形で紛れ込んでいた。
+#
+# 化け方は回ごと・フォントごとにばらばらで、出てくる字を列挙しても次の回で
+# 別の字になる。そこで「出てよい文字」を決めて、外れたら設問ごと落とす。
+# 取りこぼしは stats に出るので、増えたときに気づける。
+_ACCENTED_OK = "öéç"
+"""医学の人名で実際に使う文字だけを許す。
+
+第114〜119回の全用例を確認した結果、正当なのは Schönlein / Sjögren（ö）、
+Barré / café au lait（é）、Behçet（ç）の3字だけだった。同じラテン文字でも
+Õ Ø ä ì Ü ò Ù は例外なく 〈 倦 梢 の化けで、許すと本文が壊れる。新しい回で
+Müller の ü のような正当な字が出たら、実際の用例を確かめてから足すこと。
+"""
+
+_SYMBOLS_OK = "−±×÷≦≧≒≠≪≫→←↑↓℃°‰′″・※…—–‐µʼ"
+
+
+def _is_expected_char(ch: str) -> bool:
+    o = ord(ch)
+    if ch in "\n\t" or 0x20 <= o <= 0x7E:          # ASCII
+        return True
+    if 0x3000 <= o <= 0x30FF or 0xFF00 <= o <= 0xFFEF:  # 和文の記号・かな・全角
+        return True
+    if 0x4E00 <= o <= 0x9FFF or 0x3400 <= o <= 0x4DBF or 0xF900 <= o <= 0xFAFF:
+        return True                                 # 漢字（拡張・互換を含む）
+    if 0x0370 <= o <= 0x03FF:                       # ギリシャ文字（α波、β遮断薬）
+        return True
+    # ローマ数字（JCS Ⅱ-10、第Ⅷ因子、WAIS-Ⅲ、Ⅱ/Ⅵの拡張期雑音）、
+    # 丸数字（診療録問題の①②③）、幾何記号（図中の●）。国試では常用される。
+    if 0x2150 <= o <= 0x218F or 0x2460 <= o <= 0x24FF or 0x25A0 <= o <= 0x25FF:
+        return True
+    return ch in _ACCENTED_OK or ch in _SYMBOLS_OK
+
+
+def has_broken_glyph(text: str) -> bool:
+    """字化けの疑いがある文字を含むか。"""
+    return not all(_is_expected_char(ch) for ch in text)
 
 # 設問の通し番号で始まる行（例: "13 Brugada症候群における…"）
 Q_START = re.compile(r"^(\d{1,3})[ 　]+(\S.*)$", re.MULTILINE)
+
+# 設問文は必ず問いかけで終わる。終わっていないものは切り出しに失敗している
+# （表の断片や、受験上の注意ページの文面を拾ってしまったもの）。
+TRUSTWORTHY_STEM = re.compile(
+    r"(どれか|選べ|答えよ|求めよ|示せ|述べよ|答えは|正しいか|何か|"
+    r"[Ww]hich|[Ww]hat|[Hh]ow)\s*[。．\?？]?\s*$"
+)
+
+# 文の途中から始まっている設問文。前の設問の折り返しを起点にしてしまった
+# ときに出る（"分間様子をみたが、止血しないため…"）。ひらがな・句読点・
+# 閉じ括弧・単位記号で始まる設問文は日本語として成立しない。
+BAD_STEM_START = re.compile(r"^[ぁ-ん、。，．％%）\)\]〕」』,;:／/–—-]")
 
 # category は出題基準の区分が過去問には付かないため、設問文からキーワードで
 # 暫定的に割り当てる。取り込みは status=pending なので、レビュー時に人の目で
@@ -163,9 +262,240 @@ def _clean(lines: list[str]) -> list[str]:
     return [ln.rstrip() for ln in lines if not NOISE_LINE.search(ln)]
 
 
-def _pdfplumber_lines(path: Path) -> list[str]:
+# --- グリフの解決 --------------------------------------------------------
+#
+# 国試PDFの本文フォントは ToUnicode を持たない部分集合が混ざっており、
+# そのままでは文字が落ちる。3段構えで解決し、どれでも決まらなかった文字だけを
+# UNRESOLVED にする。
+#
+#   1. 抽出器が解決できたものはそれを使う。
+#   2. /Encoding /Differences のグリフ名から復元する（第114〜116回）。
+#   3. もう一方の抽出器が解決できていれば座標で突き合わせて借りる（第117〜119回）。
+
+# Adobe-Japan1 のCID番号がそのままグリフ名になっていて Unicode に対応表を
+# 持たないもの。PDFから該当グリフを実際に描画して目視で同定した。
+# 数字は c2690〜c2699 の10連番で 0〜9 に対応する。
+CID_GLYPHS: dict[str, str] = {
+    **{f"c{0x2690 + i:04X}": str(i) for i in range(10)},
+    "c00EF": "(", "c00F0": ")", "c01FA": "〈", "c01FB": "〉",
+    "c4ECF": "疼", "c1F25": "穿", "c1F37": "扁", "c1E5C": "這",
+    "c1F1D": "牙", "c2067": "XIII",
+}
+
+_CID_CHAR = re.compile(r"^\(cid:(\d+)\)$")
+
+# 記号フォント ZZ-PIStd-819 は ToUnicode を持っているが、その中身が誤っている。
+# 抽出器は素通しするので "RhD(安)" のような一見もっともらしい本文になり、
+# (cid:) や制御文字の網にも掛からない。実際に該当グリフを描画して確かめた
+# 対応が下表で、いずれも検査所見でよく使う記号だった（"RhD(−)" が正しい）。
+PI_STD_FONT = "ZZ-PIStd"
+PI_STD_GLYPHS = {
+    "粟": "↓", "或": "→", "袷": "+", "安": "−", "庵": "×", "案": "±",
+}
+
+
+def _fix_symbol_font(fontname: str, text: str) -> str:
+    """記号フォントの誤った ToUnicode を補正する。"""
+    if PI_STD_FONT not in fontname:
+        return text
+    return "".join(PI_STD_GLYPHS.get(ch, ch) for ch in text)
+
+# Adobe-Japan1 のプロポーショナル欧文の並び。Identity-H で ToUnicode を持たない
+# フォント（第117〜119回の学名表記など）はCIDがそのまま出るので、この並びで戻す。
+# PyMuPDF の解決結果と座標で突き合わせて確認した（CID 9479→'C' から始まる
+# "Chlamydia pneumoniae" がそのまま復元できる）。
+_AJ1_LATIN: dict[int, str] = {
+    9444: " ",
+    **{9477 + i: chr(ord("A") + i) for i in range(26)},
+    **{9509 + i: chr(ord("a") + i) for i in range(26)},
+}
+
+
+def _glyph_char(name: str) -> str | None:
+    """グリフ名から文字を復元する。決められなければ None。
+
+    "uni4EE4" のような Unicode を名乗る名前は信用しない。この関数を通るのは
+    フォントの ToUnicode CMap が対応を持たなかった符号だけであり、CMap が
+    採用しなかった名前は実際の字形と食い違う。実際に描画して確かめたところ、
+    第116回の "全身倦怠感" の 倦 はグリフ名が uni4EE4（令）、第114回の
+    "〈ABR〉" は uni002D と uni0041（-とA）だった。さらに同じ 〈 が
+    uni002D.c00F4 / uni6B63 / uni81D3 / uni6CD5 と別々の名前で現れており、
+    名前と字形に対応関係が無い。名前どおりに置くと本文が壊れる。
+
+    信用するのは
+      - CID_GLYPHS: 実際にPDFから描画して目視で同定した Adobe-Japan1 のCID
+      - Adobe Glyph List の標準名（gamma, arrowright など）
+    の2つだけにする。
+    """
+    if name in CID_GLYPHS:
+        return CID_GLYPHS[name]
+    if name.startswith("uni"):
+        return None
+    try:
+        from fontTools.agl import toUnicode
+
+        return toUnicode(name.split(".")[0]) or None
+    except Exception:  # pragma: no cover - fontTools 未導入時
+        return None
+
+
+_ENC_REF = re.compile(r"/Encoding\s+(\d+) 0 R")
+_DIFFERENCES = re.compile(r"/Differences\s*\[(.*?)\]", re.S)
+
+
+def _encoding_tables(path: Path) -> dict[str, dict[int, str]]:
+    """フォント名 -> {コード: 文字} を /Differences から作る。
+
+    PyMuPDF 側のフォント名には部分集合の接頭辞（"EMJJID+"）が付かないことが
+    あるので、接頭辞なしの別名も張る。ただし同じ書体の別々の部分集合が食い違う
+    対応を持つことがあり（同じコードが片方では "2"、もう片方では "疼"）、
+    その場合は誤読を招くので別名を消す。
+    """
+    import pymupdf
+
+    doc = pymupdf.open(path)
+    tables: dict[str, dict[int, str]] = {}
+    for pno in range(doc.page_count):
+        for xref, _ext, _typ, basefont, _name, _enc in doc[pno].get_fonts(full=False):
+            if basefont in tables:
+                continue
+            obj = doc.xref_object(xref)
+            ref = _ENC_REF.search(obj)
+            diff = _DIFFERENCES.search(doc.xref_object(int(ref.group(1)))) if ref else None
+            table: dict[int, str] = {}
+            if diff:
+                code: int | None = None
+                for token in diff.group(1).split():
+                    if token.startswith("/"):
+                        if code is not None:
+                            ch = _glyph_char(token[1:])
+                            if ch:
+                                table[code] = ch
+                            code += 1
+                    else:
+                        try:
+                            code = int(token)
+                        except ValueError:
+                            pass
+            tables[basefont] = table
+    doc.close()
+
+    aliases: dict[str, dict[int, str] | None] = {}
+    for basefont, table in tables.items():
+        short = basefont.split("+")[-1]
+        if short == basefont:
+            continue
+        if short in aliases:
+            known = aliases[short]
+            if known is not None and any(known.get(k, v) != v for k, v in table.items()):
+                aliases[short] = None  # 食い違うので使わない
+        else:
+            aliases[short] = table
+    for short, table in aliases.items():
+        if table is not None and short not in tables:
+            tables[short] = table
+    return tables
+
+
+def _crossref_table(path: Path) -> dict[tuple[str, int], str]:
+    """(フォント名, CID) -> 文字 を PyMuPDF の解決結果から学習する。
+
+    第117〜119回の欧文フォントは Identity-H かつ ToUnicode 無しで、pdfplumber は
+    "(cid:9479)" しか返せない。一方 PyMuPDF は同じ文字を 'C' と読めている。
+    そこで両者の文字を座標で突き合わせ、CIDと文字の対応を1冊ぶん学習してから
+    全体に適用する。
+
+    PyMuPDF は既定で CropBox を原点に取るため MediaBox に揃える。それでも
+    ベースラインの取り方の差でy座標に一定のずれが残るので、両者が一致した文字
+    からずれ幅を推定してから対応付ける。矛盾する対応が観測されたCIDは信用せず
+    捨てる（誤読を作るくらいなら設問ごと落とすほうがよい）。
+    """
+    import pymupdf
+
+    doc = pymupdf.open(path)
+    for page in doc:
+        page.set_cropbox(page.mediabox)
+
+    learned: dict[tuple[str, int], str] = {}
+    conflicts: set[tuple[str, int]] = set()
     with pdfplumber.open(path) as pdf:
-        pages = [(p.extract_text() or "") for p in pdf.pages]
+        for pno, plumber_page in enumerate(pdf.pages):
+            if pno >= doc.page_count:
+                break
+            mu: list[tuple[float, float, str]] = []
+            for blk in doc[pno].get_text("rawdict")["blocks"]:
+                for ln in blk.get("lines", []):
+                    for sp in ln["spans"]:
+                        for ch in sp["chars"]:
+                            mu.append((ch["bbox"][0], ch["bbox"][1], ch["c"]))
+            if not mu:
+                continue
+
+            # 両者が同じ文字を出している箇所からy方向のずれを求める。
+            by_x: dict[float, list[tuple[float, str]]] = {}
+            for x0, y0, ch in mu:
+                by_x.setdefault(round(x0, 1), []).append((y0, ch))
+            deltas = []
+            for ch in plumber_page.chars:
+                for y0, mc in by_x.get(round(ch["x0"], 1), ()):
+                    if mc == ch["text"]:
+                        deltas.append(y0 - ch["top"])
+            if not deltas:
+                continue
+            deltas.sort()
+            dy = deltas[len(deltas) // 2]
+
+            index = {(round(x0, 1), round(y0 - dy, 1)): ch for x0, y0, ch in mu}
+            for ch in plumber_page.chars:
+                m = _CID_CHAR.match(ch["text"])
+                if not m:
+                    continue
+                got = index.get((round(ch["x0"], 1), round(ch["top"], 1)))
+                if not got or is_unusable(got):
+                    continue
+                key = (ch["fontname"], int(m.group(1)))
+                if key in conflicts:
+                    continue
+                if learned.setdefault(key, got) != got:
+                    conflicts.add(key)
+                    del learned[key]
+    doc.close()
+    return learned
+
+
+def _pdfplumber_lines(path: Path) -> list[str]:
+    """pdfplumber の行構造のまま、解決できなかったグリフを埋めて返す。
+
+    page.extract_text() は文字単位のフォント情報を捨ててしまうので、
+    page.chars を直接直してから同じ抽出関数に渡す。行の切り方は変わらない。
+    """
+    from pdfplumber.utils import extract_text
+
+    enc = _encoding_tables(path)
+    xref = _crossref_table(path)
+    pages: list[str] = []
+    with pdfplumber.open(path) as pdf:
+        for page in pdf.pages:
+            chars = []
+            for ch in page.chars:
+                m = _CID_CHAR.match(ch["text"])
+                if m:
+                    code = int(m.group(1))
+                    table = enc.get(ch["fontname"], {})
+                    # /Differences を持たないフォント（Identity-H）では、
+                    # ここに出る番号は符号ではなく Adobe-Japan1 のCIDそのもの。
+                    latin = _AJ1_LATIN.get(code) if not table else None
+                    fixed = (table.get(code)
+                             or xref.get((ch["fontname"], code))
+                             or latin
+                             or UNRESOLVED)
+                    ch = {**ch, "text": fixed}
+                else:
+                    fixed = _fix_symbol_font(ch["fontname"], ch["text"])
+                    if fixed != ch["text"]:
+                        ch = {**ch, "text": fixed}
+                chars.append(ch)
+            pages.append(extract_text(chars) if chars else "")
     return _clean([ln for page in pages for ln in page.split("\n")])
 
 
@@ -179,13 +509,23 @@ def _pymupdf_lines(path: Path) -> list[str]:
     """
     import pymupdf  # 遅延 import。cid が出た回でしか使わない。
 
+    enc = _encoding_tables(path)
     doc = pymupdf.open(path)
     out: list[str] = []
     for page in doc:
         rows: dict[int, list[tuple[float, str]]] = {}
-        for blk in page.get_text("dict")["blocks"]:
+        for blk in page.get_text("rawdict")["blocks"]:
             for ln in blk.get("lines", []):
-                text = "".join(sp["text"] for sp in ln["spans"])
+                # PyMuPDF は ToUnicode の無いグリフを生のコード（制御文字）で
+                # 返す。span のフォント名から /Differences を引いて直す。
+                text = "".join(
+                    _fix_symbol_font(sp["font"], "".join(
+                        ch["c"] if not is_unusable(ch["c"])
+                        else enc.get(sp["font"], {}).get(ord(ch["c"]), UNRESOLVED)
+                        for ch in sp["chars"]
+                    ))
+                    for sp in ln["spans"]
+                )
                 if not text.strip():
                     continue
                 x0, _y0, x1, y1 = ln["bbox"]
@@ -214,7 +554,7 @@ def _usable_count(lines: list[str]) -> int:
     n = 0
     for _num, stem, texts in parse_block(lines):
         body = stem + "".join(texts)
-        if not CID_ARTIFACT.search(body) and not BROKEN_GLYPH.search(body) and stem:
+        if stem and not is_unusable(body) and not has_broken_glyph(body):
             n += 1
     return n
 
@@ -227,12 +567,12 @@ def pdf_lines(path: Path) -> list[str]:
     - PyMuPDF はそれらのグリフを正しく読めるが、行オブジェクトが文字単位に
       割れており、y座標での復元が必要なぶん行構造が崩れる回がある。
 
-    どちらが良いかは回によって逆転する（第116回は PyMuPDF が 104→191問、
-    第119回は pdfplumber が 199問に対し PyMuPDF では71問）。閾値で決め打ちすると
-    どちらかの回を壊すので、両方で解析して取り出せた問数が多いほうを採用する。
+    どちらが良いかは回によって逆転しうるので、閾値で決め打ちせず、両方で解析して
+    取り出せた問数が多いほうを採用する。グリフ解決を入れた後は全回で pdfplumber が
+    上回る（第114回 141→402問など）が、判定は残しておく。
     """
     plumber = _pdfplumber_lines(path)
-    if not any(CID_ARTIFACT.search(ln) for ln in plumber):
+    if not any(UNRESOLVED in ln for ln in plumber):
         return plumber
     mupdf = _pymupdf_lines(path)
     return mupdf if _usable_count(mupdf) > _usable_count(plumber) else plumber
@@ -428,9 +768,10 @@ def main() -> int:
     answers = parse_answers(pdf_text(seitou))
     print(f"正答値表: {len(answers)} 問")
 
-    questions = []
+    questions: list[dict] = []
+    seen: dict[str, int] = {}
     stats = {"total": 0, "series": 0, "image": 0, "multi": 0, "cid": 0,
-             "bad_choices": 0, "no_answer": 0, "ok": 0}
+             "bad_stem": 0, "duplicate": 0, "bad_choices": 0, "no_answer": 0, "ok": 0}
 
     for i, block in enumerate(BLOCKS):
         letter = chr(ord("A") + i)
@@ -453,11 +794,17 @@ def main() -> int:
             if MULTI_SELECT.search(body):
                 stats["multi"] += 1
                 continue
-            if CID_ARTIFACT.search(body) or BROKEN_GLYPH.search(body):
+            if is_unusable(body) or has_broken_glyph(body):
                 # PDFのグリフを解決できず本文が欠けている／別の字に化けている。
                 # そのまま表示すると誤読の原因になるので落とす。
                 stats["cid"] += 1
                 continue
+            if not TRUSTWORTHY_STEM.search(stem) or BAD_STEM_START.match(stem):
+                # 設問文の切り出しに失敗している。前の設問の途中から始まって
+                # いたり、受験上の注意ページの表が紛れ込んだりしたもの。
+                stats["bad_stem"] += 1
+                continue
+            seen[qid] = seen.get(qid, 0) + 1
 
             ans = answers.get(qid, [])
             if len(ans) != 1 or not re.fullmatch(r"[A-E]", ans[0]):
@@ -494,6 +841,15 @@ def main() -> int:
             })
             stats["ok"] += 1
 
+    # 同じ設問番号を2回以上拾っていたら、どれが本物か決められない。片方は
+    # 切り出しの誤りなので、番号ごと落とす（誤った本文を出すよりは減らす）。
+    dupes = {qid for qid, n in seen.items() if n > 1}
+    if dupes:
+        keep = [q for q in questions if q["id"].split("-")[-1] not in dupes]
+        stats["duplicate"] = len(questions) - len(keep)
+        stats["ok"] = len(keep)
+        questions = keep
+
     batch = {
         "meta": {
             "generated_at": "",
@@ -517,6 +873,8 @@ def main() -> int:
     print(f"  複数選択で除外 : {stats['multi']}")
     print(f"  正答が単一でない: {stats['no_answer']}")
     print(f"  抽出欠損で除外 : {stats['cid']}")
+    print(f"  設問文不備で除外: {stats['bad_stem']}")
+    print(f"  番号重複で除外 : {stats['duplicate']}")
     print(f"  選択肢不備で除外: {stats['bad_choices']}")
     print(f"取り込み        : {stats['ok']}")
     print(f"written -> {out}")
