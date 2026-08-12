@@ -83,7 +83,7 @@
       "blueprint_code": "119-A-3",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "Which of the following is the most common site of hypertensive intracerebralhemorrhage?",
+      "question_text": "Which of the following is the most common site of hypertensive intracerebral hemorrhage?",
       "choices": [
         {
           "id": "A",
@@ -457,7 +457,7 @@
       "blueprint_code": "119-A-26",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "60歳の女性。心窩部痛を主訴に来院した。昨夜、大量飲酒後に激しい心窩部痛があり、軽快しないため受診した。生来健康である。飲酒は焼酎4合/日を30年間。意識は清明。体温37.2°C。脈拍100/分、整。血圧160/92 mmHg。呼吸数20/分。腸雑音は減弱している。心窩部に圧痛を認めるが反跳痛や筋性防御を認めない。血液所見:赤血球420万、Hb12.2g/dL、Ht38%、白血球12,800、血小板22万。血液生化学所見:総蛋白6.8g/dL、アルブミン4.2g/dL、総ビリルビン1.0mg/dL、直接ビリルビン0.4mg/dL、AST40U/L、ALT62U/L、LD240U/L(基準124〜222)、アミラーゼ2,048U/L(基準44〜132)、尿素窒素22mg/dL、クレアチニン1.1mg/dL、Na136mEq/L、K4.0mEq/L、Cl104mEq/L。CRP1.6mg/dL。この患者で重症度判定に必要な画像検査はどれか。",
+      "question_text": "60歳の女性。心窩部痛を主訴に来院した。昨夜、大量飲酒後に激しい心窩部痛があり、軽快しないため受診した。生来健康である。飲酒は焼酎4合/日を30年間。意識は清明。体温37.2°C。脈拍100/分、整。血圧160/92 mmHg。呼吸数20/分。腸雑音は減弱している。心窩部に圧痛を認めるが反跳痛や筋性防御を認めない。血液所見:赤血球420万、Hb12.2g/dL、Ht38%、白血球12,800、血小板22万。血液生化学所見:総蛋白6.8g/dL、アルブミン4.2g/dL、総ビリルビン1.0mg/dL、直接ビリルビン0.4mg/dL、AST40U/L、ALT62U/L、LD240 U/L(基準124〜222)、アミラーゼ2,048U/L(基準44〜132)、尿素窒素22mg/dL、クレアチニン1.1mg/dL、Na136mEq/L、K4.0mEq/L、Cl104mEq/L。CRP 1.6mg/dL。この患者で重症度判定に必要な画像検査はどれか。",
       "choices": [
         {
           "id": "A",
@@ -491,7 +491,7 @@
       "blueprint_code": "119-A-27",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "45歳の男性。飲酒の量が多いのではないかと心配した妻に連れられて来院した。初回飲酒は20歳、次第に飲酒回数と量が増え、30歳ごろから連日飲酒するようになった。最近数か月間の飲酒量は、日本酒1升/日で会社に行くことができなくなっていたという。診察時、アルコール臭が強く意識がもうろうとしている。身長175cm、体重58kg。脈拍80/分、整。血圧140/82 mmHg。眼球運動障害と失調性歩行を認める。血液所見:赤血球368万、Hb10.9g/dL、Ht37%、白血球3,800、血小板11万。血液生化学所見:総蛋白5.5g/dL、アルブミン2.9g/dL、総 ビ リ ル ビ ン1.2mg/dL、直 接 ビ リ ル ビ ン0.6mg/dL、AST88U/L、ALT76U/L、LD177U/L(基準124〜222)、ALP103U/L(基準38〜113)、γ-GT302U/L(基準13〜64)、アミラーゼ135U/L(基準44〜132)、CK342U/L(基準59〜248)、アンモニア40μg/dL(基準18〜48)、尿素窒素12mg/dL、クレアチニン0.6mg/dL、尿酸10.9mg/dL、血糖88mg/dL、HbA1c6.1%(基準4.9〜6.0)、Na131mEq/L、K4.4mEq/L、Cl97mEq/L。追加の血液検査結果を待たずに、この患者に投与すべきなのはどれか。",
+      "question_text": "45歳の男性。飲酒の量が多いのではないかと心配した妻に連れられて来院した。初回飲酒は20歳、次第に飲酒回数と量が増え、30歳ごろから連日飲酒するようになった。最近数か月間の飲酒量は、日本酒1升/日で会社に行くことができなくなっていたという。診察時、アルコール臭が強く意識がもうろうとしている。身長175cm、体重58kg。脈拍80/分、整。血圧140/82 mmHg。眼球運動障害と失調性歩行を認める。血液所見:赤血球368万、Hb10.9g/dL、Ht37%、白血球3,800、血小板11万。血液生化学所見:総蛋白5.5g/dL、アルブミン2.9g/dL、総 ビ リ ル ビ ン1.2mg/dL、直 接 ビ リ ル ビ ン0.6mg/dL、AST88U/L、ALT76U/L、LD177U/L(基準124〜222)、ALP103U/L(基準38〜113)、γ-GT 302U/L(基準13〜64)、アミラーゼ135U/L(基準44〜132)、CK342U/L(基準59〜248)、アンモニア40μg/dL(基準18〜48)、尿素窒素12mg/dL、クレアチニン0.6mg/dL、尿酸10.9mg/dL、血糖88mg/dL、HbA1c6.1%(基準4.9〜6.0)、Na131mEq/L、K4.4mEq/L、Cl97mEq/L。追加の血液検査結果を待たずに、この患者に投与すべきなのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -627,7 +627,7 @@
       "blueprint_code": "119-A-40",
       "category": "消化器系",
       "difficulty": "standard",
-      "question_text": "65歳の男性。2 時間前に胃癌に対して手術を受けた。帰室時、心拍数は80台/分で経過していた。5分前から腹腔ドレーンより血性体液が急激に流出した。現在、心拍数140/分、整。血圧82/48 mmHg。呼吸数16/分。SpO 100%(マスク25L/分 酸素投与下)。投与する輸液の組成で適切なのはどれか。Na+ K+ Cl− Lactate− ブドウ糖(mEq/L) (mEq/L) (mEq/L) (mEq/L) (%)",
+      "question_text": "65歳の男性。2 時間前に胃癌に対して手術を受けた。帰室時、心拍数は80台/分で経過していた。5分前から腹腔ドレーンより血性体液が急激に流出した。現在、心拍数140/分、整。血圧82/48 mmHg。呼吸数16/分。SpO 100%(マスク2 5L/分 酸素投与下)。投与する輸液の組成で適切なのはどれか。Na+ K+ Cl− Lactate− ブドウ糖(mEq/L) (mEq/L) (mEq/L) (mEq/L) (%)",
       "choices": [
         {
           "id": "A",
@@ -831,7 +831,7 @@
       "blueprint_code": "119-A-65",
       "category": "内分泌・代謝系",
       "difficulty": "standard",
-      "question_text": "救急外来で小児を診察した研修医から指導医への報告を以下に示す。研修医:「1歳の男児です。3日前から37°C台の発熱、咳嗽、鼻汁が出現し、夜中に咳嗽が増強したため来院しました。身長80.0cm、体重11kg。体温37.8°C。脈拍124/分、整。血圧88/56 mmHg。呼吸数28/分。SpO が2room airで95%です」指導医:「どんな感じの咳ですか」研修医:「オットセイが鳴くような咳です」指導医:「呼吸状態はどうですか」研修医:「胸骨上窩、鎖骨上窩に陥没呼吸がみられます」指導医:「胸部の聴診所見はどうですか」研修医:「吸気時に喘鳴を聴取します」指導医:「治療はどうしますか」これに続く研修医の返答で適切なのはどれか。",
+      "question_text": "救急外来で小児を診察した研修医から指導医への報告を以下に示す。研修医:「1歳の男児です。3日前から37°C台の発熱、咳嗽、鼻汁が出現し、夜中に咳嗽が増強したため来院しました。身長80.0cm、体重11kg。体温37.8°C。脈拍124/分、整。血圧88/56 mmHg。呼吸数28/分。SpO が2 room airで95%です」指導医:「どんな感じの咳ですか」研修医:「オットセイが鳴くような咳です」指導医:「呼吸状態はどうですか」研修医:「胸骨上窩、鎖骨上窩に陥没呼吸がみられます」指導医:「胸部の聴診所見はどうですか」研修医:「吸気時に喘鳴を聴取します」指導医:「治療はどうしますか」これに続く研修医の返答で適切なのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -1817,7 +1817,7 @@
       "blueprint_code": "119-B-31",
       "category": "内分泌・代謝系",
       "difficulty": "standard",
-      "question_text": "76歳の男性。高血糖高浸透圧症候群のため1週間前から入院中である。本日、訪室した際に、呼びかけに反応がなかった。糖尿病以外の既往歴はなく、入院時の血糖は785mg/dLであったが、大量輸液とインスリン皮下注射で改善していた。直近数日の血糖は100〜150mg/dLであった。意識レベルはJCSIII-100。体温36.2°C。心拍数108/分、整。血圧138/82 mmHg。呼吸数18/分。SpO 99%(room2air)。瞳孔は左右対称で対光反射は正常。顔面神経麻痺を認めない。指示には従えないものの四肢を動かしており、明らかな麻痺は認めない。まず行うべき検査はどれか。",
+      "question_text": "76歳の男性。高血糖高浸透圧症候群のため1週間前から入院中である。本日、訪室した際に、呼びかけに反応がなかった。糖尿病以外の既往歴はなく、入院時の血糖は785mg/dLであったが、大量輸液とインスリン皮下注射で改善していた。直近数日の血糖は100〜150mg/dLであった。意識レベルはJCSIII-100。体温36.2°C。心拍数108/分、整。血圧138/82 mmHg。呼吸数18/分。SpO 99%(room 2 air)。瞳孔は左右対称で対光反射は正常。顔面神経麻痺を認めない。指示には従えないものの四肢を動かしており、明らかな麻痺は認めない。まず行うべき検査はどれか。",
       "choices": [
         {
           "id": "A",
@@ -1919,7 +1919,7 @@
       "blueprint_code": "119-B-35",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "A25-year-old man presented with abdominal pain which started two daysago. Yesterday, the pain was periodic and located around the periumbilicalarea. Today, the pain is persistent and localized in the right lower abdomen.His body temperature is 37.7°C, pulse rate90/min, blood pressure120/62mmHg, and respiratory rate16/min. Physical examination shows reboundtenderness at the right lower abdomen.Which one of the following should be performed next?",
+      "question_text": "A25-year-old man presented with abdominal pain which started two days ago. Yesterday, the pain was periodic and located around the periumbilical area. Today, the pain is persistent and localized in the right lower abdomen. His body temperature is 37.7°C, pulse rate90/min, blood pressure120/62 mmHg, and respiratory rate16/min. Physical examination shows rebound tenderness at the right lower abdomen. Which one of the following should be performed next?",
       "choices": [
         {
           "id": "A",
@@ -1987,7 +1987,7 @@
       "blueprint_code": "119-B-40",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "70歳の男性。労作時の息切れを主訴に来院した。2か月前から咳嗽が持続している。2 週間前からは労作時の息苦しさも出現してきたため受診した。体温36.4°C。脈拍72/分、整。血圧130/76 mmHg。呼吸数18/分。SpO 96%(room2air)。胸部エックス線写真で右上縦隔に腫瘤陰影を認め、気管を圧排し、気管内腔の狭窄を認める。肺野に異常は認めない。胸骨右縁付近で予測される聴診所見はどれか。",
+      "question_text": "70歳の男性。労作時の息切れを主訴に来院した。2か月前から咳嗽が持続している。2 週間前からは労作時の息苦しさも出現してきたため受診した。体温36.4°C。脈拍72/分、整。血圧130/76 mmHg。呼吸数18/分。SpO 96%(room 2 air)。胸部エックス線写真で右上縦隔に腫瘤陰影を認め、気管を圧排し、気管内腔の狭窄を認める。肺野に異常は認めない。胸骨右縁付近で予測される聴診所見はどれか。",
       "choices": [
         {
           "id": "A",
@@ -2531,7 +2531,7 @@
       "blueprint_code": "119-C-18",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "Which of the following diseases does NOT cause person-to-persontransmission?",
+      "question_text": "Which of the following diseases does NOT cause person-to-person transmission?",
       "choices": [
         {
           "id": "A",
@@ -3415,7 +3415,7 @@
       "blueprint_code": "119-C-55",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "44歳の男性。健康診断で初めて血圧高値を指摘され来院した。健康診断時の血圧は138/88 mmHgであった。体重は20歳ごろから変わっていない。既往歴に特記すべきことはない。喫煙歴はない。飲酒は月1回で日本酒0.5合(アルコール濃度15%)/回。健康診断後から毎日ジョギングを1時間している。身長162cm、体重58kg。BMI22.0。脈拍68/分、整。血圧134/82 mmHg。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。下肢に浮腫を認めない。尿所見:蛋白(−)。血液生化学所見:クレアチニン0.7mg/dL、尿酸6.4mg/dL、空腹時血糖80mg/dL、HbA1c5.4%(基準4.9〜6.0)、総コレステロール196mg/dL、トリグリセリド100mg/dL、HDLコレステロール68mg/dL。食事内容の評価で、食塩摂取量5.5g/日、野菜摂取量200g/日。この患者の生活習慣に対する指導で適切なのはどれか。",
+      "question_text": "44歳の男性。健康診断で初めて血圧高値を指摘され来院した。健康診断時の血圧は138/88 mmHgであった。体重は20歳ごろから変わっていない。既往歴に特記すべきことはない。喫煙歴はない。飲酒は月1回で日本酒0.5合(アルコール濃度15%)/回。健康診断後から毎日ジョギングを1時間している。身長162cm、体重58kg。BMI22.0。脈拍68/分、整。血圧134/82 mmHg。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。下肢に浮腫を認めない。尿所見:蛋白(−)。血液生化学所見:クレアチニン0.7mg/dL、尿酸6.4 mg/dL、空腹時血糖80mg/dL、HbA1c5.4%(基準4.9〜6.0)、総コレステロール196mg/dL、トリグリセリド100mg/dL、HDLコレステロール68mg/dL。食事内容の評価で、食塩摂取量5.5g/日、野菜摂取量200g/日。この患者の生活習慣に対する指導で適切なのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -3823,7 +3823,7 @@
       "blueprint_code": "119-D-2",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "2 338mEq/L。主治医と以前に決定していた治療方針に関する意思決定に変わりがないことを救急外来担当医が夫に確認した。適切な対応はどれか。",
+      "question_text": "2 3 38mEq/L。主治医と以前に決定していた治療方針に関する意思決定に変わりがないことを救急外来担当医が夫に確認した。適切な対応はどれか。",
       "choices": [
         {
           "id": "A",
@@ -3891,7 +3891,7 @@
       "blueprint_code": "119-D-33",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "10か月の男児。発疹を主訴に両親に連れられて来院した。3日前から38°C台の発熱が持続し、本日解熱した直後に全身の発疹が出現したため受診した。発熱時には機嫌は良く、軽度の軟便があった。解熱後は不機嫌であった。身長68cm、体重9kg。体温36.5°C。脈拍112/分、整。血圧98/52 mmHg。呼吸数30/分。SpO298%(room air)。体幹部を中心に斑状の紅色丘疹を認める。全身状態は良好であり、眼瞼結膜と眼球結膜とに異常を認めない。咽頭は軽度の発赤を認める。口唇の紅潮は認めない。頸部リンパ節を触知しない。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。考えられる原因ウイルスはどれか。",
+      "question_text": "10か月の男児。発疹を主訴に両親に連れられて来院した。3日前から38°C台の発熱が持続し、本日解熱した直後に全身の発疹が出現したため受診した。発熱時には機嫌は良く、軽度の軟便があった。解熱後は不機嫌であった。身長68cm、体重9kg。体温36.5°C。脈拍112/分、整。血圧98/52 mmHg。呼吸数30/分。SpO 2 98%(room air)。体幹部を中心に斑状の紅色丘疹を認める。全身状態は良好であり、眼瞼結膜と眼球結膜とに異常を認めない。咽頭は軽度の発赤を認める。口唇の紅潮は認めない。頸部リンパ節を触知しない。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。考えられる原因ウイルスはどれか。",
       "choices": [
         {
           "id": "A",
@@ -4027,7 +4027,7 @@
       "blueprint_code": "119-D-3",
       "category": "内分泌・代謝系",
       "difficulty": "standard",
-      "question_text": "4CRP27mg/dL。まず行うべき処置はどれか。",
+      "question_text": "4 CRP27mg/dL。まず行うべき処置はどれか。",
       "choices": [
         {
           "id": "A",
@@ -4265,7 +4265,7 @@
       "blueprint_code": "119-D-55",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "44歳の男性。下腹部痛を主訴に来院した。昨日落馬して会陰部を打撲した後から排尿を認めない。意識は清明。体温36.4°C。脈拍88/分、整。血圧142/86mmHg。会 陰 部 の 皮 下 に 出 血 斑 を 認 め る。血 液 所 見:赤 血 球348万、Hb11.4g/dL、Ht33%、白血球8,800、血小板20万。血液生化学所見:総蛋白6.8g/dL、アルブミン3.6g/dL、尿素窒素22mg/dL、クレアチニン0.9mg/dL。CRP0.4mg/dL。腹部超音波検査で多量の尿で拡張している膀胱を認める。逆行性尿道造影検査で膀胱は描出されなかった。適切な対応はどれか。",
+      "question_text": "44歳の男性。下腹部痛を主訴に来院した。昨日落馬して会陰部を打撲した後から排尿を認めない。意識は清明。体温36.4°C。脈拍88/分、整。血圧142/86 mmHg。会 陰 部 の 皮 下 に 出 血 斑 を 認 め る。血 液 所 見:赤 血 球348万、Hb11.4g/dL、Ht33%、白血球8,800、血小板20万。血液生化学所見:総蛋白6.8g/dL、アルブミン3.6g/dL、尿素窒素22mg/dL、クレアチニン0.9mg/dL。CRP0.4mg/dL。腹部超音波検査で多量の尿で拡張している膀胱を認める。逆行性尿道造影検査で膀胱は描出されなかった。適切な対応はどれか。",
       "choices": [
         {
           "id": "A",
@@ -5183,7 +5183,7 @@
       "blueprint_code": "119-E-27",
       "category": "運動器系",
       "difficulty": "standard",
-      "question_text": "65歳の女性。右変形性膝関節症のため、右人工膝関節置換術が予定されている。術前評価のため受診した。6か月前から右膝の痛みが出現し、徐々に悪化し、歩けなくなった。整形外科を受診し、手術適応となった。3か月前に乳癌の手術を受け、薬物による抗癌治療中である。仕事は事務職でデスクワークが主体である。意識は清明。身長149cm、体重68kg。体温36.0°C。脈拍84/分、整。血圧150/70mmHg。呼吸数20/分。SpO 96%(room air)。頸静脈の怒張を認めない。心音と2呼吸音とに異常を認めない。右下肢に圧痕性浮腫を認める。血液所見:赤血球414万、Hb11.3g/dL、Ht36%、血小板23万、PT-INR0.9(基準0.9〜1.1)、Dダイマー9.0μg/mL(基準1.0以下)。血液生化学所見:尿素窒素30mg/dL、クレアチ ニ ン2.0mg/dL、血 糖105mg/dL、Na140mEq/L、K4.6mEq/L、Cl107mEq/L、Ca9.2mg/dL。CRP0.8mg/dL。この時点で実施すべき検査はどれか。",
+      "question_text": "65歳の女性。右変形性膝関節症のため、右人工膝関節置換術が予定されている。術前評価のため受診した。6か月前から右膝の痛みが出現し、徐々に悪化し、歩けなくなった。整形外科を受診し、手術適応となった。3か月前に乳癌の手術を受け、薬物による抗癌治療中である。仕事は事務職でデスクワークが主体である。意識は清明。身長149cm、体重68kg。体温36.0°C。脈拍84/分、整。血圧150/70 mmHg。呼吸数20/分。SpO 96%(room air)。頸静脈の怒張を認めない。心音と2呼吸音とに異常を認めない。右下肢に圧痕性浮腫を認める。血液所見:赤血球414万、Hb11.3g/dL、Ht36%、血小板23万、PT-INR0.9(基準0.9〜1.1)、Dダイマー9.0μg/mL(基準1.0以下)。血液生化学所見:尿素窒素30mg/dL、クレアチ ニ ン2.0mg/dL、血 糖105mg/dL、Na140mEq/L、K4.6mEq/L、Cl107 mEq/L、Ca9.2mg/dL。CRP0.8mg/dL。この時点で実施すべき検査はどれか。",
       "choices": [
         {
           "id": "A",
@@ -5421,7 +5421,7 @@
       "blueprint_code": "119-E-39",
       "category": "耳鼻咽喉系",
       "difficulty": "standard",
-      "question_text": "65歳の女性。めまいを主訴に来院した。今朝、起床時に寝返りを打ったところ天井がぐるぐる回り、悪心を伴ったため、ベッド上で安静にしていた。めまいと悪心は1分程度で消失した。その後、朝食の準備中に振り向いた際に同様のめまいと悪心が再び出現したため、心配になり受診した。安静時のめまいはない。頭痛、耳鳴および難聴はない。意識は清明。体温36.5°C。脈拍72/分、整。血圧122/76mmHg。神経診察で異常を認めない。良性発作性頭位めまい症の診断予測スコアを表1に、その診断スコア合計点別の尤度比を表2に示す。表1 良性発作性頭位めまい症の診断予測スコア項目 スコアめまいの持続時間2分以内 1寝返りで誘発される 2安静時にめまいがある −1表2 診断スコア合計点別の尤度比スコア合計 陽性尤度比−1点 0.10点 0.21点 1.32点 2.83点 6.8この患者における良性発作性頭位めまい症の事前確率が40%である場合、この患者における良性発作性頭位めまい症の事後確率に最も近いのはどれか。",
+      "question_text": "65歳の女性。めまいを主訴に来院した。今朝、起床時に寝返りを打ったところ天井がぐるぐる回り、悪心を伴ったため、ベッド上で安静にしていた。めまいと悪心は1分程度で消失した。その後、朝食の準備中に振り向いた際に同様のめまいと悪心が再び出現したため、心配になり受診した。安静時のめまいはない。頭痛、耳鳴および難聴はない。意識は清明。体温36.5°C。脈拍72/分、整。血圧122/76 mmHg。神経診察で異常を認めない。良性発作性頭位めまい症の診断予測スコアを表1に、その診断スコア合計点別の尤度比を表2に示す。表1 良性発作性頭位めまい症の診断予測スコア項目 スコアめまいの持続時間2分以内 1寝返りで誘発される 2安静時にめまいがある −1表2 診断スコア合計点別の尤度比スコア合計 陽性尤度比−1点 0.1 0点 0.2 1点 1.3 2点 2.8 3点 6.8この患者における良性発作性頭位めまい症の事前確率が40%である場合、この患者における良性発作性頭位めまい症の事後確率に最も近いのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -6033,7 +6033,7 @@
       "blueprint_code": "119-F-19",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "Which of the following is a target disease for neonatal screening using tandemmass spectrometry?",
+      "question_text": "Which of the following is a target disease for neonatal screening using tandem mass spectrometry?",
       "choices": [
         {
           "id": "A",
@@ -6237,7 +6237,7 @@
       "blueprint_code": "119-F-25",
       "category": "医師国家試験（分類未確定）",
       "difficulty": "standard",
-      "question_text": "The constitution of the world health organization〈 WHO〉 is shown below.“Health is a state of complete physical,( ) and social well-being and notmerely the absence of disease or infirmity.”Select the correct answer from below to complete the sentence.",
+      "question_text": "The constitution of the world health organization〈 WHO〉 is shown below.“Health is a state of complete physical,( ) and social well-being and not merely the absence of disease or infirmity.”Select the correct answer from below to complete the sentence.",
       "choices": [
         {
           "id": "A",
