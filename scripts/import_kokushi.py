@@ -16,14 +16,20 @@
 - 別冊（画像）を参照する問題: 別冊PDFは患者写真等を含み PDL1.0 の対象外に
   なりうるため除外する。厚労省ページ自身も「実際に出題された画像と異なるものが
   あります」と注記している。
+- 連問: 「次の文を読み、47、48の問いに答えよ。」に続く症例文を複数の設問が
+  共有する形式。設問文が「診断はどれか。」だけになり単独で成立しない。
 - 複数選択（「2つ選べ」等）と計算問題: 現行スキーマが「選択肢ちょうど5個・
   正解1つ」のため入らない。
+- 本文の抽出に失敗したもの: "(cid:7674)" が残るもの、およびグリフが別の字に
+  化けたもの。誤読の原因になるため落とす。
 - 選択肢が ａ〜ｅ の5個そろわないもの: 抽出失敗の可能性があるため落とす。
 
 使い方
 ------
-    python scripts/import_kokushi.py --exam 119 \
-        --out backend/quiz/management/commands/data/kokushi_119.json
+    for e in 119 118 117 116; do
+        python scripts/import_kokushi.py --exam $e \
+            --out backend/quiz/management/commands/data/kokushi_$e.json
+    done
 """
 
 from __future__ import annotations
@@ -45,12 +51,15 @@ except ImportError:  # pragma: no cover - 実行環境の案内
     )
 
 # 回ごとの公開ページとPDFの命名規則。厚労省は回ごとにURLが変わるため表で持つ。
+# 注意: PDF の接頭辞はページ名と一致しないことがある。第117回はページが
+# tp230502-01.html なのに PDF は tp220502-01*.pdf である。回を追加するときは
+# 必ず公開ページの href を確認すること（推測すると404になる）。
+_BASE = "https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics"
 EXAMS = {
-    119: {
-        "page": "https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html",
-        "pdf_base": "https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/dl",
-        "prefix": "tp250428-01",
-    },
+    119: {"page": f"{_BASE}/tp250428-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp250428-01"},
+    118: {"page": f"{_BASE}/tp240424-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp240424-01"},
+    117: {"page": f"{_BASE}/tp230502-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp220502-01"},
+    116: {"page": f"{_BASE}/tp220421-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp220421-01"},
 }
 
 BLOCKS = "abcdef"  # 甲乙丙丁戊己 → 正答表の A〜F に対応
@@ -75,6 +84,13 @@ SERIES_HEAD = re.compile(r"次の文を読み[、,]\s*([0-9０-９、,〜～\-]+
 
 # pdfplumber がグリフを解決できなかった箇所。本文に "(cid:7674)" の形で残る。
 CID_ARTIFACT = re.compile(r"\(cid:\d+\)")
+
+# 解決はされたが別の字に化けた箇所。第116回の "持続的気道陽圧法 ̋CPAP—" のように
+# 括弧が U+030B（結合二重アキュート）等に置き換わる。全705問中5箇所と少ないので
+# 置換規則を当てずに該当問ごと落とす（誤った置換で本文を壊すほうが害が大きい）。
+# ギリシャ文字・é/ö・U+2212（マイナス）は医学用語や人名で正当に使われるため
+# ここには含めない。
+BROKEN_GLYPH = re.compile(r"[̋¢]")
 
 # 設問の通し番号で始まる行（例: "13 Brugada症候群における…"）
 Q_START = re.compile(r"^(\d{1,3})[ 　]+(\S.*)$", re.MULTILINE)
@@ -349,8 +365,9 @@ def main() -> int:
             if MULTI_SELECT.search(body):
                 stats["multi"] += 1
                 continue
-            if CID_ARTIFACT.search(body):
-                # PDFのグリフを解決できず本文が欠けている。表示できないので落とす。
+            if CID_ARTIFACT.search(body) or BROKEN_GLYPH.search(body):
+                # PDFのグリフを解決できず本文が欠けている／別の字に化けている。
+                # そのまま表示すると誤読の原因になるので落とす。
                 stats["cid"] += 1
                 continue
 
@@ -376,7 +393,8 @@ def main() -> int:
                 "category": classify(stem + "".join(texts)),
                 "difficulty": "standard",
                 "question_text": stem,
-                "choices": [{"id": k, "text": t} for k, t in zip(CHOICE_KEYS, texts)],
+                "choices": [{"id": k, "text": t}
+                            for k, t in zip(CHOICE_KEYS, texts, strict=True)],
                 "correct_choice_id": key,
                 "explanation": build_explanation(args.exam, letter, num, key,
                                                  correct_text, cfg["page"]),
