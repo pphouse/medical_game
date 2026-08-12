@@ -26,7 +26,7 @@
 
 使い方
 ------
-    for e in 119 118 117 116; do
+    for e in 119 118 117 116 115 114; do
         python scripts/import_kokushi.py --exam $e \
             --out backend/quiz/management/commands/data/kokushi_$e.json
     done
@@ -60,6 +60,8 @@ EXAMS = {
     118: {"page": f"{_BASE}/tp240424-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp240424-01"},
     117: {"page": f"{_BASE}/tp230502-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp220502-01"},
     116: {"page": f"{_BASE}/tp220421-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp220421-01"},
+    115: {"page": f"{_BASE}/tp210416-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp210416-01"},
+    114: {"page": f"{_BASE}/tp200421-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp200421-01"},
 }
 
 BLOCKS = "abcdef"  # 甲乙丙丁戊己 → 正答表の A〜F に対応
@@ -157,15 +159,83 @@ def fetch(url: str, dest: Path) -> Path:
     return dest
 
 
-def pdf_lines(path: Path) -> list[str]:
+def _clean(lines: list[str]) -> list[str]:
+    return [ln.rstrip() for ln in lines if not NOISE_LINE.search(ln)]
+
+
+def _pdfplumber_lines(path: Path) -> list[str]:
     with pdfplumber.open(path) as pdf:
         pages = [(p.extract_text() or "") for p in pdf.pages]
-    lines = []
-    for page in pages:
-        for line in page.split("\n"):
-            if not NOISE_LINE.search(line):
-                lines.append(line.rstrip())
-    return lines
+    return _clean([ln for page in pages for ln in page.split("\n")])
+
+
+def _pymupdf_lines(path: Path) -> list[str]:
+    """PyMuPDF で1行ずつ復元する。
+
+    古い回（第114〜116回）の PDF は pdfplumber がグリフを解決できず
+    "(cid:NNNN)" を大量に残す。PyMuPDF は同じPDFを正しく読めるが、
+    行オブジェクトが文字単位に割れている（"ａ" "肥" "満" が別の行になる）ため、
+    y座標でまとめ直してから x 順に連結する。
+    """
+    import pymupdf  # 遅延 import。cid が出た回でしか使わない。
+
+    doc = pymupdf.open(path)
+    out: list[str] = []
+    for page in doc:
+        rows: dict[int, list[tuple[float, str]]] = {}
+        for blk in page.get_text("dict")["blocks"]:
+            for ln in blk.get("lines", []):
+                text = "".join(sp["text"] for sp in ln["spans"])
+                if not text.strip():
+                    continue
+                x0, _y0, x1, y1 = ln["bbox"]
+                rows.setdefault(round(y1 / 2.0), []).append((x0, x1, text))
+        for key in sorted(rows):
+            parts = sorted(rows[key])
+            # 組合せ問題（"蕁麻疹 —— H1受容体拮抗薬内服"）は左右2列で組まれる。
+            # 単純に連結すると列の境目が消えて "蕁麻疹H1受容体拮抗薬内服" になって
+            # しまうため、横方向に大きく空いている箇所には区切りを入れ直す。
+            buf = [parts[0][2]]
+            for i in range(1, len(parts)):
+                gap = parts[i][0] - parts[i - 1][1]
+                buf.append("　—　" if gap > 12.0 else " ")
+                buf.append(parts[i][2])
+            joined = "".join(buf)
+            # 均等割りで開いた字間（"肥 満"）を詰める。和文どうしの間の空白だけを
+            # 落とすので、"FDG-PET での…" のような欧文と和文の間は保つ。
+            joined = re.sub(r"(?<=[ぁ-んァ-ヶ一-龥])\s+(?=[ぁ-んァ-ヶ一-龥])", "", joined)
+            out.append(joined)
+    doc.close()
+    return _clean(out)
+
+
+def _usable_count(lines: list[str]) -> int:
+    """その抽出結果から何問取り出せるかを数える（採用判定用）。"""
+    n = 0
+    for _num, stem, texts in parse_block(lines):
+        body = stem + "".join(texts)
+        if not CID_ARTIFACT.search(body) and not BROKEN_GLYPH.search(body) and stem:
+            n += 1
+    return n
+
+
+def pdf_lines(path: Path) -> list[str]:
+    """本文を行のリストで返す。抽出器は回ごとに向き不向きがあるため実測で選ぶ。
+
+    - pdfplumber は行の切り方が原文に忠実だが、古い回（第114〜116回）では
+      グリフを解決できず "(cid:NNNN)" を大量に残す。
+    - PyMuPDF はそれらのグリフを正しく読めるが、行オブジェクトが文字単位に
+      割れており、y座標での復元が必要なぶん行構造が崩れる回がある。
+
+    どちらが良いかは回によって逆転する（第116回は PyMuPDF が 104→191問、
+    第119回は pdfplumber が 199問に対し PyMuPDF では71問）。閾値で決め打ちすると
+    どちらかの回を壊すので、両方で解析して取り出せた問数が多いほうを採用する。
+    """
+    plumber = _pdfplumber_lines(path)
+    if not any(CID_ARTIFACT.search(ln) for ln in plumber):
+        return plumber
+    mupdf = _pymupdf_lines(path)
+    return mupdf if _usable_count(mupdf) > _usable_count(plumber) else plumber
 
 
 def pdf_text(path: Path) -> str:
@@ -212,6 +282,24 @@ def series_numbers(lines: list[str]) -> set[int]:
             elif part.isdigit():
                 nums.add(int(part))
     return nums
+
+
+def _join_wrapped(parts: list[str]) -> str:
+    """折り返された行を1つの文にまとめる。
+
+    和文は行末で切れても空白を入れずに詰めるのが正しいが、そのまま全部を詰めると
+    英語の設問（国試には毎回数問ある）が "intracerebralhemorrhage" のように
+    単語同士でくっついてしまう。欧文どうしの境目にだけ空白を補う。
+    """
+    out = ""
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        if out and re.search(r"[0-9A-Za-z,.;:)]$", out) and re.match(r"[0-9A-Za-z(]", part):
+            out += " "
+        out += part
+    return out
 
 
 def _is_choice_line(line: str) -> tuple[str, str] | None:
@@ -278,7 +366,7 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
                 if _is_choice_line(cont):
                     break
                 parts.append(cont)
-            texts.append("".join(p.strip() for p in parts))
+            texts.append(_join_wrapped(parts))
 
         # 設問文＝直前の設問の選択肢が終わってから ａ 行の手前まで
         stem_lines = lines[prev_end : run[0]]
@@ -296,7 +384,7 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
         if not m:
             continue
         num = int(m.group(1))
-        stem = "".join(s.strip() for s in [m.group(2)] + stem_lines[1:])
+        stem = _join_wrapped([m.group(2)] + stem_lines[1:])
         out.append((num, stem, texts))
     return out
 
