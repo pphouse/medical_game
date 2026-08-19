@@ -68,7 +68,9 @@ export const api = {
 
   // solo quiz
   categories: () => get("/quiz/categories/"),
-  progress: () => get("/quiz/progress/"),
+  // examType: "CBT" | "KOKUSHI" | undefined（未指定は全部）
+  progress: (examType) =>
+    get(`/quiz/progress/${examType ? `?exam_type=${encodeURIComponent(examType)}` : ""}`),
   summary: () => get("/quiz/summary/"),
   questions: async (category, params = {}) => {
     // The endpoint is paginated (spec §6); the picker needs the whole

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 
 const FILTERS = [
@@ -14,13 +14,20 @@ const FILTERS = [
 export default function QuestionPicker() {
   const { category } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // 同じ分野名が CBT と国試の両方にあるので、一覧で選んだ試験種別を持ち回る。
+  const examType = searchParams.get("exam_type") ?? "";
+  const soloUrl = `/solo${examType ? `?exam_type=${encodeURIComponent(examType)}` : ""}`;
   const [questions, setQuestions] = useState(null);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
-    api.questions(category).then(setQuestions).catch((e) => setError(e.message));
-  }, [category]);
+    api
+      .questions(category, examType ? { exam_type: examType } : {})
+      .then(setQuestions)
+      .catch((e) => setError(e.message));
+  }, [category, examType]);
 
   if (error) return <p className="error">{error}</p>;
   if (!questions) return <p>読み込み中...</p>;
@@ -36,8 +43,8 @@ export default function QuestionPicker() {
 
   return (
     <div className="screen">
-      <button className="back-link" onClick={() => navigate(-1)}>
-        ← メニューに戻る
+      <button className="back-link" onClick={() => navigate(soloUrl)}>
+        ← 分野一覧に戻る
       </button>
       <h2>{category}：どの問題を解くか選ぶ</h2>
 
@@ -59,7 +66,7 @@ export default function QuestionPicker() {
         disabled={filtered.length === 0}
         onClick={() =>
           navigate("/quiz", {
-            state: { title: `分野別演習: ${category}`, questions: filtered, backTo: "/" },
+            state: { title: `分野別演習: ${category}`, questions: filtered, backTo: soloUrl },
           })
         }
       >
