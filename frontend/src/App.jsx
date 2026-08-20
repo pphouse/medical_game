@@ -5,6 +5,12 @@ import QuestionPicker from "./components/QuestionPicker";
 import ReviewDeck from "./components/ReviewDeck";
 import { ProfileProvider } from "./context/ProfileContext";
 import { useSession } from "./hooks/useSession";
+import AdminDashboard from "./routes/Admin/Dashboard";
+import AdminLayout from "./routes/Admin/Layout";
+import AdminQuestionEdit from "./routes/Admin/QuestionEdit";
+import AdminQuestions from "./routes/Admin/Questions";
+import AdminReports from "./routes/Admin/Reports";
+import AdminUsers from "./routes/Admin/Users";
 import Auth from "./routes/Auth";
 import Lobby from "./routes/Battle/Lobby";
 import BattleRoom from "./routes/Battle/Room";
@@ -82,6 +88,15 @@ export default function App() {
             )}
           </Route>
           <Route element={<FullScreenShell />}>
+            {/* 管理画面。ガードは AdminLayout 側（サーバでも IsModerator で守る）。 */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="questions" element={<AdminQuestions />} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="users" element={<AdminUsers />} />
+            </Route>
+            <Route path="/admin/questions/new" element={<AdminQuestionEdit />} />
+            <Route path="/admin/questions/:questionId" element={<AdminQuestionEdit />} />
             <Route path="/solo/:category" element={<QuestionPicker />} />
             {STUDENT_VERIFICATION_ENABLED && (
               <Route path="/create/new" element={<QuestionForm />} />

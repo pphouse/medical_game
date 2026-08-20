@@ -100,6 +100,23 @@ export const api = {
   submitQuestionForReview: (id) => post(`/quiz/questions/${id}/submit/`),
   reportQuestion: (id, payload) => post(`/quiz/questions/${id}/report/`, payload),
 
+  // admin (moderator/admin only)
+  adminStats: () => get("/admin/stats/"),
+  adminQuestions: (params = {}) => {
+    const query = new URLSearchParams(
+      Object.fromEntries(Object.entries(params).filter(([, v]) => v !== "" && v != null)),
+    );
+    return get(`/admin/questions/?${query}`);
+  },
+  adminQuestion: (id) => get(`/admin/questions/${id}/`),
+  adminCreateQuestion: (payload) => post("/admin/questions/", payload),
+  adminUpdateQuestion: (id, payload) => patch(`/admin/questions/${id}/`, payload),
+  adminDeleteQuestion: (id) => request(`/admin/questions/${id}/`, { method: "DELETE" }),
+  adminBulkStatus: (payload) => post("/admin/questions/bulk-status/", payload),
+  adminReports: () => get("/admin/reports/"),
+  adminUsers: () => get("/admin/users/"),
+  adminSetUserRole: (id, role) => patch("/admin/users/", { id, role }),
+
   // student verification (phase 7)
   verificationStatus: () => get("/auth/student-verification/"),
   applyVerification: (universityId) =>
