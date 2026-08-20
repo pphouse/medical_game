@@ -152,6 +152,24 @@ select status, count(*) from quiz_question group by status;
 | `INTERNAL_API_TOKEN` | 集計エンドポイント保護用の共有シークレット |
 | `VAPID_*` | 復習リマインドを使う場合 |
 
+**Target は Production だけでなく Preview にも設定すること。** Vercel の環境変数は
+Target ごとに独立していて、Production だけに入れるとプレビューには何も渡らない。
+`DJANGO_DEBUG` が未設定だとプレビューでデバッグページ（設定値・トレースバック・
+Cookie を含む）が配信され、`DJANGO_ALLOWED_HOSTS` が未設定だとデプロイごとの
+URL が `DisallowedHost` で 400 になる。実際に両方起きた。
+
+プレビューでは最低限この3つを入れる。
+
+| 変数 | プレビューでの値 |
+|---|---|
+| `DJANGO_DEBUG` | `false` |
+| `DJANGO_ALLOWED_HOSTS` | `.vercel.app`（先頭のドットでサブドメインに一致。デプロイごとの URL はハッシュ付きで固定できない） |
+| `DJANGO_SECRET_KEY` | 本番とは別のランダム値 |
+
+なお `DJANGO_DEBUG` の既定値は `False`（`config/settings.py`）。付け忘れても
+デバッグページが出ない側に倒してある。ローカル開発では `.env` で明示的に
+`DJANGO_DEBUG=true` を指定する。
+
 CLI 例:
 ```bash
 cd backend
