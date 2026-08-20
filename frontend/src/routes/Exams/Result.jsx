@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../api";
+import ExplanationText from "../../components/ExplanationText";
 import TierBadge from "../../components/TierBadge";
 
 /** 模試結果: 順位・偏差値・分野別スコア（バー表示）・全問見直し。
@@ -162,7 +163,7 @@ export default function Result() {
             <p className="exam-review-answer">
               あなたの解答: {row.my_choice || "未解答"} ／ 正解: {row.correct_choice_key}
             </p>
-            <p className="explanation">{row.explanation}</p>
+            <ExplanationText text={row.explanation} />
           </div>
         );
       })}

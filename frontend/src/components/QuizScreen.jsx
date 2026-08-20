@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { getCategoryTheme } from "../categoryTheme";
+import ExplanationText from "./ExplanationText";
 
 // 5段階すべてを手動で選び直せる（○/✕ は正誤で自動設定されるが、あとから
 // 上書きしてよい）。unstudied は「未演習に戻す」操作を表す。
@@ -199,7 +200,7 @@ export default function QuizScreen({ title, questions, onBack, previewMode = fal
               </p>
               <span className="badge category-badge">分野: {question.category}</span>
             </div>
-            <p className="explanation">{result.explanation}</p>
+            <ExplanationText text={result.explanation} />
             <p className="mastery-prompt">
               現在の評価: <strong>{MASTERY_DISPLAY[masteryLevel]}</strong>
               　必要であれば下のボタンで上書きできます：

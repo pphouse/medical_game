@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import TierBadge from "../components/TierBadge";
 
+const CATEGORIES = [
+  { key: "practice", label: "問題演習" },
+  { key: "battle", label: "対戦" },
+];
+
 const SCOPES = [
   { key: "national", label: "全国" },
   { key: "university", label: "学内" },
   { key: "university_aggregate", label: "大学別" },
-  { key: "points", label: "対戦・模試" },
   { key: "exams", label: "模試履歴" },
 ];
 
@@ -159,6 +163,7 @@ function ExamHistory() {
 }
 
 export default function Ranking() {
+  const [category, setCategory] = useState("practice");
   const [scope, setScope] = useState("national");
   const [metric, setMetric] = useState("solved");
   const [period, setPeriod] = useState("all");
@@ -166,78 +171,94 @@ export default function Ranking() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (scope === "exams" || scope === "points") return;
+    if (category !== "practice" || scope === "exams") return;
     setData(null);
     setError(null);
     api
       .ranking({ scope, metric, period: period === "month" ? currentMonth() : "all" })
       .then(setData)
       .catch((e) => setError(e.message));
-  }, [scope, metric, period]);
+  }, [category, scope, metric, period]);
 
   return (
     <div className="screen">
       <h2>ランキング</h2>
 
       <div className="filter-chip-row">
-        {SCOPES.map((s) => (
+        {CATEGORIES.map((c) => (
           <button
-            key={s.key}
-            className={`filter-chip${scope === s.key ? " active" : ""}`}
-            onClick={() => setScope(s.key)}
+            key={c.key}
+            className={`filter-chip${category === c.key ? " active" : ""}`}
+            onClick={() => setCategory(c.key)}
           >
-            {s.label}
+            {c.label}
           </button>
         ))}
       </div>
 
-      {scope === "exams" ? (
-        <ExamHistory />
-      ) : scope === "points" ? (
+      {category === "battle" ? (
         <PointsRanking />
       ) : (
         <>
           <div className="filter-chip-row">
-            {METRICS.map((m) => (
+            {SCOPES.map((s) => (
               <button
-                key={m.key}
-                className={`filter-chip${metric === m.key ? " active" : ""}`}
-                onClick={() => setMetric(m.key)}
+                key={s.key}
+                className={`filter-chip${scope === s.key ? " active" : ""}`}
+                onClick={() => setScope(s.key)}
               >
-                {m.label}
-              </button>
-            ))}
-            <span className="ranking-separator" />
-            {PERIODS.map((p) => (
-              <button
-                key={p.key}
-                className={`filter-chip${period === p.key ? " active" : ""}`}
-                onClick={() => setPeriod(p.key)}
-              >
-                {p.label}
+                {s.label}
               </button>
             ))}
           </div>
 
-          {error && <p className="error">{error}</p>}
+          {scope === "exams" ? (
+            <ExamHistory />
+          ) : (
+            <>
+              <div className="filter-chip-row">
+                {METRICS.map((m) => (
+                  <button
+                    key={m.key}
+                    className={`filter-chip${metric === m.key ? " active" : ""}`}
+                    onClick={() => setMetric(m.key)}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+                <span className="ranking-separator" />
+                {PERIODS.map((p) => (
+                  <button
+                    key={p.key}
+                    className={`filter-chip${period === p.key ? " active" : ""}`}
+                    onClick={() => setPeriod(p.key)}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
 
-          {data?.me && (
-            <div className="ranking-me-card">
-              {data.me.eligible === false ? (
-                <span className="ranking-me-reason">{data.me.reason}</span>
-              ) : (
-                <>
-                  <span className="ranking-me-label">あなたの順位</span>
-                  <span className="ranking-me-rank">
-                    {data.me.rank ? `${data.me.rank}位` : "―"}
-                  </span>
-                  <span className="ranking-me-value">{formatValue(metric, data.me.value)}</span>
-                </>
+              {error && <p className="error">{error}</p>}
+
+              {data?.me && (
+                <div className="ranking-me-card">
+                  {data.me.eligible === false ? (
+                    <span className="ranking-me-reason">{data.me.reason}</span>
+                  ) : (
+                    <>
+                      <span className="ranking-me-label">あなたの順位</span>
+                      <span className="ranking-me-rank">
+                        {data.me.rank ? `${data.me.rank}位` : "―"}
+                      </span>
+                      <span className="ranking-me-value">{formatValue(metric, data.me.value)}</span>
+                    </>
+                  )}
+                </div>
               )}
-            </div>
-          )}
 
-          <RankingTable data={data} metric={metric} />
+              <RankingTable data={data} metric={metric} />
+            </>
+          )}
         </>
       )}
     </div>

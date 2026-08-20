@@ -26,12 +26,14 @@
   --m-cross: #ef4444;
   --m-unstudied: #cbd5e1;
 
-  --tier-ss-bg: #d4af37; --tier-ss-fg: #4a3600; /* 金 */
-  --tier-s-bg: #c0c0c0; --tier-s-fg: #3a3a3a; /* 銀 */
-  --tier-a-bg: #cd7f32; --tier-a-fg: #402008; /* 銅 */
-  --tier-b-bg: #3b82f6; --tier-b-fg: #ffffff; /* 青 */
-  --tier-c-bg: #eab308; --tier-c-fg: #4a3600; /* 黄 */
-  --tier-d-bg: #9ca3af; --tier-d-fg: #ffffff; /* 灰 */
+  /* SS/S/A は光る金・銀・銅。B/C/D はまとめて青（光らせない）。 */
+  --tier-ss-bg: linear-gradient(135deg, #fff3b0 0%, #d4af37 55%, #fff3b0 100%);
+  --tier-ss-fg: #4a3600; --tier-ss-glow: #ffd447;
+  --tier-s-bg: linear-gradient(135deg, #f2f2f5 0%, #b6b8bf 55%, #f2f2f5 100%);
+  --tier-s-fg: #3a3a3a; --tier-s-glow: #d9d9df;
+  --tier-a-bg: linear-gradient(135deg, #f0c48a 0%, #b06a24 55%, #f0c48a 100%);
+  --tier-a-fg: #3a1e05; --tier-a-glow: #e8963f;
+  --tier-bcd-bg: #3b82f6; --tier-bcd-fg: #ffffff; /* 青 */
 
   font: 16px/145% "Hiragino Maru Gothic ProN", "Rounded Mplus 1c",
     system-ui, "Segoe UI", Roboto, sans-serif;

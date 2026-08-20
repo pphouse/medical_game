@@ -10,6 +10,9 @@ class QuestionSerializer(serializers.ModelSerializer):
     mastery_level = serializers.SerializerMethodField()
     correct_rate = serializers.SerializerMethodField()
     case_stem = serializers.SerializerMethodField()
+    last_correct = serializers.SerializerMethodField()
+    last_response_time_ms = serializers.SerializerMethodField()
+    last_answered_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
@@ -28,15 +31,33 @@ class QuestionSerializer(serializers.ModelSerializer):
             "choices",
             "correct_rate",
             "mastery_level",
+            "last_correct",
+            "last_response_time_ms",
+            "last_answered_at",
         ]
 
+    def _last_history(self, obj):
+        return self.context.get("history_by_question", {}).get(obj.id)
+
     def get_mastery_level(self, obj):
-        mastery_by_question = self.context.get("mastery_by_question", {})
-        return mastery_by_question.get(obj.id, "unstudied")
+        row = self._last_history(obj)
+        return row.mastery_level if row else "unstudied"
 
     def get_correct_rate(self, obj):
         # null until answer_count >= 10 (spec 2.1: 少数解答での誤解を避ける)
         return obj.public_correct_rate
+
+    def get_last_correct(self, obj):
+        row = self._last_history(obj)
+        return row.correct if row else None
+
+    def get_last_response_time_ms(self, obj):
+        row = self._last_history(obj)
+        return row.response_time_ms if row else None
+
+    def get_last_answered_at(self, obj):
+        row = self._last_history(obj)
+        return row.answered_at if row else None
 
     def get_case_stem(self, obj):
         if obj.question_set_id:

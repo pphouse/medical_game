@@ -111,6 +111,10 @@ class RankingView(APIView):
         return Response({"entries": entries, "me": me, "computed_at": computed_at})
 
     def _build_me(self, profile, scope, metric, period, qs):
+        # total: 母集団のサイズ。フロントの「上位X%」表示に使う（spec: パーセンタイルは
+        # 常にランキング画面と同じ「厳密に自分より上の人数/母集団」の考え方に揃える）。
+        total = qs.count()
+
         if scope == RankingSnapshot.Scope.UNIVERSITY_AGGREGATE:
             if not profile.university_id:
                 return {
@@ -118,20 +122,34 @@ class RankingView(APIView):
                     "value": None,
                     "eligible": False,
                     "reason": "所属大学が未設定です。",
+                    "total": total,
                 }
             row = qs.filter(university_target_id=profile.university_id).first()
             if row:
-                return {"rank": row.rank, "value": row.value, "eligible": True, "reason": None}
+                return {
+                    "rank": row.rank,
+                    "value": row.value,
+                    "eligible": True,
+                    "reason": None,
+                    "total": total,
+                }
             return {
                 "rank": None,
                 "value": None,
                 "eligible": False,
                 "reason": "対象メンバーが5人未満のため、大学ランキングの対象外です。",
+                "total": total,
             }
 
         row = qs.filter(profile=profile).first()
         if row:
-            return {"rank": row.rank, "value": row.value, "eligible": True, "reason": None}
+            return {
+                "rank": row.rank,
+                "value": row.value,
+                "eligible": True,
+                "reason": None,
+                "total": total,
+            }
 
         if metric == RankingSnapshot.Metric.ACCURACY:
             solved_row = RankingSnapshot.objects.filter(
@@ -152,8 +170,9 @@ class RankingView(APIView):
                         f"正答率ランキングは{MIN_QUESTIONS_FOR_ACCURACY_RANKING}問以上の解答が"
                         f"必要です（現在 {solved}問）"
                     ),
+                    "total": total,
                 }
-        return {"rank": None, "value": None, "eligible": True, "reason": None}
+        return {"rank": None, "value": None, "eligible": True, "reason": None, "total": total}
 
 
 class ExamRankingHistoryView(APIView):

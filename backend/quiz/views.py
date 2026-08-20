@@ -278,13 +278,12 @@ class QuestionListView(APIView):
             qs.select_related("question_set").order_by("id"), request
         )
 
-        mastery_by_question = dict(
-            latest.filter(question_id__in=[q.id for q in page]).values_list(
-                "question_id", "mastery_level"
-            )
-        )
+        history_by_question = {
+            row.question_id: row
+            for row in latest.filter(question_id__in=[q.id for q in page])
+        }
         serializer = QuestionSerializer(
-            page, many=True, context={"mastery_by_question": mastery_by_question}
+            page, many=True, context={"history_by_question": history_by_question}
         )
         return paginator.get_paginated_response(serializer.data)
 

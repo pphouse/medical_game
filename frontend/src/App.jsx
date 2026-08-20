@@ -19,7 +19,6 @@ import QuestionForm from "./routes/Create/QuestionForm";
 import ExamList from "./routes/Exams/List";
 import ExamResult from "./routes/Exams/Result";
 import ExamSession from "./routes/Exams/Session";
-import Menu from "./routes/Menu";
 import NotificationSettings from "./routes/NotificationSettings";
 import QuizSession from "./routes/QuizSession";
 import Ranking from "./routes/Ranking";
@@ -72,7 +71,7 @@ export default function App() {
         <Route path="/auth" element={<Auth />} />
         <Route element={<Protected />}>
           <Route element={<TabShell />}>
-            <Route path="/" element={<Menu />} />
+            <Route path="/" element={<Solo />} />
             <Route path="/solo" element={<Solo />} />
             <Route path="/review" element={<ReviewDeck />} />
             <Route path="/battle" element={<Lobby />} />
