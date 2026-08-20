@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from config.permissions import IsModerator
 
+from .categories import category_sort_key
 from .models import AnswerHistory, Question, QuestionReport, ReviewSchedule
 from .serializers import (
     CategoryProgressSerializer,
@@ -148,12 +149,12 @@ class HomeSummaryView(APIView):
 
 class CategoryListView(APIView):
     def get(self, request):
-        rows = (
+        rows = list(
             Question.objects.visible_to(request.user)
             .values("category")
             .annotate(count=Count("id"))
-            .order_by("category")
         )
+        rows.sort(key=lambda r: category_sort_key(r["category"]))
         return Response(CategorySerializer(rows, many=True).data)
 
 
@@ -210,6 +211,7 @@ class CategoryProgressView(APIView):
                 }
             )
 
+        results.sort(key=lambda r: category_sort_key(r["category"]))
         return Response(CategoryProgressSerializer(results, many=True).data)
 
 

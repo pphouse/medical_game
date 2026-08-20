@@ -4,6 +4,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from quiz.categories import normalize as normalize_category
 from quiz.models import Question, QuestionSet
 
 DEFAULT_DATA_FILE = (
@@ -59,8 +60,17 @@ class Command(BaseCommand):
         created_sets = 0
 
         for q in payload.get("questions", []):
+            # バッチ JSON の分野名は作られた時期によってまちまちなので、
+            # 取り込み時に正規の分野立てへ寄せる（quiz/categories.py）。
+            category = normalize_category(
+                q["category"],
+                "\n".join(
+                    [q["question_text"], q.get("disease", q.get("topic", ""))]
+                    + [str(c.get("text", "")) for c in q["choices"] if isinstance(c, dict)]
+                ),
+            )
             _, was_created = Question.objects.get_or_create(
-                category=q["category"],
+                category=category,
                 question_text=q["question_text"],
                 defaults=dict(
                     topic=q.get("disease", q.get("topic", "")),
@@ -85,6 +95,9 @@ class Command(BaseCommand):
         for s in payload.get("question_sets", []):
             if QuestionSet.objects.filter(case_stem=s["case_stem"]).exists():
                 continue
+            set_category = normalize_category(
+                s["category"], "\n".join([s["case_stem"], s.get("disease", "")])
+            )
             question_set = QuestionSet.objects.create(
                 title=s.get("title") or f"{s.get('disease', s['id'])}の四連問",
                 blueprint_code=s.get("blueprint_code", ""),
@@ -95,7 +108,7 @@ class Command(BaseCommand):
             created_sets += 1
             for step in s["steps"]:
                 Question.objects.create(
-                    category=s["category"],
+                    category=set_category,
                     topic=s.get("disease", ""),
                     exam_type=s.get("exam_type", Question.ExamType.CBT),
                     difficulty=DIFFICULTY_MAP.get(

@@ -685,14 +685,19 @@
   justify-content: center;
   font-size: 12px;
   font-weight: 800;
-  color: var(--text);
+  /* 記号は背景の評価色に沈まないよう、必ず白抜きにする。未演習だけ地色が
+     淡いので下で濃い文字色に戻す。 */
+  color: #ffffff;
 }
 
 .question-row-mastery.mastery-double_circle { background: var(--m-double); }
 .question-row-mastery.mastery-circle { background: var(--m-circle); }
 .question-row-mastery.mastery-triangle { background: var(--m-triangle); }
 .question-row-mastery.mastery-cross { background: var(--m-cross); }
-.question-row-mastery.mastery-unstudied { background: var(--m-unstudied); }
+.question-row-mastery.mastery-unstudied {
+  background: var(--m-unstudied);
+  color: var(--text-h);
+}
 
 .question-row-difficulty {
   flex-shrink: 0;
@@ -761,6 +766,14 @@
   width: 18px;
   height: 18px;
   font-size: 10px;
+}
+
+/* 項目どうしの区切り。全角スペースだと JSX の字下げに巻き込まれて消える。 */
+.question-row-meta-sep {
+  width: 1px;
+  height: 11px;
+  background: var(--border);
+  margin: 0 4px;
 }
 
 .choice.correct {
