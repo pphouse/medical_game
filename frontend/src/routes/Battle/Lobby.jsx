@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api";
+import TierBadge from "../../components/TierBadge";
 
 const QUESTION_COUNTS = [5, 10, 20];
 const POLL_INTERVAL_MS = 2000;
@@ -72,14 +73,14 @@ function QuickMatch({ questionCount, onCancel }) {
           </h3>
           <div className="battle-participant-row">
             <span>{ticket.me.display_name}（あなた）</span>
-            <span className="battle-online">{ticket.me.tier ?? "未ランク"}</span>
+            <TierBadge tier={ticket.me.tier} />
           </div>
           <div className="battle-participant-row">
             <span>
               {ticket.opponent?.display_name}
               {ticket.opponent?.university ? ` ・ ${ticket.opponent.university}` : ""}
             </span>
-            <span className="battle-online">{ticket.opponent?.tier ?? "未ランク"}</span>
+            <TierBadge tier={ticket.opponent?.tier} />
           </div>
           <p className="exam-meta">まもなく対戦を開始します…</p>
         </>

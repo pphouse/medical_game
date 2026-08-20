@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../api";
+import TierBadge from "../../components/TierBadge";
 
 /** 模試結果: 順位・偏差値・分野別スコア（バー表示）・全問見直し。
  * kind に応じて追加のパネルを出す:
@@ -78,7 +79,12 @@ export default function Result() {
           <span className="tier-badge">
             獲得ポイント {data.points_delta >= 0 ? "+" : ""}
             {data.points_delta}
-            {data.tier_after && ` ・ 現在 ${data.points_after}pt（${data.tier_after}ランク）`}
+            {data.tier_after && (
+              <>
+                {" ・ 現在 "}
+                {data.points_after}pt（<TierBadge tier={data.tier_after} />ランク）
+              </>
+            )}
           </span>
         </div>
       )}

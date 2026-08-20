@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import TierBadge from "../components/TierBadge";
 
 const SCOPES = [
   { key: "national", label: "全国" },
@@ -95,7 +96,9 @@ function PointsRanking() {
           ) : (
             <>
               <span className="ranking-me-label">あなたのランク</span>
-              <span className="ranking-me-rank">{data.me.tier ?? "未ランク"}</span>
+              <span className="ranking-me-rank">
+                <TierBadge tier={data.me.tier} large />
+              </span>
               <span className="ranking-me-value">{data.me.points}pt</span>
             </>
           )}
@@ -115,7 +118,7 @@ function PointsRanking() {
                 {entry.display_name}
                 {entry.university && <span className="ranking-univ">{entry.university}</span>}
               </span>
-              <span className="badge">{entry.tier ?? "―"}</span>
+              <TierBadge tier={entry.tier} fallback="―" />
               <span className="ranking-value">{entry.points}pt</span>
             </div>
           ))}

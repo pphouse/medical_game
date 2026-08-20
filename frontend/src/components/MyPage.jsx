@@ -4,6 +4,7 @@ import { api } from "../api";
 import { useProfile } from "../context/ProfileContext";
 import { STUDENT_VERIFICATION_ENABLED } from "../features";
 import { supabase } from "../lib/supabase";
+import TierBadge from "./TierBadge";
 
 const ICONS = {
   rank: (
@@ -144,7 +145,7 @@ export default function MyPage() {
               </div>
               <div className="rank-tile">
                 <span className="rank-tile-value">
-                  {pointsInfo?.me?.eligible ? pointsInfo.me.tier : "―"}
+                  <TierBadge tier={pointsInfo?.me?.eligible ? pointsInfo.me.tier : null} large />
                 </span>
                 <span className="rank-tile-label">
                   対戦・模試ランク{pointsInfo?.me?.eligible ? `（${pointsInfo.me.points}pt）` : "（未ランク）"}

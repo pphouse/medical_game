@@ -26,6 +26,13 @@
   --m-cross: #ef4444;
   --m-unstudied: #cbd5e1;
 
+  --tier-ss-bg: #d4af37; --tier-ss-fg: #4a3600; /* 金 */
+  --tier-s-bg: #c0c0c0; --tier-s-fg: #3a3a3a; /* 銀 */
+  --tier-a-bg: #cd7f32; --tier-a-fg: #402008; /* 銅 */
+  --tier-b-bg: #3b82f6; --tier-b-fg: #ffffff; /* 青 */
+  --tier-c-bg: #eab308; --tier-c-fg: #4a3600; /* 黄 */
+  --tier-d-bg: #9ca3af; --tier-d-fg: #ffffff; /* 灰 */
+
   font: 16px/145% "Hiragino Maru Gothic ProN", "Rounded Mplus 1c",
     system-ui, "Segoe UI", Roboto, sans-serif;
   color-scheme: light dark;

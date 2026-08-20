@@ -344,6 +344,36 @@
   border: 1px solid var(--t-border);
 }
 
+.tier-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 999px;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+}
+
+.tier-pill-lg {
+  font-size: 20px;
+  padding: 5px 18px;
+}
+
+.tier-pill.tier-none {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.tier-pill.tier-SS { background: var(--tier-ss-bg); color: var(--tier-ss-fg); }
+.tier-pill.tier-S  { background: var(--tier-s-bg);  color: var(--tier-s-fg); }
+.tier-pill.tier-A  { background: var(--tier-a-bg);  color: var(--tier-a-fg); }
+.tier-pill.tier-B  { background: var(--tier-b-bg);  color: var(--tier-b-fg); }
+.tier-pill.tier-C  { background: var(--tier-c-bg);  color: var(--tier-c-fg); }
+.tier-pill.tier-D  { background: var(--tier-d-bg);  color: var(--tier-d-fg); }
+
 .question-text {
   margin-bottom: 16px;
   color: var(--text-h);
