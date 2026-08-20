@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import ProgressBar from "../components/ProgressBar";
 import ProgressDonut from "../components/ProgressDonut";
-import RankingCard from "../components/RankingCard";
 import { STUDENT_VERIFICATION_ENABLED } from "../features";
 
 /** 試験種別のタブ。CBT と国試は分野の切り方が違ううえ問題数も桁が近いので、
@@ -15,6 +14,17 @@ const EXAM_TABS = [
 ];
 
 const MASTERY_LEVELS = ["double_circle", "circle", "triangle", "cross", "unstudied"];
+
+function RankStat({ label, rankInfo }) {
+  const display =
+    rankInfo && rankInfo.rank ? `${rankInfo.rank}位 / ${rankInfo.out_of}人中` : "ランキング対象外";
+  return (
+    <div className="rank-stat">
+      <span className="rank-label">{label}</span>
+      <span className="rank-value">{display}</span>
+    </div>
+  );
+}
 
 /** 問題演習: 全体進捗（円グラフ）・順位に続けて、分野別の演習リストを表示する
  * （旧「ホーム」と「ソロモード」を1画面に統合）。 */
@@ -72,16 +82,26 @@ export default function Solo() {
   return (
     <div className="screen">
       {summary && (
-        <div className="summary-card summary-card-centered">
+        <div className="summary-card">
           <ProgressDonut
             counts={allCounts?.counts}
             total={allCounts?.total}
             pct={summary.overall_progress_pct}
           />
+          <div className="summary-pct">
+            <span className="summary-pct-value">
+              {summary.answered_count}/{summary.total_questions}問
+            </span>
+            <span className="summary-pct-label">
+              全体進捗（正答率 {summary.overall_correct_rate}%）
+            </span>
+          </div>
+          <div className="summary-ranks">
+            <RankStat label="学内順位" rankInfo={summary.university_rank} />
+            <RankStat label="全国順位" rankInfo={summary.national_rank} />
+          </div>
         </div>
       )}
-
-      <RankingCard />
 
       <div className="quick-links">
         <button className="quick-link" onClick={() => navigate("/review")}>

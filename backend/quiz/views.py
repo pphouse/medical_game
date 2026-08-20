@@ -140,6 +140,8 @@ class HomeSummaryView(APIView):
                 {
                     "overall_progress_pct": overall_progress_pct,
                     "overall_correct_rate": overall_correct_rate,
+                    "answered_count": answered_count,
+                    "total_questions": total_questions,
                     "university_rank": university_rank,
                     "national_rank": national_rank,
                 }

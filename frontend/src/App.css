@@ -99,9 +99,11 @@
 }
 
 .summary-pct-value {
-  font-size: 30px;
+  /* 円グラフと順位に挟まれるので、狭い画面では縮めて折り返しを防ぐ。 */
+  font-size: clamp(19px, 5.2vw, 26px);
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .summary-pct-label {
@@ -133,10 +135,6 @@
 
 .rank-value {
   font-weight: 700;
-}
-
-.summary-card-centered {
-  justify-content: center;
 }
 
 .ranking-card {
