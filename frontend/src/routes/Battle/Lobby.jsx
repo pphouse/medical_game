@@ -1,8 +1,93 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api";
+import TierBadge from "../../components/TierBadge";
 
 const QUESTION_COUNTS = [5, 10, 20];
+const POLL_INTERVAL_MS = 2000;
+
+function QuickMatch({ questionCount, onCancel }) {
+  const navigate = useNavigate();
+  const [ticket, setTicket] = useState(null);
+  const [error, setError] = useState(null);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function poll(ticketId) {
+      try {
+        const res = await api.battleQuickMatchPoll(ticketId);
+        if (cancelled) return;
+        setTicket(res);
+        if (res.status === "matched" || res.status === "ai_matched") {
+          timerRef.current = setTimeout(() => navigate(`/battle/${res.room_code}`), 2200);
+        } else {
+          timerRef.current = setTimeout(() => poll(ticketId), POLL_INTERVAL_MS);
+        }
+      } catch (e) {
+        if (!cancelled) setError(e.message);
+      }
+    }
+
+    api
+      .battleQuickMatch(questionCount)
+      .then((res) => {
+        if (cancelled) return;
+        setTicket(res);
+        if (res.status === "matched" || res.status === "ai_matched") {
+          timerRef.current = setTimeout(() => navigate(`/battle/${res.room_code}`), 2200);
+        } else {
+          timerRef.current = setTimeout(() => poll(res.ticket_id), POLL_INTERVAL_MS);
+        }
+      })
+      .catch((e) => !cancelled && setError(e.message));
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timerRef.current);
+    };
+  }, [questionCount, navigate]);
+
+  if (error) return <p className="error">{error}</p>;
+
+  const matched = ticket?.status === "matched" || ticket?.status === "ai_matched";
+
+  return (
+    <div className="mypage-card battle-card">
+      {!matched ? (
+        <>
+          <h3 className="battle-card-title">対戦相手を探しています…</h3>
+          <p className="exam-meta">
+            同じランク帯を優先してマッチングします。1分見つからない場合はAI対戦になります。
+            {ticket && `（経過 ${ticket.elapsed_seconds}秒）`}
+          </p>
+          <button className="toolbar-btn" style={{ width: "100%" }} onClick={onCancel}>
+            キャンセル
+          </button>
+        </>
+      ) : (
+        <>
+          <h3 className="battle-card-title">
+            {ticket.status === "ai_matched" ? "AI対戦相手とマッチしました" : "マッチしました！"}
+          </h3>
+          <div className="battle-participant-row">
+            <span>{ticket.me.display_name}（あなた）</span>
+            <TierBadge tier={ticket.me.tier} />
+          </div>
+          <div className="battle-participant-row">
+            <span>
+              {ticket.opponent?.display_name}
+              {ticket.opponent?.university ? ` ・ ${ticket.opponent.university}` : ""}
+            </span>
+            <TierBadge tier={ticket.opponent?.tier} />
+          </div>
+          <p className="exam-meta">まもなく対戦を開始します…</p>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function Lobby() {
   const navigate = useNavigate();
@@ -10,6 +95,7 @@ export default function Lobby() {
   const [joinCode, setJoinCode] = useState("");
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [quickMatching, setQuickMatching] = useState(false);
 
   async function handleCreate() {
     setBusy(true);
@@ -45,19 +131,36 @@ export default function Lobby() {
       {error && <p className="error">{error}</p>}
 
       <div className="mypage-card battle-card">
-        <h3 className="battle-card-title">ルームをつくる</h3>
+        <h3 className="battle-card-title">問題数</h3>
         <div className="filter-chip-row">
           {QUESTION_COUNTS.map((n) => (
             <button
               key={n}
               className={`filter-chip${questionCount === n ? " active" : ""}`}
               onClick={() => setQuestionCount(n)}
+              disabled={quickMatching}
             >
               {n}問
             </button>
           ))}
         </div>
-        <button className="cta-button" onClick={handleCreate} disabled={busy}>
+      </div>
+
+      {quickMatching ? (
+        <QuickMatch questionCount={questionCount} onCancel={() => setQuickMatching(false)} />
+      ) : (
+        <div className="mypage-card battle-card">
+          <h3 className="battle-card-title">クイックマッチ</h3>
+          <p className="exam-meta">オンラインの中から同じランク帯の相手を優先してマッチングします。</p>
+          <button className="cta-button" onClick={() => setQuickMatching(true)}>
+            クイックマッチを開始
+          </button>
+        </div>
+      )}
+
+      <div className="mypage-card battle-card">
+        <h3 className="battle-card-title">ルームをつくる</h3>
+        <button className="cta-button" onClick={handleCreate} disabled={busy || quickMatching}>
           ルーム作成
         </button>
       </div>
@@ -72,8 +175,13 @@ export default function Lobby() {
             placeholder="6桁コード"
             inputMode="numeric"
             maxLength={6}
+            disabled={quickMatching}
           />
-          <button className="cta-button" type="submit" disabled={busy || joinCode.length !== 6}>
+          <button
+            className="cta-button"
+            type="submit"
+            disabled={busy || quickMatching || joinCode.length !== 6}
+          >
             参加する
           </button>
         </form>

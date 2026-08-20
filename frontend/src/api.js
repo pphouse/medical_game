@@ -141,12 +141,19 @@ export const api = {
   battleAnswer: (roundId, selectedChoiceKey) =>
     post(`/battle/rounds/${roundId}/answer/`, { selected_choice_key: selectedChoiceKey }),
 
+  // 対戦クイックマッチ（同ランク優先マッチング・1分でAI対戦フォールバック）
+  battleQuickMatch: (questionCount) =>
+    post("/battle/quickmatch/", { question_count: questionCount }),
+  battleQuickMatchPoll: (ticketId) => get(`/battle/quickmatch/${ticketId}/`),
+
   // rankings (phase 3)
   ranking: ({ scope, metric, period }) => {
     const query = new URLSearchParams({ scope, metric, period });
     return get(`/ranking/?${query}`);
   },
   rankingExams: () => get("/ranking/exams/"),
+  // 対戦＋模試（週次/月次）合算ポイントランキング（SS〜Dランク）
+  pointsRanking: (scope) => get(`/ranking/points/?${new URLSearchParams({ scope })}`),
   submitAnswer: (payload) => post("/quiz/answers/", payload),
   submitMastery: (answerHistoryId, masteryLevel) =>
     post(`/quiz/answers/${answerHistoryId}/mastery/`, { mastery_level: masteryLevel }),

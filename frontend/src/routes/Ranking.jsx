@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import TierBadge from "../components/TierBadge";
+
+const CATEGORIES = [
+  { key: "practice", label: "問題演習" },
+  { key: "battle", label: "対戦" },
+];
 
 const SCOPES = [
   { key: "national", label: "全国" },
   { key: "university", label: "学内" },
   { key: "university_aggregate", label: "大学別" },
-  { key: "exams", label: "模試" },
+  { key: "exams", label: "模試履歴" },
 ];
 
 const METRICS = [
@@ -57,6 +63,75 @@ function RankingTable({ data, metric }) {
   );
 }
 
+function PointsRanking() {
+  const [scope, setScope] = useState("national");
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setData(null);
+    setError(null);
+    api.pointsRanking(scope).then(setData).catch((e) => setError(e.message));
+  }, [scope]);
+
+  return (
+    <>
+      <div className="filter-chip-row">
+        <button
+          className={`filter-chip${scope === "national" ? " active" : ""}`}
+          onClick={() => setScope("national")}
+        >
+          全国
+        </button>
+        <button
+          className={`filter-chip${scope === "university" ? " active" : ""}`}
+          onClick={() => setScope("university")}
+        >
+          学内
+        </button>
+      </div>
+
+      {error && <p className="error">{error}</p>}
+
+      {data?.me && (
+        <div className="ranking-me-card">
+          {data.me.eligible === false ? (
+            <span className="ranking-me-reason">{data.me.reason}</span>
+          ) : (
+            <>
+              <span className="ranking-me-label">あなたのランク</span>
+              <span className="ranking-me-rank">
+                <TierBadge tier={data.me.tier} large />
+              </span>
+              <span className="ranking-me-value">{data.me.points}pt</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {!data ? (
+        <p>読み込み中...</p>
+      ) : data.entries.length === 0 ? (
+        <div className="empty-card">まだ対戦・模試でポイントを獲得したユーザーがいません。</div>
+      ) : (
+        <div className="ranking-list">
+          {data.entries.map((entry) => (
+            <div key={`${entry.rank}-${entry.display_name}`} className={`ranking-row${entry.is_me ? " me" : ""}`}>
+              <span className={`ranking-rank${entry.rank <= 3 ? " top" : ""}`}>{entry.rank}</span>
+              <span className="ranking-name">
+                {entry.display_name}
+                {entry.university && <span className="ranking-univ">{entry.university}</span>}
+              </span>
+              <TierBadge tier={entry.tier} fallback="―" />
+              <span className="ranking-value">{entry.points}pt</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 function ExamHistory() {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState(null);
@@ -88,6 +163,7 @@ function ExamHistory() {
 }
 
 export default function Ranking() {
+  const [category, setCategory] = useState("practice");
   const [scope, setScope] = useState("national");
   const [metric, setMetric] = useState("solved");
   const [period, setPeriod] = useState("all");
@@ -95,76 +171,94 @@ export default function Ranking() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (scope === "exams") return;
+    if (category !== "practice" || scope === "exams") return;
     setData(null);
     setError(null);
     api
       .ranking({ scope, metric, period: period === "month" ? currentMonth() : "all" })
       .then(setData)
       .catch((e) => setError(e.message));
-  }, [scope, metric, period]);
+  }, [category, scope, metric, period]);
 
   return (
     <div className="screen">
       <h2>ランキング</h2>
 
       <div className="filter-chip-row">
-        {SCOPES.map((s) => (
+        {CATEGORIES.map((c) => (
           <button
-            key={s.key}
-            className={`filter-chip${scope === s.key ? " active" : ""}`}
-            onClick={() => setScope(s.key)}
+            key={c.key}
+            className={`filter-chip${category === c.key ? " active" : ""}`}
+            onClick={() => setCategory(c.key)}
           >
-            {s.label}
+            {c.label}
           </button>
         ))}
       </div>
 
-      {scope === "exams" ? (
-        <ExamHistory />
+      {category === "battle" ? (
+        <PointsRanking />
       ) : (
         <>
           <div className="filter-chip-row">
-            {METRICS.map((m) => (
+            {SCOPES.map((s) => (
               <button
-                key={m.key}
-                className={`filter-chip${metric === m.key ? " active" : ""}`}
-                onClick={() => setMetric(m.key)}
+                key={s.key}
+                className={`filter-chip${scope === s.key ? " active" : ""}`}
+                onClick={() => setScope(s.key)}
               >
-                {m.label}
-              </button>
-            ))}
-            <span className="ranking-separator" />
-            {PERIODS.map((p) => (
-              <button
-                key={p.key}
-                className={`filter-chip${period === p.key ? " active" : ""}`}
-                onClick={() => setPeriod(p.key)}
-              >
-                {p.label}
+                {s.label}
               </button>
             ))}
           </div>
 
-          {error && <p className="error">{error}</p>}
+          {scope === "exams" ? (
+            <ExamHistory />
+          ) : (
+            <>
+              <div className="filter-chip-row">
+                {METRICS.map((m) => (
+                  <button
+                    key={m.key}
+                    className={`filter-chip${metric === m.key ? " active" : ""}`}
+                    onClick={() => setMetric(m.key)}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+                <span className="ranking-separator" />
+                {PERIODS.map((p) => (
+                  <button
+                    key={p.key}
+                    className={`filter-chip${period === p.key ? " active" : ""}`}
+                    onClick={() => setPeriod(p.key)}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
 
-          {data?.me && (
-            <div className="ranking-me-card">
-              {data.me.eligible === false ? (
-                <span className="ranking-me-reason">{data.me.reason}</span>
-              ) : (
-                <>
-                  <span className="ranking-me-label">あなたの順位</span>
-                  <span className="ranking-me-rank">
-                    {data.me.rank ? `${data.me.rank}位` : "―"}
-                  </span>
-                  <span className="ranking-me-value">{formatValue(metric, data.me.value)}</span>
-                </>
+              {error && <p className="error">{error}</p>}
+
+              {data?.me && (
+                <div className="ranking-me-card">
+                  {data.me.eligible === false ? (
+                    <span className="ranking-me-reason">{data.me.reason}</span>
+                  ) : (
+                    <>
+                      <span className="ranking-me-label">あなたの順位</span>
+                      <span className="ranking-me-rank">
+                        {data.me.rank ? `${data.me.rank}位` : "―"}
+                      </span>
+                      <span className="ranking-me-value">{formatValue(metric, data.me.value)}</span>
+                    </>
+                  )}
+                </div>
               )}
-            </div>
-          )}
 
-          <RankingTable data={data} metric={metric} />
+              <RankingTable data={data} metric={metric} />
+            </>
+          )}
         </>
       )}
     </div>

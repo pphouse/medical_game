@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from accounts.views import InternalAdvanceGradesView
 from exams.views import InternalAggregateView
 
 urlpatterns = [
@@ -29,4 +30,5 @@ urlpatterns = [
     path('api/exams/', include('exams.urls')),
     path('api/ranking/', include('exams.urls_ranking')),
     path('api/internal/aggregate/', InternalAggregateView.as_view(), name='internal-aggregate'),
+    path('api/internal/advance-grades/', InternalAdvanceGradesView.as_view(), name='internal-advance-grades'),
 ]

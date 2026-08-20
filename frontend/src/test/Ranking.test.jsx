@@ -95,7 +95,7 @@ describe("ランキング画面", () => {
     ]);
 
     render(<Ranking />);
-    fireEvent.click(screen.getByText("模試"));
+    fireEvent.click(screen.getByText("模試履歴"));
 
     expect(await screen.findByText("第1回 全国CBT模試")).toBeInTheDocument();
     expect(screen.getByText(/12位/)).toBeInTheDocument();

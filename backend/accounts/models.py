@@ -70,6 +70,16 @@ class Profile(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # 対戦＋模試（週次/月次）合算のランクポイント (spec: SS/S/A/B/C/D)。
+    # 1000 を基準値とし、勝敗・成績に応じて増減する。
+    points = models.IntegerField(default=1000)
+    ranked_matches = models.PositiveIntegerField(
+        default=0, help_text="ポイントが確定した対戦・模試の回数（ランク算出の母集団判定に使う）"
+    )
+    # 対戦のマッチメイキングで人が見つからない場合に充てる AI 対戦相手のフラグ。
+    # ランキング集計・ポイント分布からは常に除外する。
+    is_ai = models.BooleanField(default=False)
+
     # Duck-typing for DRF's IsAuthenticated / throttling, mirroring
     # django.contrib.auth model attributes.
     is_authenticated = True

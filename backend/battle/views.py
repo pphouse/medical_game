@@ -22,15 +22,24 @@ from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.ranktier import compute_tier
 from quiz.models import AnswerHistory, Question
 from quiz.serializers import QuestionSerializer
 from quiz.views import update_review_schedule
 
-from .models import BattleBuzz, BattleParticipant, BattleRoom, BattleRound
+from .ai import simulate_ai_turn
+from .matchmaking import (
+    create_ticket,
+    escalate_to_ai_if_timed_out,
+    opponent_profile_payload,
+    try_match,
+)
+from .models import BattleBuzz, BattleParticipant, BattleRoom, BattleRound, MatchmakingTicket
 from .scoring import (
     PARTICIPANT_TIMEOUT_SECONDS,
     ROUND_TIME_LIMIT_SECONDS,
     apply_score,
+    battle_points_delta,
 )
 
 MIN_PARTICIPANTS = 2
@@ -57,6 +66,28 @@ def open_round(room):
     )
 
 
+def finalize_room_points(room):
+    """ルーム終了時に一度だけ対戦ランクポイントを確定する (spec: 対戦＋模試の
+    合算ポイントでSS〜Dランク)。AI 参加者（accounts.Profile.is_ai）は対象外。"""
+    participants = list(
+        room.participants.select_related("user").order_by("-score", "id")
+    )
+    n = len(participants)
+    prev_score, prev_rank = None, 0
+    for i, participant in enumerate(participants, start=1):
+        rank = prev_rank if participant.score == prev_score else i
+        prev_score, prev_rank = participant.score, rank
+        if participant.user.is_ai:
+            continue
+        delta = battle_points_delta(rank, n)
+        participant.points_delta = delta
+        participant.save(update_fields=["points_delta"])
+        profile = participant.user
+        profile.points = max(0, profile.points + delta)
+        profile.ranked_matches += 1
+        profile.save(update_fields=["points", "ranked_matches"])
+
+
 def close_round_and_advance(round_):
     """ラウンドを閉じ、次ラウンドの出題 or ルーム終了処理を行う。"""
     now = timezone.now()
@@ -73,6 +104,7 @@ def close_round_and_advance(round_):
     else:
         round_.room.status = BattleRoom.Status.FINISHED
         round_.room.save(update_fields=["status"])
+        finalize_room_points(round_.room)
 
 
 def enforce_round_progress(room):
@@ -143,6 +175,39 @@ class RoomJoinView(APIView):
         return Response({"room_code": room.room_code})
 
 
+def start_room(room):
+    """問題を抽選し全 BattleRound を先に作って IN_PROGRESS にする (spec 4-2)。
+    通常のホスト開始・クイックマッチ自動開始の両方から呼ばれる共通処理。"""
+    if room.status != BattleRoom.Status.WAITING:
+        raise exceptions.ValidationError("すでに開始されています。")
+    if room.participants.count() < MIN_PARTICIPANTS:
+        raise exceptions.ValidationError("対戦には2人以上の参加者が必要です。")
+
+    # published かつ public からランダム抽出（分野フィルタ任意, spec 4-1）
+    qs = Question.objects.published().filter(visibility=Question.Visibility.PUBLIC)
+    if room.category:
+        qs = qs.filter(category=room.category)
+    questions = list(qs.order_by("?")[: room.question_count])
+    if len(questions) < room.question_count:
+        raise exceptions.ValidationError(
+            f"出題できる問題が不足しています（{len(questions)}/{room.question_count}問）。"
+        )
+
+    now = timezone.now()
+    with transaction.atomic():
+        BattleRound.objects.bulk_create(
+            BattleRound(
+                room=room,
+                question=question,
+                round_number=i + 1,
+                revealed_at=now if i == 0 else None,
+            )
+            for i, question in enumerate(questions)
+        )
+        room.status = BattleRoom.Status.IN_PROGRESS
+        room.save(update_fields=["status"])
+
+
 class RoomStartView(APIView):
     """ホストのみ。問題を抽選し全 BattleRound を先に作る (spec 4-2)."""
 
@@ -150,36 +215,7 @@ class RoomStartView(APIView):
         room = get_room(code)
         if room.host_id != request.user.id:
             raise exceptions.PermissionDenied("開始できるのはホストのみです。")
-        if room.status != BattleRoom.Status.WAITING:
-            raise exceptions.ValidationError("すでに開始されています。")
-        if room.participants.count() < MIN_PARTICIPANTS:
-            raise exceptions.ValidationError("対戦には2人以上の参加者が必要です。")
-
-        # published かつ public からランダム抽出（分野フィルタ任意, spec 4-1）
-        qs = Question.objects.published().filter(
-            visibility=Question.Visibility.PUBLIC
-        )
-        if room.category:
-            qs = qs.filter(category=room.category)
-        questions = list(qs.order_by("?")[: room.question_count])
-        if len(questions) < room.question_count:
-            raise exceptions.ValidationError(
-                f"出題できる問題が不足しています（{len(questions)}/{room.question_count}問）。"
-            )
-
-        now = timezone.now()
-        with transaction.atomic():
-            BattleRound.objects.bulk_create(
-                BattleRound(
-                    room=room,
-                    question=question,
-                    round_number=i + 1,
-                    revealed_at=now if i == 0 else None,
-                )
-                for i, question in enumerate(questions)
-            )
-            room.status = BattleRoom.Status.IN_PROGRESS
-            room.save(update_fields=["status"])
+        start_room(room)
         return Response({"status": room.status})
 
 
@@ -197,6 +233,7 @@ class RoomStateView(APIView):
         )
 
         if room.status == BattleRoom.Status.IN_PROGRESS:
+            simulate_ai_turn(room)
             enforce_round_progress(room)
             room.refresh_from_db(fields=["status"])
 
@@ -387,6 +424,8 @@ class RoomResultView(APIView):
                     "score": p.score,
                     "correct_count": correct_count,
                     "is_me": p.user_id == request.user.id,
+                    "is_ai": p.user.is_ai,
+                    "points_delta": p.points_delta,
                 }
             )
         for i, row in enumerate(standings):
@@ -395,4 +434,61 @@ class RoomResultView(APIView):
                 if i == 0 or standings[i - 1]["score"] != row["score"]
                 else standings[i - 1]["rank"]
             )
-        return Response({"status": room.status, "standings": standings})
+        my_points = None
+        my_tier = None
+        if not request.user.is_ai:
+            my_points = request.user.points
+            my_tier = compute_tier(request.user)
+        return Response(
+            {
+                "status": room.status,
+                "standings": standings,
+                "my_points": my_points,
+                "my_tier": my_tier,
+            }
+        )
+
+
+def ticket_payload(ticket, request_user):
+    data = {
+        "ticket_id": ticket.id,
+        "status": ticket.status,
+        "room_code": ticket.room.room_code if ticket.room else None,
+        "elapsed_seconds": int((timezone.now() - ticket.created_at).total_seconds()),
+        "me": {
+            "display_name": request_user.display_name or "匿名ユーザー",
+            "university": request_user.university.name if request_user.university else None,
+            "tier": compute_tier(request_user),
+        },
+        "opponent": None,
+    }
+    if ticket.status in (MatchmakingTicket.Status.MATCHED, MatchmakingTicket.Status.AI_MATCHED):
+        data["opponent"] = opponent_profile_payload(ticket)
+    return data
+
+
+class QuickMatchCreateView(APIView):
+    """POST /api/battle/quickmatch/ — 対戦のクイックマッチ（同ランク優先）に
+    参加する。既に他の待機者がいれば即座にマッチし、いなければ待機列に入る
+    （60秒経ってもマッチしなければ GET 側でAI対戦にフォールバックする）。"""
+
+    def post(self, request):
+        question_count = int(request.data.get("question_count", 10))
+        if question_count not in (5, 10, 20):
+            raise exceptions.ValidationError("question_count は 5 / 10 / 20 のみ")
+        ticket = create_ticket(request.user, question_count)
+        ticket = try_match(ticket)
+        return Response(ticket_payload(ticket, request.user), status=201)
+
+
+class QuickMatchPollView(APIView):
+    """GET /api/battle/quickmatch/{id}/ — 探索状況をポーリングする。
+    まだ待機中なら再探索し、作成から1分経っていればAI対戦を確定させる。"""
+
+    def get(self, request, ticket_id):
+        ticket = get_object_or_404(MatchmakingTicket, pk=ticket_id, user=request.user)
+        if ticket.status == MatchmakingTicket.Status.WAITING:
+            ticket = try_match(ticket)
+        if ticket.status == MatchmakingTicket.Status.WAITING:
+            ticket = escalate_to_ai_if_timed_out(ticket)
+        return Response(ticket_payload(ticket, request.user))

@@ -16,7 +16,23 @@ class MockExam(models.Model):
         CLOSED = "closed", "終了"
         GRADED = "graded", "採点済"
 
+    class Kind(models.TextChoices):
+        WEEKLY = "weekly", "週次小テスト"
+        MONTHLY = "monthly", "月次模試"
+        LARGE = "large", "大型模試（国試直前）"
+        CBT_ONCE = "cbt_once", "CBT模試（生涯1回）"
+
     title = models.CharField(max_length=255)
+    kind = models.CharField(
+        max_length=20, choices=Kind.choices, default=Kind.MONTHLY,
+        help_text="週次/月次はポイントが増減する。大型/CBTは対象学年を絞った参考成績のみ",
+    )
+    exam_type = models.CharField(
+        max_length=10,
+        choices=Question.ExamType.choices,
+        default=Question.ExamType.CBT,
+        help_text="出題する問題プール（Question.exam_type）と対象学年の表示振り分けに使う",
+    )
     start_at = models.DateTimeField()
     end_at = models.DateTimeField()
     status = models.CharField(
@@ -57,6 +73,32 @@ class MockExam(models.Model):
         return True
 
 
+class ItemParameter(models.Model):
+    """CBT模試の予想IRT算出用の項目パラメータ（2PLロジスティックモデル）。
+
+    a=識別力, b=困難度。`calibrate_irt` コマンドが AnswerHistory の正誤パターン
+    から EM法（周辺最尤推定, pure Python）で定期的に較正する。較正前は
+    Question.difficulty から決め打ちした初期値を使う（易→b=-1, 標準→b=0, 難→b=1）。
+    """
+
+    question = models.OneToOneField(
+        Question, on_delete=models.CASCADE, related_name="irt_param"
+    )
+    a = models.FloatField(default=1.0, help_text="識別力パラメータ")
+    b = models.FloatField(default=0.0, help_text="困難度パラメータ")
+    calibrated_n = models.PositiveIntegerField(
+        default=0, help_text="較正に使った解答数（少ないと初期値のまま）"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "IRT項目パラメータ"
+        verbose_name_plural = "IRT項目パラメータ"
+
+    def __str__(self):
+        return f"Q{self.question_id} a={self.a:.2f} b={self.b:.2f}"
+
+
 class MockQuestion(models.Model):
     """spec: MockQuestion: mock_exam_id, question_id, order"""
 
@@ -94,7 +136,22 @@ class MockResult(models.Model):
     section_scores = models.JSONField(
         default=dict, blank=True, help_text='{"D-5": 0.72, "D-7": 0.55, ...}'
     )
+    section_deviation_scores = models.JSONField(
+        default=dict, blank=True,
+        help_text='大型模試のみ算出: {"D-5": 62.1, ...}（分野別の偏差値）',
+    )
+    score_distribution = models.JSONField(
+        default=dict, blank=True,
+        help_text="大型模試のみ算出: {\"bucket_size\":.., \"buckets\":[..], \"my_bucket\":i}",
+    )
     university_rank = models.PositiveIntegerField(null=True, blank=True)
+    points_delta = models.IntegerField(
+        null=True, blank=True, help_text="週次/月次のみ: この回で増減した対戦・模試合算ポイント"
+    )
+    irt_theta = models.FloatField(null=True, blank=True, help_text="CBT模試のみ: IRT能力値θ(MAP推定)")
+    irt_scaled_score = models.FloatField(
+        null=True, blank=True, help_text="CBT模試のみ: 50+10θ の偏差値相当スケール"
+    )
 
     class Meta:
         verbose_name = "模試結果"

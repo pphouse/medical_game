@@ -1,24 +1,6 @@
 import { NavLink } from "react-router-dom";
 
 const ICONS = {
-  home: (
-    <svg viewBox="0 0 24 24" fill="none">
-      <path
-        d="M4 11.5 12 4l8 7.5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6 10v8.5a1 1 0 0 0 1 1h3.5v-5a1.5 1.5 0 0 1 1.5-1.5v0A1.5 1.5 0 0 1 13.5 14.5v5H17a1 1 0 0 0 1-1V10"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  ),
   solo: (
     <svg viewBox="0 0 24 24" fill="none">
       <path
@@ -65,12 +47,18 @@ const ICONS = {
       />
     </svg>
   ),
+  exams: (
+    <svg viewBox="0 0 24 24" fill="none">
+      <rect x="3.5" y="6" width="17" height="12" rx="2" stroke="currentColor" strokeWidth="2" />
+      <path d="M3.5 10h17" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  ),
 };
 
 const TABS = [
-  { to: "/", icon: "home", label: "ホーム" },
-  { to: "/solo", icon: "solo", label: "ソロ" },
+  { to: "/", icon: "solo", label: "問題演習" },
   { to: "/battle", icon: "battle", label: "対戦" },
+  { to: "/exams", icon: "exams", label: "模試" },
   { to: "/ranking", icon: "ranking", label: "ランキング" },
   { to: "/mypage", icon: "mypage", label: "マイページ" },
 ];

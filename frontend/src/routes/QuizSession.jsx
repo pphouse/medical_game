@@ -14,6 +14,7 @@ export default function QuizSession() {
     <QuizScreen
       title={state.title}
       questions={state.questions}
+      startIndex={state.startIndex ?? 0}
       onBack={() => navigate(state.backTo ?? -1)}
     />
   );

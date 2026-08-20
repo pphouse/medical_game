@@ -185,6 +185,10 @@ STUDENT_ID_BUCKET = env("STUDENT_ID_BUCKET", default="student-ids")
 # (rejected ones are deleted immediately on rejection).
 STUDENT_ID_RETENTION_DAYS = 90
 
+# 医師国家試験の実施日（YYYY-MM-DD）。年が変わったら手動更新する運用値
+# （spec: 大型模試は国試の2ヶ月前に自動開催）。デフォルトは次回の目安。
+NATIONAL_EXAM_DATE = env("NATIONAL_EXAM_DATE", default="2027-02-06")
+
 
 # Password validation (admin staff accounts only)
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
