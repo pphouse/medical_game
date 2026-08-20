@@ -24,7 +24,19 @@ async function request(path, options = {}) {
   const token = await getAccessToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  const url = `${BASE_URL}${path}`;
+  let res;
+  try {
+    res = await fetch(url, { ...options, headers });
+  } catch {
+    // fetch 自体が失敗するのは、宛先に届いていないか CORS で弾かれた場合。
+    // ステータスが無いので、どこへ繋ごうとしたかを出さないと切り分けられない。
+    throw new ApiError(
+      0,
+      `APIに接続できませんでした（${url}）。接続先の設定（VITE_API_BASE_URL）と` +
+        "バックエンドのCORS設定を確認してください。",
+    );
+  }
 
   if (res.status === 401) {
     // Token expired/revoked: clear the session and send the user to /auth
@@ -44,13 +56,28 @@ async function request(path, options = {}) {
       if (typeof body.detail === "string") message = body.detail;
       else message = `${message}: ${text}`;
     } catch {
-      if (text) message = `${message}: ${text.slice(0, 300)}`;
+      // JSON で返らないのはバックエンドの手前で止まっている合図（Django の
+      // エラーページや、SPA のリライトに吸われた index.html）。宛先を添える。
+      message = `${message} ${url}`;
+      if (text) message = `${message}: ${text.slice(0, 200)}`;
     }
     throw new ApiError(res.status, message);
   }
 
   if (res.status === 204) return null;
-  return res.json();
+
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    // 200 なのに JSON でない典型は、VITE_API_BASE_URL が未設定でフロント自身の
+    // オリジンを叩き、SPA のリライトで index.html が返っている場合。
+    throw new ApiError(
+      res.status,
+      `APIがJSONを返しませんでした（${url}）。接続先の設定（VITE_API_BASE_URL）が` +
+        "バックエンドのURLになっているか確認してください。",
+    );
+  }
 }
 
 const get = (path) => request(path);
