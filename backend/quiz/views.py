@@ -159,10 +159,19 @@ class CategoryListView(APIView):
 
 class CategoryProgressView(APIView):
     """Per-category breakdown of the learner's 5-level mastery self-ratings,
-    used to render the QB-style category list with segmented progress bars."""
+    used to render the QB-style category list with segmented progress bars.
+
+    `?exam_type=CBT` / `?exam_type=KOKUSHI` narrows the list to one exam.
+    CBT と国試は分野の切り方が違い（国試側は出題基準の区分が過去問に付かない
+    ため暫定分類）、混ぜると同名の分野に両方の問題が入って演習しにくい。
+    未指定なら従来どおり全部を返す。
+    """
 
     def get(self, request):
         visible = Question.objects.visible_to(request.user)
+        exam_type = request.query_params.get("exam_type")
+        if exam_type:
+            visible = visible.filter(exam_type=exam_type)
         categories = (
             visible.values("category").annotate(total=Count("id")).order_by("category")
         )

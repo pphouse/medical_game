@@ -45,3 +45,6 @@ dist-ssr/
 
 # Vercel local link metadata
 .vercel
+
+# 国試PDFのローカルキャッシュ（厚労省から再取得できるためコミットしない）
+.cache/

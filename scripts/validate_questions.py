@@ -8,8 +8,8 @@
 - 構造: 選択肢5個 / correct_choice_id の存在 / 選択肢テキスト重複なし
 - バイアス: 「正解が最長」の割合がバッチ内で40%超なら警告
 - 正解キー分布: A〜E が各15〜25%の範囲外なら警告（再生成を促す）
-- 文字数: 設問 40〜600字、解説 80〜600字
-- 禁止語: 「すべて選べ」「〜でないものはどれか」「令和N年の統計」等
+- 文字数: 設問 40〜600字、解説 80〜600字（source_note がある逐語引用は設問文を 6〜1500字とし、抽出失敗の検出のみを目的とする）
+- 禁止語: 「すべて選べ」「〜でないものはどれか」「令和N年の統計」等（逐語引用には非適用）
 - 重複: 正規化ハッシュ（バッチ内=fail）+ --check-db で既存 DB と
   pg_trgm 類似度 0.75 以上を疑わしいとして警告（人手確認へ）
 
@@ -29,6 +29,14 @@ import jsonschema
 SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schemas" / "question_batch.schema.json"
 
 QUESTION_TEXT_RANGE = (40, 600)
+# 逐語引用（source_note あり）の設問文の許容範囲。作問の良し悪しを測る 40〜600字
+# とは目的が違い、「抽出に失敗していないか」だけを見る。
+#
+# 過去問の実測（第116〜119回）では 7字（「妄想はどれか。」第118回B-20）から
+# 770字（所見を網羅した臨床問題。第117回A-20）まで実在した。したがってこの幅は
+# 正常値であり、弾いてはいけない。設問文の断片しか残らない抽出失敗と、複数問が
+# 連結してしまう抽出失敗を拾える範囲として余裕を持たせる。
+VERBATIM_QUESTION_RANGE = (6, 1500)
 EXPLANATION_RANGE = (80, 600)
 KEY_DISTRIBUTION_RANGE = (0.15, 0.25)
 LONGEST_CORRECT_WARN_RATIO = 0.40
@@ -128,17 +136,25 @@ def validate_items(batch, report):
                 longest_correct += 1
         key_counter[correct] += 1
 
+        # source_note を持つ設問は外部の公表物からの逐語引用（例: 厚労省が
+        # 公表する医師国家試験の過去問）。原文を書き換えると出典を偽ることに
+        # なるため、作問スタイルを整えるための検査は適用しない。構造の検査
+        # （選択肢5個・正解キー・重複）は引き続き全設問に適用する。
+        verbatim = bool(item.get("source_note"))
+
         qlen = len(item.get("question_text", ""))
-        if not QUESTION_TEXT_RANGE[0] <= qlen <= QUESTION_TEXT_RANGE[1]:
-            report.fail(item_id, "question_length", f"設問文 {qlen}字（40〜600字）")
+        lo, hi = VERBATIM_QUESTION_RANGE if verbatim else QUESTION_TEXT_RANGE
+        if not lo <= qlen <= hi:
+            report.fail(item_id, "question_length", f"設問文 {qlen}字（{lo}〜{hi}字）")
         elen = len(item.get("explanation", ""))
         if not EXPLANATION_RANGE[0] <= elen <= EXPLANATION_RANGE[1]:
             report.fail(item_id, "explanation_length", f"解説 {elen}字（80〜600字）")
 
-        haystack = item.get("question_text", "") + "".join(texts)
-        for pattern in BANNED_PATTERNS:
-            if re.search(pattern, haystack):
-                report.fail(item_id, "banned_phrase", f"禁止パターン: {pattern}")
+        if not verbatim:
+            haystack = item.get("question_text", "") + "".join(texts)
+            for pattern in BANNED_PATTERNS:
+                if re.search(pattern, haystack):
+                    report.fail(item_id, "banned_phrase", f"禁止パターン: {pattern}")
 
         digest = hashlib.md5(
             normalize_text(item.get("question_text", "")).encode()

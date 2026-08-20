@@ -5,3 +5,7 @@
 anthropic==0.118.0
 pdfplumber==0.11.10
 jsonschema==4.26.0
+# 国試PDFのグリフ解決（scripts/import_kokushi.py）。本文フォントが ToUnicode を
+# 持たないため、PyMuPDF で /Differences を読み、fontTools で AGL 名を解決する。
+pymupdf==1.28.2
+fonttools==4.61.1

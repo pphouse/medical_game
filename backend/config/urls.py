@@ -24,6 +24,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
     path('api/quiz/', include('quiz.urls')),
+    # 管理画面 (moderator/admin)。学習者向けAPIとは公開ゲートの前提が違うので分ける。
+    path('api/admin/', include('quiz.admin_urls')),
     path('api/battle/', include('battle.urls')),
     path('api/exams/', include('exams.urls')),
     path('api/ranking/', include('exams.urls_ranking')),

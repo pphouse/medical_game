@@ -218,3 +218,110 @@ class TestBundledCoreBatch:
         assert not imported.exclude(status=Question.Status.PENDING).exists()
         # 四連問が2セット取り込まれている
         assert QuestionSet.objects.count() == 2
+
+
+class TestBundledKokushiBatches:
+    """同梱の国試バッチ(kokushi_*.json)に文字化けが混ざっていないことを保証する。
+
+    国試PDFの本文フォントは ToUnicode を持たない部分集合が混ざっており、
+    抽出器はそこを制御文字や別の字で埋めてしまう。実際に第114〜116回の268問が
+    "\\x02か月の乳児"（正しくは "2か月の乳児"）や "全身Ø怠感"（倦怠感）の形で
+    取り込まれていた。見た目が日本語のままなので気づきにくく、CIで止める。
+    """
+
+    EXAMS = (114, 115, 116, 117, 118, 119)
+
+    def _batch_path(self, exam):
+        from pathlib import Path
+
+        return (
+            Path(__file__).resolve().parents[1]
+            / "quiz" / "management" / "commands" / "data" / f"kokushi_{exam}.json"
+        )
+
+    def _bodies(self, exam):
+        batch = json.loads(self._batch_path(exam).read_text(encoding="utf-8"))
+        for q in batch["questions"]:
+            yield q, q["question_text"] + "".join(c["text"] for c in q["choices"])
+
+    @pytest.mark.parametrize("exam", EXAMS)
+    def test_no_unresolved_glyphs(self, exam):
+        import importlib.util
+        from pathlib import Path
+
+        scripts_dir = Path(__file__).resolve().parents[2] / "scripts"
+        spec = importlib.util.spec_from_file_location(
+            "import_kokushi", scripts_dir / "import_kokushi.py"
+        )
+        importer = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(importer)
+
+        for q, body in self._bodies(exam):
+            assert not importer.is_unusable(body), f"{q['id']}: {body[:80]!r}"
+            assert not importer.has_broken_glyph(body), f"{q['id']}: {body[:80]!r}"
+
+    @pytest.mark.parametrize("exam", EXAMS)
+    def test_ids_are_unique(self, exam):
+        # 同じ設問番号を2度拾うのは切り出しの誤り。取り込み時に落としている。
+        ids = [q["id"] for q, _ in self._bodies(exam)]
+        assert len(ids) == len(set(ids))
+
+    @pytest.mark.parametrize("exam", EXAMS)
+    def test_questions_are_well_formed(self, exam):
+        for q, _ in self._bodies(exam):
+            assert len(q["choices"]) == 5, q["id"]
+            assert q["correct_choice_id"] in {"A", "B", "C", "D", "E"}, q["id"]
+            texts = [c["text"] for c in q["choices"]]
+            assert len(set(texts)) == 5, q["id"]
+            assert all(texts), q["id"]
+
+    def test_corpus_size(self):
+        # 縮小したら気づけるように下限を固定する
+        total = sum(len(list(self._bodies(e))) for e in self.EXAMS)
+        assert total >= 1000, total
+
+
+class TestExamTypeFilter:
+    """CBT と国試を分けて選べること (分野一覧・問題一覧の両方)。
+
+    分野の切り方が試験ごとに違ううえ、同名の分野に両方の問題が入るため、
+    混ざったままだと目的の問題に辿り着けない。
+    """
+
+    def _seed(self):
+        make_question(category="循環器系", exam_type="CBT", question_text="CBTの循環器問題")
+        make_question(category="循環器系", exam_type="KOKUSHI", question_text="国試の循環器問題")
+        make_question(
+            category="医師国家試験（分類未確定）", exam_type="KOKUSHI", question_text="国試の未分類問題"
+        )
+
+    def test_progress_defaults_to_all_exam_types(self):
+        client, _ = auth_client()
+        self._seed()
+
+        rows = client.get("/api/quiz/progress/").json()
+        by_category = {r["category"]: r["total"] for r in rows}
+        assert by_category["循環器系"] == 2
+        assert by_category["医師国家試験（分類未確定）"] == 1
+
+    def test_progress_filtered_by_exam_type(self):
+        client, _ = auth_client()
+        self._seed()
+
+        cbt = {r["category"]: r["total"] for r in client.get("/api/quiz/progress/?exam_type=CBT").json()}
+        assert cbt == {"循環器系": 1}
+
+        kokushi = {
+            r["category"]: r["total"]
+            for r in client.get("/api/quiz/progress/?exam_type=KOKUSHI").json()
+        }
+        assert kokushi == {"循環器系": 1, "医師国家試験（分類未確定）": 1}
+
+    def test_question_list_filtered_by_exam_type(self):
+        client, _ = auth_client()
+        self._seed()
+
+        res = client.get("/api/quiz/questions/?category=循環器系&exam_type=KOKUSHI")
+        assert res.status_code == 200
+        results = res.json()["results"]
+        assert [q["question_text"] for q in results] == ["国試の循環器問題"]

@@ -236,6 +236,18 @@ export default function MyPage() {
         </div>
       </div>
 
+      {(user.role === "moderator" || user.role === "admin") && (
+        <div className="mypage-section">
+          <button
+            className="toolbar-btn"
+            style={{ width: "100%" }}
+            onClick={() => navigate("/admin")}
+          >
+            🛠 管理画面
+          </button>
+        </div>
+      )}
+
       <div className="mypage-section">
         <button
           className="toolbar-btn"
