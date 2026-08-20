@@ -23,7 +23,12 @@ import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env = environ.Env(DJANGO_DEBUG=(bool, True))
+# DEBUG の既定は False。環境変数を付け忘れたときにデバッグページが出る側へ
+# 倒れてはいけない。実際に Vercel のプレビュー環境で DJANGO_DEBUG を設定し
+# 忘れており、設定値・トレースバック・Cookie を含む Django のデバッグページが
+# そのまま配信されていた。ローカル開発は .env か環境変数で明示的に
+# DJANGO_DEBUG=true を指定する（backend/.env.example を参照）。
+env = environ.Env(DJANGO_DEBUG=(bool, False))
 # Optional local env file; real deployments should use actual env vars.
 environ.Env.read_env(BASE_DIR / ".env")
 

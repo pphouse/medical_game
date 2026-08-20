@@ -26,6 +26,12 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    # 本番と同じ設定（DEBUG=False）で検査する。settings.py は DJANGO_DEBUG の
+    # 既定を False にしており、そのとき SECRET_KEY が必須になるので job 全体に
+    # 渡す。pytest は pytest.ini からも受け取るが、manage.py を直に叩く
+    # ステップ（makemigrations --check）はそれを読まないため、ここが必要。
+    env:
+      DJANGO_SECRET_KEY: ci-only-secret-key-not-for-production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
