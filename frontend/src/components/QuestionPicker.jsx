@@ -11,6 +11,9 @@ const FILTERS = [
   { key: "cross", label: "✕" },
 ];
 
+/** ◎○△✕未演習の5段階。初期状態は全部が選択済み。 */
+const MASTERY_KEYS = FILTERS.filter((f) => f.key !== "all").map((f) => f.key);
+
 const MASTERY_ICON = {
   double_circle: "◎",
   circle: "○",
@@ -55,8 +58,9 @@ export default function QuestionPicker() {
   const soloUrl = `/solo${examType ? `?exam_type=${encodeURIComponent(examType)}` : ""}`;
   const [questions, setQuestions] = useState(null);
   const [error, setError] = useState(null);
-  // 空集合 = 「すべて」（未選択時は全問表示）。個別のマステリー段階は複数選択できる。
-  const [selected, setSelected] = useState(new Set());
+  // 初期状態は5段階すべてが選択済み。チップを押すとその段階だけを外せる
+  // （複数選択可）。「すべて」は全選択⇔全解除のトグル。
+  const [selected, setSelected] = useState(() => new Set(MASTERY_KEYS));
 
   useEffect(() => {
     api
@@ -74,12 +78,12 @@ export default function QuestionPicker() {
     counts[f.key] = questions.filter((q) => q.mastery_level === f.key).length;
   }
 
-  const filtered =
-    selected.size === 0 ? questions : questions.filter((q) => selected.has(q.mastery_level));
+  const allSelected = selected.size === MASTERY_KEYS.length;
+  const filtered = questions.filter((q) => selected.has(q.mastery_level));
 
   function toggleFilter(key) {
     if (key === "all") {
-      setSelected(new Set());
+      setSelected(allSelected ? new Set() : new Set(MASTERY_KEYS));
       return;
     }
     setSelected((prev) => {
@@ -99,7 +103,7 @@ export default function QuestionPicker() {
 
       <div className="filter-chip-row">
         {FILTERS.map((f) => {
-          const active = f.key === "all" ? selected.size === 0 : selected.has(f.key);
+          const active = f.key === "all" ? allSelected : selected.has(f.key);
           return (
             <button
               key={f.key}
@@ -143,7 +147,9 @@ export default function QuestionPicker() {
       </div>
 
       <p className="course-count">
-        {questions.length}問中 {filtered.length}問を表示
+        {selected.size === 0
+          ? "上のボタンで出題したい評価（◎○△✕未演習）を選んでください。"
+          : `${questions.length}問中 ${filtered.length}問を表示`}
       </p>
 
       <div className="question-list">
