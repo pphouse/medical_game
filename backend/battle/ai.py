@@ -13,7 +13,7 @@ import uuid
 from django.utils import timezone
 
 from accounts.models import Profile
-from battle.models import BattleBuzz, BattleParticipant, BattleRound
+from battle.models import BattleBuzz
 from battle.scoring import ROUND_TIME_LIMIT_SECONDS
 from quiz.models import AnswerHistory
 

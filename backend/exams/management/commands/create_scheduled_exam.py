@@ -203,12 +203,18 @@ class Command(BaseCommand):
 
     def _create_weekly_or_monthly(self, now, options, kind):
         if kind == MockExam.Kind.WEEKLY:
-            default_start = lambda: next_weekday_at(now, weekday=4, hour=19)  # 金曜
+
+            def default_start():
+                return next_weekday_at(now, weekday=4, hour=19)  # 金曜
+
             default_count, default_duration, default_window = 10, 20, 24
             novel_only = False  # spec: 正答率50〜80%（新出縛りではない）
             title_base = "週次小テスト"
         else:
-            default_start = lambda: next_month_first(now)
+
+            def default_start():
+                return next_month_first(now)
+
             default_count, default_duration, default_window = 30, 60, 72
             novel_only = True  # spec: 新出問題
             title_base = "月次模試"

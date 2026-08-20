@@ -286,7 +286,6 @@ class TestPointsRanking:
         res = client.get("/api/ranking/points/")
         assert res.status_code == 200
         body = res.json()
-        names = [e["display_name"] for e in body["entries"]]
         assert len(body["entries"]) == 1  # 未ランクのユーザーは含まれない
         assert body["me"]["eligible"] is True
         assert body["me"]["tier"] == "SS"  # 母集団1人なら自分が最上位

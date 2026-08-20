@@ -9,7 +9,6 @@ docs/deploy-vercel.md）: マッチ探索も「もう1分経ったか」の判�
 クライアントが GET /battle/quickmatch/{id}/ を叩くたびに行う。
 """
 
-import datetime
 import secrets
 
 from django.db import IntegrityError, transaction
@@ -76,7 +75,6 @@ def try_match(ticket):
 
     start_room(room)
 
-    now = timezone.now()
     MatchmakingTicket.objects.filter(pk__in=[ticket.pk, opponent_ticket.pk]).update(
         status=MatchmakingTicket.Status.MATCHED, room=room
     )
