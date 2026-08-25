@@ -1,7 +1,6 @@
 """Ranking API (spec フェーズ3) + Mock-exam API (spec フェーズ5) + internal hook."""
 
 
-from django.conf import settings
 from django.core.management import call_command
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -11,13 +10,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import Profile
-from config.internal_auth import require_internal_caller
 from accounts.ranktier import (
     compute_tier,
     progress_for_points,
     rank_state,
     tier_for_top_fraction,
 )
+from config.internal_auth import require_internal_caller
 from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
 from exams.grading import apply_irt_score, grade_single_result
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot

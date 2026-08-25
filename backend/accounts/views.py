@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.internal_auth import require_internal_caller
 from config.permissions import IsModerator
 
 from .models import (
@@ -17,8 +18,6 @@ from .models import (
     StudentVerification,
     University,
 )
-from config.internal_auth import require_internal_caller
-
 from .serializers import ProfileSerializer, UniversitySerializer
 from .storage import (
     create_signed_upload_url,

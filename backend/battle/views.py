@@ -32,11 +32,13 @@ from rest_framework.views import APIView
 from accounts.ranktier import (
     LEAVE_PENALTY_POINTS,
     apply_points_delta,
-    battle_points_delta as rank_points_delta,
     compute_tier,
     progress_for_points,
     rank_state,
     tier_for_points,
+)
+from accounts.ranktier import (
+    battle_points_delta as rank_points_delta,
 )
 from quiz.models import AnswerHistory, Question
 from quiz.serializers import QuestionSerializer
@@ -53,9 +55,9 @@ from .models import BattleBuzz, BattleParticipant, BattleRoom, BattleRound, Matc
 from .scoring import (
     BATTLE_QUESTION_COUNT,
     PARTICIPANT_TIMEOUT_SECONDS,
-    round_time_limit_seconds,
     apply_score,
     resolve_round_damage,
+    round_time_limit_seconds,
 )
 
 MIN_PARTICIPANTS = 2

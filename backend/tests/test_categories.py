@@ -48,7 +48,7 @@ class TestTaxonomy:
             assert generic in GENERIC_BY_EXAM[CBT], f"{old} -> {generic} が未定義"
 
     def test_split_candidates_are_known_generics(self):
-        for old, (allowed, fallback) in SPLIT_SOURCES.items():
+        for _old, (allowed, fallback) in SPLIT_SOURCES.items():
             assert fallback in allowed
             for target in allowed:
                 assert target in GENERIC_BY_EXAM[CBT]
