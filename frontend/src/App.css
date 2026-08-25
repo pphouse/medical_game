@@ -154,31 +154,6 @@
   gap: 10px;
 }
 
-.ranking-card-toggle {
-  display: flex;
-  gap: 6px;
-  background: var(--accent-bg);
-  border-radius: 999px;
-  padding: 3px;
-  align-self: flex-start;
-}
-
-.ranking-card-toggle button {
-  border: none;
-  background: transparent;
-  color: var(--text);
-  font-size: 12.5px;
-  font-weight: 700;
-  padding: 6px 16px;
-  border-radius: 999px;
-}
-
-.ranking-card-toggle button.active {
-  background: var(--card-bg);
-  color: var(--accent);
-  box-shadow: var(--shadow-sm);
-}
-
 .ranking-card-tile {
   display: flex;
   align-items: center;
@@ -1551,13 +1526,6 @@
   font-size: 13px;
 }
 
-.ranking-separator {
-  width: 1px;
-  align-self: stretch;
-  background: var(--border);
-  margin: 0 4px;
-}
-
 /* Battle mode (phase 4) */
 .battle-card {
   display: flex;
@@ -2227,3 +2195,55 @@
 .profile-editor-actions { display: flex; gap: 10px; }
 .profile-editor-actions .toolbar-btn { flex: 1; }
 .profile-editor-actions .cta-button { flex: 1; margin: 0; }
+
+/* ランキング画面の見出し。英字を背後に敷いて順位表の主役感を出す。 */
+.ranking-heading {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  margin: 4px 0 18px;
+}
+
+.ranking-heading-en {
+  position: absolute;
+  left: -2px;
+  top: -6px;
+  font-size: 40px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.13;
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.ranking-heading-ja {
+  position: relative;
+  margin: 0;
+  font-size: 25px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* グラデーション文字が読めない環境向けのフォールバック。 */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .ranking-heading-ja { color: var(--text-h); background: none; }
+}
+
+.ranking-heading-ja::after {
+  content: "";
+  display: block;
+  width: 42px;
+  height: 3px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--accent-grad);
+}

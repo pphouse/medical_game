@@ -48,10 +48,10 @@ function Tile({ icon, label, me, onClick }) {
   );
 }
 
-/** 問題演習のランキングカード：学内/全国を切り替えて演習数・正答率の順位を表示する。
- * 各タイルをクリックすると、分布と直近の演習状況の詳細（RankDetail）を開く。 */
-export default function RankingCard() {
-  const [scope, setScope] = useState("university");
+/** 問題演習のランキングカード：演習数・正答率の順位を表示する。
+ * 各タイルをクリックすると、分布と直近の演習状況の詳細（RankDetail）を開く。
+ * 全国/学内の切り替えは画面側で一本化しているので、scope は親から受け取る。 */
+export default function RankingCard({ scope = "national" }) {
   const [solved, setSolved] = useState(null);
   const [accuracy, setAccuracy] = useState(null);
   const [detailMetric, setDetailMetric] = useState(null);
@@ -75,20 +75,6 @@ export default function RankingCard() {
 
   return (
     <div className="ranking-card">
-      <div className="ranking-card-toggle">
-        <button
-          className={scope === "university" ? "active" : ""}
-          onClick={() => setScope("university")}
-        >
-          学内
-        </button>
-        <button
-          className={scope === "national" ? "active" : ""}
-          onClick={() => setScope("national")}
-        >
-          全国
-        </button>
-      </div>
       <Tile icon="solved" label="演習数" me={solved} onClick={() => setDetailMetric("solved")} />
       <Tile icon="accuracy" label="正答率" me={accuracy} onClick={() => setDetailMetric("accuracy")} />
 
