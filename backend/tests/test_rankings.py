@@ -1,7 +1,9 @@
+import datetime
 import uuid
 
 import pytest
 from django.core.management import call_command
+from django.utils import timezone
 
 from accounts.models import Profile, University
 from exams.management.commands.aggregate_rankings import fetch_user_stats
@@ -193,3 +195,72 @@ class TestInternalEndpoint:
         )
         assert res.status_code == 200
         assert RankingSnapshot.objects.filter(period="all").exists()
+
+
+class TestLazyRefresh:
+    """本番にはバッチを回すスケジューラが無く、RankingSnapshot が一度
+    集計された時点で凍結していた。後から演習した人がいつまでもランキングに
+    出てこない、という不具合の回帰テスト (exams/ranking_refresh.py)。"""
+
+    def test_new_learner_appears_without_running_the_batch(self):
+        questions = make_questions(3)
+        veteran = make_profile(display_name="先輩")
+        seed_answers(veteran, questions, correct=True)
+        call_command("aggregate_rankings", "--period", "all", verbosity=0)
+        # 「誰かが一度手で集計したきり放置」の状態。以降バッチは一切回さない。
+        RankingSnapshot.objects.update(
+            computed_at=timezone.now() - datetime.timedelta(days=3)
+        )
+
+        newcomer = make_profile(display_name="新人")
+        seed_answers(newcomer, questions[:2], correct=True)
+
+        client, _ = auth_client(newcomer)
+        res = client.get("/api/ranking/?scope=national&metric=solved")
+        assert res.status_code == 200
+        assert res.data["me"]["rank"] == 2
+        names = [e["display_name"] for e in res.data["entries"]]
+        assert "新人" in names
+
+    def test_home_summary_also_refreshes(self):
+        questions = make_questions(3)
+        veteran = make_profile(display_name="先輩")
+        seed_answers(veteran, questions, correct=True)
+        call_command("aggregate_rankings", "--period", "all", verbosity=0)
+        RankingSnapshot.objects.update(
+            computed_at=timezone.now() - datetime.timedelta(days=3)
+        )
+
+        newcomer = make_profile(display_name="新人")
+        seed_answers(newcomer, questions[:2], correct=True)
+
+        client, _ = auth_client(newcomer)
+        res = client.get("/api/quiz/summary/")
+        assert res.status_code == 200
+        assert res.data["national_rank"]["rank"] == 2
+
+    def test_fresh_snapshot_is_not_recomputed(self, settings):
+        settings.RANKING_SNAPSHOT_TTL_SECONDS = 3600
+        questions = make_questions(2)
+        profile = make_profile(display_name="太郎")
+        seed_answers(profile, questions, correct=True)
+        call_command("aggregate_rankings", "--period", "all", verbosity=0)
+        computed_at = RankingSnapshot.objects.filter(period="all").first().computed_at
+
+        client, _ = auth_client(profile)
+        client.get("/api/ranking/?scope=national&metric=solved")
+
+        after = RankingSnapshot.objects.filter(period="all").first().computed_at
+        assert after == computed_at  # TTL 内なので集計し直さない
+
+    def test_negative_ttl_disables_lazy_refresh(self, settings):
+        # 外部スケジューラで回す運用に切り替えたときの逃げ道。
+        settings.RANKING_SNAPSHOT_TTL_SECONDS = -1
+        questions = make_questions(2)
+        profile = make_profile(display_name="太郎")
+        seed_answers(profile, questions, correct=True)
+
+        client, _ = auth_client(profile)
+        res = client.get("/api/ranking/?scope=national&metric=solved")
+        assert res.status_code == 200
+        assert not RankingSnapshot.objects.exists()

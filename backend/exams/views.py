@@ -16,6 +16,7 @@ from accounts.ranktier import compute_tier, tier_for_top_fraction
 from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
 from exams.grading import apply_irt_score, grade_single_result
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot
+from exams.ranking_refresh import ensure_fresh
 from quiz.serializers import QuestionSerializer
 
 DISPLAY_NAME_FALLBACK = "匿名ユーザー"
@@ -48,6 +49,10 @@ class RankingView(APIView):
             raise exceptions.ValidationError("scope が不正です")
         if metric not in RankingSnapshot.Metric.values:
             raise exceptions.ValidationError("metric が不正です")
+
+        # スナップショットが古ければここで集計し直す。本番にはバッチを回す
+        # スケジューラが無く、放っておくと順位が凍結するため（ranking_refresh）。
+        ensure_fresh(period)
 
         profile = request.user
         qs = RankingSnapshot.objects.filter(scope=scope, period=period, metric=metric)

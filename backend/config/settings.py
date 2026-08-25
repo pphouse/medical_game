@@ -174,6 +174,11 @@ SUPABASE_JWT_AUDIENCE = "authenticated"
 # Supabase Edge Function scheduled with pg_cron; spec 4.フェーズ3).
 INTERNAL_API_TOKEN = env("INTERNAL_API_TOKEN", default="")
 
+# ランキングスナップショットの鮮度 (exams/ranking_refresh.py)。この秒数より
+# 古ければ、ランキング/ホームを開いた時にその場で再集計する。外部スケジューラ
+# で aggregate_rankings を回す運用にするなら負値にして遅延再集計を止める。
+RANKING_SNAPSHOT_TTL_SECONDS = env.int("RANKING_SNAPSHOT_TTL_SECONDS", default=300)
+
 # Web Push (VAPID) keys for review reminders (spec 4.フェーズ6).
 VAPID_PRIVATE_KEY = env("VAPID_PRIVATE_KEY", default="")
 VAPID_PUBLIC_KEY = env("VAPID_PUBLIC_KEY", default="")

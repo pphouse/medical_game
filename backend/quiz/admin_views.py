@@ -20,7 +20,7 @@ from accounts.models import Profile
 from config.permissions import IsAdmin, IsModerator
 
 from .admin_serializers import AdminQuestionSerializer, AdminReportSerializer
-from .categories import CANONICAL_CATEGORIES
+from .categories import CANONICAL_CATEGORIES, CATEGORY_GROUPS
 from .models import Question, QuestionReport
 
 # 一括操作で一度に触れる上限。UIの取り違えで全問題を書き換える事故を防ぐ。
@@ -95,6 +95,10 @@ class AdminStatsView(APIView):
                 # 画面の分野プルダウン用。自由入力だと「循環器」と「循環器系」の
                 # ように同じ分野が別名で増えるので、選ばせる。
                 "canonical_categories": list(CANONICAL_CATEGORIES),
+                # 分野のグループ。画面のプルダウンを見出し付きにするため。
+                "category_groups": [
+                    {"group": g, "categories": list(cats)} for g, cats in CATEGORY_GROUPS
+                ],
             }
         )
 
