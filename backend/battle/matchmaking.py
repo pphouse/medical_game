@@ -43,6 +43,14 @@ def create_ticket(user, question_count):
         user=user, status=MatchmakingTicket.Status.WAITING
     ).first()
     if existing:
+        # 前回の探索を途中でやめた場合、待機チケットは WAITING のまま残る。
+        # それをそのまま使い回すと経過時間が前回から積算されてしまい、
+        # 「経過1033秒」のような表示になるうえ、ボタンを押した瞬間に
+        # タイムアウト扱いになる。押し直した時点から数え直す。
+        existing.created_at = timezone.now()
+        existing.tier_snapshot = _tier_of(user)
+        existing.question_count = question_count
+        existing.save(update_fields=["created_at", "tier_snapshot", "question_count"])
         return existing
     return MatchmakingTicket.objects.create(
         user=user, question_count=question_count, tier_snapshot=_tier_of(user)
@@ -114,9 +122,10 @@ def opponent_profile_payload(ticket):
     if other is None:
         return None
     profile = other.user
+    # AI かどうかはクライアントに返さない（人間と見分けが付かないようにする）。
+    # 内部判定が必要な場合は Profile.is_ai をサーバ側で見ること。
     return {
         "display_name": profile.display_name or "匿名ユーザー",
         "university": profile.university.name if profile.university else None,
         "tier": compute_tier(profile) if not profile.is_ai else ticket.tier_snapshot or "B",
-        "is_ai": profile.is_ai,
     }

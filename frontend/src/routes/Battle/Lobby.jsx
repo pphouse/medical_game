@@ -58,7 +58,7 @@ function QuickMatch({ onCancel }) {
         <>
           <h3 className="battle-card-title">対戦相手を探しています…</h3>
           <p className="exam-meta">
-            同じランク帯を優先してマッチングします。1分見つからない場合はAI対戦になります。
+            同じランク帯を優先してマッチングします。
             {ticket && `（経過 ${ticket.elapsed_seconds}秒）`}
           </p>
           <button className="toolbar-btn" style={{ width: "100%" }} onClick={onCancel}>
@@ -68,7 +68,7 @@ function QuickMatch({ onCancel }) {
       ) : (
         <>
           <h3 className="battle-card-title">
-            {ticket.status === "ai_matched" ? "AI対戦相手とマッチしました" : "マッチしました！"}
+            マッチしました！
           </h3>
           <div className="battle-participant-row">
             <span>{ticket.me.display_name}（あなた）</span>
