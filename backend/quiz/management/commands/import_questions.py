@@ -61,13 +61,16 @@ class Command(BaseCommand):
 
         for q in payload.get("questions", []):
             # バッチ JSON の分野名は作られた時期によってまちまちなので、
-            # 取り込み時に正規の分野立てへ寄せる（quiz/categories.py）。
+            # 取り込み時に正規の科目立てへ寄せる（quiz/categories.py）。
+            # 科目立ては CBT と国試で違うので exam_type も渡す。
             category = normalize_category(
                 q["category"],
                 "\n".join(
                     [q["question_text"], q.get("disease", q.get("topic", ""))]
                     + [str(c.get("text", "")) for c in q["choices"] if isinstance(c, dict)]
                 ),
+                blueprint_code=q.get("blueprint_code", ""),
+                exam_type=q["exam_type"],
             )
             _, was_created = Question.objects.get_or_create(
                 category=category,
@@ -96,7 +99,10 @@ class Command(BaseCommand):
             if QuestionSet.objects.filter(case_stem=s["case_stem"]).exists():
                 continue
             set_category = normalize_category(
-                s["category"], "\n".join([s["case_stem"], s.get("disease", "")])
+                s["category"],
+                "\n".join([s["case_stem"], s.get("disease", "")]),
+                blueprint_code=s.get("blueprint_code", ""),
+                exam_type=s.get("exam_type", "CBT"),
             )
             question_set = QuestionSet.objects.create(
                 title=s.get("title") or f"{s.get('disease', s['id'])}の四連問",

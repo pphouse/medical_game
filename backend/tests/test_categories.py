@@ -1,142 +1,158 @@
+"""科目（category）を CBT / 国試それぞれの科目立てに沿って決められること。"""
+
 import pytest
 
 from quiz.categories import (
-    CANONICAL_CATEGORIES,
-    CATEGORY_ORDER,
-    DEFAULT_CATEGORY,
-    LEGACY_EXACT,
+    BLUEPRINT_AREA_BY_EXAM,
+    CATEGORIES_BY_EXAM,
+    CBT,
+    CBT_CATEGORIES,
+    GENERIC_BY_EXAM,
+    KOKUSHI,
+    KOKUSHI_CATEGORIES,
+    LEGACY_TO_GENERIC,
     SPLIT_SOURCES,
+    categories_for,
+    category_for_blueprint_code,
     category_sort_key,
     classify,
+    default_category,
     normalize,
 )
-from quiz.models import Question
 
 
 class TestTaxonomy:
-    def test_legacy_map_only_points_at_canonical_names(self):
-        for old, new in LEGACY_EXACT.items():
-            assert new in CATEGORY_ORDER, f"{old} -> {new} が正規名でない"
+    @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
+    def test_blueprint_table_points_at_that_exams_categories(self, exam):
+        valid = set(CATEGORIES_BY_EXAM[exam])
+        for area, name in BLUEPRINT_AREA_BY_EXAM[exam].items():
+            assert name in valid, f"{exam} {area} -> {name} が科目一覧に無い"
 
-    def test_split_targets_are_canonical(self):
+    @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
+    def test_generic_table_points_at_that_exams_categories(self, exam):
+        valid = set(CATEGORIES_BY_EXAM[exam])
+        for generic, name in GENERIC_BY_EXAM[exam].items():
+            assert name in valid, f"{exam} {generic} -> {name} が科目一覧に無い"
+
+    @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
+    def test_default_category_is_valid(self, exam):
+        assert default_category(exam) in CATEGORIES_BY_EXAM[exam]
+
+    @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
+    def test_category_names_are_unique(self, exam):
+        names = CATEGORIES_BY_EXAM[exam]
+        assert len(set(names)) == len(names)
+
+    def test_legacy_names_resolve_to_a_known_generic(self):
+        for old, generic in LEGACY_TO_GENERIC.items():
+            assert generic in GENERIC_BY_EXAM[CBT], f"{old} -> {generic} が未定義"
+
+    def test_split_candidates_are_known_generics(self):
         for old, (allowed, fallback) in SPLIT_SOURCES.items():
-            assert fallback in allowed, f"{old} の既定値が候補に含まれない"
+            assert fallback in allowed
             for target in allowed:
-                assert target in CATEGORY_ORDER, f"{old} -> {target} が正規名でない"
+                assert target in GENERIC_BY_EXAM[CBT]
 
-    def test_default_category_is_canonical(self):
-        assert DEFAULT_CATEGORY in CATEGORY_ORDER
+    def test_kokushi_follows_the_qb_chapters(self):
+        for chapter in ("消化管", "肝・胆・膵", "免疫・膠原病", "麻酔科", "必修問題"):
+            assert chapter in KOKUSHI_CATEGORIES
 
-    def test_canonical_names_are_unique(self):
-        assert len(set(CANONICAL_CATEGORIES)) == len(CANONICAL_CATEGORIES)
+    def test_cbt_follows_the_core_curriculum_volumes(self):
+        for name in ("基礎医学", "医学総論・公衆衛生・診療の基本", "多選択肢・4連問"):
+            assert name in CBT_CATEGORIES
+
+
+class TestBlueprintCode:
+    @pytest.mark.parametrize(
+        ("code", "cbt", "kokushi"),
+        [
+            ("D-5-4)-(2)-③", "循環器", "循環器"),
+            ("D-1", "血液", "血液"),
+            ("D-4", "運動器", "整形外科"),
+            ("D-8-1)", "腎・泌尿器", "腎・泌尿器"),
+            ("D-9", "産婦人科", "婦人科・乳腺外科"),
+            ("D-10", "産婦人科", "産科"),
+            ("D-12", "内分泌・代謝", "代謝・内分泌"),
+            ("D-15", "精神", "精神科"),
+            ("E-2", "感染症", "感染症"),
+            ("E-6", "救急", "救急"),
+            ("E-7", "小児（成長と発達）", "小児科"),
+            ("B-1", "医学総論・公衆衛生・診療の基本", "公衆衛生"),
+            ("C-2", "基礎医学", "医学総論"),
+            ("G-1", "多選択肢・4連問", "医学総論"),
+        ],
+    )
+    def test_same_code_maps_per_exam(self, code, cbt, kokushi):
+        """同じ出題基準コードでも、試験によって入る科目が違う。"""
+        assert category_for_blueprint_code(code, CBT) == cbt
+        assert category_for_blueprint_code(code, KOKUSHI) == kokushi
+
+    @pytest.mark.parametrize("code", ["", None, "Z-9", "ZZZ"])
+    def test_unknown_codes_give_nothing(self, code):
+        assert category_for_blueprint_code(code, CBT) is None
+
+    def test_section_only_codes_fall_back_to_the_section(self):
+        """A/B/C/F/G は大区分ごとに1科目へまとめてあるので、枝番が無くても引ける。"""
+        assert category_for_blueprint_code("F", CBT) == "医学総論・公衆衛生・診療の基本"
+        assert category_for_blueprint_code("B", KOKUSHI) == "公衆衛生"
+
+    def test_blueprint_code_beats_the_stored_category(self):
+        assert normalize("循環器", "心電図所見", "D-8-1)", CBT) == "腎・泌尿器"
+
+    def test_blueprint_code_beats_keywords(self):
+        text = "疫学調査で罹患率とオッズ比を求めた。"
+        assert normalize(None, text, "D-6", KOKUSHI) == "呼吸器"
 
 
 class TestNormalize:
-    def test_canonical_name_is_left_alone(self):
-        assert normalize("循環器", "") == "循環器"
+    def test_category_of_that_exam_is_left_alone(self):
+        assert normalize("消化管", exam_type=KOKUSHI) == "消化管"
+        assert normalize("基礎医学", exam_type=CBT) == "基礎医学"
 
     @pytest.mark.parametrize(
-        ("old", "expected"),
+        ("old", "cbt", "kokushi"),
         [
-            ("呼吸器系", "呼吸器"),
-            ("腎・尿路系", "腎臓"),  # 決め手がなければ既定側
-            ("運動器系", "整形"),
-            ("血液・造血器・リンパ系", "血液"),
-            ("免疫・アレルギー・膠原病", "免疫"),
-            ("集団に対する医療", "公衆衛生"),
-            ("医の倫理と患者の権利、医師としての責務", "公衆衛生"),
+            ("循環器系", "循環器", "循環器"),
+            ("腎・尿路系", "腎・泌尿器", "腎・泌尿器"),
+            ("運動器系", "運動器", "整形外科"),
+            ("血液・造血器・リンパ系", "血液", "血液"),
+            ("免疫・アレルギー・膠原病", "免疫・膠原病", "免疫・膠原病"),
+            ("集団に対する医療", "医学総論・公衆衛生・診療の基本", "公衆衛生"),
+            ("４連問", "多選択肢・4連問", "医学総論"),
         ],
     )
-    def test_legacy_names_are_renamed(self, old, expected):
-        assert normalize(old, "") == expected
-
-    def test_obgyn_splits_into_obstetrics_and_gynecology(self):
-        assert normalize("産婦人科系", "妊娠36週の妊婦。分娩の進行が停止した。") == "産科"
-        assert normalize("産婦人科系", "42歳女性。過多月経と子宮筋腫を指摘された。") == "婦人科"
-
-    def test_renal_splits_into_kidney_and_urology(self):
-        assert normalize("腎・尿路系", "IgA腎症が疑われ腎生検を行った。") == "腎臓"
-        assert normalize("腎・尿路系", "前立腺癌の疑いで生検を行った。") == "泌尿器"
-
-    def test_split_never_escapes_its_two_candidates(self):
-        """本文に他分野の語（心電図など）があっても候補外へは飛ばさない。"""
-        result = normalize("腎・尿路系", "心電図でST上昇を認め、冠動脈造影を行った。")
-        assert result in ("腎臓", "泌尿器")
-
-    def test_unclassified_falls_back_to_default(self):
-        assert normalize("医師国家試験（分類未確定）", "あああ") == DEFAULT_CATEGORY
-
-    def test_unclassified_is_routed_by_keywords(self):
-        assert normalize("医師国家試験（分類未確定）", "急性心筋梗塞で冠動脈を再灌流した。") == "循環器"
+    def test_legacy_names_are_renamed_per_exam(self, old, cbt, kokushi):
+        assert normalize(old, exam_type=CBT) == cbt
+        assert normalize(old, exam_type=KOKUSHI) == kokushi
 
     def test_unknown_name_is_routed_by_keywords(self):
-        assert normalize("知らない分野", "気管支喘息の発作で来院した。") == "呼吸器"
+        text = "疫学調査で罹患率とオッズ比を求めた。"
+        assert normalize("なにかの科目", text, exam_type=KOKUSHI) == "公衆衛生"
+
+    def test_undecidable_falls_back_to_default(self):
+        assert normalize("知らない科目", "特徴のない文章", exam_type=CBT) == default_category(CBT)
+        assert normalize("知らない科目", "特徴のない文章", exam_type=KOKUSHI) == default_category(
+            KOKUSHI
+        )
+
+    def test_unknown_exam_type_is_treated_as_cbt(self):
+        assert normalize(None, "", "D-9", "OSCE") == "産婦人科"
 
 
 class TestClassify:
-    def test_returns_none_when_nothing_matches(self):
-        assert classify("あああ") is None
+    def test_returns_a_generic_organ_name(self):
+        assert classify("疫学調査で罹患率とオッズ比を求めた。") in GENERIC_BY_EXAM[CBT]
 
-    def test_allowed_restricts_the_candidates(self):
-        # 循環器の語しかないが、候補を産科/婦人科に絞れば選ばれない。
-        assert classify("心筋梗塞", ("産科", "婦人科")) is None
-
-    def test_more_keyword_hits_wins(self):
-        text = "子宮筋腫による過多月経。妊娠の希望はない。"
-        assert classify(text) == "婦人科"
+    def test_no_match_returns_none(self):
+        assert classify("特徴のない文章") is None
 
 
 class TestSortKey:
-    def test_canonical_order_is_followed(self):
-        names = ["公衆衛生", "循環器", "小児"]
-        assert sorted(names, key=category_sort_key) == ["循環器", "小児", "公衆衛生"]
+    @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
+    def test_that_exams_order_is_followed(self, exam):
+        names = categories_for(exam)
+        assert tuple(sorted(names, key=lambda c: category_sort_key(c, exam))) == names
 
-    def test_unknown_names_sort_last(self):
-        names = ["謎の分野", "循環器"]
-        assert sorted(names, key=category_sort_key) == ["循環器", "謎の分野"]
-
-
-@pytest.mark.django_db
-class TestReclassifyCommand:
-    def test_renames_and_splits_existing_questions(self):
-        from django.core.management import call_command
-
-        common = dict(
-            exam_type=Question.ExamType.CBT,
-            choices=[{"key": "A", "text": "あ"}, {"key": "B", "text": "い"}],
-            correct_choice_key="A",
-            status=Question.Status.PUBLISHED,
-        )
-        renamed = Question.objects.create(
-            category="呼吸器系", question_text="肺炎の起炎菌はどれか。", **common
-        )
-        obstetric = Question.objects.create(
-            category="産婦人科系", question_text="妊娠高血圧症候群の管理はどれか。", **common
-        )
-        already = Question.objects.create(
-            category="循環器", question_text="心不全の治療はどれか。", **common
-        )
-
-        call_command("reclassify_categories")
-
-        renamed.refresh_from_db()
-        obstetric.refresh_from_db()
-        already.refresh_from_db()
-        assert renamed.category == "呼吸器"
-        assert obstetric.category == "産科"
-        assert already.category == "循環器"
-
-    def test_dry_run_changes_nothing(self):
-        from django.core.management import call_command
-
-        q = Question.objects.create(
-            category="呼吸器系",
-            question_text="肺炎の起炎菌はどれか。",
-            exam_type=Question.ExamType.CBT,
-            choices=[{"key": "A", "text": "あ"}, {"key": "B", "text": "い"}],
-            correct_choice_key="A",
-            status=Question.Status.PUBLISHED,
-        )
-        call_command("reclassify_categories", "--dry-run")
-        q.refresh_from_db()
-        assert q.category == "呼吸器系"
+    def test_unknown_names_go_last(self):
+        last = KOKUSHI_CATEGORIES[-1]
+        assert category_sort_key("知らない科目", KOKUSHI) > category_sort_key(last, KOKUSHI)

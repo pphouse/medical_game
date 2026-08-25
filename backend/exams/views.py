@@ -1,6 +1,5 @@
 """Ranking API (spec フェーズ3) + Mock-exam API (spec フェーズ5) + internal hook."""
 
-import hmac
 
 from django.conf import settings
 from django.core.management import call_command
@@ -12,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import Profile
+from config.internal_auth import require_internal_caller
 from accounts.ranktier import (
     compute_tier,
     progress_for_points,
@@ -552,20 +552,23 @@ class ExamResultView(APIView):
 
 
 class InternalAggregateView(APIView):
-    """POST /api/internal/aggregate/ — pg_cron → Edge Function から叩かれる
-    集計トリガ (spec 3-3 案A)。X-Internal-Token で保護。JWT 認証は使わない。"""
+    """POST/GET /api/internal/aggregate/ — ランキング集計のトリガ (spec 3-3)。
+
+    pg_cron → Edge Function（POST + X-Internal-Token）と、Vercel Cron
+    （GET + Authorization: Bearer CRON_SECRET）の両方から叩ける。
+    JWT 認証は使わない。"""
 
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    def post(self, request):
-        token = request.headers.get("X-Internal-Token", "")
-        if not settings.INTERNAL_API_TOKEN or not hmac.compare_digest(
-            token, settings.INTERNAL_API_TOKEN
-        ):
-            raise exceptions.AuthenticationFailed("invalid internal token")
+    def get(self, request):
+        """Vercel Cron は GET しか送れないので、POST と同じ処理を用意する。"""
+        return self.post(request)
 
-        periods = request.data.get("periods") or ["all", current_period()]
+    def post(self, request):
+        require_internal_caller(request)
+
+        periods = (request.data or {}).get("periods") or ["all", current_period()]
         for period in periods:
             call_command("aggregate_rankings", "--period", period)
         return Response({"status": "ok", "periods": periods})

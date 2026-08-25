@@ -13,6 +13,8 @@ function VersusHeader({ me, opponent, damageFor }) {
   );
 }
 
+/** 自分・相手とも同じ作りで表示する（左右で見た目を変えない）。
+ * HPの数値もバーの中に重ねて、減るときに一緒に animate させる。 */
 function Fighter({ side, p, damage }) {
   if (!p) return <div className={`fighter fighter-${side}`} />;
   const hp = Math.max(0, p.hp ?? 0);
@@ -27,8 +29,8 @@ function Fighter({ side, p, damage }) {
         <TierBadge tier={p.tier} fallback="―" />
         <div className="hp-bar">
           <div className={`hp-fill${state}`} style={{ width: `${hp}%` }} />
+          <span className={`hp-value${damage ? " hp-value-hit" : ""}`}>{hp}%</span>
         </div>
-        <span className="hp-value">{hp}%</span>
       </div>
       {damage > 0 && <span className="damage-pop">-{damage}%</span>}
     </div>
@@ -128,11 +130,7 @@ export default function Match({ state, refresh, onLeave }) {
   }
 
   async function handleLeave() {
-    if (
-      !window.confirm(
-        "対戦から退出しますか？ここまでのHPで確定し、相手には自動で代わりのプレイヤーが入ります。"
-      )
-    ) {
+    if (!window.confirm("退出するとランクのスコアが10引かれます。よろしいですか？")) {
       return;
     }
     await onLeave();

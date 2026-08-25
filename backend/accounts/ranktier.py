@@ -34,6 +34,9 @@ WIN_MARGIN_POINTS = 10  # 点差100%で +10 → 勝ちは +8〜+18（ランク�
 LOSS_BASE_POINTS = 6
 LOSS_MARGIN_POINTS = 6  # 大差で負けるほど痛い → -6〜-12
 
+# 対戦の途中離脱のペナルティ。勝敗の増減とは別に、離脱した時点で引かれる。
+LEAVE_PENALTY_POINTS = 10
+
 # 模試（週次/月次のみ）の順位バケットごとの増減。対戦1戦（+8〜+18）と
 # 釣り合う大きさに揃えてある。
 EXAM_POINTS_BY_BUCKET = {

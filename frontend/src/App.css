@@ -2310,8 +2310,9 @@
   text-shadow: 0 0 10px rgba(251, 191, 36, 0.7);
 }
 
+/* 自分と相手で作りを変えない（左右対称に寄せると幅がずれて見えるため、
+   どちらも同じ左揃えのレイアウトにする）。 */
 .fighter { position: relative; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.fighter-opponent { align-items: flex-end; text-align: right; }
 .fighter.hit { animation: battle-shake 0.45s ease-in-out; }
 
 .fighter-id { display: flex; flex-direction: column; min-width: 0; }
@@ -2333,12 +2334,13 @@
 }
 
 .fighter-hp-row { display: flex; align-items: center; gap: 6px; }
-.fighter-opponent .fighter-hp-row { flex-direction: row-reverse; }
 
 .hp-bar {
+  position: relative;
   flex: 1;
   min-width: 0;
-  height: 9px;
+  /* 数値をバーの中に重ねるぶん、少し背を高くする。 */
+  height: 16px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.22);
   overflow: hidden;
@@ -2362,16 +2364,28 @@
   50% { opacity: 0.55; }
 }
 
+/* HPの数値はバーの中央に重ねる。被弾時は数値も一緒に弾ませる。 */
 .hp-value {
-  font-size: 11px;
-  font-weight: 800;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
-  width: 38px;
-  flex-shrink: 0;
-  text-align: right;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
 }
 
-.fighter-opponent .hp-value { text-align: left; }
+.hp-value-hit { animation: hp-value-pop 0.7s ease-out; }
+
+@keyframes hp-value-pop {
+  0% { transform: scale(1); color: #fff; }
+  30% { transform: scale(1.5); color: #fecaca; }
+  100% { transform: scale(1); color: #fff; }
+}
 
 /* ランクバッジの幅も揃えて、左右のHPバーの実寸を同じにする。 */
 .fighter-hp-row .tier-pill {
@@ -2723,7 +2737,7 @@
 
 .rank-bar-note { margin: 0; text-align: center; font-size: 11.5px; color: var(--text); }
 
-/* 対戦ロビーの見出し。バトル感を出すため、炎色のグラデーション文字にする。 */
+/* 対戦ロビーの見出し。青系のグラデーション文字でバトル感を出す。 */
 .battle-heading {
   display: flex;
   align-items: center;
@@ -2731,7 +2745,7 @@
   margin: 4px 0 16px;
   padding-left: 12px;
   border-left: 5px solid transparent;
-  border-image: linear-gradient(180deg, #f59e0b, #dc2626) 1;
+  border-image: linear-gradient(180deg, #38bdf8, #2563eb) 1;
 }
 
 .battle-heading-ja {
@@ -2740,13 +2754,13 @@
   font-weight: 900;
   font-style: italic;
   letter-spacing: 0.03em;
-  background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
-  .battle-heading-ja { color: #dc2626; background: none; }
+  .battle-heading-ja { color: #2563eb; background: none; }
 }
 

@@ -33,16 +33,18 @@ from quiz.models import AnswerHistory
 #   「問題文の長さ ÷ 読む速さ」＋「思考時間」＋ ばらつき
 # で決める。短い問題でも最低 MIN_ANSWER_SECONDS は待つ。
 AI_TIER_PROFILE = {
-    "SS": {"accuracy": 0.90, "think_seconds": 2.0, "chars_per_sec": 20.0, "sd_seconds": 0.8},
-    "S": {"accuracy": 0.78, "think_seconds": 2.6, "chars_per_sec": 17.0, "sd_seconds": 1.0},
-    "A": {"accuracy": 0.65, "think_seconds": 3.2, "chars_per_sec": 14.0, "sd_seconds": 1.2},
-    "B": {"accuracy": 0.52, "think_seconds": 3.8, "chars_per_sec": 12.0, "sd_seconds": 1.4},
-    "C": {"accuracy": 0.40, "think_seconds": 4.4, "chars_per_sec": 10.0, "sd_seconds": 1.6},
-    "D": {"accuracy": 0.30, "think_seconds": 5.0, "chars_per_sec": 8.5, "sd_seconds": 1.8},
+    "SS": {"accuracy": 0.95, "think_seconds": 2.0, "chars_per_sec": 20.0, "sd_seconds": 0.8},
+    "S": {"accuracy": 0.88, "think_seconds": 2.6, "chars_per_sec": 17.0, "sd_seconds": 1.0},
+    "A": {"accuracy": 0.80, "think_seconds": 3.2, "chars_per_sec": 14.0, "sd_seconds": 1.2},
+    "B": {"accuracy": 0.72, "think_seconds": 3.8, "chars_per_sec": 12.0, "sd_seconds": 1.4},
+    "C": {"accuracy": 0.63, "think_seconds": 4.4, "chars_per_sec": 10.0, "sd_seconds": 1.6},
+    "D": {"accuracy": 0.55, "think_seconds": 5.0, "chars_per_sec": 8.5, "sd_seconds": 1.8},
 }
 
 # 一瞬で答えると明らかに不自然なので、どんなに短い問題でもこれだけは待つ。
 MIN_ANSWER_SECONDS = 3.5
+# 相手が先に答えたら、遅くともこの秒数以内には答える（待たされ続けない）。
+ANSWER_AFTER_OPPONENT_SECONDS = 2.0
 DEFAULT_AI_TIER = "B"  # 未ランクの相手と対戦する場合の既定の強さ
 
 # 表示名の候補。フルネーム風とニックネーム風を混ぜて、いかにも「AI」という
@@ -143,6 +145,19 @@ def _simulate_one(room, ai_participant):
         round_.question,
         seed_key=(round_.id, str(ai_participant.user_id)),
     )
+
+    # 相手が先に答えていたら、その2秒後までには必ず答える。放っておくと
+    # 「相手はもう答えたのにいつまでも待たされる」形になり、テンポが悪い。
+    first_other = (
+        round_.buzzes.exclude(profile=ai_participant.user)
+        .order_by("buzzed_at")
+        .values_list("buzzed_at", flat=True)
+        .first()
+    )
+    if first_other is not None:
+        answered_at = (first_other - round_.revealed_at).total_seconds()
+        target = min(target, answered_at + ANSWER_AFTER_OPPONENT_SECONDS)
+
     if elapsed < target:
         return  # まだ「考え中」
 

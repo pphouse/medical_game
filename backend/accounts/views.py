@@ -17,6 +17,8 @@ from .models import (
     StudentVerification,
     University,
 )
+from config.internal_auth import require_internal_caller
+
 from .serializers import ProfileSerializer, UniversitySerializer
 from .storage import (
     create_signed_upload_url,
@@ -243,23 +245,22 @@ class PushSubscriptionView(APIView):
 
 
 class InternalAdvanceGradesView(APIView):
-    """POST /api/internal/advance-grades/ — 全学生の学年を1つ繰り上げる。
+    """POST/GET /api/internal/advance-grades/ — 全学生の学年を1つ繰り上げる。
 
-    毎年4月の年度切り替えに合わせて pg_cron / Vercel Cron から叩く運用を
-    想定（exams.InternalAggregateView と同じ X-Internal-Token 認証）。
+    毎年4月1日の年度切り替えに合わせて叩く。pg_cron → Edge Function
+    （POST + X-Internal-Token）と Vercel Cron（GET + Authorization:
+    Bearer CRON_SECRET）の両方に対応する。
     """
 
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    def post(self, request):
-        import hmac
+    def get(self, request):
+        """Vercel Cron は GET しか送れないので、POST と同じ処理を用意する。"""
+        return self.post(request)
 
-        token = request.headers.get("X-Internal-Token", "")
-        if not settings.INTERNAL_API_TOKEN or not hmac.compare_digest(
-            token, settings.INTERNAL_API_TOKEN
-        ):
-            raise exceptions.AuthenticationFailed("invalid internal token")
+    def post(self, request):
+        require_internal_caller(request)
 
         from django.db.models import F
 
