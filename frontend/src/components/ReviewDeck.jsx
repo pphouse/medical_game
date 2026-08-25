@@ -2,73 +2,145 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 
-function groupByCategory(entries) {
-  const groups = {};
-  for (const e of entries) {
-    const category = e.question.category;
-    if (!groups[category]) groups[category] = [];
-    groups[category].push(e.question);
-  }
-  return Object.entries(groups)
-    .map(([category, questions]) => ({ category, questions }))
-    .sort((a, b) => a.category.localeCompare(b.category, "ja"));
-}
-
 const TABS = [
   { key: "subject", label: "科目ごと" },
   { key: "exams", label: "模試" },
 ];
 
+const MASTERY_FILTERS = [
+  { key: "unstudied", label: "未演習" },
+  { key: "cross", label: "✕" },
+  { key: "triangle", label: "△" },
+  { key: "circle", label: "○" },
+  { key: "double_circle", label: "◎" },
+];
+
+const ATTEMPT_FILTERS = [
+  { key: "1", label: "1回" },
+  { key: "2", label: "2回" },
+  { key: "3plus", label: "3回以上" },
+];
+
+function toggle(set, key) {
+  const next = new Set(set);
+  if (next.has(key)) next.delete(key);
+  else next.add(key);
+  return next;
+}
+
+/** 科目・評価・演習回数を掛け合わせて演習セットを作る。
+ * 空集合は「絞り込まない」= 全部が対象。 */
 function SubjectReview({ onStartSession }) {
-  const [entries, setEntries] = useState(null);
+  const [categories, setCategories] = useState(null);
+  const [selectedCategories, setSelectedCategories] = useState(new Set());
+  const [selectedMastery, setSelectedMastery] = useState(new Set());
+  const [selectedAttempts, setSelectedAttempts] = useState(new Set());
+  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    api.reviewDeck().then(setEntries).catch((e) => setError(e.message));
+    api
+      .progress()
+      .then((rows) => setCategories(rows.map((r) => r.category)))
+      .catch((e) => setError(e.message));
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    setResult(null);
+    api
+      .reviewFilter({
+        categories: [...selectedCategories],
+        mastery: [...selectedMastery],
+        attempts: [...selectedAttempts],
+      })
+      .then((data) => !cancelled && setResult(data))
+      .catch((e) => !cancelled && setError(e.message));
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCategories, selectedMastery, selectedAttempts]);
+
   if (error) return <p className="error">{error}</p>;
-  if (!entries) return <p>読み込み中...</p>;
+  if (!categories) return <p>読み込み中...</p>;
 
-  if (entries.length === 0) {
-    return (
-      <p>
-        現在、復習対象の問題はありません。間違えた問題は自動でここに追加され、SM-2アルゴリズムに基づいたタイミングで再出題されます。
-      </p>
-    );
-  }
-
-  const groups = groupByCategory(entries);
-  const allQuestions = entries.map((e) => e.question);
+  const count = result?.count ?? 0;
 
   return (
-    <div className="course-list">
-      <button
-        key="all"
-        className="course-row course-row-all"
-        onClick={() => onStartSession({ title: "復習問題（すべて）", questions: allQuestions })}
-      >
-        <div className="course-row-top">
-          <span className="course-letter">全</span>
-          <span className="course-name">すべての科目</span>
-          <span className="course-remaining">{allQuestions.length}問</span>
+    <>
+      <div className="filter-group">
+        <div className="filter-group-head">
+          <span className="filter-group-title">科目</span>
+          <div className="filter-group-actions">
+            <button onClick={() => setSelectedCategories(new Set(categories))}>
+              全科目チェック
+            </button>
+            <button onClick={() => setSelectedCategories(new Set())}>全科目クリア</button>
+          </div>
         </div>
+        <div className="filter-chip-row">
+          {categories.map((c) => (
+            <button
+              key={c}
+              className={`filter-chip${selectedCategories.has(c) ? " active" : ""}`}
+              onClick={() => setSelectedCategories((s) => toggle(s, c))}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="filter-group">
+        <span className="filter-group-title">評価</span>
+        <div className="filter-chip-row">
+          {MASTERY_FILTERS.map((m) => (
+            <button
+              key={m.key}
+              className={`filter-chip${selectedMastery.has(m.key) ? " active" : ""}`}
+              onClick={() => setSelectedMastery((s) => toggle(s, m.key))}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="filter-group">
+        <span className="filter-group-title">演習回数</span>
+        <div className="filter-chip-row">
+          {ATTEMPT_FILTERS.map((a) => (
+            <button
+              key={a.key}
+              className={`filter-chip${selectedAttempts.has(a.key) ? " active" : ""}`}
+              onClick={() => setSelectedAttempts((s) => toggle(s, a.key))}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <button
+        className="cta-button"
+        disabled={!result || count === 0}
+        onClick={() =>
+          onStartSession({ title: "復習問題", questions: result.results })
+        }
+      >
+        {!result
+          ? "集計中..."
+          : count === 0
+            ? "条件に合う問題がありません"
+            : `復習を始める（${count}問）`}
       </button>
 
-      {groups.map((g, i) => (
-        <button
-          key={g.category}
-          className="course-row"
-          onClick={() => onStartSession({ title: `復習問題: ${g.category}`, questions: g.questions })}
-        >
-          <div className="course-row-top">
-            <span className="course-letter">{String.fromCharCode(65 + i)}</span>
-            <span className="course-name">{g.category}</span>
-            <span className="course-remaining">{g.questions.length}問</span>
-          </div>
-        </button>
-      ))}
-    </div>
+      {result?.truncated && (
+        <p className="course-count">
+          該当が多いため、先頭{result.results.length}問を出題します。条件を絞ると狙った範囲だけ解けます。
+        </p>
+      )}
+    </>
   );
 }
 

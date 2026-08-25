@@ -2047,3 +2047,48 @@
   color: inherit;
   font: inherit;
 }
+
+/* 復習の絞り込み（科目・評価・演習回数）。項目が多いので見出しで区切る。 */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.filter-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-group-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.filter-group-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-group-actions button {
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--accent);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.filter-group-actions button:hover {
+  border-color: var(--accent);
+}
+
+.filter-group .filter-chip-row {
+  margin-bottom: 0;
+}
