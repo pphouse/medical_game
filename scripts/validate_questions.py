@@ -29,7 +29,7 @@ import jsonschema
 # 分野名の正典は backend 側に置いてある（backend と scripts の両方から
 # 参照するため）。Django のセットアップは不要な素のモジュール。
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
-from quiz.categories import CATEGORY_ORDER, normalize  # noqa: E402
+from quiz.categories import categories_for, normalize  # noqa: E402
 
 SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schemas" / "question_batch.schema.json"
 
@@ -135,9 +135,16 @@ def validate_items(batch, report):
         # 分野名は正典（quiz/categories.py）にあるものだけ許す。
         # category は自由入力の CharField で統制が無く、「循環器」と
         # 「循環器系」のように同じ分野が別名で並存していた。
+        # 科目立ては CBT と国試で違うので、その試験の一覧で照合する。
+        exam_type = item.get("exam_type", "CBT")
         category = item.get("category", "")
-        if category not in CATEGORY_ORDER:
-            fixed = normalize(category, item.get("question_text", ""))
+        if category not in categories_for(exam_type):
+            fixed = normalize(
+                category,
+                item.get("question_text", ""),
+                blueprint_code=item.get("blueprint_code", ""),
+                exam_type=exam_type,
+            )
             report.fail(item_id, "category", f"分野「{category}」は「{fixed}」に直してください")
 
         if len(choices) != 5:

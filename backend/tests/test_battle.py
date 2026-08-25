@@ -427,7 +427,7 @@ class TestRoundTimeLimit:
 
 
 class TestMatchTimeoutWindow:
-    def test_timeout_falls_within_40_to_50_seconds(self):
+    def test_timeout_falls_within_20_to_40_seconds(self):
         from battle.matchmaking import (
             MATCH_TIMEOUT_MAX_SECONDS,
             MATCH_TIMEOUT_MIN_SECONDS,
@@ -460,14 +460,14 @@ class TestMatchTimeoutWindow:
         client, _ = auth_client(display_name="待つ人", grade=4)
         ticket_id = client.post("/api/battle/quickmatch/", {}, format="json").json()["ticket_id"]
 
-        # 39秒経過ではまだ切り替わらない（下限40秒）
+        # 19秒経過ではまだ切り替わらない（下限20秒）
         MatchmakingTicket.objects.filter(pk=ticket_id).update(
-            created_at=timezone.now() - timezone_delta(39)
+            created_at=timezone.now() - timezone_delta(19)
         )
         assert client.get(f"/api/battle/quickmatch/{ticket_id}/").json()["status"] == "waiting"
 
-        # 51秒経過なら必ず切り替わる（上限50秒）
+        # 41秒経過なら必ず切り替わる（上限40秒）
         MatchmakingTicket.objects.filter(pk=ticket_id).update(
-            created_at=timezone.now() - timezone_delta(51)
+            created_at=timezone.now() - timezone_delta(41)
         )
         assert client.get(f"/api/battle/quickmatch/{ticket_id}/").json()["status"] == "ai_matched"

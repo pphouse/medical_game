@@ -13,7 +13,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-4",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "単剤の内服で低血糖の原因になる可能性が高いのはどれか。",
       "choices": [
@@ -81,7 +81,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-6",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "高カリウム血症の原因となるのはどれか。",
       "choices": [
@@ -115,7 +115,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-7",
-      "category": "消化器",
+      "category": "消化管",
       "difficulty": "standard",
       "question_text": "逆流性食道炎の誘因とならないのはどれか。",
       "choices": [
@@ -183,7 +183,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-9",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "骨壊死のリスクファクターでないのはどれか。",
       "choices": [
@@ -217,7 +217,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-10",
-      "category": "免疫",
+      "category": "免疫・膠原病",
       "difficulty": "standard",
       "question_text": "全身性強皮症による続発性Raynaud現象の特徴はどれか。",
       "choices": [
@@ -251,7 +251,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-11",
-      "category": "精神",
+      "category": "精神科",
       "difficulty": "standard",
       "question_text": "自閉スペクトラム症の特徴でないのはどれか。",
       "choices": [
@@ -319,7 +319,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-16",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "76歳の女性。高血糖と尿蛋白を指摘されて来院した。退職前の健診で血糖値が高めであることを指摘されていたが、そのままにしていた。60歳で退職後は健診を受診していなかった。退職後の3年間で体重が10kg増加した。既往歴に特記すべきことはない。姉に糖尿病がある。現在はひとり暮らしである。運動習慣はない。視力低下のために眼科を受診したところ、増殖性糖尿病網膜症と診断され、高血糖と尿蛋白も指摘されて紹介された。身長154cm、体重70kg。脈拍72/分、整。血圧142/80mmHg。胸腹部に異常を認めない。両下)に軽度の圧痕性浮腫を認める。尿所見:蛋白2+、糖3+、潜血(−)。随時尿の尿蛋白/Cr比は1.2 g/gCr(基準0.15未満)。尿沈渣に赤血球1〜2/HPF、白血球1〜2/HPF、円柱を認めない。血液生化学所見:総蛋白6.1g/dL、アルブミン4.2g/dL、尿素窒素16mg/dL、クレアチニン0.6mg/dL、eGFR72.3mL/分/1.73m2、随時血糖値201mg/dL、HbA1c10.2% (基準4.6〜6.2)、Na142mEq/L、K4.5mEq/L、Cl 100mEq/L、Ca9.2mg/dL。抗GAD抗体陰性。尿蛋白の原因を調べるための腎生検は患者が希望しなかった。本患者の蛋白尿の原因が糖尿病性腎症であることを最も示唆する所見はどれか。",
       "choices": [
@@ -353,7 +353,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-18",
-      "category": "精神",
+      "category": "精神科",
       "difficulty": "standard",
       "question_text": "23歳の男性。仕事中居眠りが多く、重要な商談や会議中でも発作的に眠ってしまうことが多いため来院した。数年前から夜間十分に眠っても日中に何回も急に強い眠気を認めるようになり、最近は大笑いや驚いた後に急に全身の力が抜けることが増えてきたという。神経診察に異常を認めない。この患者にみられる可能性が高い特徴はどれか。",
       "choices": [
@@ -387,7 +387,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-25",
-      "category": "皮膚",
+      "category": "皮膚科",
       "difficulty": "standard",
       "question_text": "13歳の女子。バスケットボールの試合中に気分不快と腹痛が出現したため、教師に付き添われ来院した。会場で用意された弁当を食べて約1時間後に試合に出場した。試合開始10分後に気分不快と全身の皮膚瘙痒及び強い腹痛が現れた。弁当の主な副食材はイカであり、最近1年ほどは食べていなかったという。診察時には気分不快や腹痛のピークは過ぎていた。意識は清明。体温36.8°C。脈拍80/分。呼吸数18/分。SpO2100%(room air)。血圧110/76mmHg。呼吸音に異常を認めない。腹部は平坦、軟で、軽度の紅斑と膨疹を認める。血液所見:赤血球430万、Hb12.5g/dL、白血球4,800(分葉核好中球42%、好酸球2%、リンパ球56%)、血小板21万。CRP0.3mg/dL。今後の対応として適切なのはどれか。",
       "choices": [
@@ -421,7 +421,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-26",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "30歳の男性。「3か月くらい前から、仕事の能率が悪いのが気になる」と訴えて産業医面談を希望した。新型コロナウイルス感染症(COVID-19)の流行に伴い、約半年前から会議もオンラインで行う在宅勤務となった。妻と3歳の男児との3人暮らしだが、自宅周囲の騒音や男児の世話のためにイライラして仕事に集中できないという。約1か月前から寝酒を飲んで眠るようになったが、その頃から朝の起床時に気持ちが沈んでいることが多くなった。毎日疲れが残り、気がつくと取り留めなく考え事をしているという。産業医の対応として適切でないのはどれか。",
       "choices": [
@@ -489,7 +489,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-30",
-      "category": "泌尿器",
+      "category": "泌尿器科",
       "difficulty": "standard",
       "question_text": "42歳の男性。下腹部痛と悪心を主訴に来院した。生来健康で、半年前の定期健診でも異常は指摘されなかった。朝食後に右側腹部に張る感じがあり、次第に痛みへと変わり、急速に激痛となった。うずくまってじっとしているうちに数分で痛みは一旦改善したが10分ほどで悪化し、悪心とともに嘔吐した。その後も数分から10数分の周期で痛みと悪心があり、タクシーで来院した。発熱は認めない。痛みは下方へと少しずつ移動しており来院時には右下腹部痛を認めるが、右側腹部から背部のこわばるような違和感も持続している。予想される所見はどれか。",
       "choices": [
@@ -557,7 +557,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-38",
-      "category": "消化器",
+      "category": "消化管",
       "difficulty": "standard",
       "question_text": "62歳の男性。下行結腸癌と診断され、開腹による左半結腸切除を予定している。28歳時に虫垂炎による腹膜炎で1か月の入院歴がある。身長175cm、体重60kg。体温36.2°C。脈拍76/分、整。血圧120/70mmHg。呼吸数14/分。眼瞼結膜と眼球結膜に異常を認めない。心音と呼吸音に異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。右下腹部と腹部正中に手術痕を認める。血液所見:赤血球410万、Hb13.8g/dL、Ht42%、白血球5,200、血小板16万。PT-INR1.0(基準0.9-1.1)、APTT29.0秒(基準対象32.2)。血液生化学所見:総蛋白7.4g/dL、アルブミン4.0g/dL、総ビリルビン0.8mg/dL、AST18U/L、ALT20U/L、LD 196U/L (基準120〜245)、ALP102U/L (基準38〜113)、クレアチニン0.8 mg/dL、Na140mEq/L、K3.8mEq/L、Cl100mEq/L、CEA5.2ng/mL(基準5以下)。この患者の周術期管理で適切なのはどれか。",
       "choices": [
@@ -591,7 +591,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-40",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "15歳の男子。下肢の痛みと赤褐色尿のため家族とともに来院した。3日前に野球部の練習に参加し、炎天下での激しいトレーニング中に頭痛と下肢の脱力を認めたが飲水と休憩で改善した。2日前から両大)前面に筋肉痛を感じながら練習を続けていた。昨晩から赤褐色尿が出現したため受診した。意識は清明。身長167cm、体重62kg。体温37.1°C。脈拍84/分、整。血圧134/62mmHg。呼吸数16/分。SpO298%(room air)。心音と呼吸音に異常を認めない。腰背部痛と両大)の筋痛を認める。神経診察に異常を認めない。尿所見:色調は暗褐色、比重1.022、pH 6.5、蛋白+、潜血3+、沈渣に赤血球1〜4/HPFを認める。血液所見:赤血球536万、Hb16.0g/dL、Ht45%、白血球9,000、血小板28万。血液生化学所見:総蛋白6.7g/dL、アルブミン4.2g/dL、AST1,927U/L、ALT366U/L、CK 155,150U/L(基準30〜140)、尿素窒素8.7mg/dL、クレアチニン0.6mg/dL、尿酸4.6mg/dL、Na142mEq/L、K4.0mEq/L、Cl105mEq/L。最初に行う輸液の組成として適切なのはどれか。",
       "choices": [
@@ -625,7 +625,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-43",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "28歳の男性。心窩部痛を主訴に来院した。2週間前から空腹時に軽度の心窩部痛を自覚していたが、昨日から増悪するため受診した。20歳から十二指腸潰瘍で繰り返し薬物治療を受けている。25歳時に下垂体腺腫摘出術を受けている。身長176cm、体重64kg。体温36.2°C。脈拍96/分、整。血圧98/62mmHg。腹部は平坦、軟で、上腹部に軽度の圧痛を認める。直腸指診で黒色便の付着を認める。血液所見:赤血球360万、Hb11.5g/dL、Ht36%、白血球8,800、血小板29万。血液生化学所見:総蛋白6.9g/dL、アルブミン3.6g/dL、ALP192U/L(基準38〜113)、尿素窒素20mg/dL、クレアチニン0.8mg/dL、Ca11.6mg/dL、P 2.2mg/dL。上部消化管内視鏡検査で多発胃潰瘍および十二指腸潰瘍を認めた。頸部超音波検査で甲状腺背側に径0.5cmの腫瘤を認めた。腹部造影CT動脈相で膵体部に強く造影される径1cmの腫瘤を認めた。この患者で上昇していると考えられるホルモンはどれか。",
       "choices": [
@@ -659,7 +659,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-44",
-      "category": "婦人科",
+      "category": "婦人科・乳腺外科",
       "difficulty": "standard",
       "question_text": "22歳の女性。無月経を主訴に来院した。初経は12歳。13歳から不規則月経となり14歳から無月経となった。特に困っていることはなかったが、職場の同僚にすすめられて産婦人科を受診した。家族歴、既往歴に特記すべきことはない。身長164cm、体重56kg。体温36.8°C。脈拍72/分、整。血圧106/76mmHg。甲状腺腫大は認めない。乳房発育は不良。乳頭の圧迫で乳汁分泌を両側に認める。外性器は女性型。陰毛と腋毛に異常を認めない。子宮長は3cm、子宮内膜は薄い。両側卵巣は正常大。基礎体温は1相性である。高値が予想されるのはどれか。",
       "choices": [
@@ -693,7 +693,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-46",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "53歳の男性。家族からいびきを指摘されたことを主訴に来院した。10年ぶりに会った友人に鼻が大きくなって顔つきが変わったと言われた。最近靴が窮屈になってきている。2年前に手根管症候群で手術。身長173cm、体重72kg。体温36.4°C。脈拍56/分、整。血圧156/90mmHg。血液生化学検査:AST38U/L、ALT 42U/L、ALP256U/L(基準38〜113)、空腹時血糖126mg/dL、総コレステロール254mg/dL、トリグリセリド216mg/dL、HDLコレステロール48mg/dL。この患者の確定診断に必要な内分泌検査はどれか。",
       "choices": [
@@ -727,7 +727,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-47",
-      "category": "婦人科",
+      "category": "婦人科・乳腺外科",
       "difficulty": "standard",
       "question_text": "32歳の女性。昨晩同意のない性行為を強要され、本日警察官に付き添われて受診した。警察官から被害状況の説明を受け、診察をすることになった。月経周期は28日型、整、順。最終月経は12日前から5日間。対応として適切でないのはどれか。",
       "choices": [
@@ -897,7 +897,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-64",
-      "category": "消化器",
+      "category": "消化管",
       "difficulty": "standard",
       "question_text": "61歳の男性。右膝痛を主訴に来院した。疼痛のため一本杖歩行をしている。2か月前に大腸癌の手術を受け、現在薬物による抗癌治療中である。余命は2年以上と考えられている。意識は清明。身長172cm、体重75kg。右膝は高度の内反変形があり、屈曲80度、伸展−20度の可動域制限がある。右膝関節の単純エックス線写真で変形性膝関節症を認め、人工膝関節置換術の適応とされた。今後の治療の組合せとして適切なのはどれか。",
       "choices": [
@@ -931,7 +931,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-1",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "担当した患者の症例報告を論文発表することにした。適切なのはどれか。",
       "choices": [
@@ -1033,7 +1033,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-5",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "意識障害のある患者に行うことが困難な身体診察はどれか。",
       "choices": [
@@ -1101,7 +1101,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-8",
-      "category": "腎臓",
+      "category": "腎・泌尿器",
       "difficulty": "standard",
       "question_text": "加齢に伴う変化について正しいのはどれか。",
       "choices": [
@@ -1135,7 +1135,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-9",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "医療面接において患者と良好なコミュニケーションを行うために適切なのはどれか。",
       "choices": [
@@ -1237,7 +1237,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-12",
-      "category": "小児",
+      "category": "小児科",
       "difficulty": "standard",
       "question_text": "幼児期以降に筋力低下が明らかになるのはどれか。",
       "choices": [
@@ -1271,7 +1271,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-13",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "高齢者の個性と尊厳を尊重する介護の在り方について適切なのはどれか。",
       "choices": [
@@ -1305,7 +1305,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-14",
-      "category": "消化器",
+      "category": "消化管",
       "difficulty": "standard",
       "question_text": "疾患・状態とそのリスクとなる行動との組合せについて誤っているのはどれか。",
       "choices": [
@@ -1339,7 +1339,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-15",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "成人の安静時所見のうち異常なのはどれか。",
       "choices": [
@@ -1373,7 +1373,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-16",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "経管栄養を目的とした仰臥位での経鼻胃管の挿入について適切なのはどれか。",
       "choices": [
@@ -1441,7 +1441,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-19",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "乳房の悪性疾患を疑わせる所見として可能性が低いのはどれか。",
       "choices": [
@@ -1475,7 +1475,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-20",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "足関節背屈の徒手筋力テストにおいて、足関節の動きを認めず前脛骨筋の収縮のみを認めた。評価はどれか。",
       "choices": [
@@ -1543,7 +1543,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-22",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "インスリンに関する医学史で最も新しいのはどれか。",
       "choices": [
@@ -1611,7 +1611,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-24",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "退院時要約について誤っているのはどれか。",
       "choices": [
@@ -1679,7 +1679,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-26",
-      "category": "婦人科",
+      "category": "婦人科・乳腺外科",
       "difficulty": "standard",
       "question_text": "54歳の女性。3日前に子宮筋腫のため子宮摘出術を受け入院中である。本日、洗面所で洗顔していたところ突然呼吸困難が生じ、持続している。咳嗽はない。胸痛はない。喫煙歴はない。意識は清明。体温36.4°C。脈拍112/分、整。血圧102/62mmHg。呼吸数24/分。SpO289%:room air<。呼吸音に異常を認めない。最も可能性が高いのはどれか。",
       "choices": [
@@ -1713,7 +1713,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-28",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "84歳の男性。体重減少を主訴に来院した。妻と長男の3人暮らし。検査の結果、大腸を原発とする悪性腫瘍で遠隔転移を認めた。原発巣、転移巣ともに手術による切除は不可能である。本人は告知を望んでいるが、薬物による抗癌治療は望んでいない。長男は告知も積極的治療も望んでいない。主治医は薬物による抗がん治療を行いたいと考えている。認知機能は改訂長谷川式簡易知能評価スケールで22点:30点満点<。この患者の治療方針を決定する上で最も重要な因子はどれか。",
       "choices": [
@@ -1747,7 +1747,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-29",
-      "category": "婦人科",
+      "category": "婦人科・乳腺外科",
       "difficulty": "standard",
       "question_text": "40歳の女性。1か月前に腹部膨満を主訴に婦人科外来を受診し、精査の結果卵巣腫瘍の診断を受け、摘出手術を受けるため2週間前に入院した。身長104cm、体重25kg。骨形成不全症のため、年1回整形外科を定期受診している。歩行困難があり日常的に電動車いすを用いている。夫と5歳の男児との3人暮らし。ネットショップを経営している。日常生活をサポートするため数人のボランティアが入れ替わりで支援している。術後経過は良好で術中病理診断の結果は良性であった。入院中に新たな機能障害は認めなかった。入院中の主治医として退院に向けて必要なのはどれか。",
       "choices": [
@@ -1917,7 +1917,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-1",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "在宅医療を想定している患者・家族への説明で適切なのはどれか。",
       "choices": [
@@ -1951,7 +1951,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-2",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "低栄養が疑われる高齢者(BMI18kg/m2、6か月で3kgの体重減少で腎障害がない場合の栄養管理として適切でないのはどれか。",
       "choices": [
@@ -2053,7 +2053,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-7",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "パンデミックについて適切なのはどれか。",
       "choices": [
@@ -2087,7 +2087,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-8",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "レム睡眠で正しいのはどれか。",
       "choices": [
@@ -2121,7 +2121,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-9",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "高額療養費制度において、患者の年齢に加えて月の自己負担限度額を規定する条件はどれか。",
       "choices": [
@@ -2155,7 +2155,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-10",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "「がん対策推進基本計画(平成30年3月 」において推進されるべきとされている緩和ケアについて誤っているのはどれか。",
       "choices": [
@@ -2257,7 +2257,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-13",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "ノロウイルスの不活化に有効なのはどれか。",
       "choices": [
@@ -2291,7 +2291,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-14",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "尖足を認め、足関節底屈20度の位置から他動的に背屈させることができない。関節可動域の足関節背屈角度の記載として正しいのはどれか。",
       "choices": [
@@ -2325,7 +2325,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-15",
-      "category": "小児",
+      "category": "小児科",
       "difficulty": "standard",
       "question_text": "総人口を分母とする指標はどれか。",
       "choices": [
@@ -2359,7 +2359,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-16",
-      "category": "婦人科",
+      "category": "婦人科・乳腺外科",
       "difficulty": "standard",
       "question_text": "痛みを主訴に受診するのはどれか。",
       "choices": [
@@ -2393,7 +2393,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-20",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "生理食塩液輸液下で2日間の絶食により上昇するのはどれか。",
       "choices": [
@@ -2427,7 +2427,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-21",
-      "category": "婦人科",
+      "category": "婦人科・乳腺外科",
       "difficulty": "standard",
       "question_text": "我が国における近年の疾病や疾病リスクについて正しいのはどれか。",
       "choices": [
@@ -2461,7 +2461,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-22",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "炎症性疾患にみられるCRP上昇に最も関与するサイトカインはどれか。",
       "choices": [
@@ -2563,7 +2563,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-26",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "2009年に比較して2019年の数値が上昇しているのはどれか。",
       "choices": [
@@ -2699,7 +2699,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-42",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "10か月の男児。昨夜から血便、嘔吐を認め、機嫌も悪いため母親に連れられて来院した。1足底を刺激すると開眼し、2皮膚色はピンク色である。3ツルゴールは軽度低下しており、4口唇の乾燥は軽度である。5毛細血管再充満時間は3秒である。この患児で循環不全を示す所見は下線部のうちどれか。",
       "choices": [
@@ -2733,7 +2733,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-44",
-      "category": "消化器",
+      "category": "消化管",
       "difficulty": "standard",
       "question_text": "日齢3の男児。軽度の腹部膨満を認めると看護師から指摘があった。在胎40週、3,100gで出生。1胎便排泄は生後48時間に認められた。2体重2,950g。体温37.0°C。心拍数136/分、整。血圧74/46mmHg。呼吸数40/分。3大泉門は2×2cmであった。4皮膚は黄疸を認める。腹部は5肝臓を右季肋下に1cm触知した。下線部のうち異常所見はどれか。",
       "choices": [
@@ -2835,7 +2835,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-47",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "42歳の女性。手のこわばりを主訴に来院した。手の症状には約3か月前から気付いている。厳格な菜食主義で魚介類や乳製品を10年以上摂取していない。味覚に異常を認めない。神経診察に異常を認めない。血液所見:赤血球414万、Hb 13.1g/dL、白血球6,900、血小板18万。血液生化学所見:アルブミン4.0g/dL、Na137mEq/L、K4.1mEq/L、Cl106mEq/L、Ca7.8mg/dL、P2.2mg/dL。この患者で欠乏が考えられるのはどれか。",
       "choices": [
@@ -2903,7 +2903,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-51",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "52歳の男性。健康診断で肥満を指摘され来院した。3か月前の健康診断で異常をはじめて指摘された。20歳時の体重は65kgであった。既往歴と家族歴に特記すべき事項はない。喫煙歴はない。飲酒は機会飲酒。健康診断以降、早朝1時間の散歩をしている。身長170cm、体重74kg。BMI25.6。脈拍64/分、整。血圧128/82mmHg。心音と呼吸音に異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。下肢に浮腫を認めない。この患者の行動変容のステージに基づく指導として適切なのはどれか。",
       "choices": [
@@ -2937,7 +2937,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-52",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "第1子(3歳男児が臨床的にDuchenne型筋ジストロフィーと診断されている両親が遺伝カウンセリングを受けるために来院した。第1子はこれまで遺伝子検査を受けたことがない。他にDuchenne型筋ジストロフィーと診断されている家族はいない。正しいのはどれか。",
       "choices": [
@@ -2971,7 +2971,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-54",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "26歳の男性。ある国から日本国内の空港に帰国した。日本国籍を有している。到着時、発熱と下痢を伴っており、出発国の状況から一類感染症の可能性が考えられた。この患者に関わる対応で検疫法に基づいて検疫所長が行うことができるとされている措置として誤っているのはどれか。",
       "choices": [
@@ -3005,7 +3005,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-2",
-      "category": "精神",
+      "category": "精神科",
       "difficulty": "standard",
       "question_text": "統合失調症を強く示唆する患者の発言はどれか。",
       "choices": [
@@ -3073,7 +3073,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-4",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "先天性副腎皮質過形成症の維持療法中に発熱を呈した場合、初期対応として適切なのはどれか。",
       "choices": [
@@ -3107,7 +3107,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-5",
-      "category": "消化器",
+      "category": "消化管",
       "difficulty": "standard",
       "question_text": "上部消化管内視鏡を用いて治療が行われるのはどれか。",
       "choices": [
@@ -3175,7 +3175,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-7",
-      "category": "腎臓",
+      "category": "腎・泌尿器",
       "difficulty": "standard",
       "question_text": "腎後性急性腎障害を、腎前性・腎性急性腎障害と鑑別する場合に最も有用な検査はどれか。",
       "choices": [
@@ -3209,7 +3209,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-8",
-      "category": "皮膚",
+      "category": "皮膚科",
       "difficulty": "standard",
       "question_text": "急性の細菌感染症はどれか。",
       "choices": [
@@ -3243,7 +3243,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-10",
-      "category": "婦人科",
+      "category": "婦人科・乳腺外科",
       "difficulty": "standard",
       "question_text": "早期流産の原因で最も頻度が高いのはどれか。",
       "choices": [
@@ -3277,7 +3277,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-17",
-      "category": "精神",
+      "category": "精神科",
       "difficulty": "standard",
       "question_text": "外見は40歳前後にみえる男性。路上にうずくまっているところを警察官に保護されたが、「自分が誰だかわからない」と言うため、警察官に伴われて来院した。身元がわかるような所持品はなかった。会話は可能で、関西弁を話したが、関西地方に住んだ記憶はないという。外傷はなく、血液検査、脳画像検査、脳波などの身体的な精査では異常はなく、保護されてからの記憶は保持されていた。この患者でみられる可能性が最も高い特徴はどれか。",
       "choices": [
@@ -3345,7 +3345,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-19",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "75歳の男性。呼吸困難を主訴に来院した。5年前から慢性的な咳と痰を自覚していたがそのままにしていた。1年前から階段昇降や軽労作で息切れを自覚するようになった。1週間前から発熱と咽喉頭痛を認め、咳と痰の増加とともに呼吸困難が増強したため受診した。既往歴に特記すべきことはない。喫煙は30本/日を45年間。来院時、意識は清明であるが、黄色痰および激しい咳が続いている。口すぼめ呼吸を認める。身長165cm、体重50kg。体温37.4°C。脈拍84/分、整。呼吸数21/分。SpO287%(room air)。呼吸音に異常を認めない。この患者の初期治療として誤っているのはどれか。",
       "choices": [
@@ -3447,7 +3447,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-24",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "68歳の男性。背部痛を主訴に来院した。3か月前に肝転移を伴う膵尾部癌と診断されたが、治療の希望がなく通院していなかった。1か月前から背部痛が出現し、2週間前から徐々に増悪するため受診した。背部痛は鈍痛で終日持続し眠れないこともあった。そのため1日の大半を家で横になって生活し、粥食を少量ずつ食べているが、体重は1か月で2kg減少した。既往歴に特記すべきことはない。喫煙歴はない。飲酒は日本酒1合/日を40年間。一人暮らしである。身長168cm、体重48kg。脈拍72/分、整。血圧126/60mmHg。呼吸数14/分。上腹部正中に径10cmの辺縁不整な腫瘤を触知する。腸雑音は減弱している。血液所見:赤血球334万、Hb10.8g/dL、Ht31%、白血球9,800、血小板14万。血液生化学所見:総蛋白5.6g/dL、アルブミン2.8g/dL、総ビリルビン2.4mg/dL、AST134 U/L、ALT140U/L、γ-GT124U/L(基準8〜50)、尿素窒素19mg/dL、クレアチニン0.4mg/dL、CEA16.4ng/mL(基準5以下)、CA19-9580U/mL(基準37以下)。本人はなるべく自宅で生活したいと希望している。今後の鎮痛薬による疼痛管理で適切なのはどれか。",
       "choices": [
@@ -3481,7 +3481,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-28",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "3歳の男児。居間で咳をし、気持ちの悪そうな顔をしているところを母親に見つけられ、連れられて救急外来を受診した。意識は清明。泣いていない。母親の話では子どもの周りには灰皿とたばこの吸い殻があり、1円玉や10円玉などの硬貨も財布とともに散らばっていたと言う。誤飲に対する処置を判断する情報として有用性が低いのはどれか。",
       "choices": [
@@ -3549,7 +3549,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-35",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "38歳の女性。咳嗽を主訴に来院した。3週間前から乾性咳嗽が出現するようになり改善しない。夜間には落ち着いているが日中仕事中に咳が出る。これまで喘息を指摘されたことはない。18歳から花粉症を認めている。1年前から製パン工房でパートとして平日週5日働いている。週末、家にいるときには日中も症状がないが、月曜日に職場に行くと咳が出る。喫煙歴はない。ペットは飼育していない。体温35.2°C。呼吸数16/分。SpO296%(room air)。呼吸音に異常を認めない。血液所見:赤血球360万、Hb11.4g/dL、白血球5,700(分葉核好中球56%、好酸球12%、好塩基球0%、リンパ球32%)、血小板32万。CRP0.2mg/dL。胸部エックス線写真に異常を認めない。診断に有用な検査として誤っているのはどれか。",
       "choices": [
@@ -3583,7 +3583,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-38",
-      "category": "小児",
+      "category": "小児科",
       "difficulty": "standard",
       "question_text": "6か月の女児。左下肢を動かさないため母親に連れられて来院した。2日前に38°C台の発熱があり、自宅近くの診療所で咽頭炎と診断され、アセトアミノフェン坐剤の処方をうけている。翌日、おむつを交換するときに激しく泣することに母親が気づいた。新生児期に異常は指摘されていない。身長68cm、体重7.2kg。体温37.8°C。脈拍132/分、整。血圧96/68mmHg。呼吸数14/分。左下肢の自動運動はなく、左股関節を他動的に動かすと泣する。右股関節に可動域制限を認めない。血液検査:赤血球450万、Hb12.0g/dL、Ht38%、白血球12,600(桿状核好中球4%、分葉核好中球80%、好酸球1%、好塩基球1%、単球5%、リンパ球10%)、血小板26万。CRP15mg/dL。左股関節穿刺液のグラム染色でグラム陽性球菌が認められた。行うべき処置はどれか。",
       "choices": [
@@ -3617,7 +3617,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-39",
-      "category": "腎臓",
+      "category": "腎・泌尿器",
       "difficulty": "standard",
       "question_text": "28歳の女性。肉眼的血尿を主訴に来院した。19歳時の大学入学時健診ではじめて血尿を指摘されたがそのままにしていた。3日前から尿が赤黒いことに気づいて経過観察していたが、次第に色が濃くなったので受診した。母親が3年前にくも膜下出血で死亡した。兄、母方の祖母と叔父が透析を受けており、いずれも成人になってから腎障害が出現したという。表在リンパ節は触知しない。胸部に異常を認めない。両側の側腹部に腫瘤を触れる。尿所見:蛋白(−)、潜血3+、尿沈渣に赤血球100以上/HPF、白血球0〜2/HPF、円柱は認めない。血液生化学所見:総蛋白6.0g/dL、アルブミン4.0g/dL、尿素窒素30mg/dL、クレアチニン2.5 mg/dL、 eGFR20.2mL/分/1.73m2、 Na142mEq/L、 K5.1mEq/L、 Cl101 mEq/L。腹部MRIでは両側の腎臓が腫大し、囊胞が多発している。患者には17歳の弟がいるが、症状はなく健診も受けたことがない。本症を患者の弟が有する確率はどれか。",
       "choices": [
@@ -3719,7 +3719,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-49",
-      "category": "消化器",
+      "category": "消化管",
       "difficulty": "standard",
       "question_text": "77歳の女性。意識障害のため救急車で搬入された。介護老人保健施設に入所中である。3日前から物忘れがひどくなり、自分がどこにいるかも分からなくなっていた。施設職員からの情報では、1年前まで自宅近くの医療機関で非ホジキンリンパ腫の治療が行われ、「治癒した」と言われていたが、施設入所後は施設から遠いので通院していないとのことであった。呼びかけには反応するが、傾眠状態である。尿失禁はない。体温37.2°C。心拍数96/分、整。血圧96/62mmHg。呼吸数14/分。SpO296%(roomair)。血液所見:赤血球398万、Hb12.5g/dL、Ht40%、白血球6,300、血小板16万、PT-INR2.1(基準0.9〜1.1)、FDP25μg/mL(基準10以下)。血液生化学所見:総蛋白6.4g/dL、アルブミン3.5g/dL、総ビリルビン3.2mg/dL、直接ビリルビン1.8mg/dL、AST3,956U/L、ALT2,824U/L、LD986U/L(基準120〜245)、ALP158U/L(基準38〜113)、γ-GT686U/L(基準8〜50)、アミラーゼ130U/L(基準37〜160)、尿素窒素13mg/dL、クレアチニン1.0mg/dL、血糖121mg/dL、Na134mEq/L、K3.8mEq/L、Ca9.0mg/dL、P 4.1mg/dL、アンモニア186μg/dL(基準18〜48)。免疫血清学所見:HBs抗原陽性、HBV-DNA陽性、HCV抗体陰性。頭部単純CTで明らかな異常を認めない。非ホジキンリンパ腫治療前のB型肝炎ウイルスマーカーはHBs抗原陰性、HBs抗体陽性、HBc抗体陽性であった。考えられる疾患はどれか。",
       "choices": [
@@ -3753,7 +3753,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-50",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "77歳の女性。食欲不振、嘔吐、下痢を主訴に来院した。20年前から関節リウマチで治療中であった。2週間前から食欲不振と怠感を自覚し、1週間前から口腔粘膜にびらんが出現した。3日前までメトトレキサートを継続していたが、その後嘔吐・下痢が出現したため救急外来を受診した。意識は清明。身長145cm、体重40kg。体温37.4°C。脈拍108/分、整。血圧120/70mmHg。呼吸数20/分。SpO2 99%(room air)。口腔粘膜にびらんを認める。表在リンパ節腫大を認めない。心音と呼吸音に異常を認めない。両手関節に軽度の腫脹と変形を認める。腹部は平坦、軟で、肝・脾を触知しない。血液所見:赤血球297万、Hb10.0g/dL、Ht32%、網赤血球0.1%、白血球1,800(好中球52%、好酸球12%、単球1%、リンパ球35%)、血小板8.0万、フィブリノゲン460mg/dL(基準186〜355)、PT-INR1.0(基準0.9〜1.1)、活性化トロンボプラスチン時間°APTT–27.3秒(基準対照32.2)、Dダイマー6.4μg/mL(基準1.0以下)。血液生化学所見:総蛋白6.3g/dL、アルブミン3.0g/dL、AST25U/L、ALT82U/L、LD280U/L(基準120〜245)、尿素窒素33mg/dL、クレアチニン1.2mg/dL。CRP16mg/dL。胸部エックス線写真に異常を認めない。メトトレキサートを中止し、血液培養の検体採取後にカルバペネム系抗菌薬の投与を開始した。次に投与する薬剤として適切なのはどれか。",
       "choices": [
@@ -3923,7 +3923,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-62",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "54歳の男性。糖尿病の合併症の精査を目的に来院した。高血糖と血圧高値は10年前の健診で初めて指摘され、自宅近くの診療所で経口血糖降下薬と降圧薬を処方されている。最近3年はHbA1cが8%台で推移し、両足底の感覚鈍麻を自覚している。先月、眼科で単純網膜症と診断された。身長168cm、体重65kg。体温36.1°C。脈拍64/分、整。血圧128/76mmHg。胸腹部に異常を認めない。膝蓋腱反射に異常はなく、アキレス腱反射は左右ともに低下していた。尿所見:蛋白(−)、糖2+、ケトン体(−)、潜血(−)。この患者で糖尿病性腎症と診断するのに必要な検査はどれか。",
       "choices": [
@@ -3957,7 +3957,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-D-63",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "28歳の男性。鼻閉と鼻漏を主訴に来院した。8年前から通年性に鼻閉、水様性鼻汁およびくしゃみを認めていた。体温36.0°C。鼻粘膜は蒼白で浮腫状、総鼻道は閉塞していた。副鼻腔エックス線写真で上顎洞粘膜の肥厚を認めた。治療として適切でないのはどれか。",
       "choices": [
@@ -4025,7 +4025,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-2",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "医師の行動として適切なのはどれか。",
       "choices": [
@@ -4059,7 +4059,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-3",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "径2cmのリンパ節で癌の転移よりも炎症性の腫大を疑うのはどれか。",
       "choices": [
@@ -4127,7 +4127,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-6",
-      "category": "泌尿器",
+      "category": "泌尿器科",
       "difficulty": "standard",
       "question_text": "腹部診察所見と疾患の組合せで正しいのはどれか。",
       "choices": [
@@ -4229,7 +4229,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-9",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "地域医療構想で用いられる病床機能区分に含まれないのはどれか。",
       "choices": [
@@ -4331,7 +4331,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-13",
-      "category": "腎臓",
+      "category": "腎・泌尿器",
       "difficulty": "standard",
       "question_text": "腎盂腎炎の診断に最も有用なのはどれか。",
       "choices": [
@@ -4501,7 +4501,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-19",
-      "category": "免疫",
+      "category": "免疫・膠原病",
       "difficulty": "standard",
       "question_text": "静脈採血の合併症として最も起こる可能性が低いのはどれか。",
       "choices": [
@@ -4535,7 +4535,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-20",
-      "category": "精神",
+      "category": "精神科",
       "difficulty": "standard",
       "question_text": "労働安全衛生法に規定される健康の保持増進のための措置について誤りはどれか。",
       "choices": [
@@ -4569,7 +4569,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-21",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "一過性の意識障害が生じた場合、Adams-Stokes症候群を疑う病歴はどれか。",
       "choices": [
@@ -4637,7 +4637,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-23",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "医療面接について誤っているのはどれか。",
       "choices": [
@@ -4671,7 +4671,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-24",
-      "category": "泌尿器",
+      "category": "泌尿器科",
       "difficulty": "standard",
       "question_text": "尿閉の原疾患として正しいのはどれか。",
       "choices": [
@@ -4705,7 +4705,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-25",
-      "category": "皮膚",
+      "category": "皮膚科",
       "difficulty": "standard",
       "question_text": "アナフィラキシーの患者に対する病歴聴取で最も必要性が低いのはどれか。",
       "choices": [
@@ -4739,7 +4739,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-27",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "60歳の男性。動悸と眼前暗黒感を主訴に来院した。体温36.0°C。脈拍32/分、不整。血圧82/50mmHg。呼吸数14/分。SpO298%:room air<。病態と関連する可能性が最も高い検査所見はどれか。",
       "choices": [
@@ -4943,7 +4943,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-36",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "80歳の男性。睡眠障害を主訴に来院した。数年前から不眠、中途覚醒がみられている。既往歴、家族歴に特記すべきことはない。喫煙歴はない。飲酒は晩酌をたしなむ程度である。コーヒーを3杯/日飲む。睡眠薬はこれまでも時折服用していたが効果が不十分と感じ、睡眠薬の追加処方を希望して受診した。行うべき指導はどれか。",
       "choices": [
@@ -4977,7 +4977,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-37",
-      "category": "皮膚",
+      "category": "皮膚科",
       "difficulty": "standard",
       "question_text": "7歳の女児。友人の家でエビを摂取した後に急に嘔吐し、意識がもうろうとなったため救急車で搬入された。過去にカニを食べて蕁麻疹が出たことがあった。意識レベルはGCSスコアでE3V3M4。体温36.2°C。心拍数124/分、整。血圧78/52 mmHg。呼吸数30/分。SpO298%:マスク3L/分酸素投与下<。全身は蒼白で膨疹が散在している。両側の胸部で喘鳴を聴取する。直ちに行うべき治療はどれか。",
       "choices": [
@@ -5045,7 +5045,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-2",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "入院していた患者が退院後の復職を希望している。患者の治療と仕事の両立支援において、主治医として適切な対応はどれか。",
       "choices": [
@@ -5079,7 +5079,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-3",
-      "category": "婦人科",
+      "category": "婦人科・乳腺外科",
       "difficulty": "standard",
       "question_text": "最も放射線感受性が低いのはどれか。",
       "choices": [
@@ -5113,7 +5113,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-5",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "トリグリセリド高値の原因とならないのはどれか。",
       "choices": [
@@ -5181,7 +5181,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-8",
-      "category": "婦人科",
+      "category": "婦人科・乳腺外科",
       "difficulty": "standard",
       "question_text": "過多月経の原因となるのはどれか。",
       "choices": [
@@ -5215,7 +5215,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-9",
-      "category": "皮膚",
+      "category": "皮膚科",
       "difficulty": "standard",
       "question_text": "粘膜疹が見られる頻度が最も低いのはどれか。",
       "choices": [
@@ -5249,7 +5249,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-10",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "離島における唯一の診療所で医療を実践するうえで優先度が低いのはどれか。",
       "choices": [
@@ -5283,7 +5283,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-12",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "ユニバーサルデザインの原則に含まれないのはどれか。",
       "choices": [
@@ -5351,7 +5351,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-14",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "精神運動発達において、可能になる時期が最も遅いのはどれか。",
       "choices": [
@@ -5385,7 +5385,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-15",
-      "category": "小児",
+      "category": "小児科",
       "difficulty": "standard",
       "question_text": "好中球の構成成分に対する自己抗体が診断に有用な疾患はどれか。",
       "choices": [
@@ -5419,7 +5419,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-16",
-      "category": "内分泌代謝",
+      "category": "代謝・内分泌",
       "difficulty": "standard",
       "question_text": "視野異常と疾患の組合せで誤っているのはどれか。",
       "choices": [
@@ -5487,7 +5487,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-18",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "嚥下機能が低下している高齢者の誤嚥を予防するために有用な食事の形態はどれか。",
       "choices": [
@@ -5521,7 +5521,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-19",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "高齢者の多剤処方(ポリファーマシー への対応として適切でないのはどれか。",
       "choices": [
@@ -5555,7 +5555,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-20",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "次世代育成支援対策推進法について誤っているのはどれか。",
       "choices": [
@@ -5589,7 +5589,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-21",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "1歳6か月の健康診査における言語発達の問診として適切なのはどれか。",
       "choices": [
@@ -5623,7 +5623,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-23",
-      "category": "４連問",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "乳頭の支配領域レベルで、脊髄の右半分に離断が生じている患者の左半身にみられる神経所見はどれか。",
       "choices": [
@@ -5691,7 +5691,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-25",
-      "category": "腎臓",
+      "category": "腎・泌尿器",
       "difficulty": "standard",
       "question_text": "正常糸球体で最も濾過されにくいのはどれか。",
       "choices": [
@@ -5759,7 +5759,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-42",
-      "category": "腎臓",
+      "category": "腎・泌尿器",
       "difficulty": "standard",
       "question_text": "38歳の男性。顔と足のむくみを主訴に来院した。2週間前から起床時に両眼瞼のむくみに気づき、いつも履いている靴がきつくて履けなくなってきたため受診した。足の痛みはないという。1か月前から体重が8kg増加している。既往歴はない。喫煙歴、飲酒歴はない。意識は清明。体温36.8°C。脈拍72/分、整。血圧132/76mmHg。呼吸数16/分。SpO298%(room air 。眼瞼結膜と眼球結膜に異常を認めない。甲状腺と頸部リンパ節を触知しない。頸静脈に怒張を認めない。心音と呼吸音に異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。前脛骨面を母指で5秒間圧迫したところ両側に圧痕を伴う浮腫を認めた。この時点で最も可能性の高い疾患はどれか。",
       "choices": [
@@ -5895,7 +5895,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-50",
-      "category": "精神",
+      "category": "精神科",
       "difficulty": "standard",
       "question_text": "33歳の男性。3か月前から欠勤が増え、職場でアルコール臭を指摘された。産業医の勧めで精神科を受診したところ、アルコール依存症と診断された。診察時、「仕事が忙しく気分が落ち込むため飲酒量が増えた。飲みすぎといわれたので3日前から断酒した」という。手指の震えと発汗を認める。この患者で正しいのはどれか。",
       "choices": [
@@ -5963,7 +5963,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-54",
-      "category": "小児",
+      "category": "小児科",
       "difficulty": "standard",
       "question_text": "6歳の男児。就学前の健康診断で一側の高度感音難聴があると指摘され、母親に連れられて来院した。新生児仮死の既往はなく、発達の異常を指摘されたこともない。新生児期の聴覚スクリーニング検査では両側とも異常はないといわれた。2歳時に耳下腺炎の既往がある。難聴の原因として最も考えられるのはどれか。",
       "choices": [

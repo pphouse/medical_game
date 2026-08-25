@@ -3,10 +3,9 @@
     python manage.py reclassify_categories --dry-run
     python manage.py reclassify_categories
 
-分野名は CBT 出題基準に沿った名前（「呼吸器系」「腎・尿路系」）と、国試
-過去問の取り込み時にキーワードで付けた名前（「医師国家試験（分類未確定）」
-を含む）が混在していた。quiz.categories の対応表で読み替え、1対1で移せない
-ものだけ本文から振り分け直す。
+分野は出題基準の区分（blueprint_code の先頭2階層、例 "D-5"）を正解として
+決める。コードが無い問題だけ、旧分野名の読み替えと本文からの推定に
+フォールバックする。
 """
 
 from django.core.management.base import BaseCommand
@@ -47,7 +46,12 @@ class Command(BaseCommand):
 
         qs = Question.objects.select_related("question_set").iterator(chunk_size=BATCH)
         for q in qs:
-            new = normalize(q.category, question_text_for_classification(q))
+            new = normalize(
+                q.category,
+                question_text_for_classification(q),
+                blueprint_code=q.blueprint_code,
+                exam_type=q.exam_type,
+            )
             if new == q.category:
                 continue
             moves[(q.category, new)] = moves.get((q.category, new), 0) + 1

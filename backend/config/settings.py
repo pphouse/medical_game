@@ -173,6 +173,9 @@ SUPABASE_JWT_AUDIENCE = "authenticated"
 # Shared secret protecting /api/internal/* endpoints (called by the
 # Supabase Edge Function scheduled with pg_cron; spec 4.フェーズ3).
 INTERNAL_API_TOKEN = env("INTERNAL_API_TOKEN", default="")
+# Vercel Cron が送る "Authorization: Bearer <CRON_SECRET>" 用。
+# Vercel 側で CRON_SECRET を設定すると、この値が自動で環境変数に入る。
+CRON_SECRET = env("CRON_SECRET", default="")
 
 # Web Push (VAPID) keys for review reminders (spec 4.フェーズ6).
 VAPID_PRIVATE_KEY = env("VAPID_PRIVATE_KEY", default="")
