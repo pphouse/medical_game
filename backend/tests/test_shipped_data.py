@@ -80,6 +80,22 @@ class TestShippedData:
         ]
         assert not bad, "置換文字/制御文字が残っている:\n" + "\n".join(bad)
 
+    def test_brackets_are_balanced(self, path):
+        """括弧の数が合わないのは、閉じ括弧が別の字に化けた痕跡。
+
+        国試PDFでは ')' が空白や '1' に、'(' が ':' に、'〈' が '~' に化けて
+        いた。1文字化けただけでは読めてしまい目視では見つからないが、
+        対応が崩れるので数を数えれば必ず出る。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = [
+            f"{code}.{field}: {opener}{text.count(opener)} {closer}{text.count(closer)}"
+            for code, field, text in iter_texts(payload)
+            for opener, closer in (("(", ")"), ("〈", "〉"), ("「", "」"))
+            if text.count(opener) != text.count(closer)
+        ]
+        assert not bad, "括弧の対応が崩れている:\n" + "\n".join(bad)
+
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))
         bad = [

@@ -389,7 +389,7 @@
       "blueprint_code": "119-A-25",
       "category": "神経",
       "difficulty": "standard",
-      "question_text": "日齢20の男児。哺乳量の低下と発熱とを主訴に母親に連れられて来院した。在胎39週 3 日、体重3,120gで出生した。昨日から哺乳量の低下があり、本日38.6°Cの発熱を認めた。顔色不良で大泉門は膨隆し、易刺激性があった。血液所見:赤血球412万、Hb12.1g/dL、Ht36%、白血球25,00(0 桿状核好中球15%、分葉核好中球65%、単球10%、リンパ球10%)、血小板15万。血液生化学所見:血糖98mg/dL、Na136mEq/L、K4.5mEq/L、Cl100mEq/L。CRP13.8mg/dL。脳脊髄液所見:細胞数4,200/mm(3 基準0〜2)(単核球22%、多形核球78%)、蛋白80mg/dL(基準15〜45)、糖5mg/dL(基準50〜75)。原因菌で考えられるのはどれか。",
+      "question_text": "日齢20の男児。哺乳量の低下と発熱とを主訴に母親に連れられて来院した。在胎39週 3 日、体重3,120gで出生した。昨日から哺乳量の低下があり、本日38.6°Cの発熱を認めた。顔色不良で大泉門は膨隆し、易刺激性があった。血液所見:赤血球412万、Hb12.1g/dL、Ht36%、白血球25,000(桿状核好中球15%、分葉核好中球65%、単球10%、リンパ球10%)、血小板15万。血液生化学所見:血糖98mg/dL、Na136mEq/L、K4.5mEq/L、Cl100mEq/L。CRP13.8mg/dL。脳脊髄液所見:細胞数4,200/mm3(基準0〜2)(単核球22%、多形核球78%)、蛋白80mg/dL(基準15〜45)、糖5mg/dL(基準50〜75)。原因菌で考えられるのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -409,11 +409,11 @@
         },
         {
           "id": "E",
-          "text": "Streptococcus agalactiae<GBS>"
+          "text": "Streptococcus agalactiae(GBS)"
         }
       ],
       "correct_choice_id": "E",
-      "explanation": "正答は E「Streptococcus agalactiae<GBS>」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第119回医師国家試験 A025\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "explanation": "正答は E「Streptococcus agalactiae(GBS)」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第119回医師国家試験 A025\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第119回医師国家試験 A025（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
