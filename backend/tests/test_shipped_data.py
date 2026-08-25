@@ -40,6 +40,19 @@ DROPPED_NUMBER = re.compile(
     rf"|(?<![{QUANTIFIER} ])(年前|か月前|週間前|年後|か月後)(?!見)"
 )
 
+# 漢字が数字に化けた形。「大腿動脈」→「大3動脈」、「末梢血」→「末4血」。
+# 数字の後ろが助数詞や単位なら数量として自然（「1妊0産」「基準5以下」
+# 「日本酒2合」）なので、内容語が続く場合だけを拾う。
+# 数字の前に来ると順序数・概数になる語（第2肋間、約9割）。
+ORDINAL_KANJI = "第約計比対"
+COUNTER_KANJI = (
+    "産以歳羊剤事合限丁杯升子回目度人名例年月日週時分秒個本番型階級点枚錠束袋"
+    "割対万千肋群枝趾指椎肢横"
+)
+KANJI_DIGIT_KANJI = re.compile(
+    rf"(?<=[一-龥])(?<![{ORDINAL_KANJI}])[0-9](?![{COUNTER_KANJI}])(?=[一-龥])"
+)
+
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
 FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")
 FIGURE_REF_MIN_BODY = 120
@@ -164,6 +177,17 @@ class TestShippedData:
             if "。" in m.group(1)
         ]
         assert not bad, "括弧が句点をまたいでいる:\n" + "\n".join(bad)
+
+    def test_no_kanji_replaced_by_digit(self, path):
+        """漢字が数字1文字に化けていないか（KANJI_DIGIT_KANJI 参照）。"""
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = [
+            f"{code}.{field}: …{text[max(0, m.start() - 10):m.start() + 12]}…"
+            for code, field, text in iter_texts(payload)
+            for m in [KANJI_DIGIT_KANJI.search(text)]
+            if m
+        ]
+        assert not bad, "漢字が数字に化けている:\n" + "\n".join(bad)
 
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))
