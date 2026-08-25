@@ -29,7 +29,8 @@ class UniversityListView(APIView):
     """List all universities (used by the profile-setup university picker)."""
 
     def get(self, request):
-        universities = University.objects.order_by("name")
+        # Model.Meta.ordering（読みがな順）に任せる。五十音順で並ぶ。
+        universities = University.objects.all()
         return Response(UniversitySerializer(universities, many=True).data)
 
 

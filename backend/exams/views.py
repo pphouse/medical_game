@@ -12,7 +12,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import Profile
-from accounts.ranktier import compute_tier, tier_for_top_fraction
+from accounts.ranktier import (
+    compute_tier,
+    progress_for_points,
+    rank_state,
+    tier_for_top_fraction,
+)
 from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
 from exams.grading import apply_irt_score, grade_single_result
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot
@@ -262,20 +267,24 @@ class PointsRankingView(APIView):
                 "university": p.university.name if p.university else None,
                 "points": p.points,
                 "tier": tier_of(p),
+                "progress": progress_for_points(p.points),
                 "is_me": p.id == request.user.id,
             }
             for i, p in enumerate(ordered, start=1)
         ]
 
-        my_tier = compute_tier(request.user) if not request.user.is_ai else None
+        my_state = rank_state(request.user)
         return Response(
             {
                 "entries": entries,
                 "me": {
                     "points": request.user.points,
-                    "tier": my_tier,
+                    "tier": my_state["tier"],
+                    # ランク内の進捗%（100を超えると次のランクへ上がって0%に戻る）
+                    "progress": my_state["progress"],
+                    "next_tier": my_state["next_tier"],
                     "ranked_matches": request.user.ranked_matches,
-                    "eligible": my_tier is not None,
+                    "eligible": my_state["tier"] is not None,
                 },
                 "total_ranked": total,
             }

@@ -5,6 +5,7 @@ from django.core.management import call_command
 from django.utils import timezone
 
 from accounts.models import University
+from accounts.ranktier import STARTING_POINTS
 from exams.models import MockAnswer, MockExam, MockQuestion, MockResult
 from quiz.models import AnswerHistory
 
@@ -255,8 +256,9 @@ class TestWeeklyMonthlyPoints:
         r1 = MockResult.objects.get(user=p1, mock_exam=exam)
         r2 = MockResult.objects.get(user=p2, mock_exam=exam)
         assert r1.points_delta > r2.points_delta
-        assert p1.points == 1000 + r1.points_delta
-        assert p2.points == 1000 + r2.points_delta
+        # 累計ポイントは0スタート（D の 0%）。下限は0なので負けても0未満にならない。
+        assert p1.points == max(0, STARTING_POINTS + r1.points_delta)
+        assert p2.points == max(0, STARTING_POINTS + r2.points_delta)
 
 
 class TestLargeExamDetail:

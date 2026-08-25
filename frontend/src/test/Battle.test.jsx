@@ -110,24 +110,72 @@ describe("対戦ルームの状態遷移 (Room)", () => {
     expect(startButton).toBeDisabled();
   });
 
-  it("finished: 結果画面（順位とHP）を表示する", async () => {
+  it("finished: 勝敗バナーとHP・ランクの増減を表示する", async () => {
     api.battleState.mockResolvedValue({
       room: { room_code: "123456", status: "finished", question_count: 10 },
       participants: [],
     });
     api.battleResult.mockResolvedValue({
       standings: [
-        { rank: 1, display_name: "ホスト", is_me: true, score: 320, hp: 90, correct_count: 4 },
-        { rank: 2, display_name: "相手", is_me: false, score: 180, hp: 0, correct_count: 2 },
+        {
+          rank: 1,
+          display_name: "ホスト",
+          university: "A大学",
+          is_me: true,
+          score: 320,
+          hp: 90,
+          correct_count: 4,
+        },
+        {
+          rank: 2,
+          display_name: "相手",
+          university: "B大学",
+          is_me: false,
+          score: 180,
+          hp: 0,
+          correct_count: 2,
+        },
       ],
+      rank: {
+        before: { tier: "C", progress: 80, points: 180 },
+        after: { tier: "C", progress: 92, points: 192, next_tier: "B" },
+        delta: 12,
+        promoted: false,
+        demoted: false,
+      },
     });
 
     renderRoom();
 
-    expect(await screen.findByText("対戦結果")).toBeInTheDocument();
+    expect(await screen.findByText("WIN!")).toBeInTheDocument();
     expect(screen.getByText("正解 4問")).toBeInTheDocument();
+    expect(screen.getByText("+12 pt")).toBeInTheDocument();
     // 対戦後も他のメニューへ移動できる導線があること
     expect(screen.getByRole("link", { name: "ホームに戻る" })).toBeInTheDocument();
+  });
+
+  it("finished: 昇格したときは RANK UP! を出す", async () => {
+    api.battleState.mockResolvedValue({
+      room: { room_code: "123456", status: "finished", question_count: 10 },
+      participants: [],
+    });
+    api.battleResult.mockResolvedValue({
+      standings: [
+        { rank: 1, display_name: "ホスト", is_me: true, score: 1, hp: 100, correct_count: 5 },
+        { rank: 2, display_name: "相手", is_me: false, score: 0, hp: 0, correct_count: 1 },
+      ],
+      rank: {
+        before: { tier: "C", progress: 95, points: 195 },
+        after: { tier: "B", progress: 8, points: 208, next_tier: "A" },
+        delta: 13,
+        promoted: true,
+        demoted: false,
+      },
+    });
+
+    renderRoom();
+
+    expect(await screen.findByText("RANK UP!")).toBeInTheDocument();
   });
 });
 

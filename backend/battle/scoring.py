@@ -4,8 +4,32 @@ CORRECT_POINTS = 100
 FIRST_BUZZ_BONUS = 20
 WRONG_PENALTY = 30
 
-# 出題からこの秒数で強制クローズ（誰も正解できなかった場合）
+# 出題からこの秒数で強制クローズ（誰も回答しなかった場合）。
+# 問題文が短いときの下限で、長文問題では読む時間ぶんだけ伸ばす。
 ROUND_TIME_LIMIT_SECONDS = 30
+# 制限時間の上限（長すぎる問題でも間延びさせない）
+ROUND_TIME_LIMIT_MAX_SECONDS = 60
+# 何文字あたり1秒ぶん制限時間を足すか（読む速さの目安）
+ROUND_TIME_CHARS_PER_SECOND = 8.0
+
+
+def round_time_limit_seconds(question):
+    """この問題の制限時間（秒）。長文の症例問題ほど長くする。
+
+    30秒固定だと、長い症例問題では読み切る前に時間切れになってしまう
+    （AI側も同様に間に合わず、両者無回答でダメージなしの回が続く）。
+    """
+    if question is None:
+        return ROUND_TIME_LIMIT_SECONDS
+    parts = [question.question_text or "", getattr(question, "case_stem", "") or ""]
+    parts += [c.get("text", "") for c in (question.choices or [])]
+    chars = sum(len(p) for p in parts)
+    return int(
+        min(
+            ROUND_TIME_LIMIT_MAX_SECONDS,
+            max(ROUND_TIME_LIMIT_SECONDS, ROUND_TIME_LIMIT_SECONDS + chars / ROUND_TIME_CHARS_PER_SECOND),
+        )
+    )
 
 # --- HP制バトル (spec: お互い100%から始まり、攻撃でHPを削り合う) ----------
 # 全対戦で共通の問題数（問題数の選択は廃止し、一律同じ対戦形式にする）。
@@ -31,19 +55,8 @@ def apply_score(participant, *, correct, rank):
     participant.save(update_fields=["score"])
 
 
-# 対戦ランクポイント（累計ポイント, spec: 対戦＋模試の合算でSS〜Dランク）。
-# ルーム内の最終順位に応じて滑らかに配点する: 1位 +25 〜 最下位 -15。
-BATTLE_POINTS_BEST = 25
-BATTLE_POINTS_WORST = -15
-
-
-def battle_points_delta(rank, participant_count):
-    """ルーム内順位 (1始まり) から対戦ランクポイントの増減を返す。"""
-    if participant_count <= 1:
-        return 0
-    normalized = (rank - 1) / (participant_count - 1)  # 0=1位 .. 1=最下位
-    span = BATTLE_POINTS_BEST - BATTLE_POINTS_WORST
-    return round(BATTLE_POINTS_BEST - span * normalized)
+# ランクポイントの増減は「HPの点差」で決まる（accounts.ranktier の
+# battle_points_delta）。順位ベースの旧配点はHP制の導入で不要になった。
 
 
 def resolve_round_damage(answers):
