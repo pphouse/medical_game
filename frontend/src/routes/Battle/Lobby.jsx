@@ -9,7 +9,18 @@ function QuickMatch({ onCancel }) {
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
   const [error, setError] = useState(null);
+  // 経過秒はサーバの値をそのまま出すとポーリング間隔（2秒）ぶん飛ぶので、
+  // 探索を始めた時刻から1秒ごとに自前で数える。
+  const [elapsed, setElapsed] = useState(0);
+  const startedAtRef = useRef(Date.now());
   const timerRef = useRef(null);
+
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000));
+    }, 1000);
+    return () => clearInterval(tick);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,7 +70,7 @@ function QuickMatch({ onCancel }) {
           <h3 className="battle-card-title">対戦相手を探しています…</h3>
           <p className="exam-meta">
             同じランク帯を優先してマッチングします。
-            {ticket && `（経過 ${ticket.elapsed_seconds}秒）`}
+            {`（経過 ${elapsed}秒）`}
           </p>
           <button className="toolbar-btn" style={{ width: "100%" }} onClick={onCancel}>
             キャンセル
@@ -125,7 +136,12 @@ export default function Lobby() {
 
   return (
     <div className="screen">
-      <h2>みんなで対戦クイズ</h2>
+      <div className="battle-heading">
+        <h2 className="battle-heading-ja">対戦クイズ</h2>
+        <span className="battle-heading-en" aria-hidden="true">
+          BATTLE
+        </span>
+      </div>
       {error && <p className="error">{error}</p>}
 
       {quickMatching ? (

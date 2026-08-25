@@ -21,18 +21,28 @@ from django.utils import timezone
 
 from accounts.models import Profile, University
 from battle.models import BattleBuzz
-from battle.scoring import ROUND_TIME_LIMIT_SECONDS
+from battle.scoring import round_time_limit_seconds
 from quiz.models import AnswerHistory
 
-# 対戦ランクごとのAIの強さ（正答率・平均反応秒・ばらつき秒）
+# 対戦ランクごとのAIの強さ。
+#   accuracy      … 正答率
+#   think_seconds … 問題を読み終えてから答えるまでの思考時間
+#   chars_per_sec … 読む速さ（強いAIほど速く読む）
+#   sd_seconds    … ばらつき
+# 人間は問題文を読む時間が要るので、合計の待ち時間は
+#   「問題文の長さ ÷ 読む速さ」＋「思考時間」＋ ばらつき
+# で決める。短い問題でも最低 MIN_ANSWER_SECONDS は待つ。
 AI_TIER_PROFILE = {
-    "SS": {"accuracy": 0.90, "avg_seconds": 1.5, "sd_seconds": 0.5},
-    "S": {"accuracy": 0.78, "avg_seconds": 2.5, "sd_seconds": 0.7},
-    "A": {"accuracy": 0.65, "avg_seconds": 3.5, "sd_seconds": 0.9},
-    "B": {"accuracy": 0.52, "avg_seconds": 4.5, "sd_seconds": 1.0},
-    "C": {"accuracy": 0.40, "avg_seconds": 5.5, "sd_seconds": 1.1},
-    "D": {"accuracy": 0.30, "avg_seconds": 6.5, "sd_seconds": 1.2},
+    "SS": {"accuracy": 0.90, "think_seconds": 2.0, "chars_per_sec": 20.0, "sd_seconds": 0.8},
+    "S": {"accuracy": 0.78, "think_seconds": 2.6, "chars_per_sec": 17.0, "sd_seconds": 1.0},
+    "A": {"accuracy": 0.65, "think_seconds": 3.2, "chars_per_sec": 14.0, "sd_seconds": 1.2},
+    "B": {"accuracy": 0.52, "think_seconds": 3.8, "chars_per_sec": 12.0, "sd_seconds": 1.4},
+    "C": {"accuracy": 0.40, "think_seconds": 4.4, "chars_per_sec": 10.0, "sd_seconds": 1.6},
+    "D": {"accuracy": 0.30, "think_seconds": 5.0, "chars_per_sec": 8.5, "sd_seconds": 1.8},
 }
+
+# 一瞬で答えると明らかに不自然なので、どんなに短い問題でもこれだけは待つ。
+MIN_ANSWER_SECONDS = 3.5
 DEFAULT_AI_TIER = "B"  # 未ランクの相手と対戦する場合の既定の強さ
 
 # 表示名の候補。フルネーム風とニックネーム風を混ぜて、いかにも「AI」という
@@ -86,10 +96,29 @@ def _ai_participants(room):
     )
 
 
-def _ai_target_delay(tier):
+def _question_length(question):
+    """AIが「読む」文字数。問題文・症例文・選択肢をすべて含める。"""
+    parts = [question.question_text or "", getattr(question, "case_stem", "") or ""]
+    parts += [c.get("text", "") for c in (question.choices or [])]
+    return sum(len(p) for p in parts)
+
+
+def _ai_target_delay(tier, question, *, seed_key):
+    """このラウンドでAIが回答するまでの秒数。
+
+    問題文が長いほど遅くなる（人間が読む時間に相当）。ばらつきは
+    ``seed_key``（ラウンドとAIの組）で決定的に決める。ポーリングのたびに
+    引き直すと、たまたま小さい値が出た瞬間に answer してしまい、実際には
+    狙った時間よりずっと早く答えることになるため。
+    """
     profile = AI_TIER_PROFILE.get(tier, AI_TIER_PROFILE[DEFAULT_AI_TIER])
-    delay = random.gauss(profile["avg_seconds"], profile["sd_seconds"])
-    return max(0.3, min(ROUND_TIME_LIMIT_SECONDS - 1, delay))
+    read_seconds = _question_length(question) / profile["chars_per_sec"]
+    # Random() の seed はタプルを受け付けないので文字列にして渡す。
+    jitter = random.Random(str(seed_key)).gauss(0, profile["sd_seconds"])
+    delay = read_seconds + profile["think_seconds"] + jitter
+    # 制限時間ぎりぎりに間に合うよう、2秒手前を上限にする。
+    latest = round_time_limit_seconds(question) - 2
+    return max(MIN_ANSWER_SECONDS, min(latest, delay))
 
 
 def _simulate_one(room, ai_participant):
@@ -109,7 +138,12 @@ def _simulate_one(room, ai_participant):
     now = timezone.now()
     elapsed = (now - round_.revealed_at).total_seconds()
     profile_tier = ai_participant.ai_tier or DEFAULT_AI_TIER
-    if elapsed < _ai_target_delay(profile_tier):
+    target = _ai_target_delay(
+        profile_tier,
+        round_.question,
+        seed_key=(round_.id, str(ai_participant.user_id)),
+    )
+    if elapsed < target:
         return  # まだ「考え中」
 
     from battle.scoring import apply_score

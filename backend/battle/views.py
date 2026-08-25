@@ -29,7 +29,14 @@ from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.ranktier import compute_tier
+from accounts.ranktier import (
+    apply_points_delta,
+    battle_points_delta as rank_points_delta,
+    compute_tier,
+    progress_for_points,
+    rank_state,
+    tier_for_points,
+)
 from quiz.models import AnswerHistory, Question
 from quiz.serializers import QuestionSerializer
 from quiz.views import update_review_schedule
@@ -45,9 +52,8 @@ from .models import BattleBuzz, BattleParticipant, BattleRoom, BattleRound, Matc
 from .scoring import (
     BATTLE_QUESTION_COUNT,
     PARTICIPANT_TIMEOUT_SECONDS,
-    ROUND_TIME_LIMIT_SECONDS,
+    round_time_limit_seconds,
     apply_score,
-    battle_points_delta,
     resolve_round_damage,
 )
 
@@ -76,26 +82,32 @@ def open_round(room):
 
 
 def finalize_room_points(room):
-    """ルーム終了時に一度だけ対戦ランクポイントを確定する (spec: 対戦＋模試の
-    合算ポイントでSS〜Dランク)。AI 参加者（accounts.Profile.is_ai）は対象外。"""
+    """ルーム終了時に一度だけランクポイントを確定する。
+
+    増減は「自分のHP」と「相手のHP」の点差で決まる（accounts.ranktier）。
+    大差で勝つほど大きく上がり、大差で負けるほど大きく下がる。
+    AI 参加者（accounts.Profile.is_ai）は対象外。
+    """
     participants = list(
         room.participants.select_related("user").order_by("-hp", "-score", "id")
     )
-    n = len(participants)
-    prev_key, prev_rank = None, 0
-    for i, participant in enumerate(participants, start=1):
-        key = (participant.hp, participant.score)
-        rank = prev_rank if key == prev_key else i
-        prev_key, prev_rank = key, rank
+    for participant in participants:
         if participant.user.is_ai:
             continue
-        delta = battle_points_delta(rank, n)
+        # 相手が複数いる場合は最も強かった相手（最高HP）を基準にする。
+        others = [p for p in participants if p.pk != participant.pk]
+        if not others:
+            continue
+        opponent_hp = max(p.hp for p in others)
+        profile = participant.user
+        delta = rank_points_delta(
+            my_hp=participant.hp,
+            opponent_hp=opponent_hp,
+            current_points=profile.points,
+        )
         participant.points_delta = delta
         participant.save(update_fields=["points_delta"])
-        profile = participant.user
-        profile.points = max(0, profile.points + delta)
-        profile.ranked_matches += 1
-        profile.save(update_fields=["points", "ranked_matches"])
+        apply_points_delta(profile, delta)
 
 
 def resolve_and_close_round(round_):
@@ -167,7 +179,9 @@ def enforce_round_progress(room):
     if round_ is None or round_.revealed_at is None:
         return
     now = timezone.now()
-    deadline = round_.revealed_at + datetime.timedelta(seconds=ROUND_TIME_LIMIT_SECONDS)
+    deadline = round_.revealed_at + datetime.timedelta(
+        seconds=round_time_limit_seconds(round_.question)
+    )
     if now >= deadline:
         resolve_and_close_round(round_)
         return
@@ -414,7 +428,9 @@ class RoomStateView(APIView):
                 "total": room.question_count,
                 "revealed_at": round_.revealed_at,
                 "closes_at": round_.revealed_at
-                + datetime.timedelta(seconds=ROUND_TIME_LIMIT_SECONDS),
+                + datetime.timedelta(
+                    seconds=round_time_limit_seconds(round_.question)
+                ),
                 "question": QuestionSerializer(round_.question).data,
                 # 誰がもう答えたかだけ見せる（何を選んだかは決着まで伏せる）。
                 "answered_profile_ids": [str(b.profile_id) for b in answers],
@@ -552,17 +568,36 @@ class RoomResultView(APIView):
                 if i == 0 or (standings[i - 1]["hp"], standings[i - 1]["score"]) != (row["hp"], row["score"])
                 else standings[i - 1]["rank"]
             )
-        my_points = None
-        my_tier = None
-        if not request.user.is_ai:
-            my_points = request.user.points
-            my_tier = compute_tier(request.user)
+        me = next((r for r in standings if r["is_me"]), None)
+        my_delta = me["points_delta"] if me else None
+        state = rank_state(request.user)
+        # 増減バーのアニメーション用に「増減前」の位置も返す。
+        before = None
+        if my_delta is not None:
+            before_points = max(0, request.user.points - my_delta)
+            before = {
+                "tier": tier_for_points(before_points),
+                "progress": progress_for_points(before_points),
+                "points": before_points,
+            }
         return Response(
             {
                 "status": room.status,
                 "standings": standings,
-                "my_points": my_points,
-                "my_tier": my_tier,
+                "my_points": None if request.user.is_ai else request.user.points,
+                "my_tier": None if request.user.is_ai else state["tier"],
+                "rank": {
+                    "before": before,
+                    "after": state,
+                    "delta": my_delta,
+                    # 昇格/降格したかどうか（演出の出し分けに使う）
+                    "promoted": bool(
+                        before and state["tier"] and before["tier"] != state["tier"] and my_delta and my_delta > 0
+                    ),
+                    "demoted": bool(
+                        before and state["tier"] and before["tier"] != state["tier"] and my_delta and my_delta < 0
+                    ),
+                },
             }
         )
 

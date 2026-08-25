@@ -4,10 +4,15 @@ from django.db import models
 
 class University(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    # 五十音順に並べるための読み（ひらがな）。漢字の name をそのまま並べても
+    # Unicodeのコード順にしかならないため、選択リストはこの読みで並べる。
+    name_kana = models.CharField(max_length=255, blank=True, default="")
 
     class Meta:
         verbose_name = "大学"
         verbose_name_plural = "大学"
+        # 読みが未設定のものは末尾に回し、その中では name 順で安定させる。
+        ordering = ["name_kana", "name"]
 
     def __str__(self):
         return self.name
@@ -92,7 +97,9 @@ class Profile(models.Model):
 
     # 対戦＋模試（週次/月次）合算のランクポイント (spec: SS/S/A/B/C/D)。
     # 1000 を基準値とし、勝敗・成績に応じて増減する。
-    points = models.IntegerField(default=1000)
+    # ランクの累計ポイント。0=Dの0%から始まり、100ごとに次のランクへ上がる
+    # （accounts.ranktier 参照）。対戦の点差と週次/月次模試の成績で増減する。
+    points = models.IntegerField(default=0)
     ranked_matches = models.PositiveIntegerField(
         default=0, help_text="ポイントが確定した対戦・模試の回数（ランク算出の母集団判定に使う）"
     )

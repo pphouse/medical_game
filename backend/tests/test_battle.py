@@ -2,6 +2,7 @@ import pytest
 from django.utils import timezone
 
 from battle.models import BattleRoom, BattleRound, MatchmakingTicket
+from battle.scoring import round_time_limit_seconds
 from quiz.models import AnswerHistory
 
 from .helpers import auth_client, make_question
@@ -157,7 +158,8 @@ class TestRoundTimeout:
         round1 = room.rounds.get(round_number=1)
         # 出題時刻を31秒前に偽装 → 次の state ポーリングでクローズされる
         BattleRound.objects.filter(pk=round1.pk).update(
-            revealed_at=round1.revealed_at - timezone_delta(31)
+            revealed_at=round1.revealed_at
+            - timezone_delta(round_time_limit_seconds(round1.question) + 1)
         )
         state = clients[0].get(f"/api/battle/rooms/{code}/state/").json()
         assert state["round"]["number"] == 2
@@ -230,7 +232,10 @@ class TestQuickMatch:
             open_round = room.rounds.filter(closed_at__isnull=True).order_by("round_number").first()
             if open_round and open_round.revealed_at:
                 BattleRound.objects.filter(pk=open_round.pk).update(
-                    revealed_at=timezone.now() - timezone_delta(31)
+                    revealed_at=timezone.now()
+                    - timezone_delta(
+                        round_time_limit_seconds(open_round.question) + 1
+                    )
                 )
         assert state["room"]["status"] == "finished"
 
@@ -345,3 +350,77 @@ class TestQuickMatchTicketReuse:
         assert again["ticket_id"] == first["ticket_id"]  # 同じチケットを使い回す
         assert again["status"] == "waiting"
         assert again["elapsed_seconds"] < 5  # 押し直した時点から数え直す
+
+
+class TestAiAnswerTiming:
+    def test_longer_questions_take_the_ai_longer(self):
+        from battle.ai import _ai_target_delay
+
+        short = make_question(question_text="短い問題。", correct_choice_key="A")
+        long_stem = "７５歳男性。３日前からの発熱と咳嗽を主訴に来院した。" * 12
+        long_q = make_question(question_text=long_stem, correct_choice_key="A")
+
+        short_delay = _ai_target_delay("B", short, seed_key=(1, "x"))
+        long_delay = _ai_target_delay("B", long_q, seed_key=(1, "x"))
+        assert long_delay > short_delay
+
+    def test_delay_is_stable_across_polls(self):
+        """ポーリングのたびに引き直すと、狙いより早く答えてしまう。"""
+        from battle.ai import _ai_target_delay
+
+        q = make_question(question_text="安定性の確認。", correct_choice_key="A")
+        first = _ai_target_delay("B", q, seed_key=(42, "abc"))
+        for _ in range(20):
+            assert _ai_target_delay("B", q, seed_key=(42, "abc")) == first
+
+    def test_never_answers_instantly(self):
+        from battle.ai import MIN_ANSWER_SECONDS, _ai_target_delay
+
+        q = make_question(question_text="短", correct_choice_key="A")
+        for tier in ("SS", "S", "A", "B", "C", "D"):
+            for i in range(30):
+                delay = _ai_target_delay(tier, q, seed_key=(i, tier))
+                assert delay >= MIN_ANSWER_SECONDS
+
+    def test_stronger_tiers_answer_sooner_on_the_same_question(self):
+        from battle.ai import _ai_target_delay
+
+        q = make_question(question_text="標準的な長さの問題文。" * 8, correct_choice_key="A")
+        # ばらつきを同条件にするため seed を固定して比較する。
+        ss = _ai_target_delay("SS", q, seed_key=(7, "same"))
+        d = _ai_target_delay("D", q, seed_key=(7, "same"))
+        assert ss < d
+
+
+class TestRoundTimeLimit:
+    def test_long_questions_get_more_time(self):
+        short = make_question(question_text="短い。", correct_choice_key="A")
+        long_q = make_question(
+            question_text="７２歳男性。３日前からの発熱と湿性咳嗽を主訴に来院した。" * 8,
+            correct_choice_key="A",
+        )
+        assert round_time_limit_seconds(long_q) > round_time_limit_seconds(short)
+
+    def test_short_questions_keep_the_baseline(self):
+        from battle.scoring import ROUND_TIME_LIMIT_SECONDS
+
+        short = make_question(question_text="短い。", correct_choice_key="A")
+        assert round_time_limit_seconds(short) >= ROUND_TIME_LIMIT_SECONDS
+
+    def test_time_limit_is_capped(self):
+        from battle.scoring import ROUND_TIME_LIMIT_MAX_SECONDS
+
+        huge = make_question(question_text="あ" * 5000, correct_choice_key="A")
+        assert round_time_limit_seconds(huge) == ROUND_TIME_LIMIT_MAX_SECONDS
+
+    def test_ai_answers_within_the_time_limit(self):
+        """Dランクでも制限時間内に答え切れること（無回答が続くと対戦が進まない）。"""
+        from battle.ai import _ai_target_delay
+
+        long_q = make_question(
+            question_text="７２歳男性。３日前からの発熱と湿性咳嗽を主訴に来院した。" * 8,
+            correct_choice_key="A",
+        )
+        limit = round_time_limit_seconds(long_q)
+        for i in range(50):
+            assert _ai_target_delay("D", long_q, seed_key=(i, "d")) < limit

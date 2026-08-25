@@ -34,10 +34,10 @@ function formatValue(value) {
 function RankingHeading() {
   return (
     <div className="ranking-heading">
+      <h2 className="ranking-heading-ja">ランキング</h2>
       <span className="ranking-heading-en" aria-hidden="true">
         RANKING
       </span>
-      <h2 className="ranking-heading-ja">ランキング</h2>
     </div>
   );
 }
