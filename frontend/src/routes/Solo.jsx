@@ -3,10 +3,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import ProgressBar from "../components/ProgressBar";
 import ProgressDonut from "../components/ProgressDonut";
+import { useProfile } from "../context/ProfileContext";
 import { STUDENT_VERIFICATION_ENABLED } from "../features";
 
 /** 試験種別のタブ。CBT と国試は分野の切り方が違ううえ問題数も桁が近いので、
- * 混ぜて一覧にすると目的の分野を探せない。既定は CBT。 */
+ * 混ぜて一覧にすると目的の分野を探せない。
+ * 既定はマイページの設定（未選択なら学年から自動）。 */
 const EXAM_TABS = [
   { key: "CBT", label: "CBT" },
   { key: "KOKUSHI", label: "医師国家試験" },
@@ -30,8 +32,11 @@ function RankStat({ label, rankInfo }) {
  * （旧「ホーム」と「ソロモード」を1画面に統合）。 */
 export default function Solo() {
   const navigate = useNavigate();
+  const { profile } = useProfile();
   const [searchParams, setSearchParams] = useSearchParams();
-  const examType = searchParams.get("exam_type") ?? "CBT";
+  // URL 指定が最優先。無ければマイページの設定（未選択なら学年から決まる
+  // resolved_exam_type）に従う。プロフィール取得前は CBT を仮置きする。
+  const examType = searchParams.get("exam_type") ?? profile?.resolved_exam_type ?? "CBT";
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);

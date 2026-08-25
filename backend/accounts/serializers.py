@@ -22,6 +22,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
 
+    # 未選択("")のときに学年から決まる実効値。フロントはこれを既定タブに使う。
+    resolved_exam_type = serializers.CharField(read_only=True)
+
     class Meta:
         model = Profile
         fields = [
@@ -30,10 +33,12 @@ class ProfileSerializer(serializers.ModelSerializer):
             "university",
             "university_id",
             "grade",
+            "exam_preference",
+            "resolved_exam_type",
             "student_verified",
             "role",
         ]
-        read_only_fields = ["id", "student_verified", "role"]
+        read_only_fields = ["id", "student_verified", "role", "resolved_exam_type"]
 
     def validate_grade(self, value):
         if value is not None and not 1 <= value <= 6:

@@ -69,12 +69,23 @@ function SectionHeading({ icon, title }) {
 
 const EXAM_KIND_LABEL = { monthly: "月次模試", large: "大型模試" };
 
+// "" は未選択で、学年から自動で決まる（サーバの resolved_exam_type が実効値）。
+const EXAM_PREFERENCES = [
+  { key: "", label: "学年に合わせる" },
+  { key: "CBT", label: "CBT" },
+  { key: "KOKUSHI", label: "医師国家試験" },
+];
+
+const EXAM_TYPE_LABEL = { CBT: "CBT", KOKUSHI: "医師国家試験" };
+
 export default function MyPage() {
-  const { profile } = useProfile();
+  const { profile, refresh } = useProfile();
   const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [pointsInfo, setPointsInfo] = useState(null);
   const [examHistory, setExamHistory] = useState(null);
+  const [savingPreference, setSavingPreference] = useState(false);
+  const [preferenceError, setPreferenceError] = useState(null);
 
   useEffect(() => {
     api.summary().then(setSummary).catch(() => {});
@@ -87,6 +98,19 @@ export default function MyPage() {
         (r) => (r.kind === "monthly" || r.kind === "large") && r.submitted !== false
       )
     : null;
+
+  async function handleExamPreference(value) {
+    setSavingPreference(true);
+    setPreferenceError(null);
+    try {
+      await api.updateMe({ exam_preference: value });
+      await refresh();
+    } catch (e) {
+      setPreferenceError(e.message);
+    } finally {
+      setSavingPreference(false);
+    }
+  }
 
   async function handleSignOut() {
     if (supabase) await supabase.auth.signOut();
@@ -104,6 +128,7 @@ export default function MyPage() {
   const user = profile;
   const fullName = user.display_name || "表示名未設定";
   const initial = (user.display_name || "?").charAt(0);
+  const examPreference = user.exam_preference ?? "";
 
   return (
     <div className="screen">
@@ -182,6 +207,33 @@ export default function MyPage() {
             </span>
             <span className="profile-value">{user.grade ? `${user.grade}年` : "未設定"}</span>
           </div>
+        </div>
+      </div>
+
+      <div className="mypage-section">
+        <SectionHeading icon="exams" title="出題する試験" />
+        <div className="mypage-card">
+          <p className="exam-meta">
+            演習と模試で既定にする試験です。「学年に合わせる」のままにしておくと、
+            毎年4月1日の進級に合わせて自動で切り替わります（4年生以下はCBT、5年生以降は医師国家試験）。
+          </p>
+          <div className="grade-toggle">
+            {EXAM_PREFERENCES.map((p) => (
+              <button
+                key={p.key || "auto"}
+                className={examPreference === p.key ? "active" : ""}
+                disabled={savingPreference}
+                onClick={() => handleExamPreference(p.key)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <p className="exam-meta">
+            現在の出題：<b>{EXAM_TYPE_LABEL[user.resolved_exam_type] ?? "―"}</b>
+            {!examPreference && user.grade ? `（${user.grade}年生のため）` : ""}
+          </p>
+          {preferenceError && <p className="error">{preferenceError}</p>}
         </div>
       </div>
 
