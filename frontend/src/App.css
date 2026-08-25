@@ -2723,8 +2723,7 @@
 
 .rank-bar-note { margin: 0; text-align: center; font-size: 11.5px; color: var(--text); }
 
-/* 対戦ロビーの見出し。バトル感を出すため、炎色のグラデーション文字と
-   斜体の英字ラベルを組み合わせる。 */
+/* 対戦ロビーの見出し。バトル感を出すため、炎色のグラデーション文字にする。 */
 .battle-heading {
   display: flex;
   align-items: center;
@@ -2751,18 +2750,3 @@
   .battle-heading-ja { color: #dc2626; background: none; }
 }
 
-.battle-heading-en {
-  font-size: 11px;
-  font-weight: 900;
-  font-style: italic;
-  letter-spacing: 0.2em;
-  color: #b91c1c;
-  background: #fee2e2;
-  padding: 3px 10px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-
-@media (prefers-color-scheme: dark) {
-  .battle-heading-en { color: #fca5a5; background: #3f1d1d; }
-}

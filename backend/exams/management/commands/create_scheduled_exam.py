@@ -219,11 +219,11 @@ class Command(BaseCommand):
             novel_only = True  # spec: 新出問題
             title_base = "月次模試"
 
-        # CBT 版: 4年生以下限定。国試版: 学年制限なし（4年生以下にも国試版が
-        # 両方見えるようにする一方、5年生以降には国試版のみを見せる）。
+        # 学年で受けられる模試を分ける (spec): 1〜4年生はCBT、5〜6年生は国試。
+        # 以前は国試版に学年制限が無く、4年生以下にも国試模試が見えていた。
         flavors = [
             (Question.ExamType.CBT, None, 4, "（CBT）"),
-            (Question.ExamType.KOKUSHI, None, None, "（医師国家試験）"),
+            (Question.ExamType.KOKUSHI, 5, None, "（医師国家試験）"),
         ]
         for exam_type, grade_min, grade_max, suffix in flavors:
             if kind == MockExam.Kind.WEEKLY:

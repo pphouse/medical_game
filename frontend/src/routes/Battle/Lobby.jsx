@@ -138,9 +138,6 @@ export default function Lobby() {
     <div className="screen">
       <div className="battle-heading">
         <h2 className="battle-heading-ja">対戦クイズ</h2>
-        <span className="battle-heading-en" aria-hidden="true">
-          BATTLE
-        </span>
       </div>
       {error && <p className="error">{error}</p>}
 
@@ -148,10 +145,10 @@ export default function Lobby() {
         <QuickMatch onCancel={() => setQuickMatching(false)} />
       ) : (
         <div className="mypage-card battle-card">
-          <h3 className="battle-card-title">クイックマッチ</h3>
+          <h3 className="battle-card-title">全国対戦</h3>
           <p className="exam-meta">オンラインの中から同じランク帯の相手を優先してマッチングします。</p>
           <button className="cta-button" onClick={() => setQuickMatching(true)}>
-            クイックマッチを開始
+            全国対戦を始める
           </button>
         </div>
       )}

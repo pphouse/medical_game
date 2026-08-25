@@ -317,3 +317,43 @@ class TestPointsRankingScope:
         no_uni_client, _ = auth_client()
         res2 = no_uni_client.get("/api/ranking/points/?scope=university")
         assert res2.json()["me"]["eligible"] is False
+
+
+class TestExamGradeGating:
+    """1〜4年生はCBT、5〜6年生は国試の模試を受けられる (spec)。"""
+
+    def _create_monthly(self):
+        # 出題プールが空だとコマンドが失敗するので、両方の試験種別を用意する。
+        for exam_type in ("CBT", "KOKUSHI"):
+            for i in range(40):
+                make_question(
+                    question_text=f"{exam_type}プール設問{i}",
+                    correct_choice_key="A",
+                    exam_type=exam_type,
+                )
+        call_command("create_scheduled_exam", "--kind", "monthly", "--open-now")
+        return {e.exam_type: e for e in MockExam.objects.filter(kind=MockExam.Kind.MONTHLY)}
+
+    def test_cbt_exam_targets_grades_1_to_4(self):
+        exams = self._create_monthly()
+        cbt = exams["CBT"]
+        assert cbt.target_grade_min is None  # 下限なし = 1年生から
+        assert cbt.target_grade_max == 4
+
+    def test_kokushi_exam_targets_grades_5_and_up(self):
+        exams = self._create_monthly()
+        kokushi = exams["KOKUSHI"]
+        assert kokushi.target_grade_min == 5
+        assert kokushi.target_grade_max is None
+
+    def test_fourth_year_sees_only_the_cbt_exam(self):
+        self._create_monthly()
+        client, _ = auth_client(grade=4)
+        types = {e["exam_type"] for e in client.get("/api/exams/").json()}
+        assert types == {"CBT"}
+
+    def test_fifth_year_sees_only_the_kokushi_exam(self):
+        self._create_monthly()
+        client, _ = auth_client(grade=5)
+        types = {e["exam_type"] for e in client.get("/api/exams/").json()}
+        assert types == {"KOKUSHI"}
