@@ -269,10 +269,14 @@ class TestBundledKokushiBatches:
     @pytest.mark.parametrize("exam", EXAMS)
     def test_questions_are_well_formed(self, exam):
         for q, _ in self._bodies(exam):
-            assert len(q["choices"]) == 5, q["id"]
-            assert q["correct_choice_id"] in {"A", "B", "C", "D", "E"}, q["id"]
+            # 国試の選択肢は通常ａ〜ｅの5つだが、ｆまである設問が稀にある
+            # （第116回F75の「診断と死産届の組合せ」は3×2で6択）。
+            assert 5 <= len(q["choices"]) <= 6, q["id"]
+            keys = [c["id"] for c in q["choices"]]
+            assert keys == list("ABCDEF"[: len(keys)]), q["id"]
+            assert q["correct_choice_id"] in set(keys), q["id"]
             texts = [c["text"] for c in q["choices"]]
-            assert len(set(texts)) == 5, q["id"]
+            assert len(set(texts)) == len(texts), q["id"]  # 選択肢の重複なし
             assert all(texts), q["id"]
 
     def test_corpus_size(self):

@@ -247,6 +247,30 @@ class TestShippedData:
         ]
         assert not bad, "記号の化け／語頭の脱落:\n" + "\n".join(bad)
 
+    def test_combination_choices_have_separators(self, path):
+        """組合せ問題の選択肢に列の区切りが入っているか。
+
+        「疾患と症状の組合せ」型の設問は左右2列で組まれており、区切りが
+        入らないと「葉酸小球性貧血」のように2列が続けて読めてしまう。
+        字間から列の境目を判定しているため、間隔が狭い回では区切りが
+        入らないことがあった（第117回で9問）。
+
+        選択肢が短い語の羅列である設問（数値の組合せなど）は2列ではない
+        ので、5つの選択肢すべてに区切りが無い場合だけを候補とし、
+        既知の例外を許す。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        # 2列組みではない「組合せ」設問。選択肢が文または数値の並びになっている。
+        NOT_TWO_COLUMN = {"116-A-64", "118-C-56", "118-F-27"}
+        bad = [
+            f"{q['blueprint_code']}: {[c['text'][:24] for c in q['choices']]}"
+            for q in payload.get("questions", [])
+            if "組合せ" in q["question_text"]
+            and q.get("blueprint_code") not in NOT_TWO_COLUMN
+            and not any("—" in c["text"] for c in q["choices"])
+        ]
+        assert not bad, "組合せ問題に列の区切りが無い:\n" + "\n".join(bad)
+
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))
         bad = [
