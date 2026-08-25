@@ -119,6 +119,15 @@ def main():
     done = len(composed)
     total = len(questions)
     print(f"解説あり {done} / {total}問  (残り {total - done})")
+    per = {}
+    for code in questions:
+        exam = code.split("-")[0]
+        got, tot = per.get(exam, (0, 0))
+        per[exam] = (got + (1 if code in composed else 0), tot + 1)
+    for exam in sorted(per):
+        got, tot = per[exam]
+        mark = " 完了" if got == tot else ""
+        print(f"  第{exam}回  {got:4d} / {tot:4d}{mark}")
 
     if args.write:
         by_path = {}
