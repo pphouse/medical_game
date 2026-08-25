@@ -80,13 +80,28 @@ export default function Room() {
   }
 
   if (room.status === "in_progress") {
-    return <Match state={state} refresh={refresh} />;
+    return (
+      <Match
+        state={state}
+        refresh={refresh}
+        onLeave={async () => {
+          await api.battleLeave(code).catch(() => {});
+          navigate("/battle");
+        }}
+      />
+    );
   }
 
   const me = participants.find((p) => p.is_me);
+
+  async function handleLeaveWaitingRoom() {
+    await api.battleLeave(code).catch(() => {});
+    navigate("/battle");
+  }
+
   return (
     <div className="screen">
-      <button className="back-link" onClick={() => navigate("/battle")}>
+      <button className="back-link" onClick={handleLeaveWaitingRoom}>
         ← 対戦ロビーへ
       </button>
       <h2>対戦ルーム</h2>

@@ -3,7 +3,7 @@ import { api } from "../../api";
 import { supabase } from "../../lib/supabase";
 
 /** 出題 + 早押しボタン + 回答。状態は親 (Room) がポーリングで供給する。 */
-export default function Match({ state, refresh }) {
+export default function Match({ state, refresh, onLeave }) {
   const { round, participants, last_result: lastResult } = state;
   const [busy, setBusy] = useState(false);
   const [remaining, setRemaining] = useState(null);
@@ -60,6 +60,13 @@ export default function Match({ state, refresh }) {
 
   const question = round.question;
 
+  async function handleLeave() {
+    if (!window.confirm("対戦から退出しますか？ここまでのスコアで確定し、相手には自動でAIが代わりに入ります。")) {
+      return;
+    }
+    await onLeave();
+  }
+
   return (
     <div className="screen">
       <div className="quiz-topbar">
@@ -67,6 +74,9 @@ export default function Match({ state, refresh }) {
           第{round.number}問 / {round.total}
         </span>
         <span className="progress">残り {remaining ?? "--"} 秒</span>
+        <button className="battle-leave-button" onClick={handleLeave}>
+          退出する
+        </button>
       </div>
 
       <div className="battle-scorebar">

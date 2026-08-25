@@ -160,6 +160,8 @@ export const api = {
   // battle (phase 4)
   battleCreate: (payload) => post("/battle/rooms/", payload),
   battleJoin: (code) => post(`/battle/rooms/${code}/join/`),
+  // 待機中はルームから抜けるだけ、対戦中はスコアを凍結してAIと入れ替わる。
+  battleLeave: (code) => post(`/battle/rooms/${code}/leave/`),
   battleStart: (code) => post(`/battle/rooms/${code}/start/`),
   battleState: (code) => get(`/battle/rooms/${code}/state/`),
   battleResult: (code) => get(`/battle/rooms/${code}/result/`),

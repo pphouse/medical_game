@@ -395,3 +395,93 @@ class TestQuickMatch:
                     revealed_at=timezone.now() - timezone_delta(31)
                 )
         assert state["room"]["status"] == "finished"
+
+
+class TestLeaveRoom:
+    def test_leave_waiting_room_removes_participant(self):
+        clients, profiles, code = make_room(n_questions=5, participants=2)
+        res = clients[1].post(f"/api/battle/rooms/{code}/leave/")
+        assert res.status_code == 200
+        room = BattleRoom.objects.get(room_code=code)
+        assert room.participants.count() == 1
+        assert not room.participants.filter(user=profiles[1]).exists()
+
+    def test_host_leaving_waiting_room_hands_off_to_next_participant(self):
+        clients, profiles, code = make_room(n_questions=5, participants=3)
+        res = clients[0].post(f"/api/battle/rooms/{code}/leave/")
+        assert res.status_code == 200
+        room = BattleRoom.objects.get(room_code=code)
+        assert room.participants.count() == 2
+        assert room.host_id in (profiles[1].id, profiles[2].id)
+
+    def test_last_participant_leaving_waiting_room_deletes_it(self):
+        clients, profiles, code = make_room(n_questions=5, participants=2)
+        clients[1].post(f"/api/battle/rooms/{code}/leave/")
+        clients[0].post(f"/api/battle/rooms/{code}/leave/")
+        assert not BattleRoom.objects.filter(room_code=code).exists()
+
+    def test_leaving_in_progress_room_freezes_score_and_spawns_disguised_ai(self):
+        clients, profiles, code = make_room(n_questions=5, participants=2)
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        room = BattleRoom.objects.get(room_code=code)
+        leaver = room.participants.get(user=profiles[1])
+        leaver.score = 40
+        leaver.save(update_fields=["score"])
+
+        res = clients[1].post(f"/api/battle/rooms/{code}/leave/")
+        assert res.status_code == 200
+
+        leaver.refresh_from_db()
+        assert leaver.left_at is not None
+        assert leaver.score == 40  # 離脱時点で凍結され、以後増えない
+
+        room.refresh_from_db()
+        assert room.status == BattleRoom.Status.IN_PROGRESS  # もう1人は人間なので続行
+        ai_participant = room.participants.get(user__is_ai=True)
+        assert ai_participant.left_at is None
+        # 「AI」だと分かる表示名や、固定の偽名を使い回していないことを確認する。
+        assert "AI" not in ai_participant.user.display_name
+        assert ai_participant.ai_tier
+
+    def test_leaving_ai_only_room_finishes_immediately(self):
+        for i in range(5):
+            make_question(question_text=f"離脱設問{i}", correct_choice_key="A")
+        client, profile = auth_client(display_name="ひとり", grade=4)
+        ticket_id = client.post(
+            "/api/battle/quickmatch/", {"question_count": 5}, format="json"
+        ).json()["ticket_id"]
+        from battle.models import MatchmakingTicket
+
+        MatchmakingTicket.objects.filter(pk=ticket_id).update(
+            created_at=timezone.now() - timezone_delta(61)
+        )
+        poll = client.get(f"/api/battle/quickmatch/{ticket_id}/").json()
+        code = poll["room_code"]
+
+        res = client.post(f"/api/battle/rooms/{code}/leave/")
+        assert res.status_code == 200
+        room = BattleRoom.objects.get(room_code=code)
+        assert room.status == BattleRoom.Status.FINISHED
+
+    def test_cannot_leave_finished_room(self):
+        clients, profiles, code = make_room(n_questions=5, participants=2)
+        room = BattleRoom.objects.get(room_code=code)
+        room.status = BattleRoom.Status.FINISHED
+        room.save(update_fields=["status"])
+        res = clients[0].post(f"/api/battle/rooms/{code}/leave/")
+        assert res.status_code == 400
+
+    def test_disconnected_participant_is_auto_replaced_by_ai(self):
+        clients, profiles, code = make_room(n_questions=5, participants=2)
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        room = BattleRoom.objects.get(room_code=code)
+        stale_participant = room.participants.get(user=profiles[1])
+        stale_participant.last_seen_at = timezone.now() - timezone_delta(31)
+        stale_participant.save(update_fields=["last_seen_at"])
+
+        # もう一方の参加者がポーリングすることで、無応答側が自動的に入れ替わる。
+        clients[0].get(f"/api/battle/rooms/{code}/state/")
+
+        stale_participant.refresh_from_db()
+        assert stale_participant.left_at is not None
+        assert room.participants.filter(user__is_ai=True).exists()

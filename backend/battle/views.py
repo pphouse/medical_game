@@ -10,6 +10,12 @@
    （行ロックで直列化し DB 時刻で記録。クライアント時刻は一切信用しない）
 5. rank=1 から順に回答権。誤答で次順位へ。正解 or 全員誤答 or 制限時間で
    ラウンドを閉じ、次ラウンドの revealed_at を設定
+6. いつでも POST .../leave/ で離脱できる。待機中は参加者から抜けるだけ
+   （ホストなら次の参加者に引き継ぐ）。対戦中はスコアを凍結し、同じ
+   ランク帯のAI（人間には見分けが付かない偽名・偽の所属大学つき）が
+   即座に代役として入る。無応答が続いた参加者（PARTICIPANT_TIMEOUT_SECONDS
+   秒、既存の「オフライン」判定と同じ閾値）も、他の参加者のポーリングを
+   きっかけに自動で同じ扱いになる
 """
 
 import datetime
@@ -27,7 +33,7 @@ from quiz.models import AnswerHistory, Question
 from quiz.serializers import QuestionSerializer
 from quiz.views import update_review_schedule
 
-from .ai import simulate_ai_turn
+from .ai import DEFAULT_AI_TIER, create_disguised_ai_profile, simulate_ai_turn
 from .matchmaking import (
     create_ticket,
     escalate_to_ai_if_timed_out,
@@ -108,7 +114,7 @@ def close_round_and_advance(round_):
 
 
 def enforce_round_progress(room):
-    """制限時間切れ・全員誤答（切断者はスキップ扱い）を遅延評価で処理する。"""
+    """制限時間切れ・全員誤答（離脱者はスキップ扱い）を遅延評価で処理する。"""
     round_ = open_round(room)
     if round_ is None or round_.revealed_at is None:
         return
@@ -117,12 +123,12 @@ def enforce_round_progress(room):
     if now >= deadline:
         close_round_and_advance(round_)
         return
-    # 全員誤答チェック: 30秒以上応答のない参加者はスキップ扱い (spec 4-2)
+    # 全員誤答チェック: 30秒以上応答のない参加者・離脱済みの参加者はスキップ扱い (spec 4-2)
     active_cutoff = now - datetime.timedelta(seconds=PARTICIPANT_TIMEOUT_SECONDS)
     active_ids = set(
-        room.participants.filter(last_seen_at__gte=active_cutoff).values_list(
-            "user_id", flat=True
-        )
+        room.participants.filter(
+            last_seen_at__gte=active_cutoff, left_at__isnull=True
+        ).values_list("user_id", flat=True)
     )
     if not active_ids:
         return
@@ -131,6 +137,54 @@ def enforce_round_progress(room):
     )
     if active_ids <= wrong_ids:
         close_round_and_advance(round_)
+
+
+def _replace_with_ai(room, participant):
+    """参加者1人をスコアを凍結して退場させ、同じランク帯のAI（偽名・偽の
+    所属大学つきで、人間には見分けが付かない）を即座に代役として入れる。"""
+    if participant.left_at is not None:
+        return
+    tier = compute_tier(participant.user) or DEFAULT_AI_TIER
+    participant.left_at = timezone.now()
+    participant.save(update_fields=["left_at"])
+    ai_profile, ai_tier = create_disguised_ai_profile(tier)
+    BattleParticipant.objects.create(room=room, user=ai_profile, ai_tier=ai_tier)
+
+
+def _finish_if_no_active_humans(room):
+    """AI同士だけが残った対戦は誰も見ていないので、その場で打ち切る。"""
+    current_status = (
+        BattleRoom.objects.filter(pk=room.pk).values_list("status", flat=True).first()
+    )
+    if current_status != BattleRoom.Status.IN_PROGRESS:
+        return
+    has_active_human = room.participants.filter(
+        left_at__isnull=True, user__is_ai=False
+    ).exists()
+    if has_active_human:
+        return
+    round_ = open_round(room)
+    if round_ is not None:
+        round_.closed_at = timezone.now()
+        round_.save(update_fields=["closed_at"])
+    room.status = BattleRoom.Status.FINISHED
+    room.save(update_fields=["status"])
+    finalize_room_points(room)
+
+
+def replace_disconnected_participants(room):
+    """無応答が続く参加者（既存の「オフライン」判定と同じ閾値）を、他の
+    参加者のポーリングをきっかけに自動でAIへ入れ替える。"""
+    cutoff = timezone.now() - datetime.timedelta(seconds=PARTICIPANT_TIMEOUT_SECONDS)
+    stale = list(
+        room.participants.select_related("user").filter(
+            left_at__isnull=True, user__is_ai=False, last_seen_at__lt=cutoff
+        )
+    )
+    for participant in stale:
+        _replace_with_ai(room, participant)
+    if stale:
+        _finish_if_no_active_humans(room)
 
 
 class RoomCreateView(APIView):
@@ -173,6 +227,38 @@ class RoomJoinView(APIView):
             raise exceptions.ValidationError("満室です。")
         BattleParticipant.objects.create(room=room, user=request.user)
         return Response({"room_code": room.room_code})
+
+
+class RoomLeaveView(APIView):
+    """POST /api/battle/rooms/{code}/leave/ — いつでも離脱できる。
+
+    待機中: 参加者から抜けるだけ。ホストが抜けた場合は次の参加者に
+    ホストを引き継ぎ、誰もいなくなったらルームごと削除する。
+    対戦中: スコアを凍結して退場し、同じランク帯のAIが即座に代役として
+    入る（他の参加者が対戦を続けられるように）。人間が誰もいなくなったら
+    その場で対戦を打ち切る。
+    """
+
+    def post(self, request, code):
+        room = get_room(code)
+        participant = require_participant(room, request.user)
+        if room.status == BattleRoom.Status.FINISHED:
+            raise exceptions.ValidationError("この対戦はすでに終了しています。")
+
+        if room.status == BattleRoom.Status.WAITING:
+            was_host = participant.user_id == room.host_id
+            participant.delete()
+            remaining = list(room.participants.order_by("id"))
+            if not remaining:
+                room.delete()
+            elif was_host:
+                room.host = remaining[0].user
+                room.save(update_fields=["host"])
+        else:
+            _replace_with_ai(room, participant)
+            _finish_if_no_active_humans(room)
+
+        return Response({"status": "left"})
 
 
 def start_room(room):
@@ -233,6 +319,7 @@ class RoomStateView(APIView):
         )
 
         if room.status == BattleRoom.Status.IN_PROGRESS:
+            replace_disconnected_participants(room)
             simulate_ai_turn(room)
             enforce_round_progress(room)
             room.refresh_from_db(fields=["status"])
@@ -245,7 +332,8 @@ class RoomStateView(APIView):
                 "score": p.score,
                 "is_me": p.user_id == request.user.id,
                 "is_host": p.user_id == room.host_id,
-                "connected": p.last_seen_at >= cutoff,
+                "connected": p.left_at is None and p.last_seen_at >= cutoff,
+                "left": p.left_at is not None,
             }
             for p in room.participants.select_related("user").order_by("-score", "id")
         ]
@@ -425,6 +513,7 @@ class RoomResultView(APIView):
                     "correct_count": correct_count,
                     "is_me": p.user_id == request.user.id,
                     "is_ai": p.user.is_ai,
+                    "left": p.left_at is not None,
                     "points_delta": p.points_delta,
                 }
             )

@@ -220,9 +220,10 @@ export default function QuizScreen({
                   key={m.level}
                   className={`mastery-button ${m.level}${masteryLevel === m.level ? " active" : ""}`}
                   onClick={() => handleOverride(m.level)}
+                  title={m.hint}
+                  aria-label={m.hint}
                 >
                   <span className="mastery-emoji">{m.label}</span>
-                  <span className="mastery-hint">{m.hint}</span>
                 </button>
               ))}
             </div>

@@ -125,10 +125,16 @@ class Command(BaseCommand):
 
         now = timezone.now()
         stats = fetch_user_stats(period)
+        # 演習数ランキングは「1問も解いていない」ユーザーも対象に含める
+        # （0問として最下位に並べる。ランキングに出ないと「順位不明」に見えて
+        # しまうため）。正答率は従来どおり100問ゲートで絞られるので、
+        # 0問のユーザーはこの後の accuracy フィルタで自然に除外される。
+        # AI（対戦の代役プロフィール）はここには一切登場させない。
         profiles = {
             p.id: p
-            for p in Profile.objects.filter(id__in=stats.keys()).select_related("university")
+            for p in Profile.objects.filter(is_ai=False).select_related("university")
         }
+        zero_stats = {"solved": 0, "accuracy": 0.0}
 
         rows = []
 
@@ -151,7 +157,7 @@ class Command(BaseCommand):
 
         # --- 個人: 全国 + 学内 ---------------------------------------------
         individuals = [
-            (profiles[pid], s) for pid, s in stats.items() if pid in profiles
+            (profile, stats.get(pid, zero_stats)) for pid, profile in profiles.items()
         ]
 
         def build_individual(scope, university, members):

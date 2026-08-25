@@ -55,6 +55,13 @@ class BattleParticipant(models.Model):
     last_seen_at = models.DateTimeField(default=timezone.now)
     # ルーム終了時に確定する対戦ランクポイントの増減（一度だけ適用する）
     points_delta = models.IntegerField(null=True, blank=True)
+    # 離脱（自分から退出 or 無応答による自動退場）した時刻。null なら現役参加者。
+    # 離脱時点のスコアで凍結され、以降の得点は増えない。
+    left_at = models.DateTimeField(null=True, blank=True)
+    # AI が代役として入った参加者にだけ設定するランク帯（強さの決定に使う）。
+    # 固定UUIDでAIを判別していた旧方式をやめ、参加者ごとに持たせる
+    # （なりすまし用に毎回別人格のプロフィールを作るため）。
+    ai_tier = models.CharField(max_length=4, blank=True, default="")
 
     class Meta:
         verbose_name = "対戦参加者"

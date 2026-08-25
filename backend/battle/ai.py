@@ -1,8 +1,15 @@
 """対戦のAI対戦相手 (spec: クイックマッチで1分間マッチしなければAI対戦へ
-フォールバック。相手のランクに応じた頭脳のAIとマッチさせる)。
+フォールバック。対戦相手のランクに応じた頭脳のAIとマッチさせる。加えて、
+対戦中に相手が離脱・無応答になった場合も同じランク帯のAIに自動で
+入れ替わる)。
 
-AI は accounts.Profile（is_ai=True の固定6体、ランクごとに1体）として
-振る舞う。実際の早押し・解答は request を投げてこないため、他の参加者が
+AI と分からないよう、毎回ランダムな日本人名っぽい表示名と、実在の大学
+一覧からランダムに選んだ所属大学を持つ「使い捨ての」Profile
+（is_ai=True）をその都度作る。固定の "AI（Bランク）" のような1体を
+使い回す旧方式は、同じ偽名が複数の対戦相手の前に繰り返し現れて
+見破られる要因になるためやめた。
+
+実際の早押し・解答は request を投げてこないため、他の参加者が
 GET /battle/rooms/{code}/state/ をポーリングするたびに `simulate_ai_turn`
 がそのポーリング時刻を基準にAIの行動（早押し・解答）を進める。
 """
@@ -12,7 +19,7 @@ import uuid
 
 from django.utils import timezone
 
-from accounts.models import Profile
+from accounts.models import Profile, University
 from battle.models import BattleBuzz
 from battle.scoring import ROUND_TIME_LIMIT_SECONDS
 from quiz.models import AnswerHistory
@@ -26,31 +33,57 @@ AI_TIER_PROFILE = {
     "C": {"accuracy": 0.40, "avg_seconds": 5.5, "sd_seconds": 1.1},
     "D": {"accuracy": 0.30, "avg_seconds": 6.5, "sd_seconds": 1.2},
 }
-DEFAULT_AI_TIER = "B"  # 未ランクのユーザーと対戦する場合の既定の強さ
+DEFAULT_AI_TIER = "B"  # 未ランクの相手と対戦する場合の既定の強さ
 
-# 固定UUID（tierごとに1体だけ存在させる, uuid5で決定的に生成）
-_AI_NAMESPACE = uuid.UUID("6b6f2f8e-9c2b-4f2a-9a8e-4e5b7d6c1a10")
+# 表示名の候補。フルネーム風とニックネーム風を混ぜて、いかにも「AI」という
+# 雰囲気を出さないようにする（実在の人物を指さない一般的な組み合わせ）。
+_SURNAMES = [
+    "佐藤", "鈴木", "高橋", "田中", "伊藤", "渡辺", "山本", "中村", "小林", "加藤",
+    "吉田", "山田", "佐々木", "松本", "井上", "木村", "林", "斎藤", "清水", "森",
+]
+_GIVEN_NAMES = [
+    "陽翔", "蓮", "湊", "樹", "颯太", "陸", "大和", "悠真", "結菜", "陽菜",
+    "凛", "咲良", "美咲", "葵", "さくら", "楓", "杏", "澪", "遥", "光",
+]
+_NICKNAMES = [
+    "ゆうた", "けんと", "みさき", "しょうた", "りく", "あおい", "はると",
+    "みくる", "そら", "つばさ", "ののか", "ゆい", "かい", "あかり",
+]
 
 
-def ai_profile_id(tier):
-    return uuid.uuid5(_AI_NAMESPACE, f"battle-ai-{tier}")
+def _random_display_name():
+    if random.random() < 0.3:
+        return random.choice(_NICKNAMES)
+    return f"{random.choice(_SURNAMES)} {random.choice(_GIVEN_NAMES)}"
 
 
-def get_or_create_ai_profile(tier):
+def _random_university():
+    # order_by("?") はテーブルが大きいと重いが、大学マスタは高々百件程度。
+    return University.objects.order_by("?").first()
+
+
+def create_disguised_ai_profile(tier):
+    """毎回ランダムな人格を持つ使い捨てのAIプロフィールを作る。
+
+    is_ai=True 自体はサーバ内部の判定にのみ使い（ポイント集計対象外にする
+    等）、対戦相手に見える情報（表示名・所属大学）からは AI と分からない。
+    """
     tier = tier if tier in AI_TIER_PROFILE else DEFAULT_AI_TIER
-    profile, _ = Profile.objects.get_or_create(
-        id=ai_profile_id(tier),
-        defaults={"display_name": f"AI（{tier}ランク）", "is_ai": True},
+    profile = Profile.objects.create(
+        id=uuid.uuid4(),
+        display_name=_random_display_name(),
+        university=_random_university(),
+        grade=random.randint(3, 6),
+        is_ai=True,
     )
-    if not profile.is_ai:  # 万一IDが衝突しても人間のプロフィールは壊さない
-        profile.is_ai = True
-        profile.display_name = profile.display_name or f"AI（{tier}ランク）"
-        profile.save(update_fields=["is_ai", "display_name"])
-    return profile
+    return profile, tier
 
 
-def _ai_participant(room):
-    return room.participants.select_related("user").filter(user__is_ai=True).first()
+def _ai_participants(room):
+    return list(
+        room.participants.select_related("user")
+        .filter(user__is_ai=True, left_at__isnull=True)
+    )
 
 
 def _ai_target_delay(tier):
@@ -59,14 +92,7 @@ def _ai_target_delay(tier):
     return max(0.3, min(ROUND_TIME_LIMIT_SECONDS - 1, delay))
 
 
-def simulate_ai_turn(room):
-    """このルームにAI参加者がいれば、現在の開講中ラウンドでAIの早押し・
-    解答を（ポーリング時刻を基準に）1手だけ進める。人間側の state ポーリング
-    のたびに呼ばれるので、複数手が一気に進むことはない。"""
-    ai_participant = _ai_participant(room)
-    if ai_participant is None:
-        return
-
+def _simulate_one(room, ai_participant):
     round_ = (
         room.rounds.filter(closed_at__isnull=True)
         .select_related("question")
@@ -78,10 +104,7 @@ def simulate_ai_turn(room):
 
     now = timezone.now()
     elapsed = (now - round_.revealed_at).total_seconds()
-    profile_tier = next(
-        (t for t in AI_TIER_PROFILE if ai_participant.user.id == ai_profile_id(t)),
-        DEFAULT_AI_TIER,
-    )
+    profile_tier = ai_participant.ai_tier or DEFAULT_AI_TIER
 
     my_buzz = round_.buzzes.filter(profile=ai_participant.user).first()
     if my_buzz is None:
@@ -131,6 +154,17 @@ def simulate_ai_turn(room):
         close_round_and_advance(round_)
     else:
         remaining = [b for b in buzzes if b.is_correct is None and b.pk != my_buzz.pk]
-        all_buzzed = round_.room.participants.count() == len(buzzes)
-        if not remaining and all_buzzed:
+        all_active = room.participants.filter(left_at__isnull=True).count()
+        if not remaining and all_active == len(buzzes):
             close_round_and_advance(round_)
+
+
+def simulate_ai_turn(room):
+    """このルームにAI参加者がいれば、現在の開講中ラウンドでそれぞれのAIの
+    早押し・解答を（ポーリング時刻を基準に）1手だけ進める。人間側の state
+    ポーリングのたびに呼ばれるので、複数手が一気に進むことはない。
+
+    離脱した参加者の代役として複数のAIが同室にいる場合もあるため、
+    対象のAI参加者それぞれについて処理する。"""
+    for ai_participant in _ai_participants(room):
+        _simulate_one(room, ai_participant)

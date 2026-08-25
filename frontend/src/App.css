@@ -851,9 +851,8 @@
 .mastery-button {
   flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
   padding: 10px 2px;
   border: 2px solid var(--border);
   border-radius: 16px;
@@ -880,11 +879,6 @@
 
 .mastery-emoji {
   font-size: 20px;
-}
-
-.mastery-hint {
-  font-size: 11px;
-  color: var(--text);
 }
 
 .score-card {
@@ -2246,4 +2240,14 @@
   margin-top: 6px;
   border-radius: 999px;
   background: var(--accent-grad);
+}
+
+.battle-leave-button {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--incorrect);
+  background: var(--incorrect-bg);
+  border: 1px solid var(--incorrect-border);
+  border-radius: 999px;
+  padding: 4px 12px;
 }

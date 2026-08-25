@@ -7,6 +7,7 @@ from .views import (
     QuickMatchPollView,
     RoomCreateView,
     RoomJoinView,
+    RoomLeaveView,
     RoomResultView,
     RoomStartView,
     RoomStateView,
@@ -15,6 +16,7 @@ from .views import (
 urlpatterns = [
     path("rooms/", RoomCreateView.as_view(), name="battle-room-create"),
     path("rooms/<str:code>/join/", RoomJoinView.as_view(), name="battle-room-join"),
+    path("rooms/<str:code>/leave/", RoomLeaveView.as_view(), name="battle-room-leave"),
     path("rooms/<str:code>/start/", RoomStartView.as_view(), name="battle-room-start"),
     path("rooms/<str:code>/state/", RoomStateView.as_view(), name="battle-room-state"),
     path("rooms/<str:code>/result/", RoomResultView.as_view(), name="battle-room-result"),
