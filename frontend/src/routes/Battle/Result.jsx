@@ -28,7 +28,8 @@ function RankBar({ rank }) {
         <TierBadge tier={before?.tier ?? after.tier} large />
         <div className="rank-bar-track">
           <div className="rank-bar-fill" style={{ width: `${width}%` }} />
-          <span className="rank-bar-pct">{width}%</span>
+          {/* ランク内の進捗はポイントで表す（100ptで次のランクへ）。 */}
+          <span className="rank-bar-pct">{width} / 100 pt</span>
         </div>
         <TierBadge tier={after.next_tier ?? after.tier} large />
       </div>
@@ -41,7 +42,9 @@ function RankBar({ rank }) {
       )}
       <p className="rank-bar-note">
         現在 <b>{after.tier}</b> ランク
-        {after.next_tier ? `（${after.next_tier}まであと ${100 - after.progress}%）` : "（最高ランク）"}
+        {after.next_tier
+          ? `（${after.next_tier}まであと ${100 - after.progress}pt）`
+          : "（最高ランク）"}
       </p>
     </div>
   );
