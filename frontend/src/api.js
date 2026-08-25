@@ -118,16 +118,6 @@ export const api = {
     return get(`/quiz/review-filter/?${query}`);
   },
 
-  // notifications (phase 6)
-  notificationPreference: () => get("/auth/notifications/"),
-  updateNotificationPreference: (payload) => patch("/auth/notifications/", payload),
-  registerPushSubscription: (payload) => post("/auth/push-subscriptions/", payload),
-  deletePushSubscription: (endpoint) =>
-    request("/auth/push-subscriptions/", {
-      method: "DELETE",
-      body: JSON.stringify({ endpoint }),
-    }),
-
   // user question creation (phase 7)
   createQuestion: (payload) => post("/quiz/questions/", payload),
   myQuestions: () => get("/quiz/my-questions/"),

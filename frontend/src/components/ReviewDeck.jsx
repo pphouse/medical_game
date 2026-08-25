@@ -125,14 +125,18 @@ function SubjectReview({ onStartSession }) {
         className="cta-button"
         disabled={!result || count === 0}
         onClick={() =>
-          onStartSession({ title: "復習問題", questions: result.results })
+          onStartSession({
+            title: "演習問題",
+            questions: result.results,
+            context: "review",
+          })
         }
       >
         {!result
           ? "集計中..."
           : count === 0
             ? "条件に合う問題がありません"
-            : `復習を始める（${count}問）`}
+            : `演習を始める（${count}問）`}
       </button>
 
       {result?.truncated && (
@@ -199,7 +203,7 @@ export default function ReviewDeck() {
 
   return (
     <div className="screen">
-      <h2>復習</h2>
+      <h2>演習</h2>
       <div className="filter-chip-row">
         {TABS.map((t) => (
           <button

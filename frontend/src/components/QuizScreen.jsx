@@ -24,7 +24,16 @@ const MASTERY_DISPLAY = {
 const EXAM_TYPE_LABEL = { CBT: "CBT", KOKUSHI: "医師国家試験" };
 const DIFFICULTY_LABEL = { 1: "易", 2: "標準", 3: "難" };
 
-export default function QuizScreen({ title, questions, onBack, previewMode = false, startIndex = 0 }) {
+export default function QuizScreen({
+  title,
+  questions,
+  onBack,
+  previewMode = false,
+  startIndex = 0,
+  // 解答履歴に残す文脈。呼び出し元が明示する（以前はタイトル文字列から
+  // 推測していたが、表示名を変えると黙って壊れるためやめた）。
+  context = "solo",
+}) {
   const [index, setIndex] = useState(startIndex);
   const [selectedKey, setSelectedKey] = useState(null);
   const [result, setResult] = useState(null); // grading response
@@ -96,7 +105,7 @@ export default function QuizScreen({ title, questions, onBack, previewMode = fal
         question_id: question.id,
         selected_choice_key: selectedKey,
         response_time_ms: responseTimeMs,
-        context: title?.startsWith("復習") ? "review" : "solo",
+        context,
       });
       setResult(res);
       setMasteryLevel(res.mastery_level);

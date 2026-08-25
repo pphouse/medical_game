@@ -44,3 +44,22 @@ class ProfileSerializer(serializers.ModelSerializer):
         if value is not None and not 1 <= value <= 6:
             raise serializers.ValidationError("学年は1〜6で指定してください。")
         return value
+
+    def validate_university_id(self, value):
+        """所属大学は一度設定したら変更できない。
+
+        学内ランキングの母集団が所属大学で決まるので、自由に付け替えられると
+        順位を操作できてしまう。UI 側でも編集不可にしているが、API を直接
+        叩かれても通らないようにここで拒否する。未設定からの初回設定
+        （サインアップ直後の bootstrap）だけを許可する。
+
+        フック名は source("university") ではなく宣言名("university_id")側で
+        ないと DRF に呼ばれないので注意。
+        """
+        current = getattr(self.instance, "university_id", None)
+        # null で一度消してから付け替える抜け道を塞ぐため、解除も拒否する。
+        if current is not None and (value is None or value.pk != current):
+            raise serializers.ValidationError(
+                "所属大学は変更できません。変更が必要な場合はお問い合わせください。"
+            )
+        return value

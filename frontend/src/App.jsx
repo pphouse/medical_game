@@ -19,7 +19,6 @@ import QuestionForm from "./routes/Create/QuestionForm";
 import ExamList from "./routes/Exams/List";
 import ExamResult from "./routes/Exams/Result";
 import ExamSession from "./routes/Exams/Session";
-import NotificationSettings from "./routes/NotificationSettings";
 import QuizSession from "./routes/QuizSession";
 import Ranking from "./routes/Ranking";
 import Solo from "./routes/Solo";
@@ -81,7 +80,6 @@ export default function App() {
               <Route path="/create" element={<MyQuestions />} />
             )}
             <Route path="/mypage" element={<MyPage />} />
-            <Route path="/settings/notifications" element={<NotificationSettings />} />
             {STUDENT_VERIFICATION_ENABLED && (
               <Route path="/settings/verification" element={<Verify />} />
             )}
