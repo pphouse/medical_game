@@ -52,6 +52,19 @@ class Profile(models.Model):
         MODERATOR = "moderator", "モデレーター"
         ADMIN = "admin", "管理者"
 
+    class ExamPreference(models.TextChoices):
+        """演習・模試で既定にする試験種別。
+
+        空文字は「未選択」で、学年から自動で決める（4年生以下は CBT、
+        5年生以降は国試）。学年は毎年4月1日のバッチで繰り上がるので、
+        未選択のままにしておけば進級に追従する。明示的に選んだ場合は
+        そちらを優先し、進級しても勝手に変わらない。
+        """
+
+        AUTO = "", "学年に合わせる"
+        CBT = "CBT", "CBT"
+        KOKUSHI = "KOKUSHI", "医師国家試験"
+
     id = models.UUIDField(primary_key=True, editable=False)
     display_name = models.CharField(max_length=50, blank=True)
     university = models.ForeignKey(
@@ -65,6 +78,13 @@ class Profile(models.Model):
         null=True, blank=True, help_text="学年（医学部は1〜6年）"
     )
     student_verified = models.BooleanField(default=False)
+    exam_preference = models.CharField(
+        max_length=10,
+        choices=ExamPreference.choices,
+        blank=True,
+        default=ExamPreference.AUTO,
+        help_text="演習・模試の既定の試験種別。未選択なら学年から決める。",
+    )
     role = models.CharField(
         max_length=20, choices=Role.choices, default=Role.STUDENT
     )
@@ -96,6 +116,26 @@ class Profile(models.Model):
     @property
     def is_moderator(self):
         return self.role in (self.Role.MODERATOR, self.Role.ADMIN)
+
+    # 学年から試験種別を決める境目。4年生以下は CBT、5年生以降は国試。
+    CBT_MAX_GRADE = 4
+
+    @property
+    def resolved_exam_type(self):
+        """実際に使う試験種別。明示的な選択があればそれ、無ければ学年から。
+
+        学年も未設定なら CBT にする。学年を入れていない利用者は入学直後か
+        設定を飛ばした人で、国試より CBT の方が当たりやすい。
+        """
+        if self.exam_preference:
+            return self.exam_preference
+        if self.grade is None:
+            return self.ExamPreference.CBT
+        return (
+            self.ExamPreference.CBT
+            if self.grade <= self.CBT_MAX_GRADE
+            else self.ExamPreference.KOKUSHI
+        )
 
 
 class StudentVerification(models.Model):

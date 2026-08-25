@@ -84,28 +84,32 @@
 .summary-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 18px;
+  gap: 12px;
+  padding: 14px 16px;
   border-radius: 18px;
   background: var(--accent-grad);
   box-shadow: var(--shadow-md);
   color: white;
 }
 
+/* 進捗の数字は詰まったら縮む側。順位は桁が読めないと意味がないので、
+   縮めるのはこちらにして順位側の折り返しを防ぐ。 */
 .summary-pct {
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
+  min-width: 0;
+  flex: 1;
 }
 
 .summary-pct-value {
-  font-size: 30px;
+  font-size: clamp(17px, 4.6vw, 25px);
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .summary-pct-label {
-  font-size: 11px;
+  font-size: 10.5px;
   opacity: 0.9;
   margin-top: 4px;
   white-space: nowrap;
@@ -115,16 +119,18 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
+  flex-shrink: 0;
   border-left: 1px solid rgba(255, 255, 255, 0.35);
-  padding-left: 16px;
+  padding-left: 12px;
 }
 
 .rank-stat {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+  /* 「学内順位」「5位 / 8人中」がそれぞれ途中で折り返していた。 */
+  white-space: nowrap;
 }
 
 .rank-label {
@@ -133,10 +139,8 @@
 
 .rank-value {
   font-weight: 700;
-}
-
-.summary-card-centered {
-  justify-content: center;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
 }
 
 .ranking-card {
@@ -685,14 +689,19 @@
   justify-content: center;
   font-size: 12px;
   font-weight: 800;
-  color: var(--text);
+  /* 記号は背景の評価色に沈まないよう、必ず白抜きにする。未演習だけ地色が
+     淡いので下で濃い文字色に戻す。 */
+  color: #ffffff;
 }
 
 .question-row-mastery.mastery-double_circle { background: var(--m-double); }
 .question-row-mastery.mastery-circle { background: var(--m-circle); }
 .question-row-mastery.mastery-triangle { background: var(--m-triangle); }
 .question-row-mastery.mastery-cross { background: var(--m-cross); }
-.question-row-mastery.mastery-unstudied { background: var(--m-unstudied); }
+.question-row-mastery.mastery-unstudied {
+  background: var(--m-unstudied);
+  color: var(--text-h);
+}
 
 .question-row-difficulty {
   flex-shrink: 0;
@@ -761,6 +770,14 @@
   width: 18px;
   height: 18px;
   font-size: 10px;
+}
+
+/* 項目どうしの区切り。全角スペースだと JSX の字下げに巻き込まれて消える。 */
+.question-row-meta-sep {
+  width: 1px;
+  height: 11px;
+  background: var(--border);
+  margin: 0 4px;
 }
 
 .choice.correct {
@@ -840,7 +857,7 @@
 .progress-donut { flex-shrink: 0; }
 .progress-donut-label {
   fill: white;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -2029,4 +2046,157 @@
   background: var(--surface, #fff);
   color: inherit;
   font: inherit;
+}
+
+/* 復習の絞り込み（科目・評価・演習回数）。項目が多いので見出しで区切る。 */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.filter-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-group-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.filter-group-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-group-actions button {
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--accent);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.filter-group-actions button:hover {
+  border-color: var(--accent);
+}
+
+.filter-group .filter-chip-row {
+  margin-bottom: 0;
+}
+
+/* ランキングタイルの詳細（散布図・直近30日の演習数） */
+.ranking-card-tile-clickable {
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+}
+
+.ranking-card-tile-clickable:hover {
+  border-color: var(--accent);
+}
+
+.rank-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(10, 15, 26, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.rank-detail-sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--bg-a);
+  border-radius: 22px 22px 0 0;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.rank-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rank-detail-head h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.rank-detail-close {
+  border: none;
+  background: var(--card-bg);
+  color: var(--text);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  box-shadow: var(--shadow-sm);
+}
+
+.yesterday-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.yesterday-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--accent-bg);
+}
+
+.scatter-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.scatter-grid {
+  stroke: var(--card-border);
+  stroke-width: 1;
+}
+
+.scatter-axis-label {
+  font-size: 8px;
+  fill: var(--text);
+}
+
+.scatter-dot {
+  fill: var(--m-circle);
+  opacity: 0.55;
+}
+
+.scatter-dot-me {
+  fill: var(--accent);
+  stroke: white;
+  stroke-width: 1.5;
+}
+
+.scatter-dot-empty {
+  fill: var(--m-unstudied);
 }

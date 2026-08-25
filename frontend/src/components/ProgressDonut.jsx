@@ -9,8 +9,8 @@ const VAR_NAME = {
 
 /** 全体進捗を◎○△✕未演習の割合で色分けしたドーナツグラフで表示する。 */
 export default function ProgressDonut({ counts, total, pct }) {
-  const size = 68;
-  const stroke = 9;
+  const size = 58;
+  const stroke = 8;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
 
