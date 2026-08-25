@@ -2083,40 +2083,6 @@
       "source_note": "出典：厚生労働省ホームページ 第114回医師国家試験 C013（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp200421-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
-      "id": "k114-C014",
-      "exam_type": "KOKUSHI",
-      "question_type": "M",
-      "blueprint_code": "114-C-14",
-      "category": "遺伝",
-      "difficulty": "standard",
-      "question_text": "遺伝性疾患(浸透率100%)を持つ家系の家系図を示す。この疾患の遺伝形式はどれか。",
-      "choices": [
-        {
-          "id": "A",
-          "text": "常染色体優性遺伝"
-        },
-        {
-          "id": "B",
-          "text": "常染色体劣性遺伝"
-        },
-        {
-          "id": "C",
-          "text": "X連鎖優性遺伝"
-        },
-        {
-          "id": "D",
-          "text": "X連鎖劣性遺伝"
-        },
-        {
-          "id": "E",
-          "text": "Y連鎖遺伝"
-        }
-      ],
-      "correct_choice_id": "D",
-      "explanation": "正答は D「X連鎖劣性遺伝」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第114回医師国家試験 C014\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp200421-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第114回医師国家試験 C014（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp200421-01.html）／設問文および選択肢を本アプリの表示形式に整形"
-    },
-    {
       "id": "k114-C015",
       "exam_type": "KOKUSHI",
       "question_type": "M",

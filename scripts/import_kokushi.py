@@ -99,6 +99,14 @@ NOISE_LINE = re.compile(r"DKIX|DDKKIIXX|^\s*$")
 # 別冊（画像）を参照している設問。これらは取り込まない。
 IMAGE_REF = re.compile(r"別冊|を別に示す|別に示す")
 
+# 図表を参照する設問。「家系図を示す」「以下に示す」と書いてあるのに参照先が
+# 本文に入っていないものは、図が無いと解けない。会話文や表を本文に取り込めて
+# いる設問は必ず長くなるので、本文の長さで見分ける。実際に「家系図を示す。
+# この疾患の遺伝形式はどれか。」(41字) のような解きようのない設問が公開まで
+# 通り抜けていた。
+FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")
+FIGURE_REF_MIN_BODY = 120
+
 # 複数選択・計算問題。現行スキーマに入らない。
 MULTI_SELECT = re.compile(r"[２2３3４4]\s*つ選べ")
 
@@ -830,6 +838,10 @@ def main() -> int:
                 stats["series"] += 1
                 continue
             if IMAGE_REF.search(body):
+                stats["image"] += 1
+                continue
+            if FIGURE_REF.search(body) and len(body) < FIGURE_REF_MIN_BODY:
+                # 参照先の図表が本文に入っておらず、設問だけでは解けない。
                 stats["image"] += 1
                 continue
             if MULTI_SELECT.search(body):

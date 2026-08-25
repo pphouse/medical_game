@@ -26,6 +26,10 @@ GLYPH_CORRUPTION = re.compile(r"[ぁ-んァ-ヶ一-龥][a-z]{1,3}(?![型値])[�
 FOREIGN_SCRIPT = re.compile(r"[\u0400-\u052f\uac00-\ud7af]")
 
 # 置換文字と制御文字。取り込み時に一度これで35問を取りこぼしている。
+# 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
+FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")
+FIGURE_REF_MIN_BODY = 120
+
 UNUSABLE = re.compile(r"[\ufffd\u0000-\u0008\u000b-\u001f\u007f-\u009f]")
 
 
@@ -95,6 +99,25 @@ class TestShippedData:
             if text.count(opener) != text.count(closer)
         ]
         assert not bad, "括弧の対応が崩れている:\n" + "\n".join(bad)
+
+    def test_no_question_needs_a_missing_figure(self, path):
+        """「家系図を示す」と書いてあるのに図が無い設問を落とす。
+
+        国試には図表を参照する設問があり、別冊(画像)を参照するものは取り込み時に
+        除いている。ところが「家系図を示す。この疾患の遺伝形式はどれか。」のように
+        本文中の図を指すものが素通りし、41字の解きようがない設問が公開まで
+        通っていた。会話文や表を本文に取り込めている設問は必ず長くなるので、
+        参照の文言と本文の長さで見分ける。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = [
+            f"{code}: {len(text)}字 {text[:40]}"
+            for code, field, text in iter_texts(payload)
+            if field.endswith("question_text")
+            and FIGURE_REF.search(text)
+            and len(text) < FIGURE_REF_MIN_BODY
+        ]
+        assert not bad, "参照先の図表が本文に無い設問:\n" + "\n".join(bad)
 
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))

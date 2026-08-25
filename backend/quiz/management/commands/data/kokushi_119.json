@@ -2729,40 +2729,6 @@
       "source_note": "出典：厚生労働省ホームページ 第119回医師国家試験 C014（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
-      "id": "k119-C015",
-      "exam_type": "KOKUSHI",
-      "question_type": "M",
-      "blueprint_code": "119-C-15",
-      "category": "血液",
-      "difficulty": "standard",
-      "question_text": "正常の血清蛋白電気泳動を以下に示す。多発性骨髄腫でみられるM蛋白が出現する分画はどれか。",
-      "choices": [
-        {
-          "id": "A",
-          "text": "1"
-        },
-        {
-          "id": "B",
-          "text": "2"
-        },
-        {
-          "id": "C",
-          "text": "3"
-        },
-        {
-          "id": "D",
-          "text": "4"
-        },
-        {
-          "id": "E",
-          "text": "5"
-        }
-      ],
-      "correct_choice_id": "E",
-      "explanation": "正答は E「5」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第119回医師国家試験 C015\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第119回医師国家試験 C015（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html）／設問文および選択肢を本アプリの表示形式に整形"
-    },
-    {
       "id": "k119-C016",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -2931,40 +2897,6 @@
       "correct_choice_id": "E",
       "explanation": "正答は E「樹状細胞」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第119回医師国家試験 C021\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第119回医師国家試験 C021（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html）／設問文および選択肢を本アプリの表示形式に整形"
-    },
-    {
-      "id": "k119-C022",
-      "exam_type": "KOKUSHI",
-      "question_type": "M",
-      "blueprint_code": "119-C-22",
-      "category": "血液",
-      "difficulty": "standard",
-      "question_text": "家系図を以下に示す。この遺伝形式で発症する単一遺伝子病はどれか。",
-      "choices": [
-        {
-          "id": "A",
-          "text": "口蓋裂"
-        },
-        {
-          "id": "B",
-          "text": "血友病A"
-        },
-        {
-          "id": "C",
-          "text": "Hunter症候群"
-        },
-        {
-          "id": "D",
-          "text": "フェニルケトン尿症"
-        },
-        {
-          "id": "E",
-          "text": "神経線維腫症I型〈von Recklinghausen病〉"
-        }
-      ],
-      "correct_choice_id": "E",
-      "explanation": "正答は E「神経線維腫症I型〈von Recklinghausen病〉」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第119回医師国家試験 C022\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第119回医師国家試験 C022（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k119-C023",
