@@ -2092,3 +2092,111 @@
 .filter-group .filter-chip-row {
   margin-bottom: 0;
 }
+
+/* ランキングタイルの詳細（散布図・直近30日の演習数） */
+.ranking-card-tile-clickable {
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+}
+
+.ranking-card-tile-clickable:hover {
+  border-color: var(--accent);
+}
+
+.rank-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(10, 15, 26, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.rank-detail-sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--bg-a);
+  border-radius: 22px 22px 0 0;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.rank-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rank-detail-head h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.rank-detail-close {
+  border: none;
+  background: var(--card-bg);
+  color: var(--text);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  box-shadow: var(--shadow-sm);
+}
+
+.yesterday-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.yesterday-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--accent-bg);
+}
+
+.scatter-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.scatter-grid {
+  stroke: var(--card-border);
+  stroke-width: 1;
+}
+
+.scatter-axis-label {
+  font-size: 8px;
+  fill: var(--text);
+}
+
+.scatter-dot {
+  fill: var(--m-circle);
+  opacity: 0.55;
+}
+
+.scatter-dot-me {
+  fill: var(--accent);
+  stroke: white;
+  stroke-width: 1.5;
+}
+
+.scatter-dot-empty {
+  fill: var(--m-unstudied);
+}
