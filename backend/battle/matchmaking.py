@@ -1,14 +1,15 @@
 """クイックマッチ（対戦のマッチメイキング）。
 
 spec: オンラインの中でも同じレベルの人がマッチしやすいようにする。
-1分経ってもマッチしない場合はAI対戦とし、そのユーザーのランクに合わせた
+一定時間（40〜50秒）マッチしない場合はAI対戦とし、そのユーザーのランクに合わせた
 頭脳のAIとマッチさせる。
 
 ポーリング駆動（このアプリは常駐ワーカーを持たないサーバーレス志向,
-docs/deploy-vercel.md）: マッチ探索も「もう1分経ったか」の判定も、
+docs/deploy-vercel.md）: マッチ探索も「もう時間が来たか」の判定も、
 クライアントが GET /battle/quickmatch/{id}/ を叩くたびに行う。
 """
 
+import random
 import secrets
 
 from django.db import IntegrityError, transaction
@@ -18,7 +19,21 @@ from accounts.ranktier import compute_tier
 from battle.ai import create_disguised_ai_profile
 from battle.models import BattleParticipant, BattleRoom, MatchmakingTicket
 
-MATCH_TIMEOUT_SECONDS = 60
+# 相手が見つからないときにAIとマッチするまでの待ち時間（秒）。
+# 毎回同じ秒数だと機械的に見えるので、チケットごとにこの範囲でばらつかせる。
+MATCH_TIMEOUT_MIN_SECONDS = 40
+MATCH_TIMEOUT_MAX_SECONDS = 50
+
+
+def match_timeout_for(ticket):
+    """このチケットがAI対戦へ切り替わるまでの秒数。
+
+    ポーリングのたびに乱数を引き直すと、たまたま小さい値が出た瞬間に
+    切り替わってしまい実質的に最小値で固定されるため、チケットIDから
+    決定的に決める。
+    """
+    rng = random.Random(f"quickmatch-{ticket.pk}")
+    return rng.uniform(MATCH_TIMEOUT_MIN_SECONDS, MATCH_TIMEOUT_MAX_SECONDS)
 
 
 def _create_room(host, question_count):
@@ -95,7 +110,7 @@ def escalate_to_ai_if_timed_out(ticket):
     if ticket.status != MatchmakingTicket.Status.WAITING:
         return ticket
     elapsed = (timezone.now() - ticket.created_at).total_seconds()
-    if elapsed < MATCH_TIMEOUT_SECONDS:
+    if elapsed < match_timeout_for(ticket):
         return ticket
 
     ai_profile, ai_tier = create_disguised_ai_profile(ticket.tier_snapshot or "B")

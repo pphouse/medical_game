@@ -623,7 +623,7 @@ def ticket_payload(ticket, request_user):
 class QuickMatchCreateView(APIView):
     """POST /api/battle/quickmatch/ — 対戦のクイックマッチ（同ランク優先）に
     参加する。既に他の待機者がいれば即座にマッチし、いなければ待機列に入る
-    （60秒経ってもマッチしなければ GET 側でAI対戦にフォールバックする）。"""
+    （一定時間マッチしなければ GET 側でAI対戦にフォールバックする）。"""
 
     def post(self, request):
         # 問題数の選択は廃止（対戦形式は一律で同じ）。既存クライアントが
@@ -636,7 +636,7 @@ class QuickMatchCreateView(APIView):
 
 class QuickMatchPollView(APIView):
     """GET /api/battle/quickmatch/{id}/ — 探索状況をポーリングする。
-    まだ待機中なら再探索し、作成から1分経っていればAI対戦を確定させる。"""
+    まだ待機中なら再探索し、規定の待ち時間を過ぎていればAI対戦を確定させる。"""
 
     def get(self, request, ticket_id):
         ticket = get_object_or_404(MatchmakingTicket, pk=ticket_id, user=request.user)
