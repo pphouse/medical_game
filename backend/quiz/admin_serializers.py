@@ -8,6 +8,7 @@ status を read_only にしているので（フェーズ7: 投稿者が自分�
 
 from rest_framework import serializers
 
+from .categories import CATEGORY_ORDER, normalize
 from .models import Question, QuestionReport
 from .serializers import VALID_CHOICE_KEYS
 
@@ -83,6 +84,22 @@ class AdminQuestionSerializer(serializers.ModelSerializer):
         if len(set(texts)) != len(texts):
             raise serializers.ValidationError("選択肢テキストが重複しています。")
         return value
+
+    def validate_category(self, value):
+        """分野名は正典のものだけ通す。
+
+        表記ゆれ（「循環器」→「循環器系」）は黙って直すのではなく、
+        直した名前を示して弾く。管理画面はプルダウンで選ばせるので、
+        ここに来る誤りは API 直叩きか正典の更新漏れであり、
+        気づかせたほうがよい。
+        """
+        name = (value or "").strip()
+        if name in CATEGORY_ORDER:
+            return name
+        fixed = normalize(name)
+        if fixed in CATEGORY_ORDER and fixed != name:
+            raise serializers.ValidationError(f"分野は「{fixed}」を指定してください。")
+        raise serializers.ValidationError(f"「{name}」は登録された分野ではありません。")
 
     def validate(self, attrs):
         choices = attrs.get("choices", getattr(self.instance, "choices", None))
