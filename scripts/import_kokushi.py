@@ -811,9 +811,19 @@ def build_explanation(exam: int, block: str, num: int, answer_key: str,
     )
 
 
+# NFKC は丸数字を裸の数字に変えてしまう（①→1）。第118回F27の選択肢
+# 「①2　②5　③3」が「12 25 33」になり、設問が成立しなくなっていた。
+# 変換の前後で私用領域に退避させて守る。ローマ数字は逆に半角へ寄せたい
+# （「第Ⅷ因子」→「第VIII因子」）ので対象にしない。
+_ENCLOSED = {chr(c): chr(0xE000 + c - 0x2460) for c in range(0x2460, 0x2500)}
+_ENCLOSED_BACK = {v: k for k, v in _ENCLOSED.items()}
+
+
 def normalize(text: str) -> str:
     """全角英数字を半角に寄せる。医学用語の全角カナはそのまま残す。"""
-    return unicodedata.normalize("NFKC", text)
+    text = "".join(_ENCLOSED.get(ch, ch) for ch in text)
+    text = unicodedata.normalize("NFKC", text)
+    return "".join(_ENCLOSED_BACK.get(ch, ch) for ch in text)
 
 
 def main() -> int:
