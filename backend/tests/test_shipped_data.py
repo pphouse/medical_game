@@ -66,6 +66,14 @@ POSITION_KANJI_THEN_LATIN = re.compile(
     rf"[末大下上内外側両][0-9A-Za-z](?![{COUNTER_KANJI}])(?=[一-龥ァ-ヶ])"
 )
 
+# 〈〉が別の記号に化けた形。度記号の直後に英字や日本語が続くのは温度表記で
+# ないので括弧の化け（「レム°REM–睡眠行動障害」）。en dash も同様に、
+# 国試の本文では範囲を "〜" で書くため本来使われない。
+BRACKET_LOOKALIKE = re.compile(r"°(?![CF])(?=[A-Za-zぁ-んァ-ヶ一-龥])|–")
+
+# 語頭の字が落ちて意味が変わる語。「倦怠感」から倦が落ちると「怠感」になる。
+DROPPED_WORD_HEAD = re.compile(r"(?<![倦])怠感|(?<![末])梢血|(?<![大])腿骨")
+
 # 語中に紛れ込んだ列区切り。組合せ問題の左右2列を見分けるため、字間が
 # 広い箇所に "—" を差し込んでいる（scripts/import_kokushi.py）。均等割りで
 # 広がった字間まで列の間隔と誤認され、「急性好酸球性— 肺炎」のように語の
@@ -225,6 +233,19 @@ class TestShippedData:
             if m
         ]
         assert not bad, "列区切りが語中に入っている:\n" + "\n".join(bad)
+
+    def test_no_bracket_lookalike_or_dropped_word_head(self, path):
+        """〈〉が別の記号に化けた形と、語頭の字が落ちた形を拾う。"""
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = [
+            f"{code}.{field}: …{text[max(0, m.start() - 12):m.start() + 14]}…"
+            for code, field, text in iter_texts(payload)
+            for m in [
+                BRACKET_LOOKALIKE.search(text) or DROPPED_WORD_HEAD.search(text)
+            ]
+            if m
+        ]
+        assert not bad, "記号の化け／語頭の脱落:\n" + "\n".join(bad)
 
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))
