@@ -84,30 +84,32 @@
 .summary-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 18px;
+  gap: 12px;
+  padding: 14px 16px;
   border-radius: 18px;
   background: var(--accent-grad);
   box-shadow: var(--shadow-md);
   color: white;
 }
 
+/* 進捗の数字は詰まったら縮む側。順位は桁が読めないと意味がないので、
+   縮めるのはこちらにして順位側の折り返しを防ぐ。 */
 .summary-pct {
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
+  min-width: 0;
+  flex: 1;
 }
 
 .summary-pct-value {
-  /* 円グラフと順位に挟まれるので、狭い画面では縮めて折り返しを防ぐ。 */
-  font-size: clamp(19px, 5.2vw, 26px);
+  font-size: clamp(17px, 4.6vw, 25px);
   font-weight: 800;
   line-height: 1.15;
   white-space: nowrap;
 }
 
 .summary-pct-label {
-  font-size: 11px;
+  font-size: 10.5px;
   opacity: 0.9;
   margin-top: 4px;
   white-space: nowrap;
@@ -117,16 +119,18 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
+  flex-shrink: 0;
   border-left: 1px solid rgba(255, 255, 255, 0.35);
-  padding-left: 16px;
+  padding-left: 12px;
 }
 
 .rank-stat {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+  /* 「学内順位」「5位 / 8人中」がそれぞれ途中で折り返していた。 */
+  white-space: nowrap;
 }
 
 .rank-label {
@@ -135,6 +139,8 @@
 
 .rank-value {
   font-weight: 700;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
 }
 
 .ranking-card {
@@ -851,7 +857,7 @@
 .progress-donut { flex-shrink: 0; }
 .progress-donut-label {
   fill: white;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
 }
 
