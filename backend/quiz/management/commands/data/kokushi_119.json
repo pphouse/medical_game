@@ -3307,13 +3307,13 @@
       "source_note": "出典：厚生労働省ホームページ 第119回医師国家試験 C043（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
-      "id": "k119-C002",
+      "id": "k119-C044",
       "exam_type": "KOKUSHI",
       "question_type": "M",
-      "blueprint_code": "119-C-2",
+      "blueprint_code": "119-C-44",
       "category": "産科",
       "difficulty": "standard",
-      "question_text": "日前から下腹部痛も伴うようになった。最終月経は 4 週間前。月経周期は30〜60日、不整、持続 5 日間。身長153cm、体重50kg。体温36.5°C。脈拍80/分、整。血圧118/64 mmHg。呼吸数18/分。腹部は平坦、軟で、肝・脾を触知しない。最初に行う対応はどれか。",
+      "question_text": "40歳の女性。性器出血の持続を主訴に来院した。5日前から性器出血を認め、2日前から下腹部痛も伴うようになった。最終月経は4週間前。月経周期は30〜60日、不整、持続5日間。身長153cm、体重50kg。体温36.5°C。脈拍80/分、整。血圧118/64mmHg。呼吸数18/分。腹部は平坦、軟で、肝・脾を触知しない。最初に行う対応はどれか。",
       "choices": [
         {
           "id": "A",
@@ -3336,9 +3336,9 @@
           "text": "プロゲステロン投与"
         }
       ],
-      "correct_choice_id": "D",
-      "explanation": "正答は D「子宮内膜組織診」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第119回医師国家試験 C002\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第119回医師国家試験 C002（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+      "correct_choice_id": "B",
+      "explanation": "正答は B「妊娠反応検査」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第119回医師国家試験 C044\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第119回医師国家試験 C044（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp250428-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k119-C045",

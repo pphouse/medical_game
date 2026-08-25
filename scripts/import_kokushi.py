@@ -754,6 +754,7 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
 
     out = []
     prev_end = 0
+    last_num = 0
     for r_i, run in enumerate(runs):
         next_start = runs[r_i + 1][0] if r_i + 1 < len(runs) else len(lines)
 
@@ -774,20 +775,25 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
 
         # 設問文＝直前の設問の選択肢が終わってから ａ 行の手前まで
         stem_lines = lines[prev_end : run[0]]
-        # 最後の番号行から始める（前問の選択肢の折り返しを巻き込まないため）
-        start = 0
-        for k, line in enumerate(stem_lines):
-            if Q_START.match(line):
-                start = k
-        stem_lines = stem_lines[start:]
         prev_end = run[-1] + 1
 
-        if not stem_lines:
+        # 最後の番号行から始める（前問の選択肢の折り返しを巻き込まないため）。
+        # ただし設問番号はブロック内で単調に増えるので、直前の番号を超える
+        # ものだけを候補にする。折り返した症例文の行が「2 日前から下腹部痛
+        # も…」のように番号行に見えることがあり、第119回C44がそこから
+        # 切り出されて設問文が欠け、正答表の照合も C002 とずれていた。
+        start = None
+        for k, line in enumerate(stem_lines):
+            m = Q_START.match(line)
+            if m and int(m.group(1)) > last_num:
+                start = k
+        if start is None:
             continue
+        stem_lines = stem_lines[start:]
+
         m = Q_START.match(stem_lines[0])
-        if not m:
-            continue
         num = int(m.group(1))
+        last_num = num
         stem = _join_wrapped([m.group(2)] + stem_lines[1:])
         out.append((num, stem, texts))
     return out

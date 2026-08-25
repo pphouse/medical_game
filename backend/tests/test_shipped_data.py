@@ -120,6 +120,27 @@ def iter_texts(payload):
 
 @pytest.mark.parametrize("path", data_files(), ids=lambda p: p.name)
 class TestShippedData:
+    def test_question_numbers_increase(self, path):
+        """設問番号はブロック内で単調に増える。
+
+        番号が戻っていたら、症例文の折り返し（「2 日前から…」）を番号行と
+        取り違えて設問を切り出している。設問文が欠けるだけでなく、正答表の
+        照合先までずれるので、正答そのものが誤る（第119回C44で実際に起きた）。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        last: dict[str, int] = {}
+        bad = []
+        for q in payload["questions"]:
+            code = q.get("blueprint_code")
+            if not code or code.count("-") != 2:
+                continue
+            _, block, num = code.split("-")
+            num = int(num)
+            if block in last and num <= last[block]:
+                bad.append(f"{code}: 直前は {block}-{last[block]}")
+            last[block] = num
+        assert not bad, "設問番号が戻っている:\n" + "\n".join(bad)
+
     def test_no_glyph_corruption(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))
         bad = [
