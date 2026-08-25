@@ -58,9 +58,9 @@ class TestAdminQuestionList:
 
     def test_filters(self):
         client, _ = admin_client()
-        make_question(question_text="CBTの問題", exam_type="CBT", category="循環器系")
+        make_question(question_text="CBTの問題", exam_type="CBT", category="循環器")
         make_question(
-            question_text="国試の問題", exam_type="KOKUSHI", category="呼吸器系", status="pending"
+            question_text="国試の問題", exam_type="KOKUSHI", category="呼吸器", status="pending"
         )
 
         by_exam = client.get("/api/admin/questions/?exam_type=KOKUSHI").json()["results"]
@@ -69,7 +69,7 @@ class TestAdminQuestionList:
         by_status = client.get("/api/admin/questions/?status=pending").json()["results"]
         assert [r["question_text"] for r in by_status] == ["国試の問題"]
 
-        by_category = client.get("/api/admin/questions/?category=循環器系").json()["results"]
+        by_category = client.get("/api/admin/questions/?category=循環器").json()["results"]
         assert [r["question_text"] for r in by_category] == ["CBTの問題"]
 
     def test_keyword_search_matches_body_and_explanation(self):
@@ -92,7 +92,7 @@ class TestAdminQuestionList:
 
 class TestAdminQuestionWrite:
     payload = {
-        "category": "循環器系",
+        "category": "循環器",
         "exam_type": "CBT",
         "difficulty": 2,
         "question_text": "管理者が作った設問",
@@ -277,3 +277,51 @@ class TestSetRoleCommand:
 
         with pytest.raises(CommandError, match="該当する利用者がいません"):
             call_command("set_role", "--display-name", "いない人", "--role", "admin")
+
+
+class TestAdminCategoryGate:
+    """管理APIが正規の分野名以外を書き込ませないこと。
+
+    category は自由入力の CharField で統制が無く、「循環器」と「循環器系」の
+    ように同じ分野が別名で並存していた。画面はプルダウンで選ばせるが、
+    API を直に叩かれても入らないようにする。
+    """
+
+    payload = {
+        "exam_type": "CBT",
+        "difficulty": 2,
+        "question_text": "分野ゲートの確認用の設問",
+        "choices": [{"key": k, "text": f"選択肢{k}"} for k in "ABCDE"],
+        "correct_choice_key": "A",
+        "explanation": "解説",
+        "status": "pending",
+    }
+
+    def test_canonical_category_is_accepted(self):
+        client, _ = admin_client()
+        res = client.post(
+            "/api/admin/questions/", {**self.payload, "category": "循環器"}, format="json"
+        )
+        assert res.status_code == 201, res.json()
+
+    def test_legacy_name_is_rejected_with_the_correct_one(self):
+        client, _ = admin_client()
+        res = client.post(
+            "/api/admin/questions/", {**self.payload, "category": "循環器系"}, format="json"
+        )
+        assert res.status_code == 400
+        assert "循環器" in str(res.json()["category"])
+
+    def test_unknown_category_is_rejected(self):
+        client, _ = admin_client()
+        res = client.post(
+            "/api/admin/questions/", {**self.payload, "category": "でたらめ分野"}, format="json"
+        )
+        assert res.status_code == 400
+
+    def test_stats_exposes_the_canon_for_the_dropdown(self):
+        from quiz.categories import CANONICAL_CATEGORIES
+
+        client, _ = admin_client()
+        body = client.get("/api/admin/stats/").json()
+        assert body["canonical_categories"] == list(CANONICAL_CATEGORIES)

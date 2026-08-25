@@ -3,7 +3,7 @@
     {
       "id": "cbt-dig-001",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "逆流性食道炎",
       "difficulty": "standard",
       "question_text": "45歳男性。3か月前からの胸やけと呑酸を主訴に来院した。食後や臥位で症状が悪化するという。この患者の病態として最も考えられるのはどれか。",
@@ -35,7 +35,7 @@
     {
       "id": "cbt-dig-002",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "食道アカラシア",
       "difficulty": "standard",
       "question_text": "30歳女性。数年前からの固形物・液体両方の嚥下困難と食後の嘔吐を主訴に来院した。食道造影で下部食道の鳥のくちばし様狭窄を認めた。考えられる病態はどれか。",
@@ -67,7 +67,7 @@
     {
       "id": "cbt-dig-003",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "食道癌",
       "difficulty": "standard",
       "question_text": "68歳男性。喫煙・多量飲酒歴あり。3か月前から進行性の嚥下困難と体重減少を認める。最も疑うべき疾患はどれか。",
@@ -99,7 +99,7 @@
     {
       "id": "cbt-dig-004",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "マロリーワイス症候群",
       "difficulty": "standard",
       "question_text": "25歳男性。多量飲酒後の激しい嘔吐を繰り返した後、吐血を認めた。最も考えられる病態はどれか。",
@@ -131,7 +131,7 @@
     {
       "id": "cbt-dig-005",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "胃潰瘍",
       "difficulty": "standard",
       "question_text": "55歳男性。食後に増悪する心窩部痛を主訴に来院した。内視鏡で胃角部に潰瘍を認めた。最も関連する感染因子はどれか。",
@@ -163,7 +163,7 @@
     {
       "id": "cbt-dig-006",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "十二指腸潰瘍",
       "difficulty": "standard",
       "question_text": "40歳男性。空腹時に増悪し食事摂取で軽快する心窩部痛を訴える。最も考えられる疾患はどれか。",
@@ -195,7 +195,7 @@
     {
       "id": "cbt-dig-007",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "胃癌",
       "difficulty": "standard",
       "question_text": "62歳男性。体重減少と貧血、心窩部不快感を主訴に来院。内視鏡で胃体部に潰瘍性病変を認めた。診断確定に最も重要な検査はどれか。",
@@ -227,7 +227,7 @@
     {
       "id": "cbt-dig-008",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "機能性ディスペプシア",
       "difficulty": "standard",
       "question_text": "35歳女性。半年以上続く食後の膨満感と早期満腹感を訴えるが、内視鏡検査では器質的異常を認めない。最も考えられる診断はどれか。",
@@ -259,7 +259,7 @@
     {
       "id": "cbt-dig-009",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "肥厚性幽門狭窄症",
       "difficulty": "standard",
       "question_text": "生後3週の男児。哺乳後の噴水状嘔吐を繰り返す。心窩部にオリーブ様腫瘤を触知した。最も考えられる疾患はどれか。",
@@ -291,7 +291,7 @@
     {
       "id": "cbt-dig-010",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "急性胃腸炎",
       "difficulty": "standard",
       "question_text": "28歳女性。加熱不十分な鶏肉を摂取した2日後より発熱・血性下痢・腹痛を認める。最も考えられる原因菌はどれか。",
@@ -323,7 +323,7 @@
     {
       "id": "cbt-dig-011",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "過敏性腸症候群",
       "difficulty": "standard",
       "question_text": "27歳女性。ストレス時に増悪する腹痛と便通異常（下痢・便秘の交代）が半年以上続くが、大腸内視鏡で器質的異常を認めない。最も考えられる診断はどれか。",
@@ -355,7 +355,7 @@
     {
       "id": "cbt-dig-012",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "潰瘍性大腸炎",
       "difficulty": "standard",
       "question_text": "24歳女性。粘血便を伴う下痢と下腹部痛が続く。大腸内視鏡で直腸から連続する粘膜の炎症を認めた。最も考えられる疾患はどれか。",
@@ -387,7 +387,7 @@
     {
       "id": "cbt-dig-013",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "クローン病",
       "difficulty": "standard",
       "question_text": "20歳男性。腹痛・下痢に加え、口腔内アフタ性潰瘍と肛門周囲膿瘍を認める。内視鏡では非連続性の縦走潰瘍を認めた。最も考えられる疾患はどれか。",
@@ -419,7 +419,7 @@
     {
       "id": "cbt-dig-014",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "大腸ポリープ",
       "difficulty": "standard",
       "question_text": "58歳男性。検診の便潜血陽性で施行した大腸内視鏡で腺腫性ポリープを認めた。今後最も注意すべき合併症はどれか。",
@@ -451,7 +451,7 @@
     {
       "id": "cbt-dig-015",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "大腸癌",
       "difficulty": "standard",
       "question_text": "65歳女性。便柱の狭小化と便潜血陽性を主訴に来院。大腸内視鏡でS状結腸に全周性狭窄を伴う腫瘤を認めた。次に行うべき検査はどれか。",
@@ -483,7 +483,7 @@
     {
       "id": "cbt-dig-016",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "虫垂炎",
       "difficulty": "standard",
       "question_text": "22歳男性。心窩部痛が発症後数時間で右下腹部痛に移動し、発熱を伴う。マックバーニー点に圧痛を認めた。最も考えられる疾患はどれか。",
@@ -515,7 +515,7 @@
     {
       "id": "cbt-dig-017",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "腸閉塞（イレウス）",
       "difficulty": "standard",
       "question_text": "70歳男性。開腹手術の既往あり。腹部膨満・嘔吐・排ガス停止を認める。腹部単純X線で鏡面像（ニボー）を認めた。最も考えられる原因はどれか。",
@@ -547,7 +547,7 @@
     {
       "id": "cbt-dig-018",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "腸重積",
       "difficulty": "standard",
       "question_text": "8か月男児。間欠的な啼泣と嘔吐、イチゴゼリー様血便を認める。腹部にソーセージ様腫瘤を触知した。最も考えられる疾患はどれか。",
@@ -579,7 +579,7 @@
     {
       "id": "cbt-dig-019",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "鼠径ヘルニア",
       "difficulty": "standard",
       "question_text": "3歳男児。立位・啼泣時に鼠径部の膨隆が出現し、臥位で消失する。最も考えられる疾患はどれか。",
@@ -611,7 +611,7 @@
     {
       "id": "cbt-dig-020",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "痔核",
       "difficulty": "standard",
       "question_text": "45歳男性。排便時の無痛性の鮮紅色出血を繰り返す。肛門鏡で内痔核を認めた。最も適切な初期対応はどれか。",
@@ -643,7 +643,7 @@
     {
       "id": "cbt-dig-021",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "大腸憩室炎",
       "difficulty": "standard",
       "question_text": "60歳男性。左下腹部痛と発熱を主訴に来院。CTでS状結腸周囲の脂肪織濃度上昇を認めた。最も考えられる疾患はどれか。",
@@ -675,7 +675,7 @@
     {
       "id": "cbt-dig-022",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "偽膜性腸炎",
       "difficulty": "standard",
       "question_text": "75歳女性。抗菌薬投与後に水様下痢と腹痛が出現した。最も考えられる原因菌はどれか。",
@@ -707,7 +707,7 @@
     {
       "id": "cbt-dig-023",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "ヒルシュスプルング病",
       "difficulty": "standard",
       "question_text": "新生児。生後48時間以内に胎便排泄がなく、腹部膨満を認める。直腸生検で神経節細胞の欠如を認めた。最も考えられる疾患はどれか。",
@@ -739,7 +739,7 @@
     {
       "id": "cbt-dig-024",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "セリアック病",
       "difficulty": "standard",
       "question_text": "小児。小麦製品摂取後の慢性下痢と体重増加不良を認める。抗組織トランスグルタミナーゼ抗体が陽性であった。最も適切な治療はどれか。",
@@ -771,7 +771,7 @@
     {
       "id": "cbt-dig-025",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "A型肝炎",
       "difficulty": "standard",
       "question_text": "30歳男性。生牡蠣摂取後2週間で発熱・黄疸・肝機能障害を認めた。最も考えられる感染経路はどれか。",
@@ -803,7 +803,7 @@
     {
       "id": "cbt-dig-026",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "B型肝炎",
       "difficulty": "standard",
       "question_text": "35歳男性。健診でHBs抗原陽性を指摘された。慢性化のリスクが最も高い感染時期はどれか。",
@@ -835,7 +835,7 @@
     {
       "id": "cbt-dig-027",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "C型肝炎",
       "difficulty": "standard",
       "question_text": "60歳男性。過去の輸血歴あり。HCV抗体陽性、肝機能軽度上昇を認める。長期的に最も注意すべき合併症はどれか。",
@@ -867,7 +867,7 @@
     {
       "id": "cbt-dig-028",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "肝硬変",
       "difficulty": "standard",
       "question_text": "58歳男性。長期飲酒歴あり。腹部膨満、クモ状血管腫、女性化乳房を認める。最も考えられる病態はどれか。",
@@ -899,7 +899,7 @@
     {
       "id": "cbt-dig-029",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "非アルコール性脂肪性肝疾患",
       "difficulty": "standard",
       "question_text": "50歳男性。肥満・糖尿病あり。健診で肝機能軽度上昇と腹部超音波で肝腎コントラスト増強を認めた。飲酒歴はない。最も考えられる疾患はどれか。",
@@ -931,7 +931,7 @@
     {
       "id": "cbt-dig-030",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "肝細胞癌",
       "difficulty": "standard",
       "question_text": "65歳男性。C型肝硬変の経過観察中。AFP上昇と腹部造影CTで動脈相濃染・門脈相washoutを示す腫瘤を認めた。最も考えられる診断はどれか。",
@@ -963,7 +963,7 @@
     {
       "id": "cbt-dig-031",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "自己免疫性肝炎",
       "difficulty": "standard",
       "question_text": "45歳女性。慢性の肝機能障害があり、抗核抗体陽性、高ガンマグロブリン血症を認める。最も考えられる疾患はどれか。",
@@ -995,7 +995,7 @@
     {
       "id": "cbt-dig-032",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "原発性胆汁性胆管炎",
       "difficulty": "standard",
       "question_text": "55歳女性。皮膚掻痒感と胆道系酵素（ALP、γGTP）優位の肝機能障害を認める。抗ミトコンドリア抗体が陽性であった。最も考えられる疾患はどれか。",
@@ -1027,7 +1027,7 @@
     {
       "id": "cbt-dig-033",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "ウィルソン病",
       "difficulty": "standard",
       "question_text": "15歳男性。肝機能障害と錐体外路症状、角膜のカイザー・フライシャー輪を認める。最も考えられる疾患はどれか。",
@@ -1059,7 +1059,7 @@
     {
       "id": "cbt-dig-034",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "胆石症",
       "difficulty": "standard",
       "question_text": "50歳女性。肥満体型。脂肪食摂取後の右季肋部痛を繰り返す。腹部超音波で胆嚢内に音響陰影を伴う高エコー像を認めた。最も考えられる疾患はどれか。",
@@ -1091,7 +1091,7 @@
     {
       "id": "cbt-dig-035",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "急性胆嚢炎",
       "difficulty": "standard",
       "question_text": "60歳女性。右季肋部痛と発熱を主訴に来院。触診で吸気時に圧痛のため呼吸が止まる徴候（マーフィー徴候）を認めた。最も考えられる疾患はどれか。",
@@ -1123,7 +1123,7 @@
     {
       "id": "cbt-dig-036",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "急性胆管炎",
       "difficulty": "standard",
       "question_text": "70歳男性。発熱・黄疸・右季肋部痛の三徴（シャルコー三徴）を認める。最も考えられる疾患はどれか。",
@@ -1155,7 +1155,7 @@
     {
       "id": "cbt-dig-037",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "胆道閉鎖症",
       "difficulty": "standard",
       "question_text": "生後3週の乳児。生後から続く黄疸と白色便を認める。最も考えられる疾患はどれか。",
@@ -1187,7 +1187,7 @@
     {
       "id": "cbt-dig-038",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "急性膵炎",
       "difficulty": "standard",
       "question_text": "50歳男性。大量飲酒後の激しい心窩部痛が背部に放散する。血液検査で血中アミラーゼ・リパーゼの著明な上昇を認めた。最も考えられる疾患はどれか。",
@@ -1219,7 +1219,7 @@
     {
       "id": "cbt-dig-039",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "慢性膵炎",
       "difficulty": "standard",
       "question_text": "55歳男性。長期飲酒歴あり。慢性的な上腹部痛と脂肪便、体重減少を認める。最も考えられる疾患はどれか。",
@@ -1251,7 +1251,7 @@
     {
       "id": "cbt-dig-040",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "膵癌",
       "difficulty": "standard",
       "question_text": "68歳男性。無痛性の閉塞性黄疸と体重減少を認める。腹部CTで膵頭部に腫瘤を認めた。最も考えられる疾患はどれか。",
@@ -1283,7 +1283,7 @@
     {
       "id": "cbt-dig-041",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "消化管穿孔",
       "difficulty": "standard",
       "question_text": "60歳男性。突然の激しい腹痛の後、板状硬の腹壁緊張を認める。腹部単純X線で横隔膜下遊離ガスを認めた。最も考えられる病態はどれか。",
@@ -1315,7 +1315,7 @@
     {
       "id": "cbt-dig-042",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "汎発性腹膜炎",
       "difficulty": "standard",
       "question_text": "腹部診察で反跳痛（ブルンベルグ徴候）と筋性防御を認める場合、最も考えられる病態はどれか。",
@@ -1347,7 +1347,7 @@
     {
       "id": "cbt-dig-043",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "上部消化管出血",
       "difficulty": "standard",
       "question_text": "55歳男性。コーヒー残渣様の吐血とタール便を認める。最も考えられる出血部位はどれか。",
@@ -1379,7 +1379,7 @@
     {
       "id": "cbt-dig-044",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "食道静脈瘤",
       "difficulty": "standard",
       "question_text": "肝硬変の既往がある60歳男性。突然の大量吐血で来院。最も考えられる出血源はどれか。",
@@ -1411,7 +1411,7 @@
     {
       "id": "cbt-dig-045",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "痔瘻",
       "difficulty": "standard",
       "question_text": "40歳男性。肛門周囲の腫脹と排膿を繰り返す。最も考えられる疾患はどれか。",
@@ -1443,7 +1443,7 @@
     {
       "id": "cbt-dig-046",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "直腸脱",
       "difficulty": "standard",
       "question_text": "80歳女性。排便時に直腸粘膜が肛門外に脱出する。最も考えられる疾患はどれか。",
@@ -1475,7 +1475,7 @@
     {
       "id": "cbt-dig-047",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "メッケル憩室炎",
       "difficulty": "standard",
       "question_text": "5歳男児。無痛性の血便を繰り返す。シンチグラフィーで異所性胃粘膜を示唆する集積像を認めた。最も考えられる疾患はどれか。",
@@ -1507,7 +1507,7 @@
     {
       "id": "cbt-dig-048",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "短腸症候群",
       "difficulty": "standard",
       "question_text": "広範な小腸切除の既往がある患者に生じやすい病態はどれか。",
@@ -1539,7 +1539,7 @@
     {
       "id": "cbt-dig-049",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "小児胃食道逆流症",
       "difficulty": "standard",
       "question_text": "生後2か月の乳児。哺乳後の溢乳を頻回に認めるが体重増加は良好である。最も適切な対応はどれか。",
@@ -1571,7 +1571,7 @@
     {
       "id": "cbt-dig-050",
       "exam_type": "CBT",
-      "category": "消化器系",
+      "category": "消化器",
       "disease": "消化管間質腫瘍（GIST）",
       "difficulty": "standard",
       "question_text": "60歳男性。上部消化管内視鏡検査で胃壁を主体とする粘膜下腫瘤を偶然指摘された。この腫瘍の由来として最も考えられるのはどれか。",
@@ -1603,7 +1603,7 @@
     {
       "id": "cbt-cardio-001",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "労作性狭心症",
       "difficulty": "standard",
       "question_text": "60歳男性。階段昇降時に前胸部絞扼感が出現し、安静で軽快する。最も考えられる疾患はどれか。",
@@ -1635,7 +1635,7 @@
     {
       "id": "cbt-cardio-002",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "不安定狭心症",
       "difficulty": "standard",
       "question_text": "65歳男性。これまで労作時のみだった胸痛が、最近は安静時にも出現するようになった。最も考えられる病態はどれか。",
@@ -1667,7 +1667,7 @@
     {
       "id": "cbt-cardio-003",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "急性心筋梗塞",
       "difficulty": "standard",
       "question_text": "58歳男性。突然の激しい胸痛が20分以上持続し、冷汗を伴う。心電図でST上昇を認めた。最も考えられる疾患はどれか。",
@@ -1699,7 +1699,7 @@
     {
       "id": "cbt-cardio-004",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "左心不全",
       "difficulty": "standard",
       "question_text": "70歳男性。労作時呼吸困難と夜間発作性呼吸困難、起座呼吸を認める。最も考えられる病態はどれか。",
@@ -1731,7 +1731,7 @@
     {
       "id": "cbt-cardio-005",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "右心不全",
       "difficulty": "standard",
       "question_text": "68歳男性。両下腿浮腫と頸静脈怒張、肝腫大を認める。最も考えられる病態はどれか。",
@@ -1763,7 +1763,7 @@
     {
       "id": "cbt-cardio-006",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "心房細動",
       "difficulty": "standard",
       "question_text": "72歳男性。動悸を主訴に来院。心電図でP波が識別できず、RR間隔が不規則であった。最も考えられる不整脈はどれか。",
@@ -1795,7 +1795,7 @@
     {
       "id": "cbt-cardio-007",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "心房粗動",
       "difficulty": "standard",
       "question_text": "心電図で鋸歯状のF波を認め、規則的な頻拍を呈する不整脈はどれか。",
@@ -1827,7 +1827,7 @@
     {
       "id": "cbt-cardio-008",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "発作性上室性頻拍",
       "difficulty": "standard",
       "question_text": "25歳女性。突然発症・突然停止する動悸を繰り返す。心電図で規則正しい狭いQRS頻拍を認めた。迷走神経刺激手技で停止した。最も考えられる疾患はどれか。",
@@ -1859,7 +1859,7 @@
     {
       "id": "cbt-cardio-009",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "心室頻拍",
       "difficulty": "standard",
       "question_text": "陳旧性心筋梗塞の既往がある患者に、心電図で幅広いQRS波の規則的頻拍を認めた。最も考えられる不整脈はどれか。",
@@ -1891,7 +1891,7 @@
     {
       "id": "cbt-cardio-010",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "心室細動",
       "difficulty": "standard",
       "question_text": "突然の意識消失と心停止を来した患者の心電図で、無秩序で不規則な波形を認めた。直ちに行うべき処置はどれか。",
@@ -1923,7 +1923,7 @@
     {
       "id": "cbt-cardio-011",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "完全房室ブロック",
       "difficulty": "standard",
       "question_text": "75歳男性。失神発作を繰り返す。心電図でP波とQRS波が全く無関係に出現していた。最も適切な治療はどれか。",
@@ -1955,7 +1955,7 @@
     {
       "id": "cbt-cardio-012",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "洞不全症候群",
       "difficulty": "standard",
       "question_text": "70歳女性。めまいと失神発作を繰り返す。ホルター心電図で著明な洞性徐脈と洞停止を認めた。最も考えられる疾患はどれか。",
@@ -1987,7 +1987,7 @@
     {
       "id": "cbt-cardio-013",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "WPW症候群",
       "difficulty": "standard",
       "question_text": "20歳男性。心電図でPR短縮とデルタ波を認める。最も考えられる疾患はどれか。",
@@ -2019,7 +2019,7 @@
     {
       "id": "cbt-cardio-014",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "僧帽弁狭窄症",
       "difficulty": "standard",
       "question_text": "50歳女性。リウマチ熱の既往あり。労作時呼吸困難と心尖部の拡張期ランブル様雑音を聴取した。最も考えられる疾患はどれか。",
@@ -2051,7 +2051,7 @@
     {
       "id": "cbt-cardio-015",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "僧帽弁閉鎖不全症",
       "difficulty": "standard",
       "question_text": "65歳男性。心尖部を最強点とする汎収縮期雑音を聴取し、左腋窩へ放散する。最も考えられる疾患はどれか。",
@@ -2083,7 +2083,7 @@
     {
       "id": "cbt-cardio-016",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "大動脈弁狭窄症",
       "difficulty": "standard",
       "question_text": "70歳男性。労作時の失神・狭心痛・呼吸困難を認める。右第2肋間胸骨右縁を最強点とする駆出性収縮期雑音を聴取した。最も考えられる疾患はどれか。",
@@ -2115,7 +2115,7 @@
     {
       "id": "cbt-cardio-017",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "大動脈弁閉鎖不全症",
       "difficulty": "standard",
       "question_text": "45歳男性。胸骨左縁を最強点とする拡張期灌水様雑音と、脈圧の増大（大脈）を認める。最も考えられる疾患はどれか。",
@@ -2147,7 +2147,7 @@
     {
       "id": "cbt-cardio-018",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "三尖弁閉鎖不全症",
       "difficulty": "standard",
       "question_text": "肺高血圧を背景に、頸静脈の著明な拍動と肝拍動性腫大を認める患者で最も考えられる疾患はどれか。",
@@ -2179,7 +2179,7 @@
     {
       "id": "cbt-cardio-019",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "感染性心内膜炎",
       "difficulty": "standard",
       "question_text": "静脈麻薬使用歴のある35歳男性。発熱が持続し、新規に心雑音の出現と皮膚の点状出血を認める。最も考えられる疾患はどれか。",
@@ -2211,7 +2211,7 @@
     {
       "id": "cbt-cardio-020",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "リウマチ熱",
       "difficulty": "standard",
       "question_text": "8歳女児。溶連菌咽頭炎の2〜3週間後に多関節痛、心炎、舞踏病様運動を認めた。最も考えられる疾患はどれか。",
@@ -2243,7 +2243,7 @@
     {
       "id": "cbt-cardio-021",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "拡張型心筋症",
       "difficulty": "standard",
       "question_text": "50歳男性。原因不明の心不全症状が進行性に悪化。心エコーで著明な左室拡大と収縮能低下を認めた。最も考えられる疾患はどれか。",
@@ -2275,7 +2275,7 @@
     {
       "id": "cbt-cardio-022",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "肥大型心筋症",
       "difficulty": "standard",
       "question_text": "20歳男性の運動選手。運動中に突然死した家族歴がある。心エコーで左室壁の非対称性肥厚を認めた。最も考えられる疾患はどれか。",
@@ -2307,7 +2307,7 @@
     {
       "id": "cbt-cardio-023",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "拘束型心筋症",
       "difficulty": "standard",
       "question_text": "アミロイドーシスの既往がある患者で、心室容積は正常だが拡張障害による心不全症状を呈する場合、最も考えられる心筋症はどれか。",
@@ -2339,7 +2339,7 @@
     {
       "id": "cbt-cardio-024",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "急性心膜炎",
       "difficulty": "standard",
       "question_text": "30歳男性。前胸部痛が前屈位で軽減し、仰臥位で増悪する。心電図で広範なST上昇を認めた。最も考えられる疾患はどれか。",
@@ -2371,7 +2371,7 @@
     {
       "id": "cbt-cardio-025",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "心タンポナーデ",
       "difficulty": "standard",
       "question_text": "頸静脈怒張、血圧低下、心音減弱の三徴（ベックの三徴）を認める患者に最も考えられる病態はどれか。",
@@ -2403,7 +2403,7 @@
     {
       "id": "cbt-cardio-026",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "収縮性心膜炎",
       "difficulty": "standard",
       "question_text": "結核性心膜炎の既往がある患者に、慢性の浮腫・腹水と奇脈を認めた。最も考えられる疾患はどれか。",
@@ -2435,7 +2435,7 @@
     {
       "id": "cbt-cardio-027",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "大動脈解離",
       "difficulty": "standard",
       "question_text": "65歳男性。突然発症の引き裂かれるような胸背部痛を訴える。左右上肢の血圧に有意差を認めた。最も考えられる疾患はどれか。",
@@ -2467,7 +2467,7 @@
     {
       "id": "cbt-cardio-028",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "腹部大動脈瘤",
       "difficulty": "standard",
       "question_text": "70歳男性。健診の腹部超音波検査で拍動性の腹部腫瘤を偶然指摘された。最も考えられる疾患はどれか。",
@@ -2499,7 +2499,7 @@
     {
       "id": "cbt-cardio-029",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "深部静脈血栓症",
       "difficulty": "standard",
       "question_text": "術後臥床が続いた65歳女性。片側性の下腿腫脹・疼痛・熱感を認めた。最も考えられる疾患はどれか。",
@@ -2531,7 +2531,7 @@
     {
       "id": "cbt-cardio-030",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "肺血栓塞栓症",
       "difficulty": "standard",
       "question_text": "長時間のフライト後、突然の呼吸困難と胸痛、頻脈を来した患者に最も考えられる疾患はどれか。",
@@ -2563,7 +2563,7 @@
     {
       "id": "cbt-cardio-031",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "本態性高血圧",
       "difficulty": "standard",
       "question_text": "50歳男性。健診で繰り返し血圧140/90mmHg以上を指摘された。二次性高血圧を示唆する所見はなく、家族歴に高血圧が多い。最も考えられる病態はどれか。",
@@ -2595,7 +2595,7 @@
     {
       "id": "cbt-cardio-032",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "腎血管性高血圧",
       "difficulty": "standard",
       "question_text": "35歳女性。難治性高血圧があり、腹部血管雑音を聴取した。最も考えられる疾患はどれか。",
@@ -2627,7 +2627,7 @@
     {
       "id": "cbt-cardio-033",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "起立性低血圧",
       "difficulty": "standard",
       "question_text": "75歳女性。臥位から立位への体位変換時にめまい・失神感を来す。最も考えられる病態はどれか。",
@@ -2659,7 +2659,7 @@
     {
       "id": "cbt-cardio-034",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "閉塞性動脈硬化症",
       "difficulty": "standard",
       "question_text": "68歳男性、喫煙歴あり。一定距離歩行後に下肢の疼痛が出現し、休息で軽快する（間欠性跛行）。最も考えられる疾患はどれか。",
@@ -2691,7 +2691,7 @@
     {
       "id": "cbt-cardio-035",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "バージャー病",
       "difficulty": "standard",
       "question_text": "30歳男性の重喫煙者。四肢末梢の虚血症状と遊走性静脈炎を認める。最も考えられる疾患はどれか。",
@@ -2723,7 +2723,7 @@
     {
       "id": "cbt-cardio-036",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "川崎病",
       "difficulty": "standard",
       "question_text": "4歳男児。5日以上続く発熱、両側眼球結膜充血、口唇発赤・いちご舌、四肢末端の発赤を認める。最も考えられる疾患はどれか。",
@@ -2755,7 +2755,7 @@
     {
       "id": "cbt-cardio-037",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "心室中隔欠損症",
       "difficulty": "standard",
       "question_text": "乳児の健診で、胸骨左縁下部を最強点とする全収縮期雑音を聴取した。最も考えられる先天性心疾患はどれか。",
@@ -2787,7 +2787,7 @@
     {
       "id": "cbt-cardio-038",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "心房中隔欠損症",
       "difficulty": "standard",
       "question_text": "健診で無症状の小児に、II音の固定性分裂を認めた。最も考えられる先天性心疾患はどれか。",
@@ -2819,7 +2819,7 @@
     {
       "id": "cbt-cardio-039",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "ファロー四徴症",
       "difficulty": "standard",
       "question_text": "生後間もない乳児が、啼泣時にチアノーゼが増強する無酸素発作を来した。心エコーで肺動脈狭窄・心室中隔欠損・大動脈騎乗・右室肥大を認めた。最も考えられる疾患はどれか。",
@@ -2851,7 +2851,7 @@
     {
       "id": "cbt-cardio-040",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "動脈管開存症",
       "difficulty": "standard",
       "question_text": "早産児に、連続性の機械様雑音（continuous murmur）を胸骨左縁上部で聴取した。最も考えられる疾患はどれか。",
@@ -2883,7 +2883,7 @@
     {
       "id": "cbt-cardio-041",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "大動脈縮窄症",
       "difficulty": "standard",
       "question_text": "乳児健診で、上肢に比べ下肢の血圧が低く、大腿動脈の拍動減弱を認めた。最も考えられる疾患はどれか。",
@@ -2915,7 +2915,7 @@
     {
       "id": "cbt-cardio-042",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "エプスタイン奇形",
       "difficulty": "standard",
       "question_text": "新生児期にチアノーゼと著明な心拡大を認め、三尖弁が右室側へ変位している疾患はどれか。",
@@ -2947,7 +2947,7 @@
     {
       "id": "cbt-cardio-043",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "完全大血管転位症",
       "difficulty": "standard",
       "question_text": "出生直後から著明なチアノーゼを呈する新生児で、大動脈が右室から、肺動脈が左室から起始している疾患はどれか。",
@@ -2979,7 +2979,7 @@
     {
       "id": "cbt-cardio-044",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "高安動脈炎",
       "difficulty": "standard",
       "question_text": "20歳代女性。上肢の脈拍触知不良と血圧左右差、炎症反応の上昇を認める。最も考えられる疾患はどれか。",
@@ -3011,7 +3011,7 @@
     {
       "id": "cbt-cardio-045",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "心原性ショック",
       "difficulty": "standard",
       "question_text": "急性心筋梗塞後に血圧低下・尿量減少・意識レベル低下を来した患者の病態として最も考えられるのはどれか。",
@@ -3043,7 +3043,7 @@
     {
       "id": "cbt-cardio-046",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "起立性調節障害",
       "difficulty": "standard",
       "question_text": "13歳女子。朝起床時の立ちくらみ・倦怠感を訴えるが、器質的疾患は認められない。最も考えられる病態はどれか。",
@@ -3075,7 +3075,7 @@
     {
       "id": "cbt-cardio-047",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "徐脈頻脈症候群",
       "difficulty": "standard",
       "question_text": "ホルター心電図で発作性心房細動と洞性徐脈を交互に認める患者に最も考えられる病態はどれか。",
@@ -3107,7 +3107,7 @@
     {
       "id": "cbt-cardio-048",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "QT延長症候群",
       "difficulty": "standard",
       "question_text": "若年者の失神発作の家族歴があり、心電図でQT間隔の延長を認めた。最も注意すべき致死性不整脈はどれか。",
@@ -3139,7 +3139,7 @@
     {
       "id": "cbt-cardio-049",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "Brugada症候群",
       "difficulty": "standard",
       "question_text": "40歳男性。夜間の突然死の家族歴があり、心電図でV1〜V3誘導のcoved型ST上昇を認めた。最も考えられる疾患はどれか。",
@@ -3171,7 +3171,7 @@
     {
       "id": "cbt-cardio-050",
       "exam_type": "CBT",
-      "category": "循環器系",
+      "category": "循環器",
       "disease": "心臓神経症",
       "difficulty": "standard",
       "question_text": "20歳女性。動悸・胸部不快感を繰り返し訴えるが、心電図・心エコー・血液検査に異常を認めない。最も考えられる病態はどれか。",

@@ -183,16 +183,23 @@ export default function QuestionPicker() {
                   {q.topic && ` ＞ ${q.topic}`}
                 </span>
                 <span className="question-row-meta-line">
-                  国試正答率：{q.correct_rate == null ? "集計中" : `${q.correct_rate}%`}
-                  　結果：
-                  {q.mastery_level !== "unstudied" && (
+                  <span>
+                    国試正答率：{q.correct_rate == null ? "集計中" : `${q.correct_rate}%`}
+                  </span>
+                  <span className="question-row-meta-sep" />
+                  <span>結果：</span>
+                  {q.mastery_level === "unstudied" ? (
+                    <span>－</span>
+                  ) : (
                     <span className={`question-row-mastery mastery-${q.mastery_level}`}>
                       {MASTERY_ICON[q.mastery_level]}
                     </span>
                   )}
                 </span>
                 <span className="question-row-meta-line">
-                  解答時間：{responseTime ?? "－"}　演習日：{answeredDate ?? "－"}
+                  <span>解答時間：{responseTime ?? "－"}</span>
+                  <span className="question-row-meta-sep" />
+                  <span>演習日：{answeredDate ?? "－"}</span>
                 </span>
               </div>
               <span className="question-row-difficulty">{DIFFICULTY_LABEL[q.difficulty]}</span>

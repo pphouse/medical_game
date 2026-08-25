@@ -65,7 +65,8 @@ describe("ランキング画面", () => {
     render(<Ranking />);
     await screen.findByText("太郎");
 
-    fireEvent.click(screen.getByText("正答率"));
+    // 「正答率」は上部の順位タイルのラベルにもあるので、切り替えボタンを名指しする。
+    fireEvent.click(screen.getByRole("button", { name: "正答率" }));
 
     expect(await screen.findByText("87%")).toBeInTheDocument();
     expect(api.ranking).toHaveBeenLastCalledWith({

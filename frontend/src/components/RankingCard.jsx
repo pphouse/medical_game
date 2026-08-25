@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import RankDetail from "./RankDetail";
 
 const ICONS = {
   solved: (
@@ -19,7 +20,7 @@ function topPercent(rank, total) {
   return Math.max(1, Math.round((rank / total) * 100));
 }
 
-function Tile({ icon, label, me }) {
+function Tile({ icon, label, me, onClick }) {
   if (!me || me.eligible === false) {
     return (
       <div className="ranking-card-tile">
@@ -33,7 +34,7 @@ function Tile({ icon, label, me }) {
   }
   const pct = topPercent(me.rank, me.total);
   return (
-    <div className="ranking-card-tile">
+    <button className="ranking-card-tile ranking-card-tile-clickable" onClick={onClick}>
       <span className="ranking-card-tile-icon">{ICONS[icon]}</span>
       <div className="ranking-card-tile-body">
         <span className="ranking-card-tile-value">
@@ -43,15 +44,17 @@ function Tile({ icon, label, me }) {
         <span className="ranking-card-tile-label">{label}</span>
       </div>
       {pct != null && <span className="ranking-card-tile-pct">上位{pct}%</span>}
-    </div>
+    </button>
   );
 }
 
-/** 問題演習のランキングカード：学内/全国を切り替えて演習数・正答率の順位を表示する。 */
+/** 問題演習のランキングカード：学内/全国を切り替えて演習数・正答率の順位を表示する。
+ * 各タイルをクリックすると、分布と直近の演習状況の詳細（RankDetail）を開く。 */
 export default function RankingCard() {
   const [scope, setScope] = useState("university");
   const [solved, setSolved] = useState(null);
   const [accuracy, setAccuracy] = useState(null);
+  const [detailMetric, setDetailMetric] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -86,8 +89,12 @@ export default function RankingCard() {
           全国
         </button>
       </div>
-      <Tile icon="solved" label="演習数" me={solved} />
-      <Tile icon="accuracy" label="正答率" me={accuracy} />
+      <Tile icon="solved" label="演習数" me={solved} onClick={() => setDetailMetric("solved")} />
+      <Tile icon="accuracy" label="正答率" me={accuracy} onClick={() => setDetailMetric("accuracy")} />
+
+      {detailMetric && (
+        <RankDetail scope={scope} metric={detailMetric} onClose={() => setDetailMetric(null)} />
+      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ status を read_only にしているので（フェーズ7: 投稿者が自分�
 
 from rest_framework import serializers
 
-from .categories import canonicalize, is_canonical
+from .categories import CATEGORY_ORDER, normalize
 from .models import Question, QuestionReport
 from .serializers import VALID_CHOICE_KEYS
 
@@ -94,10 +94,10 @@ class AdminQuestionSerializer(serializers.ModelSerializer):
         気づかせたほうがよい。
         """
         name = (value or "").strip()
-        if is_canonical(name):
+        if name in CATEGORY_ORDER:
             return name
-        fixed = canonicalize(name)
-        if is_canonical(fixed):
+        fixed = normalize(name)
+        if fixed in CATEGORY_ORDER and fixed != name:
             raise serializers.ValidationError(f"分野は「{fixed}」を指定してください。")
         raise serializers.ValidationError(f"「{name}」は登録された分野ではありません。")
 

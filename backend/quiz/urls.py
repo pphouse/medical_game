@@ -16,6 +16,7 @@ from .views import (
     SubmitAnswerView,
     SubmitMasteryView,
 )
+from .views_review_filter import ReviewFilterView
 
 urlpatterns = [
     path("categories/", CategoryListView.as_view(), name="category-list"),
@@ -35,6 +36,8 @@ urlpatterns = [
     ),
     path("my-questions/", MyQuestionsView.as_view(), name="my-questions"),
     path("review-deck/", ReviewDeckView.as_view(), name="review-deck"),
+    # 科目・評価・演習回数で絞り込んで演習セットを作る（復習デッキとは別物）。
+    path("review-filter/", ReviewFilterView.as_view(), name="review-filter"),
     path("review-deck/summary/", ReviewDeckSummaryView.as_view(), name="review-deck-summary"),
     path("answers/", SubmitAnswerView.as_view(), name="submit-answer"),
     path(

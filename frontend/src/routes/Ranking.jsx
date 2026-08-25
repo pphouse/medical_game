@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import RankingCard from "../components/RankingCard";
 import TierBadge from "../components/TierBadge";
 
 const CATEGORIES = [
@@ -200,6 +201,8 @@ export default function Ranking() {
         <PointsRanking />
       ) : (
         <>
+          <RankingCard />
+
           <div className="filter-chip-row">
             {SCOPES.map((s) => (
               <button

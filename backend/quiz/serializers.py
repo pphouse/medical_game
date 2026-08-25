@@ -130,6 +130,9 @@ class RankSerializer(serializers.Serializer):
 class HomeSummarySerializer(serializers.Serializer):
     overall_progress_pct = serializers.FloatField()
     overall_correct_rate = serializers.FloatField()
+    # 「9/225問」のように実数で見せるため、割合だけでなく分子と分母も返す。
+    answered_count = serializers.IntegerField()
+    total_questions = serializers.IntegerField()
     university_rank = RankSerializer()
     national_rank = RankSerializer()
 

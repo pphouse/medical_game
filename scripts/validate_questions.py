@@ -29,7 +29,7 @@ import jsonschema
 # 分野名の正典は backend 側に置いてある（backend と scripts の両方から
 # 参照するため）。Django のセットアップは不要な素のモジュール。
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
-from quiz.categories import canonicalize, is_canonical  # noqa: E402
+from quiz.categories import CATEGORY_ORDER, normalize  # noqa: E402
 
 SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schemas" / "question_batch.schema.json"
 
@@ -136,10 +136,9 @@ def validate_items(batch, report):
         # category は自由入力の CharField で統制が無く、「循環器」と
         # 「循環器系」のように同じ分野が別名で並存していた。
         category = item.get("category", "")
-        if not is_canonical(category):
-            fixed = canonicalize(category)
-            hint = f"「{fixed}」の誤りでは" if is_canonical(fixed) else "正典に無い分野名"
-            report.fail(item_id, "category", f"分野「{category}」は{hint}")
+        if category not in CATEGORY_ORDER:
+            fixed = normalize(category, item.get("question_text", ""))
+            report.fail(item_id, "category", f"分野「{category}」は「{fixed}」に直してください")
 
         if len(choices) != 5:
             report.fail(item_id, "choices", f"選択肢が{len(choices)}個（5個必要）")
