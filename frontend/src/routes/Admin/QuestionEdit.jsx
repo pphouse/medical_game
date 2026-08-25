@@ -29,6 +29,16 @@ export default function AdminQuestionEdit() {
   const [preview, setPreview] = useState(false);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  // 分野は自由入力にしない。「循環器」と「循環器系」のように同じ分野が
+  // 別名で増えるため、サーバが持つ正典から選ばせる。
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    api
+      .adminStats()
+      .then((s) => setCategories(s.canonical_categories ?? []))
+      .catch(() => setCategories([]));
+  }, []);
 
   useEffect(() => {
     if (!questionId) return;
@@ -121,7 +131,16 @@ export default function AdminQuestionEdit() {
       <div className="create-form">
         <label>
           分野
-          <input value={form.category} onChange={(e) => update("category", e.target.value)} />
+          <select value={form.category} onChange={(e) => update("category", e.target.value)}>
+            <option value="">（選択してください）</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+            {/* 正典に無い既存の値も、消えないように残して見せる */}
+            {form.category && !categories.includes(form.category) && (
+              <option value={form.category}>{form.category}（登録外）</option>
+            )}
+          </select>
         </label>
         <label>
           テーマ（任意）

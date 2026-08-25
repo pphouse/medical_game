@@ -26,6 +26,11 @@ from pathlib import Path
 
 import jsonschema
 
+# 分野名の正典は backend 側に置いてある（backend と scripts の両方から
+# 参照するため）。Django のセットアップは不要な素のモジュール。
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
+from quiz.categories import CATEGORY_ORDER, normalize  # noqa: E402
+
 SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schemas" / "question_batch.schema.json"
 
 QUESTION_TEXT_RANGE = (40, 600)
@@ -73,6 +78,12 @@ def iter_items(batch):
         for step in s.get("steps", []):
             step = dict(step)
             step.setdefault("id", f"{s.get('id', 'set')}-step{step.get('set_order')}")
+            # 連問は分野・試験種別をセット側に持ち、step には無い。
+            # import_questions もセットの値を各 step に写して取り込むので、
+            # 検証でも同じように継がせる。
+            for inherited in ("category", "exam_type", "difficulty"):
+                if inherited in s:
+                    step.setdefault(inherited, s[inherited])
             yield "set_step", step
 
 
@@ -120,6 +131,14 @@ def validate_items(batch, report):
         choice_ids = [c.get("id") for c in choices]
         texts = [c.get("text", "") for c in choices]
         correct = item.get("correct_choice_id")
+
+        # 分野名は正典（quiz/categories.py）にあるものだけ許す。
+        # category は自由入力の CharField で統制が無く、「循環器」と
+        # 「循環器系」のように同じ分野が別名で並存していた。
+        category = item.get("category", "")
+        if category not in CATEGORY_ORDER:
+            fixed = normalize(category, item.get("question_text", ""))
+            report.fail(item_id, "category", f"分野「{category}」は「{fixed}」に直してください")
 
         if len(choices) != 5:
             report.fail(item_id, "choices", f"選択肢が{len(choices)}個（5個必要）")
