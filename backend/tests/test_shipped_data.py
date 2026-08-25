@@ -63,7 +63,7 @@ BODY_KANJI_AFTER_DIGIT = re.compile(rf"[0-9](?=[{BODY_KANJI}])")
 # 「末P血」、「大腿動脈」が「大3動脈」になっていた。前・後は「術後2日目」の
 # ように時間表現で数字が続くのが普通なので対象から外す。
 POSITION_KANJI_THEN_LATIN = re.compile(
-    rf"[末大下上内外側両][0-9A-Za-z](?![{COUNTER_KANJI}])(?=[一-龥])"
+    rf"[末大下上内外側両][0-9A-Za-z](?![{COUNTER_KANJI}])(?=[一-龥ァ-ヶ])"
 )
 
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
