@@ -53,6 +53,11 @@ KANJI_DIGIT_KANJI = re.compile(
     rf"(?<=[一-龥])(?<![{ORDINAL_KANJI}])[0-9](?![{COUNTER_KANJI}])(?=[一-龥])"
 )
 
+# 数詞の直後には決して来ない身体・症候の漢字。「倦怠感」→「6怠感」、
+# 「末梢」→「末4血」のように、語の先頭の字が数字に化けた形を拾う。
+# 前がかなでも当たるので上の規則の取りこぼしを埋める。
+BODY_KANJI_AFTER_DIGIT = re.compile(r"[0-9](?=[怠腿梢腕靱腱窩瘻痺攣痒疸癬疹瘡嚢囊臼蓋顆棘窩])")
+
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
 FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")
 FIGURE_REF_MIN_BODY = 120
@@ -184,7 +189,7 @@ class TestShippedData:
         bad = [
             f"{code}.{field}: …{text[max(0, m.start() - 10):m.start() + 12]}…"
             for code, field, text in iter_texts(payload)
-            for m in [KANJI_DIGIT_KANJI.search(text)]
+            for m in [KANJI_DIGIT_KANJI.search(text) or BODY_KANJI_AFTER_DIGIT.search(text)]
             if m
         ]
         assert not bad, "漢字が数字に化けている:\n" + "\n".join(bad)
