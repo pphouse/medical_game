@@ -26,6 +26,13 @@ GLYPH_CORRUPTION = re.compile(r"[ぁ-んァ-ヶ一-龥][a-z]{1,3}(?![型値])[�
 FOREIGN_SCRIPT = re.compile(r"[\u0400-\u052f\uac00-\ud7af]")
 
 # 置換文字と制御文字。取り込み時に一度これで35問を取りこぼしている。
+# 数詞が抜けて単位だけが残った形。「生後4週未満」→「生後週未満」。
+DROPPED_NUMBER = re.compile(
+    r"(生後|妊娠|在胎|日齢|年齢|産後|術後|病日)"
+    r"[^0-9０-９一二三四五六七八九十百数何約半]{0,1}"
+    r"(週|日|か月|年|時間)(未満|以内|以後|以降|後|目|で|に|の|、|。)"
+)
+
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
 FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")
 FIGURE_REF_MIN_BODY = 120
@@ -118,6 +125,22 @@ class TestShippedData:
             and len(text) < FIGURE_REF_MIN_BODY
         ]
         assert not bad, "参照先の図表が本文に無い設問:\n" + "\n".join(bad)
+
+    def test_no_dropped_numbers(self, path):
+        """数詞が抜けて単位だけが残っていないか。
+
+        「新生児死亡とは生後4週未満の死亡である」が「生後週未満」になっていた。
+        グリフ解決に失敗した数字がそのまま消えたもので、文としては読めるため
+        目視では気づけない。数詞が来るはずの位置を機械で見る。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = [
+            f"{code}.{field}: …{text[max(0, m.start() - 12):m.start() + 20]}…"
+            for code, field, text in iter_texts(payload)
+            for m in [DROPPED_NUMBER.search(text)]
+            if m
+        ]
+        assert not bad, "数詞が抜けている:\n" + "\n".join(bad)
 
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))
