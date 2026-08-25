@@ -155,12 +155,13 @@ class HomeSummaryView(APIView):
 
 class CategoryListView(APIView):
     def get(self, request):
-        rows = list(
-            Question.objects.visible_to(request.user)
-            .values("category")
-            .annotate(count=Count("id"))
-        )
-        rows.sort(key=lambda r: category_sort_key(r["category"]))
+        # 科目立ては CBT と国試で違うので、並び順もその試験のものを使う。
+        exam_type = request.query_params.get("exam_type") or "CBT"
+        visible = Question.objects.visible_to(request.user)
+        if request.query_params.get("exam_type"):
+            visible = visible.filter(exam_type=exam_type)
+        rows = list(visible.values("category").annotate(count=Count("id")))
+        rows.sort(key=lambda r: category_sort_key(r["category"], exam_type))
         return Response(CategorySerializer(rows, many=True).data)
 
 
@@ -217,7 +218,7 @@ class CategoryProgressView(APIView):
                 }
             )
 
-        results.sort(key=lambda r: category_sort_key(r["category"]))
+        results.sort(key=lambda r: category_sort_key(r["category"], exam_type or "CBT"))
         return Response(CategoryProgressSerializer(results, many=True).data)
 
 

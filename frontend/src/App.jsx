@@ -19,7 +19,6 @@ import QuestionForm from "./routes/Create/QuestionForm";
 import ExamList from "./routes/Exams/List";
 import ExamResult from "./routes/Exams/Result";
 import ExamSession from "./routes/Exams/Session";
-import NotificationSettings from "./routes/NotificationSettings";
 import QuizSession from "./routes/QuizSession";
 import Ranking from "./routes/Ranking";
 import Solo from "./routes/Solo";
@@ -75,13 +74,15 @@ export default function App() {
             <Route path="/solo" element={<Solo />} />
             <Route path="/review" element={<ReviewDeck />} />
             <Route path="/battle" element={<Lobby />} />
+            {/* 対戦中・対戦後も他のメニューへ移動できるよう、下部ナビのある
+                シェルに置く（離脱すると同ランクのAIが代役として入る）。 */}
+            <Route path="/battle/:code" element={<BattleRoom />} />
             <Route path="/exams" element={<ExamList />} />
             <Route path="/ranking" element={<Ranking />} />
             {STUDENT_VERIFICATION_ENABLED && (
               <Route path="/create" element={<MyQuestions />} />
             )}
             <Route path="/mypage" element={<MyPage />} />
-            <Route path="/settings/notifications" element={<NotificationSettings />} />
             {STUDENT_VERIFICATION_ENABLED && (
               <Route path="/settings/verification" element={<Verify />} />
             )}
@@ -104,7 +105,6 @@ export default function App() {
               <Route path="/create/:questionId/edit" element={<QuestionForm />} />
             )}
             <Route path="/quiz" element={<QuizSession />} />
-            <Route path="/battle/:code" element={<BattleRoom />} />
             <Route path="/exams/:examId" element={<ExamSession />} />
             <Route path="/exams/:examId/result" element={<ExamResult />} />
           </Route>

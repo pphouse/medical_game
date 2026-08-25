@@ -118,16 +118,6 @@ export const api = {
     return get(`/quiz/review-filter/?${query}`);
   },
 
-  // notifications (phase 6)
-  notificationPreference: () => get("/auth/notifications/"),
-  updateNotificationPreference: (payload) => patch("/auth/notifications/", payload),
-  registerPushSubscription: (payload) => post("/auth/push-subscriptions/", payload),
-  deletePushSubscription: (endpoint) =>
-    request("/auth/push-subscriptions/", {
-      method: "DELETE",
-      body: JSON.stringify({ endpoint }),
-    }),
-
   // user question creation (phase 7)
   createQuestion: (payload) => post("/quiz/questions/", payload),
   myQuestions: () => get("/quiz/my-questions/"),
@@ -168,18 +158,19 @@ export const api = {
   examResult: (id) => get(`/exams/${id}/result/`),
 
   // battle (phase 4)
-  battleCreate: (payload) => post("/battle/rooms/", payload),
+  battleCreate: () => post("/battle/rooms/", {}),
   battleJoin: (code) => post(`/battle/rooms/${code}/join/`),
+  // 待機中はルームから抜けるだけ、対戦中はスコアを凍結してAIと入れ替わる。
+  battleLeave: (code) => post(`/battle/rooms/${code}/leave/`),
   battleStart: (code) => post(`/battle/rooms/${code}/start/`),
   battleState: (code) => get(`/battle/rooms/${code}/state/`),
   battleResult: (code) => get(`/battle/rooms/${code}/result/`),
-  battleBuzz: (roundId) => post(`/battle/rounds/${roundId}/buzz/`),
   battleAnswer: (roundId, selectedChoiceKey) =>
     post(`/battle/rounds/${roundId}/answer/`, { selected_choice_key: selectedChoiceKey }),
 
-  // 対戦クイックマッチ（同ランク優先マッチング・1分でAI対戦フォールバック）
-  battleQuickMatch: (questionCount) =>
-    post("/battle/quickmatch/", { question_count: questionCount }),
+  // 対戦クイックマッチ（同ランク優先マッチング・1分でAI対戦フォールバック）。
+  // 問題数の選択は廃止したので、対戦形式は一律で同じ。
+  battleQuickMatch: () => post("/battle/quickmatch/", {}),
   battleQuickMatchPoll: (ticketId) => get(`/battle/quickmatch/${ticketId}/`),
 
   // rankings (phase 3)

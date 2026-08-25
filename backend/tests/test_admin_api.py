@@ -320,8 +320,10 @@ class TestAdminCategoryGate:
         assert res.status_code == 400
 
     def test_stats_exposes_the_canon_for_the_dropdown(self):
-        from quiz.categories import CANONICAL_CATEGORIES
+        from quiz.categories import CATEGORIES_BY_EXAM
 
         client, _ = admin_client()
         body = client.get("/api/admin/stats/").json()
-        assert body["canonical_categories"] == list(CANONICAL_CATEGORIES)
+        assert body["canonical_categories"] == {
+            exam: list(names) for exam, names in CATEGORIES_BY_EXAM.items()
+        }

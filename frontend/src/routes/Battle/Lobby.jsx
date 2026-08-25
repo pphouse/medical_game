@@ -3,14 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../api";
 import TierBadge from "../../components/TierBadge";
 
-const QUESTION_COUNTS = [5, 10, 20];
 const POLL_INTERVAL_MS = 2000;
 
-function QuickMatch({ questionCount, onCancel }) {
+function QuickMatch({ onCancel }) {
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
   const [error, setError] = useState(null);
+  // 経過秒はサーバの値をそのまま出すとポーリング間隔（2秒）ぶん飛ぶので、
+  // 探索を始めた時刻から1秒ごとに自前で数える。
+  const [elapsed, setElapsed] = useState(0);
+  const startedAtRef = useRef(Date.now());
   const timerRef = useRef(null);
+
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000));
+    }, 1000);
+    return () => clearInterval(tick);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,7 +41,7 @@ function QuickMatch({ questionCount, onCancel }) {
     }
 
     api
-      .battleQuickMatch(questionCount)
+      .battleQuickMatch()
       .then((res) => {
         if (cancelled) return;
         setTicket(res);
@@ -47,7 +57,7 @@ function QuickMatch({ questionCount, onCancel }) {
       cancelled = true;
       clearTimeout(timerRef.current);
     };
-  }, [questionCount, navigate]);
+  }, [navigate]);
 
   if (error) return <p className="error">{error}</p>;
 
@@ -59,8 +69,8 @@ function QuickMatch({ questionCount, onCancel }) {
         <>
           <h3 className="battle-card-title">対戦相手を探しています…</h3>
           <p className="exam-meta">
-            同じランク帯を優先してマッチングします。1分見つからない場合はAI対戦になります。
-            {ticket && `（経過 ${ticket.elapsed_seconds}秒）`}
+            同じランク帯を優先してマッチングします。
+            {`（経過 ${elapsed}秒）`}
           </p>
           <button className="toolbar-btn" style={{ width: "100%" }} onClick={onCancel}>
             キャンセル
@@ -69,7 +79,7 @@ function QuickMatch({ questionCount, onCancel }) {
       ) : (
         <>
           <h3 className="battle-card-title">
-            {ticket.status === "ai_matched" ? "AI対戦相手とマッチしました" : "マッチしました！"}
+            マッチしました！
           </h3>
           <div className="battle-participant-row">
             <span>{ticket.me.display_name}（あなた）</span>
@@ -91,7 +101,6 @@ function QuickMatch({ questionCount, onCancel }) {
 
 export default function Lobby() {
   const navigate = useNavigate();
-  const [questionCount, setQuestionCount] = useState(10);
   const [joinCode, setJoinCode] = useState("");
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -101,7 +110,7 @@ export default function Lobby() {
     setBusy(true);
     setError(null);
     try {
-      const res = await api.battleCreate({ question_count: questionCount });
+      const res = await api.battleCreate();
       navigate(`/battle/${res.room_code}`);
     } catch (e) {
       setError(e.message);
@@ -127,33 +136,19 @@ export default function Lobby() {
 
   return (
     <div className="screen">
-      <h2>みんなで早押しクイズ</h2>
+      <div className="battle-heading">
+        <h2 className="battle-heading-ja">対戦クイズ</h2>
+      </div>
       {error && <p className="error">{error}</p>}
 
-      <div className="mypage-card battle-card">
-        <h3 className="battle-card-title">問題数</h3>
-        <div className="filter-chip-row">
-          {QUESTION_COUNTS.map((n) => (
-            <button
-              key={n}
-              className={`filter-chip${questionCount === n ? " active" : ""}`}
-              onClick={() => setQuestionCount(n)}
-              disabled={quickMatching}
-            >
-              {n}問
-            </button>
-          ))}
-        </div>
-      </div>
-
       {quickMatching ? (
-        <QuickMatch questionCount={questionCount} onCancel={() => setQuickMatching(false)} />
+        <QuickMatch onCancel={() => setQuickMatching(false)} />
       ) : (
         <div className="mypage-card battle-card">
-          <h3 className="battle-card-title">クイックマッチ</h3>
+          <h3 className="battle-card-title">全国対戦</h3>
           <p className="exam-meta">オンラインの中から同じランク帯の相手を優先してマッチングします。</p>
           <button className="cta-button" onClick={() => setQuickMatching(true)}>
-            クイックマッチを開始
+            全国対戦を始める
           </button>
         </div>
       )}

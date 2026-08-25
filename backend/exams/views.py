@@ -1,6 +1,5 @@
 """Ranking API (spec フェーズ3) + Mock-exam API (spec フェーズ5) + internal hook."""
 
-import hmac
 
 from django.conf import settings
 from django.core.management import call_command
@@ -12,7 +11,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import Profile
-from accounts.ranktier import compute_tier, tier_for_top_fraction
+from config.internal_auth import require_internal_caller
+from accounts.ranktier import (
+    compute_tier,
+    progress_for_points,
+    rank_state,
+    tier_for_top_fraction,
+)
 from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
 from exams.grading import apply_irt_score, grade_single_result
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot
@@ -267,20 +272,24 @@ class PointsRankingView(APIView):
                 "university": p.university.name if p.university else None,
                 "points": p.points,
                 "tier": tier_of(p),
+                "progress": progress_for_points(p.points),
                 "is_me": p.id == request.user.id,
             }
             for i, p in enumerate(ordered, start=1)
         ]
 
-        my_tier = compute_tier(request.user) if not request.user.is_ai else None
+        my_state = rank_state(request.user)
         return Response(
             {
                 "entries": entries,
                 "me": {
                     "points": request.user.points,
-                    "tier": my_tier,
+                    "tier": my_state["tier"],
+                    # ランク内の進捗%（100を超えると次のランクへ上がって0%に戻る）
+                    "progress": my_state["progress"],
+                    "next_tier": my_state["next_tier"],
                     "ranked_matches": request.user.ranked_matches,
-                    "eligible": my_tier is not None,
+                    "eligible": my_state["tier"] is not None,
                 },
                 "total_ranked": total,
             }
@@ -548,20 +557,23 @@ class ExamResultView(APIView):
 
 
 class InternalAggregateView(APIView):
-    """POST /api/internal/aggregate/ — pg_cron → Edge Function から叩かれる
-    集計トリガ (spec 3-3 案A)。X-Internal-Token で保護。JWT 認証は使わない。"""
+    """POST/GET /api/internal/aggregate/ — ランキング集計のトリガ (spec 3-3)。
+
+    pg_cron → Edge Function（POST + X-Internal-Token）と、Vercel Cron
+    （GET + Authorization: Bearer CRON_SECRET）の両方から叩ける。
+    JWT 認証は使わない。"""
 
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    def post(self, request):
-        token = request.headers.get("X-Internal-Token", "")
-        if not settings.INTERNAL_API_TOKEN or not hmac.compare_digest(
-            token, settings.INTERNAL_API_TOKEN
-        ):
-            raise exceptions.AuthenticationFailed("invalid internal token")
+    def get(self, request):
+        """Vercel Cron は GET しか送れないので、POST と同じ処理を用意する。"""
+        return self.post(request)
 
-        periods = request.data.get("periods") or ["all", current_period()]
+    def post(self, request):
+        require_internal_caller(request)
+
+        periods = (request.data or {}).get("periods") or ["all", current_period()]
         for period in periods:
             call_command("aggregate_rankings", "--period", period)
         return Response({"status": "ok", "periods": periods})

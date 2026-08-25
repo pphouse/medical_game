@@ -192,3 +192,45 @@ def test_rs256_without_jwks_configured_is_rejected(monkeypatch):
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {_rs256_token(private_key)}")
     assert client.get("/api/auth/me/").status_code == 401
+
+
+def test_university_cannot_be_changed_once_set():
+    """所属大学は学内ランキングの母集団を決めるので、後から変更できない。"""
+    first = University.objects.create(name="最初の大学")
+    second = University.objects.create(name="別の大学")
+    client, profile = auth_client()
+
+    # 未設定 → 初回設定は通る（サインアップ直後の bootstrap 相当）。
+    res = client.patch("/api/auth/me/", {"university_id": first.id}, format="json")
+    assert res.status_code == 200
+    profile.refresh_from_db()
+    assert profile.university == first
+
+    # 別の大学への付け替えは拒否される。
+    res = client.patch("/api/auth/me/", {"university_id": second.id}, format="json")
+    assert res.status_code == 400
+    profile.refresh_from_db()
+    assert profile.university == first
+
+    # null で解除してから付け替える抜け道も塞がれている。
+    res = client.patch("/api/auth/me/", {"university_id": None}, format="json")
+    assert res.status_code == 400
+    profile.refresh_from_db()
+    assert profile.university == first
+
+
+def test_university_unchanged_when_resubmitting_same_value():
+    """同じ大学を送り直すのは（プロフィール保存のたびに起こる）通す。"""
+    university = University.objects.create(name="同じ大学")
+    client, profile = auth_client()
+    client.patch("/api/auth/me/", {"university_id": university.id}, format="json")
+
+    res = client.patch(
+        "/api/auth/me/",
+        {"display_name": "改名", "university_id": university.id},
+        format="json",
+    )
+    assert res.status_code == 200
+    profile.refresh_from_db()
+    assert profile.display_name == "改名"
+    assert profile.university == university
