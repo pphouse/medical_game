@@ -126,12 +126,13 @@ class BattleBuzz(models.Model):
 
 
 class MatchmakingTicket(models.Model):
-    """クイックマッチの待機列 (spec: 同ランク優先、1分でAI対戦フォールバック)。
+    """クイックマッチの待機列 (spec: 同ランク優先、見つからなければAI対戦)。
 
     POST /battle/quickmatch/ で作成 → 同条件で待機中の他ユーザーを探す →
     見つかればその場でルームを作成/開始する。見つからない間は
     GET /battle/quickmatch/{id}/ のポーリングごとに再探索し、作成から
-    MATCH_TIMEOUT_SECONDS 経過していたら AI 対戦相手でルームを作る。
+    40〜50秒（チケットごとにばらつく。battle.matchmaking の
+    match_timeout_for）経過していたら AI 対戦相手でルームを作る。
     """
 
     class Status(models.TextChoices):

@@ -424,3 +424,50 @@ class TestRoundTimeLimit:
         limit = round_time_limit_seconds(long_q)
         for i in range(50):
             assert _ai_target_delay("D", long_q, seed_key=(i, "d")) < limit
+
+
+class TestMatchTimeoutWindow:
+    def test_timeout_falls_within_40_to_50_seconds(self):
+        from battle.matchmaking import (
+            MATCH_TIMEOUT_MAX_SECONDS,
+            MATCH_TIMEOUT_MIN_SECONDS,
+            match_timeout_for,
+        )
+
+        class FakeTicket:
+            def __init__(self, pk):
+                self.pk = pk
+
+        values = [match_timeout_for(FakeTicket(i)) for i in range(200)]
+        assert all(MATCH_TIMEOUT_MIN_SECONDS <= v <= MATCH_TIMEOUT_MAX_SECONDS for v in values)
+        # チケットごとにばらついている（毎回同じ秒数だと機械的に見える）
+        assert len(set(round(v, 2) for v in values)) > 100
+
+    def test_timeout_is_stable_for_the_same_ticket(self):
+        """ポーリングのたびに引き直すと、実質いちばん短い値で固定されてしまう。"""
+        from battle.matchmaking import match_timeout_for
+
+        class FakeTicket:
+            pk = 4242
+
+        first = match_timeout_for(FakeTicket())
+        for _ in range(30):
+            assert match_timeout_for(FakeTicket()) == first
+
+    def test_ai_fallback_does_not_fire_before_the_window(self):
+        for i in range(10):
+            make_question(question_text=f"待機設問{i}", correct_choice_key="A")
+        client, _ = auth_client(display_name="待つ人", grade=4)
+        ticket_id = client.post("/api/battle/quickmatch/", {}, format="json").json()["ticket_id"]
+
+        # 39秒経過ではまだ切り替わらない（下限40秒）
+        MatchmakingTicket.objects.filter(pk=ticket_id).update(
+            created_at=timezone.now() - timezone_delta(39)
+        )
+        assert client.get(f"/api/battle/quickmatch/{ticket_id}/").json()["status"] == "waiting"
+
+        # 51秒経過なら必ず切り替わる（上限50秒）
+        MatchmakingTicket.objects.filter(pk=ticket_id).update(
+            created_at=timezone.now() - timezone_delta(51)
+        )
+        assert client.get(f"/api/battle/quickmatch/{ticket_id}/").json()["status"] == "ai_matched"
