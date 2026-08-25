@@ -71,7 +71,8 @@ POSITION_KANJI_THEN_LATIN = re.compile(
 # 広がった字間まで列の間隔と誤認され、「急性好酸球性— 肺炎」のように語の
 # 途中に入っていた。正当な列区切りは前後に空白があるので、空白を伴わない
 # "—" だけを拾う。
-STRAY_SEPARATOR = re.compile(r"(?:(?<=[^\s])|^)—")
+# コロンの直前の "—" も、区切りが二重に入ったもの（「水分 — : 30mL/kg/日」）。
+STRAY_SEPARATOR = re.compile(r"(?:(?<=[^\s])|^)—|—\s*[:：]")
 
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
 FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")
