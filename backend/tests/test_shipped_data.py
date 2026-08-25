@@ -19,7 +19,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "quiz/management/commands/da
 # 日本語の文字に挟まれた孤立した半角小文字。「mmHg」「β2」のような正当な
 # 表記は前後が英数字や記号なので当たらない。「インフルエンザ菌b型」「p値」の
 # ように、学術表記として1文字が日本語に挟まれる形は正当なので除外する。
-GLYPH_CORRUPTION = re.compile(r"[ぁ-んァ-ヶ一-龥][a-z]{1,3}(?![型値])[ぁ-んァ-ヶ一-龥]")
+GLYPH_CORRUPTION = re.compile(r"[ぁ-んァ-ヶ一-龥。、）」][a-z]{1,3}(?![型値])[ぁ-んァ-ヶ一-龥]")
 
 # 変換ミスで紛れるキリル文字・ハングル。ギリシャ文字は β2刺激薬などで
 # 正当に使うので対象外。
@@ -47,7 +47,7 @@ DROPPED_NUMBER = re.compile(
 ORDINAL_KANJI = "第約計比対"
 COUNTER_KANJI = (
     "産以歳羊剤事合限丁杯升子回目度人名例年月日週時分秒個本番型階級点枚錠束袋"
-    "割対万千肋群枝趾指椎肢横"
+    "割対万千肋群枝趾指椎肢横状"
 )
 KANJI_DIGIT_KANJI = re.compile(
     rf"(?<=[一-龥])(?<![{ORDINAL_KANJI}])[0-9](?![{COUNTER_KANJI}])(?=[一-龥])"
@@ -56,7 +56,15 @@ KANJI_DIGIT_KANJI = re.compile(
 # 数詞の直後には決して来ない身体・症候の漢字。「倦怠感」→「6怠感」、
 # 「末梢」→「末4血」のように、語の先頭の字が数字に化けた形を拾う。
 # 前がかなでも当たるので上の規則の取りこぼしを埋める。
-BODY_KANJI_AFTER_DIGIT = re.compile(r"[0-9](?=[怠腿梢腕靱腱窩瘻痺攣痒疸癬疹瘡嚢囊臼蓋顆棘窩])")
+BODY_KANJI = "怠腿梢腕靱腱窩瘻痺攣痒疸癬疹瘡嚢囊臼蓋顆棘"
+BODY_KANJI_AFTER_DIGIT = re.compile(rf"[0-9](?=[{BODY_KANJI}])")
+
+# 方向・位置を表す字のすぐ後に英数字1文字が来て漢字が続く形。「末梢血」が
+# 「末P血」、「大腿動脈」が「大3動脈」になっていた。前・後は「術後2日目」の
+# ように時間表現で数字が続くのが普通なので対象から外す。
+POSITION_KANJI_THEN_LATIN = re.compile(
+    rf"[末大下上内外側両][0-9A-Za-z](?![{COUNTER_KANJI}])(?=[一-龥])"
+)
 
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
 FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")
@@ -189,7 +197,11 @@ class TestShippedData:
         bad = [
             f"{code}.{field}: …{text[max(0, m.start() - 10):m.start() + 12]}…"
             for code, field, text in iter_texts(payload)
-            for m in [KANJI_DIGIT_KANJI.search(text) or BODY_KANJI_AFTER_DIGIT.search(text)]
+            for m in [
+                KANJI_DIGIT_KANJI.search(text)
+                or BODY_KANJI_AFTER_DIGIT.search(text)
+                or POSITION_KANJI_THEN_LATIN.search(text)
+            ]
             if m
         ]
         assert not bad, "漢字が数字に化けている:\n" + "\n".join(bad)
