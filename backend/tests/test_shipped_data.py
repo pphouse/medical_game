@@ -66,6 +66,13 @@ POSITION_KANJI_THEN_LATIN = re.compile(
     rf"[末大下上内外側両][0-9A-Za-z](?![{COUNTER_KANJI}])(?=[一-龥ァ-ヶ])"
 )
 
+# 語中に紛れ込んだ列区切り。組合せ問題の左右2列を見分けるため、字間が
+# 広い箇所に "—" を差し込んでいる（scripts/import_kokushi.py）。均等割りで
+# 広がった字間まで列の間隔と誤認され、「急性好酸球性— 肺炎」のように語の
+# 途中に入っていた。正当な列区切りは前後に空白があるので、空白を伴わない
+# "—" だけを拾う。
+STRAY_SEPARATOR = re.compile(r"(?:(?<=[^\s])|^)—")
+
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
 FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")
 FIGURE_REF_MIN_BODY = 120
@@ -205,6 +212,18 @@ class TestShippedData:
             if m
         ]
         assert not bad, "漢字が数字に化けている:\n" + "\n".join(bad)
+
+    def test_no_stray_column_separator(self, path):
+        """列区切りが語の途中に入っていないか（STRAY_SEPARATOR 参照）。"""
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = [
+            f"{code}.{field}: …{text[max(0, m.start() - 12):m.start() + 14]}…"
+            for code, field, text in iter_texts(payload)
+            if not field.startswith("explanation")
+            for m in [STRAY_SEPARATOR.search(text)]
+            if m
+        ]
+        assert not bad, "列区切りが語中に入っている:\n" + "\n".join(bad)
 
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))

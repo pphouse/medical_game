@@ -15,7 +15,7 @@
       "blueprint_code": "119-A-1",
       "category": "消化器",
       "difficulty": "standard",
-      "question_text": "自己免疫— 性膵炎で誤って— いるのはどれか。",
+      "question_text": "自己免疫性膵炎で誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -83,7 +83,7 @@
       "blueprint_code": "119-A-4",
       "category": "皮膚",
       "difficulty": "standard",
-      "question_text": "疾患と好発部— 位の組合せで誤って— いるのはどれか。",
+      "question_text": "疾患と好発部位の組合せで誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -1919,7 +1919,7 @@
       "blueprint_code": "119-B-28",
       "category": "呼吸器",
       "difficulty": "standard",
-      "question_text": "78歳の男性。安静時の強い呼吸困難のため、家族とともに救急外来を受診した。呼吸困難のため本人からは病歴の情報を十分に得ることができない。家族によると、昨日から体動時の呼吸困難を訴えていた。慢性閉塞性肺疾患のため5年前から自宅近くの診療所で在宅酸素療法(1L/分)が導入され、来院時は、1L/分の酸素を吸入している。意識は清明。体温36.8°C。脈拍96/分、整。血圧130/80 mmHg。呼吸数28/分。SpO287%(鼻カニューラ1L/分酸素投与下)。体格はやせ型。吸気時に肥大した胸鎖乳突筋が特に目立ち、口すぼめ呼吸をし、喘鳴が著明である。動脈血ガス分析(鼻カニューラ 1L/分酸素投与下):pH7.35、PaCO2 55Torr、PaO2 50Torr—、HCO3−30mEq/L。初期対応で適切な酸素投与方法はどれか。",
+      "question_text": "78歳の男性。安静時の強い呼吸困難のため、家族とともに救急外来を受診した。呼吸困難のため本人からは病歴の情報を十分に得ることができない。家族によると、昨日から体動時の呼吸困難を訴えていた。慢性閉塞性肺疾患のため5年前から自宅近くの診療所で在宅酸素療法(1L/分)が導入され、来院時は、1L/分の酸素を吸入している。意識は清明。体温36.8°C。脈拍96/分、整。血圧130/80 mmHg。呼吸数28/分。SpO287%(鼻カニューラ1L/分酸素投与下)。体格はやせ型。吸気時に肥大した胸鎖乳突筋が特に目立ち、口すぼめ呼吸をし、喘鳴が著明である。動脈血ガス分析(鼻カニューラ 1L/分酸素投与下):pH7.35、PaCO2 55Torr、PaO2 50Torr、HCO3−30mEq/L。初期対応で適切な酸素投与方法はどれか。",
       "choices": [
         {
           "id": "A",
@@ -2293,7 +2293,7 @@
       "blueprint_code": "119-C-1",
       "category": "公衆衛生",
       "difficulty": "standard",
-      "question_text": "健康日本21(第— 3次)で目標とされて—いないのはどれか。",
+      "question_text": "健康日本21(第3次)で目標とされていないのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -2905,7 +2905,7 @@
       "blueprint_code": "119-C-23",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "Bell麻痺— の症状で誤って— いるのはどれか。",
+      "question_text": "Bell麻痺の症状で誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -4911,7 +4911,7 @@
       "blueprint_code": "119-E-1",
       "category": "内分泌代謝",
       "difficulty": "standard",
-      "question_text": "症候と疾患— の組合せで誤って— いるのはどれか。",
+      "question_text": "症候と疾患の組合せで誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -5115,7 +5115,7 @@
       "blueprint_code": "119-E-7",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "医師のプロフェ—ッショナリズムで誤って— いるのはどれか。",
+      "question_text": "医師のプロフェッショナリズムで誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -5353,7 +5353,7 @@
       "blueprint_code": "119-E-16",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "小脳機能— の評価に用い—ないのはどれか。",
+      "question_text": "小脳機能の評価に用いないのはどれか。",
       "choices": [
         {
           "id": "A",

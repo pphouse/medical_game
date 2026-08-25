@@ -321,7 +321,7 @@
       "blueprint_code": "118-A-10",
       "category": "産科",
       "difficulty": "standard",
-      "question_text": "梅—毒で誤って— いるのはどれか。",
+      "question_text": "梅毒で誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -1239,7 +1239,7 @@
       "blueprint_code": "118-B-1",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "医師の指示— があっても採血で—きない職種はどれか。",
+      "question_text": "医師の指示があっても採血できない職種はどれか。",
       "choices": [
         {
           "id": "A",
@@ -1341,7 +1341,7 @@
       "blueprint_code": "118-B-4",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "腹膜— 炎の所見で— ないのはどれか。",
+      "question_text": "腹膜炎の所見でないのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -1545,7 +1545,7 @@
       "blueprint_code": "118-B-10",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "リハビリテ— ーションで誤って— いるのはどれか。",
+      "question_text": "リハビリテーションで誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -1749,7 +1749,7 @@
       "blueprint_code": "118-B-19",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "解釈モデルを知— るための質問で適切で— ないのはどれか。",
+      "question_text": "解釈モデルを知るための質問で適切でないのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -2531,7 +2531,7 @@
       "blueprint_code": "118-C-4",
       "category": "公衆衛生",
       "difficulty": "standard",
-      "question_text": "法律とその内— 容の組合せで誤って— いるのはどれか。",
+      "question_text": "法律とその内容の組合せで誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -2599,7 +2599,7 @@
       "blueprint_code": "118-C-7",
       "category": "消化器",
       "difficulty": "standard",
-      "question_text": "脾腫の— 原因となら—ないのはどれか。",
+      "question_text": "脾腫の原因とならないのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -2803,7 +2803,7 @@
       "blueprint_code": "118-C-13",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "自我—障害の訴えで— ないのはどれか。",
+      "question_text": "自我障害の訴えでないのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -4265,7 +4265,7 @@
       "blueprint_code": "118-D-10",
       "category": "整形",
       "difficulty": "standard",
-      "question_text": "眼窩吹き—抜け骨折で起こり—にくいのはどれか。",
+      "question_text": "眼窩吹き抜け骨折で起こりにくいのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -5149,7 +5149,7 @@
       "blueprint_code": "118-E-7",
       "category": "耳鼻咽喉科",
       "difficulty": "standard",
-      "question_text": "座位の患者からの鼻咽—頭ぬぐい液の採取手順で誤って— いるのはどれか。",
+      "question_text": "座位の患者からの鼻咽頭ぬぐい液の採取手順で誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -5455,7 +5455,7 @@
       "blueprint_code": "118-E-16",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "乳癌を疑— う所見で誤って— いるのはどれか。",
+      "question_text": "乳癌を疑う所見で誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -5693,7 +5693,7 @@
       "blueprint_code": "118-E-25",
       "category": "皮膚",
       "difficulty": "standard",
-      "question_text": "ショックと症— 候の組合せで誤って— いるのはどれか。",
+      "question_text": "ショックと症候の組合せで誤っているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -5727,7 +5727,7 @@
       "blueprint_code": "118-E-26",
       "category": "循環器",
       "difficulty": "standard",
-      "question_text": "36歳の男性。定期健康診断で高血圧を指摘され来院した。喫煙歴はない。飲酒は機会飲酒。父親が高血圧症で治療中。身長168cm、体重60kg、腹囲77cm。脈拍76/分、整。血圧144/78 mmHg。尿所見:蛋白(−)、—糖(−)。血液生化学所見:空腹時血糖99mg/dL、尿酸6.8mg/dL、総コレステロール170mg/dL、トリグリセリド70mg/dL、HDLコレステロール58mg/dL。心電図に異常を認めない。管理栄養士が本人から聴取した食事内容から、摂取エネルギー量1,900kcal/日、塩分摂取量15g/日と推定した。適切な指示はどれか。",
+      "question_text": "36歳の男性。定期健康診断で高血圧を指摘され来院した。喫煙歴はない。飲酒は機会飲酒。父親が高血圧症で治療中。身長168cm、体重60kg、腹囲77cm。脈拍76/分、整。血圧144/78 mmHg。尿所見:蛋白(−)、糖(−)。血液生化学所見:空腹時血糖99mg/dL、尿酸6.8mg/dL、総コレステロール170mg/dL、トリグリセリド70mg/dL、HDLコレステロール58mg/dL。心電図に異常を認めない。管理栄養士が本人から聴取した食事内容から、摂取エネルギー量1,900kcal/日、塩分摂取量15g/日と推定した。適切な指示はどれか。",
       "choices": [
         {
           "id": "A",
@@ -6271,7 +6271,7 @@
       "blueprint_code": "118-F-4",
       "category": "公衆衛生",
       "difficulty": "standard",
-      "question_text": "医療計画の— 記載事項に含まれ— ないのはどれか。",
+      "question_text": "医療計画の記載事項に含まれないのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -6747,7 +6747,7 @@
       "blueprint_code": "118-F-22",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "抗凝固— 療法が必須で— ない人工臓器はどれか。",
+      "question_text": "抗凝固療法が必須でない人工臓器はどれか。",
       "choices": [
         {
           "id": "A",
@@ -6849,7 +6849,7 @@
       "blueprint_code": "118-F-25",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "知—覚の障害で— ないのはどれか。",
+      "question_text": "知覚の障害でないのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -6951,7 +6951,7 @@
       "blueprint_code": "118-F-28",
       "category": "４連問",
       "difficulty": "standard",
-      "question_text": "持続可能な開発のための—2030アジェンダ〈SDGs〉に含まれ— ない項目はどれか。",
+      "question_text": "持続可能な開発のための2030アジェンダ〈SDGs〉に含まれない項目はどれか。",
       "choices": [
         {
           "id": "A",
@@ -7087,7 +7087,7 @@
       "blueprint_code": "118-F-38",
       "category": "呼吸器",
       "difficulty": "standard",
-      "question_text": "82歳の女性。数日前からの呼吸困難を主訴に来院した。肺結核後遺症による慢性呼吸不全で在宅酸素療法(鼻カニューラ0.5L/分)を受けており、3週間前の定期受診時はSpO2 92%(鼻カニューラ0.5L/分酸素投与下)であった。発熱はなく少量の痰がある。意識は清明。体温36.2°C。脈拍96/分、整。血圧130/88 mmHg。呼吸数24/分。SpO2 86%(鼻カニューラ0.5L/分酸素投与下)。呼吸音は両側でcoarse cracklesを聴取する。下腿浮腫を認める。動脈血ガス分析(鼻カニューラ0.5L/分酸素投与下)はpH7.32、PaCO2 60Torr—、PaO2 55Torr、HCO3− 30mEq/Lであった。次に行うべき治療はどれか。",
+      "question_text": "82歳の女性。数日前からの呼吸困難を主訴に来院した。肺結核後遺症による慢性呼吸不全で在宅酸素療法(鼻カニューラ0.5L/分)を受けており、3週間前の定期受診時はSpO2 92%(鼻カニューラ0.5L/分酸素投与下)であった。発熱はなく少量の痰がある。意識は清明。体温36.2°C。脈拍96/分、整。血圧130/88 mmHg。呼吸数24/分。SpO2 86%(鼻カニューラ0.5L/分酸素投与下)。呼吸音は両側でcoarse cracklesを聴取する。下腿浮腫を認める。動脈血ガス分析(鼻カニューラ0.5L/分酸素投与下)はpH7.32、PaCO2 60Torr、PaO2 55Torr、HCO3− 30mEq/Lであった。次に行うべき治療はどれか。",
       "choices": [
         {
           "id": "A",
@@ -7529,7 +7529,7 @@
       "blueprint_code": "118-F-56",
       "category": "循環器",
       "difficulty": "standard",
-      "question_text": "70歳の男性。交通外傷のため救急車で搬入された。歩行中に乗用車にはね飛ばされたため救急車で搬送された。搬入時、呼びかけに応答しないが痛み刺激に対し腕をはらいのける。体温36.0°C。心拍数120/分、整。血圧130/70 mmHg。呼吸数40/分。SpO2 90%(リザーバーマスク10L/分酸素投与下)。体格は肥満型。心電図モニターと連続測定血圧計を装着した。動脈血ガス分析(リザーバーマスク10L/分酸素投与下):pH7.15、PaCO2 50Tor—r、PaO2 60Torr—、HCO3−20 mEq/L、BE-8.0mEq/L、Hb9.0g/dL、Ht30%。SpO2 80%(リザーバーマスク10L/分酸素投与下)に低下したので、用手換気を試みるが胸が上がらない。経口エアウェイを挿入し下顎挙上を行うが、胸が上がらない。気管挿管を試みるが、声門が直視できず挿管困難であった。頸動脈は触知可能であった。直ちに行うのはどれか。",
+      "question_text": "70歳の男性。交通外傷のため救急車で搬入された。歩行中に乗用車にはね飛ばされたため救急車で搬送された。搬入時、呼びかけに応答しないが痛み刺激に対し腕をはらいのける。体温36.0°C。心拍数120/分、整。血圧130/70 mmHg。呼吸数40/分。SpO2 90%(リザーバーマスク10L/分酸素投与下)。体格は肥満型。心電図モニターと連続測定血圧計を装着した。動脈血ガス分析(リザーバーマスク10L/分酸素投与下):pH7.15、PaCO2 50Torr、PaO2 60Torr、HCO3−20 mEq/L、BE-8.0mEq/L、Hb9.0g/dL、Ht30%。SpO2 80%(リザーバーマスク10L/分酸素投与下)に低下したので、用手換気を試みるが胸が上がらない。経口エアウェイを挿入し下顎挙上を行うが、胸が上がらない。気管挿管を試みるが、声門が直視できず挿管困難であった。頸動脈は触知可能であった。直ちに行うのはどれか。",
       "choices": [
         {
           "id": "A",
