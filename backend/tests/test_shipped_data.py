@@ -26,11 +26,18 @@ GLYPH_CORRUPTION = re.compile(r"[ぁ-んァ-ヶ一-龥][a-z]{1,3}(?![型値])[�
 FOREIGN_SCRIPT = re.compile(r"[\u0400-\u052f\uac00-\ud7af]")
 
 # 置換文字と制御文字。取り込み時に一度これで35問を取りこぼしている。
-# 数詞が抜けて単位だけが残った形。「生後4週未満」→「生後週未満」。
+# 数詞が抜けて単位だけが残った形。「生後4週未満」→「生後週未満」、
+# 「4年前に高血圧症」→「年前に高血圧症」。グリフ解決に失敗した数字が
+# そのまま消えたもので、文としては読めるため目視では気づけない。
+QUANTIFIER = "0-9０-９一二三四五六七八九十百千万数何約半昨一昨翌前々"
 DROPPED_NUMBER = re.compile(
-    r"(生後|妊娠|在胎|日齢|年齢|産後|術後|病日)"
-    r"[^0-9０-９一二三四五六七八九十百数何約半]{0,1}"
-    r"(週|日|か月|年|時間)(未満|以内|以後|以降|後|目|で|に|の|、|。)"
+    # 「生後週未満」型: 起点の語のすぐ後に数詞が無い
+    rf"(生後|妊娠|在胎|日齢|産後|術後|病日)[^{QUANTIFIER}]?(週|日|か月|年|時間)"
+    rf"(未満|以内|以後|以降|目)"
+    # 「年前に」型: 期間の単位と前/後の組が数詞を伴っていない。
+    # 「成年後見」を拾わないよう「見」が続く場合を除く。国試の本文では
+    # 数字と単位の間に空白が入ることがあるので、空白も数詞側として扱う。
+    rf"|(?<![{QUANTIFIER} ])(年前|か月前|週間前|年後|か月後)(?!見)"
 )
 
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
@@ -141,6 +148,22 @@ class TestShippedData:
             if m
         ]
         assert not bad, "数詞が抜けている:\n" + "\n".join(bad)
+
+    def test_parens_do_not_span_sentences(self, path):
+        """括弧の中に句点が入っていないか。
+
+        閉じ括弧が別の字に化けたものを機械的に戻すとき、閉じる位置を取り違える
+        ことがある（実際に「9点(5分)であった」を数文先で閉じてしまった）。
+        日本語の括弧書きが句点をまたぐことはまずないので、これで検出できる。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = [
+            f"{code}.{field}: ({m.group(1)[:50]})"
+            for code, field, text in iter_texts(payload)
+            for m in re.finditer(r"\(([^()]*)\)", text)
+            if "。" in m.group(1)
+        ]
+        assert not bad, "括弧が句点をまたいでいる:\n" + "\n".join(bad)
 
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))
