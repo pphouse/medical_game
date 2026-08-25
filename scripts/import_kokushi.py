@@ -317,6 +317,14 @@ def _fix_symbol_font(fontname: str, text: str) -> str:
 # フォント（第117〜119回の学名表記など）はCIDがそのまま出るので、この並びで戻す。
 # PyMuPDF の解決結果と座標で突き合わせて確認した（CID 9479→'C' から始まる
 # "Chlamydia pneumoniae" がそのまま復元できる）。
+# 1つのグリフが複数文字に対応するもの。座標で PyMuPDF の結果を借りる経路は
+# 1文字しか受け取れず、「第XIII因子」が「第X因子」になってしまう（第117回
+# D41・F21 で実際に起きた。第X因子はビタミンK依存性なので、設問の正答が
+# 成立しなくなる）。CIDから直に引いて xref より優先する。
+_AJ1_MULTI: dict[int, str] = {
+    0x2067: "XIII",
+}
+
 _AJ1_LATIN: dict[int, str] = {
     9444: " ",
     **{9477 + i: chr(ord("A") + i) for i in range(26)},
@@ -534,7 +542,9 @@ def _pdfplumber_lines(path: Path) -> list[str]:
                     # /Differences を持たないフォント（Identity-H）では、
                     # ここに出る番号は符号ではなく Adobe-Japan1 のCIDそのもの。
                     latin = _AJ1_LATIN.get(code) if not table else None
+                    multi = _AJ1_MULTI.get(code) if not table else None
                     fixed = (table.get(code)
+                             or multi
                              or xref.get((ch["fontname"], code))
                              or latin
                              or UNRESOLVED)
