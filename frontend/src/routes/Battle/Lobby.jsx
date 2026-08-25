@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../api";
 import TierBadge from "../../components/TierBadge";
 
-const QUESTION_COUNTS = [5, 10, 20];
 const POLL_INTERVAL_MS = 2000;
 
-function QuickMatch({ questionCount, onCancel }) {
+function QuickMatch({ onCancel }) {
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
   const [error, setError] = useState(null);
@@ -31,7 +30,7 @@ function QuickMatch({ questionCount, onCancel }) {
     }
 
     api
-      .battleQuickMatch(questionCount)
+      .battleQuickMatch()
       .then((res) => {
         if (cancelled) return;
         setTicket(res);
@@ -47,7 +46,7 @@ function QuickMatch({ questionCount, onCancel }) {
       cancelled = true;
       clearTimeout(timerRef.current);
     };
-  }, [questionCount, navigate]);
+  }, [navigate]);
 
   if (error) return <p className="error">{error}</p>;
 
@@ -91,7 +90,6 @@ function QuickMatch({ questionCount, onCancel }) {
 
 export default function Lobby() {
   const navigate = useNavigate();
-  const [questionCount, setQuestionCount] = useState(10);
   const [joinCode, setJoinCode] = useState("");
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -101,7 +99,7 @@ export default function Lobby() {
     setBusy(true);
     setError(null);
     try {
-      const res = await api.battleCreate({ question_count: questionCount });
+      const res = await api.battleCreate();
       navigate(`/battle/${res.room_code}`);
     } catch (e) {
       setError(e.message);
@@ -127,27 +125,11 @@ export default function Lobby() {
 
   return (
     <div className="screen">
-      <h2>みんなで早押しクイズ</h2>
+      <h2>みんなで対戦クイズ</h2>
       {error && <p className="error">{error}</p>}
 
-      <div className="mypage-card battle-card">
-        <h3 className="battle-card-title">問題数</h3>
-        <div className="filter-chip-row">
-          {QUESTION_COUNTS.map((n) => (
-            <button
-              key={n}
-              className={`filter-chip${questionCount === n ? " active" : ""}`}
-              onClick={() => setQuestionCount(n)}
-              disabled={quickMatching}
-            >
-              {n}問
-            </button>
-          ))}
-        </div>
-      </div>
-
       {quickMatching ? (
-        <QuickMatch questionCount={questionCount} onCancel={() => setQuickMatching(false)} />
+        <QuickMatch onCancel={() => setQuickMatching(false)} />
       ) : (
         <div className="mypage-card battle-card">
           <h3 className="battle-card-title">クイックマッチ</h3>

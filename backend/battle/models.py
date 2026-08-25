@@ -62,6 +62,8 @@ class BattleParticipant(models.Model):
     # 固定UUIDでAIを判別していた旧方式をやめ、参加者ごとに持たせる
     # （なりすまし用に毎回別人格のプロフィールを作るため）。
     ai_tier = models.CharField(max_length=4, blank=True, default="")
+    # 対戦の体力。100%から始まり、0になった時点で敗北。
+    hp = models.IntegerField(default=100)
 
     class Meta:
         verbose_name = "対戦参加者"
@@ -81,6 +83,9 @@ class BattleRound(models.Model):
     round_number = models.PositiveSmallIntegerField()
     revealed_at = models.DateTimeField(null=True, blank=True)
     closed_at = models.DateTimeField(null=True, blank=True)
+    # このラウンドの決着内容 {"damage": {profile_id: 受けた%}, "reason": "..."}。
+    # 攻撃演出（相手の画面を赤くする等）に使うため、結果を残しておく。
+    outcome = models.JSONField(default=dict, blank=True)
 
     class Meta:
         verbose_name = "対戦ラウンド"
@@ -93,12 +98,12 @@ class BattleRound(models.Model):
 
 
 class BattleBuzz(models.Model):
-    """早押し record (spec 2.2)。
+    """1ラウンドの解答 record。
 
-    順序はサーバ時刻で決定する。Supabase 経由では RPC `claim_buzz` が
-    clock_timestamp() で挿入し（クライアントのタイムスタンプは一切信用
-    しない, spec 4-1）、Django フォールバック経路でも DB now() を使う。
-    rank=1 のみが回答権を持ち、誤答で次順位に移る。
+    早押し制だった名残でモデル名は Buzz のままだが、現在は「選択肢を選んで
+    回答した」記録として使う。``buzzed_at`` はサーバ時刻で、両者正解時に
+    どちらが遅かったか（＝10%被弾する側）の判定に使う。``rank`` は解答した
+    順番。クライアントのタイムスタンプは一切信用しない。
     """
 
     round = models.ForeignKey(BattleRound, on_delete=models.CASCADE, related_name="buzzes")

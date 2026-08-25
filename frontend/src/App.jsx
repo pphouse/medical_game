@@ -74,6 +74,9 @@ export default function App() {
             <Route path="/solo" element={<Solo />} />
             <Route path="/review" element={<ReviewDeck />} />
             <Route path="/battle" element={<Lobby />} />
+            {/* 対戦中・対戦後も他のメニューへ移動できるよう、下部ナビのある
+                シェルに置く（離脱すると同ランクのAIが代役として入る）。 */}
+            <Route path="/battle/:code" element={<BattleRoom />} />
             <Route path="/exams" element={<ExamList />} />
             <Route path="/ranking" element={<Ranking />} />
             {STUDENT_VERIFICATION_ENABLED && (
@@ -102,7 +105,6 @@ export default function App() {
               <Route path="/create/:questionId/edit" element={<QuestionForm />} />
             )}
             <Route path="/quiz" element={<QuizSession />} />
-            <Route path="/battle/:code" element={<BattleRoom />} />
             <Route path="/exams/:examId" element={<ExamSession />} />
             <Route path="/exams/:examId/result" element={<ExamResult />} />
           </Route>

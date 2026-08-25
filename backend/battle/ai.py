@@ -9,9 +9,9 @@ AI と分からないよう、毎回ランダムな日本人名っぽい表示�
 使い回す旧方式は、同じ偽名が複数の対戦相手の前に繰り返し現れて
 見破られる要因になるためやめた。
 
-実際の早押し・解答は request を投げてこないため、他の参加者が
+実際の解答は request を投げてこないため、他の参加者が
 GET /battle/rooms/{code}/state/ をポーリングするたびに `simulate_ai_turn`
-がそのポーリング時刻を基準にAIの行動（早押し・解答）を進める。
+がそのポーリング時刻を基準にAIの解答を進める。
 """
 
 import random
@@ -93,6 +93,8 @@ def _ai_target_delay(tier):
 
 
 def _simulate_one(room, ai_participant):
+    """AIの回答を1手だけ進める。早押しは廃止したので、ランク帯に応じた
+    「考える時間」が過ぎたら選択肢を1つ選んで回答する。"""
     round_ = (
         room.rounds.filter(closed_at__isnull=True)
         .select_related("question")
@@ -101,43 +103,37 @@ def _simulate_one(room, ai_participant):
     )
     if round_ is None or round_.revealed_at is None:
         return
+    if round_.buzzes.filter(profile=ai_participant.user).exists():
+        return  # 回答済み
 
     now = timezone.now()
     elapsed = (now - round_.revealed_at).total_seconds()
     profile_tier = ai_participant.ai_tier or DEFAULT_AI_TIER
-
-    my_buzz = round_.buzzes.filter(profile=ai_participant.user).first()
-    if my_buzz is None:
-        target_delay = _ai_target_delay(profile_tier)
-        if elapsed < target_delay:
-            return  # まだ「考え中」
-        rank = round_.buzzes.count() + 1
-        BattleBuzz.objects.create(round=round_, profile=ai_participant.user, rank=rank)
-        return  # 早押しした手番はここまで（解答は次のポーリングで判定する）
-
-    if my_buzz.is_correct is not None:
-        return  # 解答済み
-
-    buzzes = list(round_.buzzes.order_by("rank"))
-    answering = next((b for b in buzzes if b.is_correct is None), None)
-    if answering is None or answering.pk != my_buzz.pk:
-        return  # まだAIの回答権の順番ではない
+    if elapsed < _ai_target_delay(profile_tier):
+        return  # まだ「考え中」
 
     from battle.scoring import apply_score
-    from battle.views import close_round_and_advance
+    from battle.views import enforce_round_progress
 
     accuracy = AI_TIER_PROFILE.get(profile_tier, AI_TIER_PROFILE[DEFAULT_AI_TIER])["accuracy"]
     is_correct = random.random() < accuracy
     question = round_.question
-    my_buzz.selected_choice_key = (
-        question.correct_choice_key if is_correct else next(
+    selected = (
+        question.correct_choice_key
+        if is_correct
+        else next(
             (c["key"] for c in question.choices if c["key"] != question.correct_choice_key),
             question.correct_choice_key,
         )
     )
-    my_buzz.is_correct = is_correct
-    my_buzz.save(update_fields=["selected_choice_key", "is_correct"])
-    apply_score(ai_participant, correct=is_correct, rank=my_buzz.rank)
+    BattleBuzz.objects.create(
+        round=round_,
+        profile=ai_participant.user,
+        rank=round_.buzzes.count() + 1,
+        selected_choice_key=selected,
+        is_correct=is_correct,
+    )
+    apply_score(ai_participant, correct=is_correct, rank=1)
 
     AnswerHistory.objects.create(
         user=ai_participant.user,
@@ -150,18 +146,12 @@ def _simulate_one(room, ai_participant):
         context=AnswerHistory.Context.BATTLE,
     )
 
-    if is_correct:
-        close_round_and_advance(round_)
-    else:
-        remaining = [b for b in buzzes if b.is_correct is None and b.pk != my_buzz.pk]
-        all_active = room.participants.filter(left_at__isnull=True).count()
-        if not remaining and all_active == len(buzzes):
-            close_round_and_advance(round_)
+    enforce_round_progress(room)
 
 
 def simulate_ai_turn(room):
     """このルームにAI参加者がいれば、現在の開講中ラウンドでそれぞれのAIの
-    早押し・解答を（ポーリング時刻を基準に）1手だけ進める。人間側の state
+    解答を（ポーリング時刻を基準に）1手だけ進める。人間側の state
     ポーリングのたびに呼ばれるので、複数手が一気に進むことはない。
 
     離脱した参加者の代役として複数のAIが同室にいる場合もあるため、

@@ -1,15 +1,16 @@
-"""対戦モード（早押し）API (spec フェーズ4).
+"""対戦モード（HP制バトル）API (spec フェーズ4).
 
 進行:
 1. ホストがルーム作成 → 6桁コードを共有 → 参加 → ホストが開始
+   （クイックマッチなら同ランク帯の相手と自動で開始）
 2. start 時に全 BattleRound を先に作成し、ラウンド1の revealed_at を設定
 3. 出題配信は Supabase Realtime（battle_battleround の変更購読）。
    Realtime なし環境向けに GET .../state/ のポーリングでも完全に動く
-4. 早押しは Supabase RPC `claim_buzz`（clock_timestamp() でサーバ時刻確定）。
-   開発用フォールバックとして POST /rounds/{id}/buzz/ も同じ意味論で提供
-   （行ロックで直列化し DB 時刻で記録。クライアント時刻は一切信用しない）
-5. rank=1 から順に回答権。誤答で次順位へ。正解 or 全員誤答 or 制限時間で
-   ラウンドを閉じ、次ラウンドの revealed_at を設定
+4. 早押しは廃止。各自が選択肢を選んで POST /rounds/{id}/answer/ を送ると
+   その人の解答が確定する（1ラウンド1回のみ。時刻はサーバ側で記録する）
+5. 全員の解答がそろうか制限時間切れでラウンドを判定し、HPを削る:
+   片方だけ正解 → 不正解側に20% / 両方正解 → 遅い側に10% / 両方不正解 → なし
+   どちらかのHPが0になるか全問終わった時点で対戦終了
 6. いつでも POST .../leave/ で離脱できる。待機中は参加者から抜けるだけ
    （ホストなら次の参加者に引き継ぐ）。対戦中はスコアを凍結し、同じ
    ランク帯のAI（人間には見分けが付かない偽名・偽の所属大学つき）が
@@ -42,10 +43,12 @@ from .matchmaking import (
 )
 from .models import BattleBuzz, BattleParticipant, BattleRoom, BattleRound, MatchmakingTicket
 from .scoring import (
+    BATTLE_QUESTION_COUNT,
     PARTICIPANT_TIMEOUT_SECONDS,
     ROUND_TIME_LIMIT_SECONDS,
     apply_score,
     battle_points_delta,
+    resolve_round_damage,
 )
 
 MIN_PARTICIPANTS = 2
@@ -76,13 +79,14 @@ def finalize_room_points(room):
     """ルーム終了時に一度だけ対戦ランクポイントを確定する (spec: 対戦＋模試の
     合算ポイントでSS〜Dランク)。AI 参加者（accounts.Profile.is_ai）は対象外。"""
     participants = list(
-        room.participants.select_related("user").order_by("-score", "id")
+        room.participants.select_related("user").order_by("-hp", "-score", "id")
     )
     n = len(participants)
-    prev_score, prev_rank = None, 0
+    prev_key, prev_rank = None, 0
     for i, participant in enumerate(participants, start=1):
-        rank = prev_rank if participant.score == prev_score else i
-        prev_score, prev_rank = participant.score, rank
+        key = (participant.hp, participant.score)
+        rank = prev_rank if key == prev_key else i
+        prev_key, prev_rank = key, rank
         if participant.user.is_ai:
             continue
         delta = battle_points_delta(rank, n)
@@ -94,49 +98,89 @@ def finalize_room_points(room):
         profile.save(update_fields=["points", "ranked_matches"])
 
 
-def close_round_and_advance(round_):
-    """ラウンドを閉じ、次ラウンドの出題 or ルーム終了処理を行う。"""
+def resolve_and_close_round(round_):
+    """ラウンドを判定してHPを削り、次ラウンドへ進む or 対戦を終了する。
+
+    ダメージ規則 (spec):
+    - 片方だけ正解 → 不正解側に20%
+    - 両方正解 → 遅く正解した側に10%
+    - 両方不正解 → ダメージなし
+    """
+    room = round_.room
+    participants = list(
+        room.participants.select_related("user").filter(left_at__isnull=True)
+    )
+    answers_by_profile = {
+        b.profile_id: b for b in round_.buzzes.all()
+    }
+    answers = [
+        (
+            p,
+            bool(answers_by_profile.get(p.user_id) and answers_by_profile[p.user_id].is_correct),
+            answers_by_profile[p.user_id].buzzed_at if p.user_id in answers_by_profile else None,
+        )
+        for p in participants
+    ]
+    damage, reason = resolve_round_damage(answers)
+
+    by_id = {p.id: p for p in participants}
+    for participant_id, dmg in damage.items():
+        participant = by_id[participant_id]
+        participant.hp = max(0, participant.hp - dmg)
+        participant.save(update_fields=["hp"])
+
     now = timezone.now()
     round_.closed_at = now
-    round_.save(update_fields=["closed_at"])
+    round_.outcome = {
+        # 演出（被弾した側の画面を赤くする）に使うので profile_id で引けるようにする。
+        "damage": {str(by_id[pid].user_id): dmg for pid, dmg in damage.items()},
+        "reason": reason,
+    }
+    round_.save(update_fields=["closed_at", "outcome"])
+
+    knocked_out = any(p.hp <= 0 for p in participants)
     next_round = (
-        round_.room.rounds.filter(closed_at__isnull=True)
-        .order_by("round_number")
-        .first()
+        room.rounds.filter(closed_at__isnull=True).order_by("round_number").first()
     )
-    if next_round:
+    if next_round and not knocked_out:
         next_round.revealed_at = now
         next_round.save(update_fields=["revealed_at"])
-    else:
-        round_.room.status = BattleRoom.Status.FINISHED
-        round_.room.save(update_fields=["status"])
-        finalize_room_points(round_.room)
+        return
+
+    # HPが尽きた or 全問終了 → 残りのラウンドを閉じて対戦終了。
+    room.rounds.filter(closed_at__isnull=True).update(closed_at=now)
+    room.status = BattleRoom.Status.FINISHED
+    room.save(update_fields=["status"])
+    finalize_room_points(room)
+
+
+# 旧名（AI シミュレータなど既存の呼び出し元との互換のため）。
+close_round_and_advance = resolve_and_close_round
 
 
 def enforce_round_progress(room):
-    """制限時間切れ・全員誤答（離脱者はスキップ扱い）を遅延評価で処理する。"""
+    """全員が回答済み、または制限時間切れになったラウンドを判定する。
+
+    早押しの概念は廃止し、各自が選択肢を選んで「回答する」を押した時点で
+    その人の解答が確定する。両者そろうか時間切れでラウンドを閉じる。"""
     round_ = open_round(room)
     if round_ is None or round_.revealed_at is None:
         return
     now = timezone.now()
     deadline = round_.revealed_at + datetime.timedelta(seconds=ROUND_TIME_LIMIT_SECONDS)
     if now >= deadline:
-        close_round_and_advance(round_)
+        resolve_and_close_round(round_)
         return
-    # 全員誤答チェック: 30秒以上応答のない参加者・離脱済みの参加者はスキップ扱い (spec 4-2)
-    active_cutoff = now - datetime.timedelta(seconds=PARTICIPANT_TIMEOUT_SECONDS)
     active_ids = set(
-        room.participants.filter(
-            last_seen_at__gte=active_cutoff, left_at__isnull=True
-        ).values_list("user_id", flat=True)
+        room.participants.filter(left_at__isnull=True).values_list("user_id", flat=True)
     )
     if not active_ids:
         return
-    wrong_ids = set(
-        round_.buzzes.filter(is_correct=False).values_list("profile_id", flat=True)
+    answered_ids = set(
+        round_.buzzes.filter(is_correct__isnull=False).values_list("profile_id", flat=True)
     )
-    if active_ids <= wrong_ids:
-        close_round_and_advance(round_)
+    if active_ids <= answered_ids:
+        resolve_and_close_round(round_)
 
 
 def _replace_with_ai(room, participant):
@@ -191,9 +235,9 @@ class RoomCreateView(APIView):
     """POST /api/battle/rooms/ — room_code は衝突リトライ付きで生成 (spec 4-2)."""
 
     def post(self, request):
-        question_count = int(request.data.get("question_count", 10))
-        if question_count not in (5, 10, 20):
-            raise exceptions.ValidationError("question_count は 5 / 10 / 20 のみ")
+        # 問題数の選択は廃止（対戦形式は一律で同じ）。既存クライアントが
+        # question_count を送ってきても無視する。
+        question_count = BATTLE_QUESTION_COUNT
         category = request.data.get("category", "") or ""
 
         room = None
@@ -328,14 +372,22 @@ class RoomStateView(APIView):
         cutoff = now - datetime.timedelta(seconds=PARTICIPANT_TIMEOUT_SECONDS)
         participants = [
             {
+                "profile_id": str(p.user_id),
                 "display_name": p.user.display_name or "匿名ユーザー",
+                "university": p.user.university.name if p.user.university else None,
+                # AI の代役はマッチ時のランク帯をそのまま見せる（見分けが付かない
+                # ようにするため、AIかどうかはクライアントに返さない）。
+                "tier": p.ai_tier or compute_tier(p.user),
                 "score": p.score,
+                "hp": p.hp,
                 "is_me": p.user_id == request.user.id,
                 "is_host": p.user_id == room.host_id,
                 "connected": p.left_at is None and p.last_seen_at >= cutoff,
                 "left": p.left_at is not None,
             }
-            for p in room.participants.select_related("user").order_by("-score", "id")
+            for p in room.participants.select_related(
+                "user", "user__university"
+            ).order_by("id")
         ]
 
         payload = {
@@ -352,9 +404,10 @@ class RoomStateView(APIView):
 
         round_ = open_round(room)
         if round_ and round_.revealed_at:
-            buzzes = list(round_.buzzes.select_related("profile").order_by("rank"))
-            answering = next((b for b in buzzes if b.is_correct is None), None)
-            my_buzz = next((b for b in buzzes if b.profile_id == request.user.id), None)
+            answers = list(round_.buzzes.select_related("profile").order_by("rank"))
+            my_answer = next(
+                (b for b in answers if b.profile_id == request.user.id), None
+            )
             payload["round"] = {
                 "id": round_.id,
                 "number": round_.round_number,
@@ -363,21 +416,12 @@ class RoomStateView(APIView):
                 "closes_at": round_.revealed_at
                 + datetime.timedelta(seconds=ROUND_TIME_LIMIT_SECONDS),
                 "question": QuestionSerializer(round_.question).data,
-                "buzzes": [
-                    {
-                        "rank": b.rank,
-                        "display_name": b.profile.display_name or "匿名ユーザー",
-                        "is_correct": b.is_correct,
-                        "is_me": b.profile_id == request.user.id,
-                    }
-                    for b in buzzes
-                ],
-                "answering_rank": answering.rank if answering else None,
-                "i_am_answering": bool(
-                    answering and answering.profile_id == request.user.id
+                # 誰がもう答えたかだけ見せる（何を選んだかは決着まで伏せる）。
+                "answered_profile_ids": [str(b.profile_id) for b in answers],
+                "i_have_answered": my_answer is not None,
+                "my_selected_choice_key": (
+                    my_answer.selected_choice_key if my_answer else None
                 ),
-                "my_buzz_rank": my_buzz.rank if my_buzz else None,
-                "can_buzz": my_buzz is None,
             }
 
         last_closed = (
@@ -390,43 +434,32 @@ class RoomStateView(APIView):
             winner = (
                 last_closed.buzzes.filter(is_correct=True)
                 .select_related("profile")
+                .order_by("buzzed_at")
                 .first()
             )
+            outcome = last_closed.outcome or {}
             payload["last_result"] = {
                 "number": last_closed.round_number,
                 "correct_choice_key": last_closed.question.correct_choice_key,
                 "explanation": last_closed.question.explanation,
                 "winner": (winner.profile.display_name or "匿名ユーザー") if winner else None,
+                # 攻撃演出用: {profile_id: 受けたダメージ%} と決着理由。
+                "damage": outcome.get("damage", {}),
+                "reason": outcome.get("reason"),
+                "my_damage": (outcome.get("damage") or {}).get(str(request.user.id), 0),
             }
 
         return Response(payload)
 
 
-class BuzzView(APIView):
-    """POST /api/battle/rounds/{id}/buzz/ — Django フォールバック経路。
-
-    本番は Supabase RPC `claim_buzz` を推奨 (spec 4-1)。この経路も同じ
-    意味論: ラウンド行ロックで直列化し、順位はサーバ側で確定する。
-    """
-
-    def post(self, request, round_id):
-        with transaction.atomic():
-            round_ = get_object_or_404(
-                BattleRound.objects.select_for_update(), pk=round_id
-            )
-            require_participant(round_.room, request.user)
-            if round_.revealed_at is None or round_.closed_at is not None:
-                raise exceptions.ValidationError("このラウンドは受付中ではありません。")
-            existing = round_.buzzes.filter(profile=request.user).first()
-            if existing:
-                return Response({"rank": existing.rank})
-            rank = round_.buzzes.count() + 1
-            buzz = BattleBuzz.objects.create(round=round_, profile=request.user, rank=rank)
-        return Response({"rank": buzz.rank}, status=201)
-
-
 class AnswerView(APIView):
-    """回答権の検証 → 採点 → スコア加算 (spec 4-2)."""
+    """選択肢を選んで回答する (spec: 早押しボタンは廃止)。
+
+    各参加者は1ラウンドにつき1回だけ回答できる。回答の速さは
+    ``BattleBuzz.buzzed_at`` に記録され、両者正解時にどちらが遅かったかの
+    判定に使う。ラウンドの決着（HPの増減）は全員の回答がそろった時点、
+    または制限時間切れで ``resolve_and_close_round`` が行う。
+    """
 
     def post(self, request, round_id):
         selected = request.data.get("selected_choice_key")
@@ -439,26 +472,27 @@ class AnswerView(APIView):
                 pk=round_id,
             )
             participant = require_participant(round_.room, request.user)
-            if round_.closed_at is not None:
-                raise exceptions.ValidationError("このラウンドは終了しています。")
-
-            buzzes = list(round_.buzzes.order_by("rank"))
-            my_buzz = next((b for b in buzzes if b.profile_id == request.user.id), None)
-            if my_buzz is None:
-                raise exceptions.PermissionDenied("早押ししていません。")
-            if my_buzz.is_correct is not None:
+            if participant.left_at is not None:
+                raise exceptions.PermissionDenied("この対戦からは離脱済みです。")
+            if round_.revealed_at is None or round_.closed_at is not None:
+                raise exceptions.ValidationError("このラウンドは受付中ではありません。")
+            if round_.buzzes.filter(profile=request.user).exists():
                 raise exceptions.ValidationError("すでに回答済みです。")
-            answering = next((b for b in buzzes if b.is_correct is None), None)
-            if answering is None or answering.profile_id != request.user.id:
-                raise exceptions.PermissionDenied("回答権がありません（誤答順に移ります）。")
 
             question = round_.question
-            is_correct = selected == question.correct_choice_key
-            my_buzz.selected_choice_key = selected
-            my_buzz.is_correct = is_correct
-            my_buzz.save(update_fields=["selected_choice_key", "is_correct"])
+            if selected not in {c["key"] for c in question.choices}:
+                raise exceptions.ValidationError("選択肢が不正です。")
 
-            apply_score(participant, correct=is_correct, rank=my_buzz.rank)
+            is_correct = selected == question.correct_choice_key
+            rank = round_.buzzes.count() + 1
+            BattleBuzz.objects.create(
+                round=round_,
+                profile=request.user,
+                rank=rank,
+                selected_choice_key=selected,
+                is_correct=is_correct,
+            )
+            apply_score(participant, correct=is_correct, rank=rank)
 
             # 対戦の解答も履歴に記録する（ランキング集計からは context で除外,
             # spec 4-2）。習熟度の自動分類はソロと同じルール。
@@ -478,21 +512,15 @@ class AnswerView(APIView):
             )
             update_review_schedule(request.user, question, auto_mastery)
 
-            if is_correct:
-                close_round_and_advance(round_)
-            else:
-                remaining = [
-                    b for b in buzzes if b.is_correct is None and b.pk != my_buzz.pk
-                ]
-                all_buzzed = round_.room.participants.count() == len(buzzes)
-                if not remaining and all_buzzed:
-                    close_round_and_advance(round_)
+            enforce_round_progress(round_.room)
 
+        participant.refresh_from_db()
         return Response(
             {
                 "correct": is_correct,
-                "correct_choice_key": question.correct_choice_key if is_correct else None,
+                "correct_choice_key": question.correct_choice_key,
                 "score": participant.score,
+                "hp": participant.hp,
             }
         )
 
@@ -502,17 +530,18 @@ class RoomResultView(APIView):
         room = get_room(code)
         require_participant(room, request.user)
         standings = []
-        for p in room.participants.select_related("user").order_by("-score", "id"):
+        for p in room.participants.select_related("user", "user__university").order_by("-hp", "-score", "id"):
             correct_count = BattleBuzz.objects.filter(
                 round__room=room, profile=p.user, is_correct=True
             ).count()
             standings.append(
                 {
                     "display_name": p.user.display_name or "匿名ユーザー",
+                    "university": p.user.university.name if p.user.university else None,
+                    "hp": p.hp,
                     "score": p.score,
                     "correct_count": correct_count,
                     "is_me": p.user_id == request.user.id,
-                    "is_ai": p.user.is_ai,
                     "left": p.left_at is not None,
                     "points_delta": p.points_delta,
                 }
@@ -520,7 +549,7 @@ class RoomResultView(APIView):
         for i, row in enumerate(standings):
             row["rank"] = (
                 i + 1
-                if i == 0 or standings[i - 1]["score"] != row["score"]
+                if i == 0 or (standings[i - 1]["hp"], standings[i - 1]["score"]) != (row["hp"], row["score"])
                 else standings[i - 1]["rank"]
             )
         my_points = None
@@ -562,9 +591,9 @@ class QuickMatchCreateView(APIView):
     （60秒経ってもマッチしなければ GET 側でAI対戦にフォールバックする）。"""
 
     def post(self, request):
-        question_count = int(request.data.get("question_count", 10))
-        if question_count not in (5, 10, 20):
-            raise exceptions.ValidationError("question_count は 5 / 10 / 20 のみ")
+        # 問題数の選択は廃止（対戦形式は一律で同じ）。既存クライアントが
+        # question_count を送ってきても無視する。
+        question_count = BATTLE_QUESTION_COUNT
         ticket = create_ticket(request.user, question_count)
         ticket = try_match(ticket)
         return Response(ticket_payload(ticket, request.user), status=201)

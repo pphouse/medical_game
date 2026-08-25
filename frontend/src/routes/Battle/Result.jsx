@@ -29,9 +29,14 @@ export default function Result({ code }) {
           </div>
         ))}
       </div>
-      <Link to="/battle" className="cta-button battle-again-link">
-        もう一度あそぶ
-      </Link>
+      <div className="battle-result-actions">
+        <Link to="/battle" className="cta-button battle-again-link">
+          もう一度あそぶ
+        </Link>
+        <Link to="/" className="toolbar-btn battle-result-home">
+          ホームに戻る
+        </Link>
+      </div>
     </div>
   );
 }

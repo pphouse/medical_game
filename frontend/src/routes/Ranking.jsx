@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import ExamList from "../components/ExamList";
 import RankingCard from "../components/RankingCard";
 import TierBadge from "../components/TierBadge";
 
@@ -187,7 +188,18 @@ function PointsRanking({ scope }) {
   );
 }
 
-/** 模試は「自分の受験履歴と順位」なので、全国/学内の切り替えは持たない。 */
+/** 模試カテゴリ: 受験できる模試の一覧と、自分の受験履歴（順位・点数）。
+ * 全国/学内の切り替えは持たない（履歴は自分のものだけなので）。 */
+function ExamsTab() {
+  return (
+    <>
+      <ExamList />
+      <h3 className="exam-section-heading">これまでの成績</h3>
+      <ExamHistory />
+    </>
+  );
+}
+
 function ExamHistory() {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState(null);
@@ -239,7 +251,7 @@ export default function Ranking() {
 
       {category === "practice" && <PracticeRanking scope={scope} period={period} />}
       {category === "battle" && <PointsRanking scope={scope} />}
-      {category === "exams" && <ExamHistory />}
+      {category === "exams" && <ExamsTab />}
     </div>
   );
 }

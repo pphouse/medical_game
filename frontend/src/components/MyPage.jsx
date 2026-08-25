@@ -158,14 +158,18 @@ function ProfileEditor({ user, onCancel, onSaved }) {
 
       <label className="profile-field">
         <span className="profile-field-label">学年</span>
-        <select value={grade} onChange={(e) => setGrade(e.target.value)}>
-          <option value="">未設定</option>
-          {[1, 2, 3, 4, 5, 6].map((g) => (
-            <option key={g} value={g}>
-              {g}年
-            </option>
+        <div className="filter-chip-row">
+          {["", 1, 2, 3, 4, 5, 6].map((g) => (
+            <button
+              key={g || "none"}
+              type="button"
+              className={`filter-chip${grade === String(g) ? " active" : ""}`}
+              onClick={() => setGrade(String(g))}
+            >
+              {g === "" ? "未設定" : `${g}年`}
+            </button>
           ))}
-        </select>
+        </div>
       </label>
 
       {error && <p className="error">{error}</p>}
@@ -338,11 +342,11 @@ export default function MyPage() {
             演習と模試で既定にする試験です。「学年に合わせる」のままにしておくと、
             毎年4月1日の進級に合わせて自動で切り替わります（4年生以下はCBT、5年生以降は医師国家試験）。
           </p>
-          <div className="grade-toggle">
+          <div className="filter-chip-row">
             {EXAM_PREFERENCES.map((p) => (
               <button
                 key={p.key || "auto"}
-                className={examPreference === p.key ? "active" : ""}
+                className={`filter-chip${examPreference === p.key ? " active" : ""}`}
                 disabled={savingPreference}
                 onClick={() => handleExamPreference(p.key)}
               >

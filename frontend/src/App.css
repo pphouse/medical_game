@@ -2251,3 +2251,283 @@
   border-radius: 999px;
   padding: 4px 12px;
 }
+
+.battle-result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.battle-result-home {
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* ===== 対戦（HP制バトル）の演出 ===================================== */
+
+.battle-screen { position: relative; }
+
+/* 被弾すると画面全体が赤く、攻撃が通ると青く光る */
+.battle-screen::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 40;
+}
+
+.battle-screen.flash-hit::after {
+  background: radial-gradient(circle at center, rgba(220, 38, 38, 0) 35%, rgba(220, 38, 38, 0.55) 100%);
+  animation: battle-flash 0.9s ease-out;
+}
+
+.battle-screen.flash-attack::after {
+  background: radial-gradient(circle at center, rgba(56, 189, 248, 0) 40%, rgba(56, 189, 248, 0.45) 100%);
+  animation: battle-flash 0.9s ease-out;
+}
+
+@keyframes battle-flash {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.battle-screen.flash-hit { animation: battle-shake 0.45s ease-in-out; }
+
+@keyframes battle-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+
+/* --- VSヘッダー（常時表示） --- */
+.vs-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.vs-badge {
+  font-size: 15px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  color: #fbbf24;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.7);
+}
+
+.fighter { position: relative; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.fighter-opponent { align-items: flex-end; text-align: right; }
+.fighter.hit { animation: battle-shake 0.45s ease-in-out; }
+
+.fighter-id { display: flex; flex-direction: column; min-width: 0; }
+
+.fighter-name {
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fighter-univ {
+  font-size: 10px;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fighter-hp-row { display: flex; align-items: center; gap: 6px; }
+.fighter-opponent .fighter-hp-row { flex-direction: row-reverse; }
+
+.hp-bar {
+  flex: 1;
+  min-width: 40px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.hp-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+  transition: width 0.5s ease-out;
+}
+
+.hp-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.hp-fill.danger {
+  background: linear-gradient(90deg, #dc2626, #f87171);
+  animation: hp-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes hp-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.hp-value {
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+  text-align: right;
+}
+
+.damage-pop {
+  position: absolute;
+  top: -6px;
+  right: 0;
+  font-size: 18px;
+  font-weight: 900;
+  font-style: italic;
+  color: #f87171;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  animation: damage-rise 1s ease-out forwards;
+}
+
+@keyframes damage-rise {
+  0% { opacity: 0; transform: translateY(6px) scale(0.7); }
+  25% { opacity: 1; transform: translateY(-4px) scale(1.25); }
+  100% { opacity: 0; transform: translateY(-22px) scale(1); }
+}
+
+/* --- 開幕のVS演出 --- */
+.vs-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #0f172a 100%);
+  color: #fff;
+}
+
+.vs-intro-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 18px;
+}
+
+.vs-intro-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.vs-intro-left { animation: slide-in-left 0.6s ease-out; }
+.vs-intro-right { animation: slide-in-right 0.6s ease-out; }
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-70px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(70px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.vs-intro-name { font-size: 17px; font-weight: 900; text-align: center; }
+.vs-intro-univ { font-size: 11px; opacity: 0.8; text-align: center; }
+
+.vs-intro-vs {
+  font-size: 42px;
+  font-weight: 900;
+  font-style: italic;
+  color: #fbbf24;
+  text-shadow: 0 0 24px rgba(251, 191, 36, 0.9);
+  animation: vs-zoom 0.7s ease-out;
+}
+
+@keyframes vs-zoom {
+  0% { opacity: 0; transform: scale(3) rotate(-14deg); }
+  60% { opacity: 1; transform: scale(0.86) rotate(3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+.vs-intro-go {
+  font-size: 22px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.12em;
+  background: linear-gradient(90deg, #38bdf8, #fbbf24);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: go-in 0.5s ease-out 0.6s backwards;
+}
+
+@keyframes go-in {
+  from { opacity: 0; letter-spacing: 0.5em; }
+  to { opacity: 1; letter-spacing: 0.12em; }
+}
+
+/* --- ラウンドバー --- */
+.battle-roundbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+}
+
+.battle-round-no {
+  font-size: 16px;
+  font-weight: 900;
+  font-style: italic;
+  color: var(--accent);
+}
+
+.battle-round-total { font-size: 11px; font-weight: 700; color: var(--text); }
+
+.battle-timer {
+  font-size: 20px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-h);
+}
+
+.battle-timer.urgent {
+  color: var(--incorrect);
+  animation: hp-pulse 0.6s ease-in-out infinite;
+}
+
+/* --- 選択肢と回答ボタン --- */
+.battle-choice.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.battle-answer-button { width: 100%; margin-top: 10px; }
+
+.battle-opponent-ready {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--incorrect);
+  text-align: center;
+  animation: hp-pulse 0.8s ease-in-out infinite;
+}

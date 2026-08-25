@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Ranking from "../routes/Ranking";
 
@@ -7,6 +8,7 @@ vi.mock("../api", () => ({
     ranking: vi.fn(),
     rankingExams: vi.fn(),
     pointsRanking: vi.fn(),
+    exams: vi.fn(),
   },
 }));
 
@@ -26,7 +28,7 @@ describe("ランキング画面", () => {
       me: { eligible: true, rank: 2, value: 200 },
     });
 
-    render(<Ranking />);
+    render(<Ranking />, { wrapper: MemoryRouter });
 
     expect(await screen.findByText("太郎")).toBeInTheDocument();
     expect(screen.getByText("A大学")).toBeInTheDocument();
@@ -49,7 +51,7 @@ describe("ランキング画面", () => {
       },
     });
 
-    render(<Ranking />);
+    render(<Ranking />, { wrapper: MemoryRouter });
 
     expect(
       await screen.findByText("正答率ランキングは100問以上解くと対象になります（あと58問）")
@@ -63,7 +65,7 @@ describe("ランキング画面", () => {
       me: null,
     });
 
-    render(<Ranking />);
+    render(<Ranking />, { wrapper: MemoryRouter });
     await screen.findByText("太郎");
 
     fireEvent.click(screen.getByRole("button", { name: "月間" }));
@@ -80,7 +82,7 @@ describe("ランキング画面", () => {
   it("学内に切り替えると scope=university で再取得する", async () => {
     api.ranking.mockResolvedValue({ entries: [], me: null });
 
-    render(<Ranking />);
+    render(<Ranking />, { wrapper: MemoryRouter });
     fireEvent.click(screen.getByRole("button", { name: "学内" }));
 
     expect(api.ranking).toHaveBeenLastCalledWith({
@@ -94,7 +96,7 @@ describe("ランキング画面", () => {
     api.ranking.mockResolvedValue({ entries: [], me: null });
     api.pointsRanking.mockResolvedValue({ entries: [], me: null });
 
-    render(<Ranking />);
+    render(<Ranking />, { wrapper: MemoryRouter });
     fireEvent.click(screen.getByRole("button", { name: "対戦" }));
 
     expect(await screen.findByRole("button", { name: "全国" })).toBeInTheDocument();
@@ -104,8 +106,33 @@ describe("ランキング画面", () => {
     expect(screen.queryByRole("button", { name: "月間" })).not.toBeInTheDocument();
   });
 
+  it("模試タブは受験できる模試の一覧も表示する", async () => {
+    api.ranking.mockResolvedValue({ entries: [], me: null });
+    api.rankingExams.mockResolvedValue([]);
+    api.exams.mockResolvedValue([
+      {
+        id: 7,
+        title: "第3回 全国CBT模試",
+        kind: "monthly",
+        exam_type: "CBT",
+        status: "open",
+        question_count: 60,
+        duration_minutes: 90,
+        start_at: "2026-09-01T00:00:00Z",
+        my_result: null,
+      },
+    ]);
+
+    render(<Ranking />, { wrapper: MemoryRouter });
+    fireEvent.click(screen.getByRole("button", { name: "模試" }));
+
+    expect(await screen.findByText("第3回 全国CBT模試")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "受験を開始する" })).toBeInTheDocument();
+  });
+
   it("模試タブは受験履歴（順位と点数）を表示する", async () => {
     api.ranking.mockResolvedValue({ entries: [], me: null });
+    api.exams.mockResolvedValue([]);
     api.rankingExams.mockResolvedValue([
       {
         mock_exam_id: 1,
@@ -123,7 +150,7 @@ describe("ランキング画面", () => {
       },
     ]);
 
-    render(<Ranking />);
+    render(<Ranking />, { wrapper: MemoryRouter });
     fireEvent.click(screen.getByRole("button", { name: "模試" }));
 
     expect(await screen.findByText("第1回 全国CBT模試")).toBeInTheDocument();
