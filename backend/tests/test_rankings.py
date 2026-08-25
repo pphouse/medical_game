@@ -128,6 +128,55 @@ class TestAccuracyGate:
         assert "@" not in res.content.decode()  # メールアドレスは絶対に返さない
 
 
+class TestUnsolvedUsersRankLast:
+    def test_users_with_zero_solved_appear_ranked_last_in_solved_metric(self):
+        questions = make_questions(3)
+        solver = make_profile(display_name="解いた人")
+        seed_answers(solver, questions, correct=True)
+        untouched = make_profile(display_name="未着手の人")
+
+        call_command("aggregate_rankings", "--period", "all")
+
+        rows = {
+            row.profile_id: row
+            for row in RankingSnapshot.objects.filter(
+                scope="national", metric="solved", period="all"
+            )
+        }
+        assert untouched.id in rows
+        assert rows[untouched.id].value == 0.0
+        assert rows[untouched.id].rank > rows[solver.id].rank
+
+    def test_zero_solved_user_is_not_in_accuracy_ranking(self):
+        """0問ゲートは正答率には効かない（100問ゲートのまま）。"""
+        make_profile(display_name="未着手の人")
+        call_command("aggregate_rankings", "--period", "all")
+        assert not RankingSnapshot.objects.filter(
+            scope="national", metric="accuracy", period="all"
+        ).exists()
+
+    def test_ai_profiles_never_appear_in_practice_rankings(self):
+        make_profile(display_name="対戦代役AI", is_ai=True)
+        call_command("aggregate_rankings", "--period", "all")
+        assert not RankingSnapshot.objects.filter(
+            scope="national", metric="solved", period="all"
+        ).exists()
+
+    def test_api_shows_zero_solved_users_rank_instead_of_dash(self):
+        questions = make_questions(3)
+        other = make_profile(display_name="他の人")
+        seed_answers(other, questions, correct=True)
+        client, profile = auth_client(display_name="未着手")
+
+        call_command("aggregate_rankings", "--period", "all")
+
+        res = client.get("/api/ranking/?scope=national&metric=solved&period=all")
+        me = res.json()["me"]
+        assert me["eligible"] is True
+        assert me["rank"] == 2
+        assert me["value"] == 0.0
+
+
 class TestUniversityAggregate:
     def test_universities_below_member_threshold_are_excluded(self):
         questions = make_questions(12)

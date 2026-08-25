@@ -15,7 +15,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from accounts.ranktier import compute_tier
-from battle.ai import get_or_create_ai_profile
+from battle.ai import create_disguised_ai_profile
 from battle.models import BattleParticipant, BattleRoom, MatchmakingTicket
 
 MATCH_TIMEOUT_SECONDS = 60
@@ -90,11 +90,10 @@ def escalate_to_ai_if_timed_out(ticket):
     if elapsed < MATCH_TIMEOUT_SECONDS:
         return ticket
 
-    ai_tier = ticket.tier_snapshot or "B"
-    ai_profile = get_or_create_ai_profile(ai_tier)
+    ai_profile, ai_tier = create_disguised_ai_profile(ticket.tier_snapshot or "B")
     room = _create_room(ticket.user, ticket.question_count)
     BattleParticipant.objects.create(room=room, user=ticket.user)
-    BattleParticipant.objects.create(room=room, user=ai_profile)
+    BattleParticipant.objects.create(room=room, user=ai_profile, ai_tier=ai_tier)
     from battle.views import start_room
 
     start_room(room)

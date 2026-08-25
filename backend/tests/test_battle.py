@@ -1,30 +1,15 @@
-import threading
-import uuid
-from pathlib import Path
-
 import pytest
-from django.db import connection, connections
 from django.utils import timezone
 
-from accounts.models import Profile
-from battle.models import BattleBuzz, BattleRoom, BattleRound
-from battle.scoring import CORRECT_POINTS, FIRST_BUZZ_BONUS, WRONG_PENALTY
-from exams.management.commands.aggregate_rankings import fetch_user_stats
+from battle.models import BattleRoom, BattleRound
 from quiz.models import AnswerHistory
 
 from .helpers import auth_client, make_question
 
 pytestmark = pytest.mark.django_db
 
-CLAIM_BUZZ_SQL = (
-    Path(__file__).resolve().parent.parent.parent
-    / "supabase"
-    / "migrations"
-    / "20260723002000_claim_buzz.sql"
-)
 
-
-def make_room(n_questions=3, participants=2):
+def make_room(n_questions=10, participants=2):
     """Create a room with N published questions and M participants.
     Returns (clients, profiles, room_code). clients[0] is the host."""
     for i in range(n_questions):
@@ -35,10 +20,7 @@ def make_room(n_questions=3, participants=2):
         clients.append(client)
         profiles.append(profile)
 
-    res = clients[0].post(
-        "/api/battle/rooms/", {"question_count": 5}, format="json"
-    )
-    # 5問未満しかない場合に備えテストは question_count=5 で作らない
+    res = clients[0].post("/api/battle/rooms/", {}, format="json")
     assert res.status_code in (201, 400)
     if res.status_code == 400:
         raise AssertionError(res.content)
@@ -48,274 +30,128 @@ def make_room(n_questions=3, participants=2):
     return clients, profiles, code
 
 
+def answer(client, round_id, key):
+    return client.post(
+        f"/api/battle/rounds/{round_id}/answer/",
+        {"selected_choice_key": key},
+        format="json",
+    )
+
+
+def current_round_id(client, code):
+    return client.get(f"/api/battle/rooms/{code}/state/").json()["round"]["id"]
+
+
 class TestBattleFlow:
-    def test_full_match_flow(self):
-        # 5問 published を用意
-        for i in range(5):
-            make_question(question_text=f"設問{i}", correct_choice_key="A")
-        host, host_profile = auth_client(display_name="ホスト")
-        guest, guest_profile = auth_client(display_name="ゲスト")
+    def test_correct_vs_wrong_deals_20_percent(self):
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        round_id = current_round_id(clients[0], code)
 
-        code = host.post(
-            "/api/battle/rooms/", {"question_count": 5}, format="json"
-        ).json()["room_code"]
-        assert guest.post(f"/api/battle/rooms/{code}/join/").status_code == 200
-
-        # ホスト以外は開始できない
-        assert guest.post(f"/api/battle/rooms/{code}/start/").status_code == 403
-        assert host.post(f"/api/battle/rooms/{code}/start/").status_code == 200
+        assert answer(clients[0], round_id, "A").json()["correct"] is True
+        assert answer(clients[1], round_id, "B").json()["correct"] is False
 
         room = BattleRoom.objects.get(room_code=code)
-        assert room.rounds.count() == 5  # 全ラウンドを先に作成 (spec 4-2)
-        state = host.get(f"/api/battle/rooms/{code}/state/").json()
-        assert state["round"]["number"] == 1
+        assert room.participants.get(user=profiles[0]).hp == 100
+        assert room.participants.get(user=profiles[1]).hp == 80
+
+    def test_both_correct_damages_the_slower_by_10_percent(self):
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        round_id = current_round_id(clients[0], code)
+
+        answer(clients[0], round_id, "A")  # 先に正解
+        answer(clients[1], round_id, "A")  # あとから正解 → 10%被弾
+
+        room = BattleRoom.objects.get(room_code=code)
+        assert room.participants.get(user=profiles[0]).hp == 100
+        assert room.participants.get(user=profiles[1]).hp == 90
+
+    def test_both_wrong_deals_no_damage(self):
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        round_id = current_round_id(clients[0], code)
+
+        answer(clients[0], round_id, "B")
+        answer(clients[1], round_id, "C")
+
+        room = BattleRoom.objects.get(room_code=code)
+        assert room.participants.get(user=profiles[0]).hp == 100
+        assert room.participants.get(user=profiles[1]).hp == 100
+
+    def test_round_advances_only_after_both_answered(self):
+        clients, _, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        round_id = current_round_id(clients[0], code)
+
+        answer(clients[0], round_id, "A")
+        # まだ相手が答えていないので同じラウンドのまま
+        state = clients[0].get(f"/api/battle/rooms/{code}/state/").json()
+        assert state["round"]["id"] == round_id
+        assert state["round"]["i_have_answered"] is True
+
+        answer(clients[1], round_id, "A")
+        state = clients[0].get(f"/api/battle/rooms/{code}/state/").json()
+        assert state["round"]["number"] == 2
+
+    def test_cannot_answer_twice(self):
+        clients, _, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        round_id = current_round_id(clients[0], code)
+        assert answer(clients[0], round_id, "A").status_code == 200
+        assert answer(clients[0], round_id, "B").status_code == 400
+
+    def test_battle_ends_when_hp_reaches_zero(self):
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        room = BattleRoom.objects.get(room_code=code)
+
+        # 20%ダメージ×5回でHPが0になり、全10問を待たずに終了する。
+        for _ in range(5):
+            state = clients[0].get(f"/api/battle/rooms/{code}/state/").json()
+            if state["room"]["status"] == "finished":
+                break
+            round_id = state["round"]["id"]
+            answer(clients[0], round_id, "A")
+            answer(clients[1], round_id, "B")
+
+        room.refresh_from_db()
+        assert room.participants.get(user=profiles[1]).hp == 0
+        assert room.status == BattleRoom.Status.FINISHED
+
+    def test_state_exposes_opponent_identity_for_the_vs_header(self):
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        state = clients[0].get(f"/api/battle/rooms/{code}/state/").json()
+        me = next(p for p in state["participants"] if p["is_me"])
+        opponent = next(p for p in state["participants"] if not p["is_me"])
+        for row in (me, opponent):
+            assert "display_name" in row
+            assert "university" in row
+            assert "tier" in row
+            assert row["hp"] == 100
+
+    def test_answers_are_hidden_until_the_round_closes(self):
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        round_id = current_round_id(clients[0], code)
+        answer(clients[0], round_id, "A")
+
+        # 相手からは「答えたこと」だけ見え、選んだ選択肢は見えない。
+        state = clients[1].get(f"/api/battle/rooms/{code}/state/").json()
+        assert str(profiles[0].id) in state["round"]["answered_profile_ids"]
+        assert state["round"]["i_have_answered"] is False
         assert "correct_choice_key" not in state["round"]["question"]
 
-        round_id = state["round"]["id"]
-        # guest が先に早押し → rank 1、host は rank 2
-        assert guest.post(f"/api/battle/rounds/{round_id}/buzz/").json()["rank"] == 1
-        assert host.post(f"/api/battle/rounds/{round_id}/buzz/").json()["rank"] == 2
-
-        # host は回答権なし（rank2, rank1未回答）
-        res = host.post(
-            f"/api/battle/rounds/{round_id}/answer/",
-            {"selected_choice_key": "A"},
-            format="json",
-        )
-        assert res.status_code == 403
-
-        # guest 誤答 → -30（下限0）→ 回答権が host に移る
-        res = guest.post(
-            f"/api/battle/rounds/{round_id}/answer/",
-            {"selected_choice_key": "B"},
-            format="json",
-        )
-        assert res.json()["correct"] is False
-        assert res.json()["score"] == 0  # max(0, 0-30)
-
-        # host 正解 → +100（rank2 なのでボーナスなし）→ ラウンドが閉じ次へ
-        res = host.post(
-            f"/api/battle/rounds/{round_id}/answer/",
-            {"selected_choice_key": "A"},
-            format="json",
-        )
-        assert res.json()["correct"] is True
-        assert res.json()["score"] == CORRECT_POINTS
-
-        state = host.get(f"/api/battle/rooms/{code}/state/").json()
-        assert state["round"]["number"] == 2
-        assert state["last_result"]["correct_choice_key"] == "A"
-
-        # 対戦の解答は AnswerHistory に context=battle で記録される (spec 4-2)
-        assert AnswerHistory.objects.filter(
-            user=guest_profile, context="battle", correct=False
-        ).exists()
-        # …がランキング集計には含まれない
-        assert guest_profile.id not in fetch_user_stats("all")
-
-    def test_two_clients_complete_all_rounds(self):
-        """2クライアントで全ラウンド完走 → finished + 結果表示 (完了条件)."""
-        for i in range(5):
-            make_question(question_text=f"完走設問{i}", correct_choice_key="A")
-        host, _ = auth_client(display_name="勝者")
-        guest, _ = auth_client(display_name="敗者")
-        code = host.post(
-            "/api/battle/rooms/", {"question_count": 5}, format="json"
-        ).json()["room_code"]
-        guest.post(f"/api/battle/rooms/{code}/join/")
-        host.post(f"/api/battle/rooms/{code}/start/")
-
-        for _ in range(5):
-            state = host.get(f"/api/battle/rooms/{code}/state/").json()
-            round_id = state["round"]["id"]
-            host.post(f"/api/battle/rounds/{round_id}/buzz/")
-            host.post(
-                f"/api/battle/rounds/{round_id}/answer/",
-                {"selected_choice_key": "A"},
-                format="json",
-            )
-
-        state = host.get(f"/api/battle/rooms/{code}/state/").json()
-        assert state["room"]["status"] == "finished"
-
-        result = guest.get(f"/api/battle/rooms/{code}/result/").json()
-        assert result["standings"][0]["display_name"] == "勝者"
-        assert result["standings"][0]["rank"] == 1
-        assert result["standings"][0]["correct_count"] == 5
-        assert result["standings"][0]["score"] == 5 * (CORRECT_POINTS + FIRST_BUZZ_BONUS)
-        assert result["standings"][1]["rank"] == 2
-
-        # 対戦ランクポイント (spec: 対戦＋模試の合算ポイントでSS〜Dランク) が
-        # ルーム終了時に一度だけ確定し、勝者が敗者より多くもらう。
-        assert result["standings"][0]["points_delta"] == 25  # 1位（2人中）
-        assert result["standings"][1]["points_delta"] == -15  # 最下位
-        host_profile = Profile.objects.get(display_name="勝者")
-        guest_profile = Profile.objects.get(display_name="敗者")
-        assert host_profile.points == 1025
-        assert guest_profile.points == 985
-        assert host_profile.ranked_matches == 1
-        assert guest_profile.ranked_matches == 1
-
-    def test_first_buzz_bonus(self):
-        for i in range(5):
-            make_question(question_text=f"B設問{i}", correct_choice_key="A")
-        host, _ = auth_client(display_name="H")
-        guest, _ = auth_client(display_name="G")
-        code = host.post(
-            "/api/battle/rooms/", {"question_count": 5}, format="json"
-        ).json()["room_code"]
-        guest.post(f"/api/battle/rooms/{code}/join/")
-        host.post(f"/api/battle/rooms/{code}/start/")
-        round_id = host.get(f"/api/battle/rooms/{code}/state/").json()["round"]["id"]
-
-        host.post(f"/api/battle/rounds/{round_id}/buzz/")
-        res = host.post(
-            f"/api/battle/rounds/{round_id}/answer/",
-            {"selected_choice_key": "A"},
-            format="json",
-        )
-        assert res.json()["score"] == CORRECT_POINTS + FIRST_BUZZ_BONUS
-
     def test_non_participant_cannot_see_state(self):
-        for i in range(5):
-            make_question(question_text=f"C設問{i}")
-        host, _ = auth_client()
-        guest, _ = auth_client()
-        outsider, _ = auth_client()
-        code = host.post(
-            "/api/battle/rooms/", {"question_count": 5}, format="json"
-        ).json()["room_code"]
-        guest.post(f"/api/battle/rooms/{code}/join/")
+        clients, _, code = make_room()
+        outsider, _ = auth_client(display_name="部外者")
         assert outsider.get(f"/api/battle/rooms/{code}/state/").status_code == 403
-
-    def test_score_floor_and_penalty(self):
-        assert max(0, 50 - WRONG_PENALTY) == 20
-
-
-@pytest.mark.django_db(transaction=True)
-class TestBuzzRace:
-    """同時押しで1人だけが rank=1 を得ることの検証 (spec 4-2 / 6)."""
-
-    def _run_threads(self, worker, count):
-        barrier = threading.Barrier(count)
-        results, errors = [], []
-
-        def wrapped(i):
-            try:
-                barrier.wait(timeout=10)
-                results.append(worker(i))
-            except Exception as exc:  # noqa: BLE001
-                errors.append(exc)
-            finally:
-                for conn in connections.all():
-                    conn.close()
-
-        threads = [threading.Thread(target=wrapped, args=(i,)) for i in range(count)]
-        for t in threads:
-            t.start()
-        for t in threads:
-            t.join(timeout=30)
-        assert not errors, errors
-        return results
-
-    def test_django_fallback_assigns_unique_ranks(self):
-        clients, _, code = make_room(n_questions=5, participants=4)
-        clients[0].post(f"/api/battle/rooms/{code}/start/")
-        round_id = clients[0].get(f"/api/battle/rooms/{code}/state/").json()["round"]["id"]
-
-        ranks = self._run_threads(
-            lambda i: clients[i].post(f"/api/battle/rounds/{round_id}/buzz/").json()["rank"],
-            len(clients),
-        )
-        assert sorted(ranks) == [1, 2, 3, 4]  # 全員押せて、1位は1人だけ
-
-    def test_claim_buzz_rpc_assigns_unique_ranks(self):
-        """Supabase RPC を実 SQL としてテスト DB に適用し、並行実行する。
-
-        auth.uid() は Supabase 互換のスタブ（request.jwt.claim.sub を返す）
-        で差し替える。role 付与はテスト用クラスタに存在しないためスキップ。
-        """
-        clients, profiles, code = make_room(n_questions=5, participants=4)
-        clients[0].post(f"/api/battle/rooms/{code}/start/")
-        round_id = clients[0].get(f"/api/battle/rooms/{code}/state/").json()["round"]["id"]
-
-        sql = CLAIM_BUZZ_SQL.read_text(encoding="utf-8")
-        sql = sql.split("revoke all")[0]  # grant/revoke は roles 不在のため除外
-        with connection.cursor() as cursor:
-            cursor.execute("CREATE SCHEMA IF NOT EXISTS auth")
-            cursor.execute(
-                """
-                CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
-                LANGUAGE sql STABLE AS
-                $$ SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$
-                """
-            )
-            cursor.execute(sql)
-
-        def claim(i):
-            conn = connections.create_connection("default")
-            try:
-                with conn.cursor() as cursor:
-                    cursor.execute(
-                        "SELECT set_config('request.jwt.claim.sub', %s, false)",
-                        [str(profiles[i].id)],
-                    )
-                    cursor.execute("SELECT * FROM claim_buzz(%s)", [round_id])
-                    return cursor.fetchone()[1]  # buzz_rank
-            finally:
-                conn.close()
-
-        ranks = self._run_threads(claim, len(profiles))
-        assert sorted(ranks) == [1, 2, 3, 4]
-        assert BattleBuzz.objects.filter(round_id=round_id, rank=1).count() == 1
-
-        # 二重押しは既存 rank を返す（冪等）
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT set_config('request.jwt.claim.sub', %s, false)",
-                [str(profiles[0].id)],
-            )
-            cursor.execute("SELECT * FROM claim_buzz(%s)", [round_id])
-            again = cursor.fetchone()[1]
-        first = BattleBuzz.objects.get(round_id=round_id, profile=profiles[0]).rank
-        assert again == first
-
-    def test_rpc_rejects_non_participant(self):
-        clients, profiles, code = make_room(n_questions=5, participants=2)
-        clients[0].post(f"/api/battle/rooms/{code}/start/")
-        round_id = clients[0].get(f"/api/battle/rooms/{code}/state/").json()["round"]["id"]
-
-        sql = CLAIM_BUZZ_SQL.read_text(encoding="utf-8").split("revoke all")[0]
-        with connection.cursor() as cursor:
-            cursor.execute("CREATE SCHEMA IF NOT EXISTS auth")
-            cursor.execute(
-                """
-                CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
-                LANGUAGE sql STABLE AS
-                $$ SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$
-                """
-            )
-            cursor.execute(sql)
-
-        outsider = uuid.uuid4()
-        conn = connections.create_connection("default")
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(
-                    "SELECT set_config('request.jwt.claim.sub', %s, false)", [str(outsider)]
-                )
-                with pytest.raises(Exception, match="not a participant"):
-                    cursor.execute("SELECT * FROM claim_buzz(%s)", [round_id])
-        finally:
-            conn.close()
-
-        # 部外者の行は作られていない
-        assert not BattleBuzz.objects.filter(profile_id=outsider).exists()
 
 
 class TestRoundTimeout:
     def test_timeout_closes_round(self, monkeypatch):
-        clients, _, code = make_room(n_questions=5, participants=2)
+        clients, _, code = make_room(participants=2)
         clients[0].post(f"/api/battle/rooms/{code}/start/")
         room = BattleRoom.objects.get(room_code=code)
         round1 = room.rounds.get(round_number=1)
@@ -337,17 +173,17 @@ def timezone_delta(seconds):
 
 class TestQuickMatch:
     def test_two_humans_are_matched_by_quickmatch(self):
-        for i in range(5):
+        for i in range(10):
             make_question(question_text=f"QM設問{i}", correct_choice_key="A")
         c1, p1 = auth_client(display_name="アリス", grade=4)
         c2, p2 = auth_client(display_name="ボブ", grade=4)
 
-        res1 = c1.post("/api/battle/quickmatch/", {"question_count": 5}, format="json")
+        res1 = c1.post("/api/battle/quickmatch/", {}, format="json")
         assert res1.status_code == 201
         assert res1.json()["status"] == "waiting"
         ticket1_id = res1.json()["ticket_id"]
 
-        res2 = c2.post("/api/battle/quickmatch/", {"question_count": 5}, format="json")
+        res2 = c2.post("/api/battle/quickmatch/", {}, format="json")
         assert res2.json()["status"] == "matched"
         assert res2.json()["room_code"]
         assert res2.json()["opponent"]["display_name"] == "アリス"
@@ -362,11 +198,11 @@ class TestQuickMatch:
         assert room.participants.count() == 2
 
     def test_timeout_falls_back_to_ai_opponent(self):
-        for i in range(5):
+        for i in range(10):
             make_question(question_text=f"AI設問{i}", correct_choice_key="A")
         client, profile = auth_client(display_name="ソロ待機", grade=4)
         ticket_id = client.post(
-            "/api/battle/quickmatch/", {"question_count": 5}, format="json"
+            "/api/battle/quickmatch/", {}, format="json"
         ).json()["ticket_id"]
 
         from battle.models import MatchmakingTicket
@@ -381,11 +217,12 @@ class TestQuickMatch:
         room = BattleRoom.objects.get(room_code=poll["room_code"])
         assert room.participants.filter(user__is_ai=True).exists()
 
-        # AIは人間側のポーリングのたびに1手ずつ進む（早押し→次のポーリングで解答）。
-        # 実運用は1.5秒間隔のポーリングで実時間が経過するが、テストでは連続で
-        # 叩くため経過時間を作れない。ラウンドタイムアウト(30秒)を偽装して
-        # 強制的に進行させる（AIの正誤に関わらず、いずれこの経路でも閉じる）。
-        for _ in range(10):
+        # AIは人間側のポーリングのたびに1手ずつ進む。実運用は1.5秒間隔の
+        # ポーリングで実時間が経過するが、テストでは連続で叩くため経過時間を
+        # 作れない。ラウンドタイムアウト(30秒)を偽装して強制的に進行させる。
+        # AIの正答率は確率的なので、HP切れではなく「全ラウンド消化」で必ず
+        # 終わるよう、ラウンド数より十分多く回す。
+        for _ in range(40):
             state = client.get(f"/api/battle/rooms/{room.room_code}/state/").json()
             if state["room"]["status"] == "finished":
                 break
@@ -395,3 +232,93 @@ class TestQuickMatch:
                     revealed_at=timezone.now() - timezone_delta(31)
                 )
         assert state["room"]["status"] == "finished"
+
+
+class TestLeaveRoom:
+    def test_leave_waiting_room_removes_participant(self):
+        clients, profiles, code = make_room(participants=2)
+        res = clients[1].post(f"/api/battle/rooms/{code}/leave/")
+        assert res.status_code == 200
+        room = BattleRoom.objects.get(room_code=code)
+        assert room.participants.count() == 1
+        assert not room.participants.filter(user=profiles[1]).exists()
+
+    def test_host_leaving_waiting_room_hands_off_to_next_participant(self):
+        clients, profiles, code = make_room(participants=3)
+        res = clients[0].post(f"/api/battle/rooms/{code}/leave/")
+        assert res.status_code == 200
+        room = BattleRoom.objects.get(room_code=code)
+        assert room.participants.count() == 2
+        assert room.host_id in (profiles[1].id, profiles[2].id)
+
+    def test_last_participant_leaving_waiting_room_deletes_it(self):
+        clients, profiles, code = make_room(participants=2)
+        clients[1].post(f"/api/battle/rooms/{code}/leave/")
+        clients[0].post(f"/api/battle/rooms/{code}/leave/")
+        assert not BattleRoom.objects.filter(room_code=code).exists()
+
+    def test_leaving_in_progress_room_freezes_score_and_spawns_disguised_ai(self):
+        clients, profiles, code = make_room(participants=2)
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        room = BattleRoom.objects.get(room_code=code)
+        leaver = room.participants.get(user=profiles[1])
+        leaver.score = 40
+        leaver.save(update_fields=["score"])
+
+        res = clients[1].post(f"/api/battle/rooms/{code}/leave/")
+        assert res.status_code == 200
+
+        leaver.refresh_from_db()
+        assert leaver.left_at is not None
+        assert leaver.score == 40  # 離脱時点で凍結され、以後増えない
+
+        room.refresh_from_db()
+        assert room.status == BattleRoom.Status.IN_PROGRESS  # もう1人は人間なので続行
+        ai_participant = room.participants.get(user__is_ai=True)
+        assert ai_participant.left_at is None
+        # 「AI」だと分かる表示名や、固定の偽名を使い回していないことを確認する。
+        assert "AI" not in ai_participant.user.display_name
+        assert ai_participant.ai_tier
+
+    def test_leaving_ai_only_room_finishes_immediately(self):
+        for i in range(10):
+            make_question(question_text=f"離脱設問{i}", correct_choice_key="A")
+        client, profile = auth_client(display_name="ひとり", grade=4)
+        ticket_id = client.post(
+            "/api/battle/quickmatch/", {}, format="json"
+        ).json()["ticket_id"]
+        from battle.models import MatchmakingTicket
+
+        MatchmakingTicket.objects.filter(pk=ticket_id).update(
+            created_at=timezone.now() - timezone_delta(61)
+        )
+        poll = client.get(f"/api/battle/quickmatch/{ticket_id}/").json()
+        code = poll["room_code"]
+
+        res = client.post(f"/api/battle/rooms/{code}/leave/")
+        assert res.status_code == 200
+        room = BattleRoom.objects.get(room_code=code)
+        assert room.status == BattleRoom.Status.FINISHED
+
+    def test_cannot_leave_finished_room(self):
+        clients, profiles, code = make_room(participants=2)
+        room = BattleRoom.objects.get(room_code=code)
+        room.status = BattleRoom.Status.FINISHED
+        room.save(update_fields=["status"])
+        res = clients[0].post(f"/api/battle/rooms/{code}/leave/")
+        assert res.status_code == 400
+
+    def test_disconnected_participant_is_auto_replaced_by_ai(self):
+        clients, profiles, code = make_room(participants=2)
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        room = BattleRoom.objects.get(room_code=code)
+        stale_participant = room.participants.get(user=profiles[1])
+        stale_participant.last_seen_at = timezone.now() - timezone_delta(31)
+        stale_participant.save(update_fields=["last_seen_at"])
+
+        # もう一方の参加者がポーリングすることで、無応答側が自動的に入れ替わる。
+        clients[0].get(f"/api/battle/rooms/{code}/state/")
+
+        stale_participant.refresh_from_db()
+        assert stale_participant.left_at is not None
+        assert room.participants.filter(user__is_ai=True).exists()

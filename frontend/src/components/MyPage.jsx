@@ -78,12 +78,121 @@ const EXAM_PREFERENCES = [
 
 const EXAM_TYPE_LABEL = { CBT: "CBT", KOKUSHI: "医師国家試験" };
 
+/** プロフィール編集フォーム。
+ *
+ * 所属大学は「未設定のときだけ」選べる。学内ランキングの母集団が所属大学で
+ * 決まるため、あとから付け替えられると順位を操作できてしまう。サーバ側でも
+ * 同じ制約を掛けてあるので、ここは UI 上の案内という位置づけ。 */
+function ProfileEditor({ user, onCancel, onSaved }) {
+  const [displayName, setDisplayName] = useState(user.display_name ?? "");
+  const [grade, setGrade] = useState(user.grade ? String(user.grade) : "");
+  const [universityId, setUniversityId] = useState(
+    user.university?.id ? String(user.university.id) : ""
+  );
+  const [universities, setUniversities] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const universityLocked = Boolean(user.university);
+
+  useEffect(() => {
+    if (universityLocked) return;
+    api.universities().then(setUniversities).catch(() => setUniversities([]));
+  }, [universityLocked]);
+
+  async function handleSave(e) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const payload = { display_name: displayName.trim(), grade: grade ? Number(grade) : null };
+      // 変更不可なので、確定済みの大学は送らない（サーバ側でも弾かれる）。
+      if (!universityLocked && universityId) payload.university_id = Number(universityId);
+      await api.updateMe(payload);
+      await onSaved();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form className="profile-editor" onSubmit={handleSave}>
+      <label className="profile-field">
+        <span className="profile-field-label">表示名</span>
+        <input
+          type="text"
+          value={displayName}
+          maxLength={50}
+          placeholder="表示名"
+          onChange={(e) => setDisplayName(e.target.value)}
+        />
+      </label>
+
+      <label className="profile-field">
+        <span className="profile-field-label">所属大学</span>
+        {universityLocked ? (
+          <>
+            <input type="text" value={user.university.name} disabled />
+            <span className="profile-field-hint">
+              所属大学は学内ランキングの集計に使うため、あとから変更できません。
+            </span>
+          </>
+        ) : (
+          <>
+            <select value={universityId} onChange={(e) => setUniversityId(e.target.value)}>
+              <option value="">未設定</option>
+              {(universities ?? []).map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
+            <span className="profile-field-hint">
+              一度保存すると変更できません。よく確認して選んでください。
+            </span>
+          </>
+        )}
+      </label>
+
+      <label className="profile-field">
+        <span className="profile-field-label">学年</span>
+        <div className="filter-chip-row">
+          {["", 1, 2, 3, 4, 5, 6].map((g) => (
+            <button
+              key={g || "none"}
+              type="button"
+              className={`filter-chip${grade === String(g) ? " active" : ""}`}
+              onClick={() => setGrade(String(g))}
+            >
+              {g === "" ? "未設定" : `${g}年`}
+            </button>
+          ))}
+        </div>
+      </label>
+
+      {error && <p className="error">{error}</p>}
+
+      <div className="profile-editor-actions">
+        <button type="button" className="toolbar-btn" disabled={saving} onClick={onCancel}>
+          キャンセル
+        </button>
+        <button type="submit" className="cta-button" disabled={saving}>
+          {saving ? "保存中..." : "保存する"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function MyPage() {
   const { profile, refresh } = useProfile();
   const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [pointsInfo, setPointsInfo] = useState(null);
   const [examHistory, setExamHistory] = useState(null);
+  const [editing, setEditing] = useState(false);
   const [savingPreference, setSavingPreference] = useState(false);
   const [preferenceError, setPreferenceError] = useState(null);
 
@@ -186,27 +295,43 @@ export default function MyPage() {
       <div className="mypage-section">
         <SectionHeading icon="profile" title="プロフィール" />
         <div className="mypage-card">
-          <div className="profile-row">
-            <span className="profile-label">
-              <span className="mypage-section-icon">{ICONS.profile}</span>
-              表示名
-            </span>
-            <span className="profile-value">{fullName}</span>
-          </div>
-          <div className="profile-row">
-            <span className="profile-label">
-              <span className="mypage-section-icon">{ICONS.university}</span>
-              所属大学
-            </span>
-            <span className="profile-value">{user.university?.name ?? "未設定"}</span>
-          </div>
-          <div className="profile-row">
-            <span className="profile-label">
-              <span className="mypage-section-icon">{ICONS.grade}</span>
-              学年
-            </span>
-            <span className="profile-value">{user.grade ? `${user.grade}年` : "未設定"}</span>
-          </div>
+          {editing ? (
+            <ProfileEditor
+              user={user}
+              onCancel={() => setEditing(false)}
+              onSaved={async () => {
+                await refresh();
+                setEditing(false);
+              }}
+            />
+          ) : (
+            <>
+              <div className="profile-row">
+                <span className="profile-label">
+                  <span className="mypage-section-icon">{ICONS.profile}</span>
+                  表示名
+                </span>
+                <span className="profile-value">{fullName}</span>
+              </div>
+              <div className="profile-row">
+                <span className="profile-label">
+                  <span className="mypage-section-icon">{ICONS.university}</span>
+                  所属大学
+                </span>
+                <span className="profile-value">{user.university?.name ?? "未設定"}</span>
+              </div>
+              <div className="profile-row">
+                <span className="profile-label">
+                  <span className="mypage-section-icon">{ICONS.grade}</span>
+                  学年
+                </span>
+                <span className="profile-value">{user.grade ? `${user.grade}年` : "未設定"}</span>
+              </div>
+              <button className="toolbar-btn profile-edit-btn" onClick={() => setEditing(true)}>
+                プロフィールを編集
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -217,11 +342,11 @@ export default function MyPage() {
             演習と模試で既定にする試験です。「学年に合わせる」のままにしておくと、
             毎年4月1日の進級に合わせて自動で切り替わります（4年生以下はCBT、5年生以降は医師国家試験）。
           </p>
-          <div className="grade-toggle">
+          <div className="filter-chip-row">
             {EXAM_PREFERENCES.map((p) => (
               <button
                 key={p.key || "auto"}
-                className={examPreference === p.key ? "active" : ""}
+                className={`filter-chip${examPreference === p.key ? " active" : ""}`}
                 disabled={savingPreference}
                 onClick={() => handleExamPreference(p.key)}
               >
@@ -299,16 +424,6 @@ export default function MyPage() {
           </button>
         </div>
       )}
-
-      <div className="mypage-section">
-        <button
-          className="toolbar-btn"
-          style={{ width: "100%" }}
-          onClick={() => navigate("/settings/notifications")}
-        >
-          🔔 復習リマインド設定
-        </button>
-      </div>
 
       {STUDENT_VERIFICATION_ENABLED && !user.student_verified && (
         <div className="mypage-section">

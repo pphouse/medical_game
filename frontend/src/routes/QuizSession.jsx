@@ -15,6 +15,7 @@ export default function QuizSession() {
       title={state.title}
       questions={state.questions}
       startIndex={state.startIndex ?? 0}
+      context={state.context ?? "solo"}
       onBack={() => navigate(state.backTo ?? -1)}
     />
   );

@@ -110,7 +110,7 @@ export default function Solo() {
 
       <div className="quick-links">
         <button className="quick-link" onClick={() => navigate("/review")}>
-          復習{reviewDue > 0 && <span className="menu-badge">{reviewDue > 99 ? "99+" : reviewDue}</span>}
+          演習{reviewDue > 0 && <span className="menu-badge">{reviewDue > 99 ? "99+" : reviewDue}</span>}
         </button>
         {STUDENT_VERIFICATION_ENABLED && (
           <button className="quick-link" onClick={() => navigate("/create")}>

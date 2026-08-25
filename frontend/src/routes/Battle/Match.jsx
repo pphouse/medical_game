@@ -1,12 +1,104 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../../api";
-import { supabase } from "../../lib/supabase";
+import TierBadge from "../../components/TierBadge";
 
-/** 出題 + 早押しボタン + 回答。状態は親 (Room) がポーリングで供給する。 */
-export default function Match({ state, refresh }) {
+/** 上部に常時出るVSヘッダー。自分と相手の名前・大学・ランク・HPを見せる。 */
+function VersusHeader({ me, opponent, damageFor }) {
+  return (
+    <div className="vs-header">
+      <Fighter side="me" p={me} damage={damageFor(me)} />
+      <span className="vs-badge">VS</span>
+      <Fighter side="opponent" p={opponent} damage={damageFor(opponent)} />
+    </div>
+  );
+}
+
+function Fighter({ side, p, damage }) {
+  if (!p) return <div className={`fighter fighter-${side}`} />;
+  const hp = Math.max(0, p.hp ?? 0);
+  const state = hp <= 30 ? " danger" : hp <= 60 ? " warn" : "";
+  return (
+    <div className={`fighter fighter-${side}${damage ? " hit" : ""}`}>
+      <div className="fighter-id">
+        <span className="fighter-name">{p.display_name}</span>
+        <span className="fighter-univ">{p.university ?? "所属未設定"}</span>
+      </div>
+      <div className="fighter-hp-row">
+        <TierBadge tier={p.tier} fallback="―" />
+        <div className="hp-bar">
+          <div className={`hp-fill${state}`} style={{ width: `${hp}%` }} />
+        </div>
+        <span className="hp-value">{hp}%</span>
+      </div>
+      {damage > 0 && <span className="damage-pop">-{damage}%</span>}
+    </div>
+  );
+}
+
+/** 対戦開始前のVS演出。 */
+function VersusIntro({ me, opponent }) {
+  return (
+    <div className="vs-intro">
+      <div className="vs-intro-inner">
+        <div className="vs-intro-side vs-intro-left">
+          <span className="vs-intro-name">{me?.display_name}</span>
+          <span className="vs-intro-univ">{me?.university ?? ""}</span>
+          <TierBadge tier={me?.tier} fallback="―" large />
+        </div>
+        <span className="vs-intro-vs">VS</span>
+        <div className="vs-intro-side vs-intro-right">
+          <span className="vs-intro-name">{opponent?.display_name}</span>
+          <span className="vs-intro-univ">{opponent?.university ?? ""}</span>
+          <TierBadge tier={opponent?.tier} fallback="―" large />
+        </div>
+      </div>
+      <p className="vs-intro-go">BATTLE START!</p>
+    </div>
+  );
+}
+
+/** 出題 + 選択 + 回答ボタン。状態は親 (Room) がポーリングで供給する。 */
+export default function Match({ state, refresh, onLeave }) {
   const { round, participants, last_result: lastResult } = state;
   const [busy, setBusy] = useState(false);
+  const [selected, setSelected] = useState(null);
   const [remaining, setRemaining] = useState(null);
+  const [flash, setFlash] = useState(null);
+  const [intro, setIntro] = useState(true);
+  const seenRoundRef = useRef(null);
+  const seenResultRef = useRef(null);
+
+  const me = participants.find((p) => p.is_me);
+  const opponent = participants.find((p) => !p.is_me);
+
+  // 開幕のVS演出は最初の数秒だけ
+  useEffect(() => {
+    const t = setTimeout(() => setIntro(false), 2200);
+    return () => clearTimeout(t);
+  }, []);
+
+  // ラウンドが変わったら選択をリセット
+  useEffect(() => {
+    if (round?.id && seenRoundRef.current !== round.id) {
+      seenRoundRef.current = round.id;
+      setSelected(null);
+    }
+  }, [round?.id]);
+
+  // 被弾／攻撃成功のフラッシュ演出
+  useEffect(() => {
+    if (!lastResult) return;
+    const key = `${lastResult.number}`;
+    if (seenResultRef.current === key) return;
+    seenResultRef.current = key;
+    const myDamage = lastResult.my_damage ?? 0;
+    if (myDamage > 0) setFlash("hit");
+    else if (lastResult.reason === "wrong_answer" || lastResult.reason === "slower_answer") {
+      setFlash("attack");
+    }
+    const t = setTimeout(() => setFlash(null), 900);
+    return () => clearTimeout(t);
+  }, [lastResult]);
 
   useEffect(() => {
     if (!round?.closes_at) return undefined;
@@ -19,72 +111,75 @@ export default function Match({ state, refresh }) {
     return () => clearInterval(timer);
   }, [round?.closes_at]);
 
+  const damageFor = (p) =>
+    p && lastResult?.damage ? Number(lastResult.damage[p.profile_id] ?? 0) : 0;
+
+  async function handleAnswer() {
+    if (!selected) return;
+    setBusy(true);
+    try {
+      await api.battleAnswer(round.id, selected);
+      await refresh();
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleLeave() {
+    if (
+      !window.confirm(
+        "対戦から退出しますか？ここまでのHPで確定し、相手には自動で代わりのプレイヤーが入ります。"
+      )
+    ) {
+      return;
+    }
+    await onLeave();
+  }
+
+  if (intro) return <VersusIntro me={me} opponent={opponent} />;
+
   if (!round) {
     return (
-      <div className="screen">
+      <div className="screen battle-screen">
+        <VersusHeader me={me} opponent={opponent} damageFor={damageFor} />
         <p>次のラウンドを待っています…</p>
       </div>
     );
   }
 
-  async function handleBuzz() {
-    setBusy(true);
-    try {
-      // 早押しは Supabase RPC (サーバ時刻 clock_timestamp で順位確定) を
-      // 優先し、未設定環境では Django フォールバックを使う (spec 4-1)
-      if (supabase) {
-        const { error } = await supabase.rpc("claim_buzz", { p_round_id: round.id });
-        if (error) throw new Error(error.message);
-      } else {
-        await api.battleBuzz(round.id);
-      }
-      await refresh();
-    } catch (e) {
-      alert(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleAnswer(key) {
-    setBusy(true);
-    try {
-      await api.battleAnswer(round.id, key);
-      await refresh();
-    } catch (e) {
-      alert(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   const question = round.question;
+  const answered = round.i_have_answered;
+  const opponentAnswered =
+    opponent && round.answered_profile_ids?.includes(opponent.profile_id);
 
   return (
-    <div className="screen">
-      <div className="quiz-topbar">
-        <span className="quiz-topbar-title">
-          第{round.number}問 / {round.total}
-        </span>
-        <span className="progress">残り {remaining ?? "--"} 秒</span>
-      </div>
+    <div className={`screen battle-screen${flash ? ` flash-${flash}` : ""}`}>
+      <VersusHeader me={me} opponent={opponent} damageFor={damageFor} />
 
-      <div className="battle-scorebar">
-        {participants.map((p) => (
-          <span key={p.display_name} className={`battle-score${p.is_me ? " me" : ""}`}>
-            {p.display_name}: <strong>{p.score}</strong>
-          </span>
-        ))}
+      <div className="battle-roundbar">
+        <span className="battle-round-no">
+          Q{round.number}
+          <span className="battle-round-total">/{round.total}</span>
+        </span>
+        <span className={`battle-timer${remaining !== null && remaining <= 5 ? " urgent" : ""}`}>
+          {remaining ?? "--"}
+        </span>
+        <button className="battle-leave-button" onClick={handleLeave}>
+          退出
+        </button>
       </div>
 
       {lastResult && lastResult.number === round.number - 1 && (
         <div className="battle-last-result">
-          前問の正解: {lastResult.correct_choice_key}
-          {lastResult.winner ? `（${lastResult.winner} が正解）` : "（正解者なし）"}
+          前問の正解: <b>{lastResult.correct_choice_key}</b>
+          {lastResult.reason === "all_wrong" && "（両者不正解）"}
+          {lastResult.reason === "draw" && "（引き分け）"}
         </div>
       )}
 
-      <div className="question-card">
+      <div className="question-card battle-question-card">
         {question.case_stem && <p className="case-stem">{question.case_stem}</p>}
         <p className="question-text">{question.question_text}</p>
 
@@ -92,9 +187,9 @@ export default function Match({ state, refresh }) {
           {question.choices.map((choice) => (
             <button
               key={choice.key}
-              className="choice"
-              disabled={!round.i_am_answering || busy}
-              onClick={() => handleAnswer(choice.key)}
+              className={`choice battle-choice${selected === choice.key ? " selected" : ""}`}
+              disabled={answered || busy}
+              onClick={() => setSelected(choice.key)}
             >
               <span className="choice-key">{choice.key}</span>
               <span>{choice.text}</span>
@@ -102,34 +197,22 @@ export default function Match({ state, refresh }) {
           ))}
         </div>
 
-        {round.can_buzz ? (
-          <button className="buzz-button" onClick={handleBuzz} disabled={busy}>
-            早押し！
-          </button>
-        ) : round.i_am_answering ? (
-          <p className="battle-answering">回答権があります。選択肢を選んでください！</p>
-        ) : (
+        {answered ? (
           <p className="battle-waiting">
-            {round.answering_rank
-              ? `${round.answering_rank}位の回答を待っています…`
-              : "みんなの早押しを待っています…"}
+            {opponentAnswered ? "判定中…" : "相手の回答を待っています…"}
           </p>
+        ) : (
+          <button
+            className="cta-button battle-answer-button"
+            disabled={!selected || busy}
+            onClick={handleAnswer}
+          >
+            {selected ? `${selected} で回答する` : "選択肢を選んでください"}
+          </button>
         )}
 
-        {round.buzzes.length > 0 && (
-          <div className="battle-buzz-list">
-            {round.buzzes.map((b) => (
-              <span
-                key={b.rank}
-                className={`battle-buzz-chip${b.is_correct === false ? " wrong" : ""}${
-                  b.is_correct === true ? " right" : ""
-                }`}
-              >
-                {b.rank}. {b.display_name}
-                {b.is_me && "（あなた）"}
-              </span>
-            ))}
-          </div>
+        {opponentAnswered && !answered && (
+          <p className="battle-opponent-ready">相手は回答済み！急いで！</p>
         )}
       </div>
     </div>
