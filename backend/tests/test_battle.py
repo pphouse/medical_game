@@ -393,25 +393,14 @@ class TestAiAnswerTiming:
 
 
 class TestRoundTimeLimit:
-    def test_long_questions_get_more_time(self):
-        short = make_question(question_text="短い。", correct_choice_key="A")
-        long_q = make_question(
-            question_text="７２歳男性。３日前からの発熱と湿性咳嗽を主訴に来院した。" * 8,
-            correct_choice_key="A",
-        )
-        assert round_time_limit_seconds(long_q) > round_time_limit_seconds(short)
-
-    def test_short_questions_keep_the_baseline(self):
+    def test_time_limit_is_a_flat_20_seconds(self):
         from battle.scoring import ROUND_TIME_LIMIT_SECONDS
 
-        short = make_question(question_text="短い。", correct_choice_key="A")
-        assert round_time_limit_seconds(short) >= ROUND_TIME_LIMIT_SECONDS
-
-    def test_time_limit_is_capped(self):
-        from battle.scoring import ROUND_TIME_LIMIT_MAX_SECONDS
-
+        assert ROUND_TIME_LIMIT_SECONDS == 20
         huge = make_question(question_text="あ" * 5000, correct_choice_key="A")
-        assert round_time_limit_seconds(huge) == ROUND_TIME_LIMIT_MAX_SECONDS
+        short = make_question(question_text="短", correct_choice_key="A")
+        assert round_time_limit_seconds(huge) == 20
+        assert round_time_limit_seconds(short) == 20
 
     def test_ai_answers_within_the_time_limit(self):
         """Dランクでも制限時間内に答え切れること（無回答が続くと対戦が進まない）。"""
@@ -471,3 +460,124 @@ class TestMatchTimeoutWindow:
             created_at=timezone.now() - timezone_delta(41)
         )
         assert client.get(f"/api/battle/quickmatch/{ticket_id}/").json()["status"] == "ai_matched"
+
+
+class TestUnansweredCountsAsWrong:
+    def test_not_answering_takes_the_same_damage_as_a_wrong_answer(self):
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        room = BattleRoom.objects.get(room_code=code)
+        round_id = current_round_id(clients[0], code)
+
+        answer(clients[0], round_id, "A")  # 正解
+        # clients[1] は答えないまま時間切れにする
+        BattleRound.objects.filter(pk=round_id).update(
+            revealed_at=timezone.now() - timezone_delta(round_time_limit_seconds(None) + 1)
+        )
+        clients[0].get(f"/api/battle/rooms/{code}/state/")
+
+        assert room.participants.get(user=profiles[0]).hp == 100
+        assert room.participants.get(user=profiles[1]).hp == 80  # 不正解と同じ20%
+
+
+class TestAiRespondsAfterOpponent:
+    def test_ai_answers_within_two_seconds_of_the_opponent(self):
+        """相手が答えたのに待たされ続けないこと。"""
+        import datetime
+
+        from battle.ai import ANSWER_AFTER_OPPONENT_SECONDS, simulate_ai_turn
+        from battle.matchmaking import MatchmakingTicket
+
+        for i in range(10):
+            make_question(question_text=f"AI応答設問{i}" * 30, correct_choice_key="A")
+        client, profile = auth_client(display_name="人間", grade=4)
+        ticket_id = client.post("/api/battle/quickmatch/", {}, format="json").json()["ticket_id"]
+        MatchmakingTicket.objects.filter(pk=ticket_id).update(
+            created_at=timezone.now() - timezone_delta(41)
+        )
+        code = client.get(f"/api/battle/quickmatch/{ticket_id}/").json()["room_code"]
+        room = BattleRoom.objects.get(room_code=code)
+
+        round_id = current_round_id(client, code)
+        answer(client, round_id, "A")
+
+        round_ = BattleRound.objects.get(pk=round_id)
+        if round_.closed_at is not None:
+            return  # AIが先に答えて決着済みなら、この検証の対象外
+
+        # 相手（人間）の回答から2秒より前ではAIはまだ答えない
+        simulate_ai_turn(room)
+        assert not round_.buzzes.filter(profile__is_ai=True).exists()
+
+        # 「人間の回答から2秒経過」を作る。revealed_at をずらしても
+        # 経過時間と相手の回答時刻が同じだけ動いて差が変わらないので、
+        # 相手の回答時刻そのものを巻き戻す。
+        from battle.models import BattleBuzz
+
+        BattleBuzz.objects.filter(round_id=round_id, profile=profile).update(
+            buzzed_at=timezone.now()
+            - datetime.timedelta(seconds=ANSWER_AFTER_OPPONENT_SECONDS + 0.5)
+        )
+        room.refresh_from_db()
+        simulate_ai_turn(room)
+        assert BattleRound.objects.get(pk=round_id).buzzes.filter(profile__is_ai=True).exists()
+
+
+class TestLeavePenalty:
+    def test_leaving_mid_battle_costs_rank_points(self):
+        from accounts.ranktier import LEAVE_PENALTY_POINTS
+
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        leaver = profiles[1]
+        leaver.points = 250
+        leaver.ranked_matches = 5
+        leaver.save(update_fields=["points", "ranked_matches"])
+
+        clients[1].post(f"/api/battle/rooms/{code}/leave/")
+
+        leaver.refresh_from_db()
+        assert leaver.points == 250 - LEAVE_PENALTY_POINTS
+        # 対戦を1回こなしたわけではないので対戦回数は増やさない
+        assert leaver.ranked_matches == 5
+
+    def test_leaving_while_waiting_has_no_penalty(self):
+        clients, profiles, code = make_room()
+        leaver = profiles[1]
+        leaver.points = 250
+        leaver.save(update_fields=["points"])
+
+        clients[1].post(f"/api/battle/rooms/{code}/leave/")
+
+        leaver.refresh_from_db()
+        assert leaver.points == 250
+
+    def test_penalty_never_pushes_points_below_zero(self):
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        leaver = profiles[1]
+        leaver.points = 3
+        leaver.save(update_fields=["points"])
+
+        clients[1].post(f"/api/battle/rooms/{code}/leave/")
+
+        leaver.refresh_from_db()
+        assert leaver.points == 0
+
+    def test_dropping_out_silently_is_penalised_too(self):
+        """タブを閉じるだけでペナルティを回避できないこと。"""
+        from accounts.ranktier import LEAVE_PENALTY_POINTS
+
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        room = BattleRoom.objects.get(room_code=code)
+        stale = room.participants.get(user=profiles[1])
+        stale.last_seen_at = timezone.now() - timezone_delta(31)
+        stale.save(update_fields=["last_seen_at"])
+        profiles[1].points = 250
+        profiles[1].save(update_fields=["points"])
+
+        clients[0].get(f"/api/battle/rooms/{code}/state/")
+
+        profiles[1].refresh_from_db()
+        assert profiles[1].points == 250 - LEAVE_PENALTY_POINTS

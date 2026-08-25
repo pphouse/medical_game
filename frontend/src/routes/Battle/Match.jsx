@@ -130,11 +130,7 @@ export default function Match({ state, refresh, onLeave }) {
   }
 
   async function handleLeave() {
-    if (
-      !window.confirm(
-        "対戦から退出しますか？ここまでのHPで確定し、相手には自動で代わりのプレイヤーが入ります。"
-      )
-    ) {
+    if (!window.confirm("退出するとランクのスコアが10引かれます。よろしいですか？")) {
       return;
     }
     await onLeave();

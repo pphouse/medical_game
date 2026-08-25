@@ -4,32 +4,19 @@ CORRECT_POINTS = 100
 FIRST_BUZZ_BONUS = 20
 WRONG_PENALTY = 30
 
-# 出題からこの秒数で強制クローズ（誰も回答しなかった場合）。
-# 問題文が短いときの下限で、長文問題では読む時間ぶんだけ伸ばす。
-ROUND_TIME_LIMIT_SECONDS = 30
-# 制限時間の上限（長すぎる問題でも間延びさせない）
-ROUND_TIME_LIMIT_MAX_SECONDS = 60
-# 何文字あたり1秒ぶん制限時間を足すか（読む速さの目安）
-ROUND_TIME_CHARS_PER_SECOND = 8.0
+# 出題からこの秒数で強制クローズする。時間内に答えなかった参加者は
+# 「不正解」と同じ扱い（resolve_round_damage が未回答を不正解として数える）。
+ROUND_TIME_LIMIT_SECONDS = 20
 
 
-def round_time_limit_seconds(question):
-    """この問題の制限時間（秒）。長文の症例問題ほど長くする。
+def round_time_limit_seconds(question=None):
+    """この問題の制限時間（秒）。全問一律で ROUND_TIME_LIMIT_SECONDS。
 
-    30秒固定だと、長い症例問題では読み切る前に時間切れになってしまう
-    （AI側も同様に間に合わず、両者無回答でダメージなしの回が続く）。
+    引数を受けるのは、以前は問題文の長さで伸縮させていた名残。呼び出し側を
+    まとめて書き換えずに済むよう、シグネチャはそのままにしてある。
     """
-    if question is None:
-        return ROUND_TIME_LIMIT_SECONDS
-    parts = [question.question_text or "", getattr(question, "case_stem", "") or ""]
-    parts += [c.get("text", "") for c in (question.choices or [])]
-    chars = sum(len(p) for p in parts)
-    return int(
-        min(
-            ROUND_TIME_LIMIT_MAX_SECONDS,
-            max(ROUND_TIME_LIMIT_SECONDS, ROUND_TIME_LIMIT_SECONDS + chars / ROUND_TIME_CHARS_PER_SECOND),
-        )
-    )
+    return ROUND_TIME_LIMIT_SECONDS
+
 
 # --- HP制バトル (spec: お互い100%から始まり、攻撃でHPを削り合う) ----------
 # 全対戦で共通の問題数（問題数の選択は廃止し、一律同じ対戦形式にする）。

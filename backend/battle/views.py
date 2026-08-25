@@ -30,6 +30,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.ranktier import (
+    LEAVE_PENALTY_POINTS,
     apply_points_delta,
     battle_points_delta as rank_points_delta,
     compute_tier,
@@ -198,13 +199,26 @@ def enforce_round_progress(room):
 
 
 def _replace_with_ai(room, participant):
-    """参加者1人をスコアを凍結して退場させ、同じランク帯のAI（偽名・偽の
-    所属大学つきで、人間には見分けが付かない）を即座に代役として入れる。"""
+    """参加者1人をHPを凍結して退場させ、同じランク帯のAI（偽名・偽の
+    所属大学つきで、人間には見分けが付かない）を即座に代役として入れる。
+
+    離脱にはランクポイントのペナルティを課す。自分から退出した場合だけで
+    なく無応答での自動退場にも課すのは、そうしないとタブを閉じるだけで
+    ペナルティを回避できてしまうため。
+    """
     if participant.left_at is not None:
         return
     tier = compute_tier(participant.user) or DEFAULT_AI_TIER
     participant.left_at = timezone.now()
     participant.save(update_fields=["left_at"])
+
+    profile = participant.user
+    if not profile.is_ai:
+        # ranked_matches は増やさない（対戦を1回こなしたわけではないため）。
+        # 対戦終了時の勝敗ぶんの増減は finalize_room_points が別途行う。
+        profile.points = max(0, profile.points - LEAVE_PENALTY_POINTS)
+        profile.save(update_fields=["points"])
+
     ai_profile, ai_tier = create_disguised_ai_profile(tier)
     BattleParticipant.objects.create(room=room, user=ai_profile, ai_tier=ai_tier)
 
@@ -291,9 +305,10 @@ class RoomLeaveView(APIView):
     """POST /api/battle/rooms/{code}/leave/ — いつでも離脱できる。
 
     待機中: 参加者から抜けるだけ。ホストが抜けた場合は次の参加者に
-    ホストを引き継ぎ、誰もいなくなったらルームごと削除する。
-    対戦中: スコアを凍結して退場し、同じランク帯のAIが即座に代役として
-    入る（他の参加者が対戦を続けられるように）。人間が誰もいなくなったら
+    ホストを引き継ぎ、誰もいなくなったらルームごと削除する。ペナルティは無い。
+    対戦中: HPを凍結して退場し、同じランク帯のAIが即座に代役として入る
+    （他の参加者が対戦を続けられるように）。離脱ペナルティとしてランク
+    ポイントを LEAVE_PENALTY_POINTS 引く。人間が誰もいなくなったら
     その場で対戦を打ち切る。
     """
 
