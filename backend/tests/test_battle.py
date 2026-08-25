@@ -1,7 +1,7 @@
 import pytest
 from django.utils import timezone
 
-from battle.models import BattleRoom, BattleRound
+from battle.models import BattleRoom, BattleRound, MatchmakingTicket
 from quiz.models import AnswerHistory
 
 from .helpers import auth_client, make_question
@@ -213,7 +213,8 @@ class TestQuickMatch:
 
         poll = client.get(f"/api/battle/quickmatch/{ticket_id}/").json()
         assert poll["status"] == "ai_matched"
-        assert poll["opponent"]["is_ai"] is True
+        # AIかどうかはクライアントに返さない（人間と見分けが付かないように）。
+        assert "is_ai" not in poll["opponent"]
         room = BattleRoom.objects.get(room_code=poll["room_code"])
         assert room.participants.filter(user__is_ai=True).exists()
 
@@ -322,3 +323,25 @@ class TestLeaveRoom:
         stale_participant.refresh_from_db()
         assert stale_participant.left_at is not None
         assert room.participants.filter(user__is_ai=True).exists()
+
+
+class TestQuickMatchTicketReuse:
+    def test_restarting_search_resets_the_elapsed_clock(self):
+        """探索を途中でやめた後に押し直すと、経過時間が数え直される。
+
+        WAITING のまま残ったチケットを使い回すと「経過1033秒」のように
+        前回からの積算が表示され、押した瞬間にタイムアウト扱いにもなる。
+        """
+        for i in range(10):
+            make_question(question_text=f"再探索設問{i}", correct_choice_key="A")
+        client, profile = auth_client(display_name="やり直す人", grade=4)
+
+        first = client.post("/api/battle/quickmatch/", {}, format="json").json()
+        MatchmakingTicket.objects.filter(pk=first["ticket_id"]).update(
+            created_at=timezone.now() - timezone_delta(1033)
+        )
+
+        again = client.post("/api/battle/quickmatch/", {}, format="json").json()
+        assert again["ticket_id"] == first["ticket_id"]  # 同じチケットを使い回す
+        assert again["status"] == "waiting"
+        assert again["elapsed_seconds"] < 5  # 押し直した時点から数え直す
