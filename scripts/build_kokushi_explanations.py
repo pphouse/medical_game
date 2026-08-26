@@ -98,10 +98,59 @@ def compose(question, body):
     return "\n".join(parts)
 
 
+def write_sql(path, codes, composed, part=None):
+    """UPDATE 文を1ファイル書き出す。
+
+    Supabase の SQL Editor には1クエリあたりのサイズ上限（1MB前後）があり、
+    全1,147問を1本にすると "Query is too large to be run via the SQL Editor" で
+    弾かれる。psql で直接つなぐなら1本で通るので、分割版と併せて両方作る。
+    どのファイルも単独で完結していて、順不同・何度流しても結果は同じ。
+    """
+    if part:
+        i, n = part
+        head = (
+            f"-- 国試の解説を差し替える（分割 {i}/{n}）。\n"
+            f"-- Supabase の SQL Editor は1クエリ1MB前後が上限なので分けてある。\n"
+            f"-- {n}本すべてを流す。順番は問わず、同じものを何度流してもよい。\n"
+        )
+    else:
+        head = (
+            "-- 国試の解説を差し替える（全問まとめ版）。\n"
+            "-- 1.4MB あるので Supabase の SQL Editor では大きすぎて弾かれる。\n"
+            "-- psql で直接つなぐ場合はこちらを使う:\n"
+            "--   psql \"$DATABASE_URL\" -f scripts/sql/kokushi_explanations.sql\n"
+            "-- SQL Editor から流すなら kokushi_explanations_01.sql 以降を使う。\n"
+        )
+
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(
+            head
+            + "-- blueprint_code で行を特定するので、本文が壊れている行でも当たる。\n"
+            "BEGIN;\n\nUPDATE quiz_question AS q\nSET explanation = v.explanation\n"
+            "FROM (VALUES\n"
+        )
+        rows = []
+        for code in codes:
+            text = composed[code].replace("'", "''")
+            rows.append(f"    ('{code}', '{text}')")
+        fh.write(",\n".join(rows))
+        fh.write(
+            "\n) AS v(blueprint_code, explanation)\n"
+            "WHERE q.blueprint_code = v.blueprint_code\n"
+            "  AND q.exam_type = 'KOKUSHI';\n\n"
+            "-- 残りのプレースホルダ件数。最後の1本まで流し終えると0になる。\n"
+            "SELECT count(*) AS remaining_placeholders\n"
+            f"FROM quiz_question WHERE explanation LIKE '%{PLACEHOLDER_MARK}%';\n\n"
+            "COMMIT;\n"
+        )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--write", action="store_true", help="設問JSONの explanation を書き換える")
     parser.add_argument("--sql", help="本番反映用のSQLを書き出す")
+    parser.add_argument("--chunk", type=int, default=250,
+                        help="分割SQLの1ファイルあたりの問数。0で分割しない")
     args = parser.parse_args()
 
     questions = load_questions()
@@ -145,28 +194,20 @@ def main():
             print(f"  書き込み: {os.path.basename(path)} ({len(mapping)}問)")
 
     if args.sql:
-        with open(args.sql, "w", encoding="utf-8") as fh:
-            fh.write(
-                "-- 国試の解説を差し替える。blueprint_code で行を特定するので、\n"
-                "-- 本文が壊れている行でも当たる。何度流しても結果は同じ。\n"
-                "BEGIN;\n\nUPDATE quiz_question AS q\nSET explanation = v.explanation\n"
-                "FROM (VALUES\n"
-            )
-            rows = []
-            for code in sorted(composed):
-                text = composed[code].replace("'", "''")
-                rows.append(f"    ('{code}', '{text}')")
-            fh.write(",\n".join(rows))
-            fh.write(
-                "\n) AS v(blueprint_code, explanation)\n"
-                "WHERE q.blueprint_code = v.blueprint_code\n"
-                "  AND q.exam_type = 'KOKUSHI';\n\n"
-                "-- 残りのプレースホルダ件数を確認する。\n"
-                "SELECT count(*) AS remaining_placeholders\n"
-                f"FROM quiz_question WHERE explanation LIKE '%{PLACEHOLDER_MARK}%';\n\n"
-                "COMMIT;\n"
-            )
-        print(f"  SQL: {args.sql} ({len(composed)}問)")
+        codes = sorted(composed)
+        write_sql(args.sql, codes, composed)
+        size = os.path.getsize(args.sql)
+        print(f"  SQL: {args.sql} ({len(codes)}問, {size / 1024:.0f}KB)")
+
+        if args.chunk > 0 and len(codes) > args.chunk:
+            stem, ext = os.path.splitext(args.sql)
+            groups = [codes[i : i + args.chunk] for i in range(0, len(codes), args.chunk)]
+            for i, group in enumerate(groups, start=1):
+                path = f"{stem}_{i:02d}{ext}"
+                write_sql(path, group, composed, part=(i, len(groups)))
+                size = os.path.getsize(path)
+                print(f"    分割 {i}/{len(groups)}: {os.path.basename(path)} "
+                      f"({len(group)}問, {size / 1024:.0f}KB)")
 
     return 0
 

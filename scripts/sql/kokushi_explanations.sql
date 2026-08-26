@@ -1,5 +1,9 @@
--- 国試の解説を差し替える。blueprint_code で行を特定するので、
--- 本文が壊れている行でも当たる。何度流しても結果は同じ。
+-- 国試の解説を差し替える（全問まとめ版）。
+-- 1.4MB あるので Supabase の SQL Editor では大きすぎて弾かれる。
+-- psql で直接つなぐ場合はこちらを使う:
+--   psql "$DATABASE_URL" -f scripts/sql/kokushi_explanations.sql
+-- SQL Editor から流すなら kokushi_explanations_01.sql 以降を使う。
+-- blueprint_code で行を特定するので、本文が壊れている行でも当たる。
 BEGIN;
 
 UPDATE quiz_question AS q
@@ -14917,7 +14921,7 @@ E「比例ハザードモデル」: 比例ハザードモデルは生存時間�
 WHERE q.blueprint_code = v.blueprint_code
   AND q.exam_type = 'KOKUSHI';
 
--- 残りのプレースホルダ件数を確認する。
+-- 残りのプレースホルダ件数。最後の1本まで流し終えると0になる。
 SELECT count(*) AS remaining_placeholders
 FROM quiz_question WHERE explanation LIKE '%詳しい解説は準備中%';
 
