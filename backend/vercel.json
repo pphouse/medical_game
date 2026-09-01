@@ -6,6 +6,7 @@
   "regions": ["icn1"],
   "crons": [
     { "path": "/api/internal/aggregate/", "schedule": "5 * * * *" },
-    { "path": "/api/internal/advance-grades/", "schedule": "10 15 31 3 *" }
+    { "path": "/api/internal/advance-grades/", "schedule": "10 15 31 3 *" },
+    { "path": "/api/internal/create-exams/", "schedule": "0 1 * * *" }
   ]
 }

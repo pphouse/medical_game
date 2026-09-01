@@ -6,9 +6,9 @@ import TierBadge from "../../components/TierBadge";
 
 /** 模試結果: 順位・偏差値・分野別スコア（バー表示）・全問見直し。
  * kind に応じて追加のパネルを出す:
- *   weekly/monthly: 獲得ポイント・現在のランク
- *   large         : 分野別偏差値・得点分布
- *   cbt_once      : 予想IRT（θ・偏差値相当スケール）
+ *   monthly : 獲得ポイント・現在のランク
+ *   large   : 分野別偏差値・得点分布
+ *   cbt_once: 予想IRT（θ・偏差値相当スケール）
  */
 export default function Result() {
   const { examId } = useParams();

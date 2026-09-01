@@ -119,7 +119,7 @@ python manage.py aggregate_rankings         # スナップショット集計
 | コマンド | 用途 |
 |---|---|
 | `manage.py aggregate_rankings` | ランキングスナップショット再集計（pg_cron から日次で呼ばれる想定） |
-| `manage.py create_scheduled_exam` | 翌月第1土曜の模試を出題基準の分野比率で自動編成 |
+| `manage.py create_scheduled_exam` | 月次実力テスト・国試模試・CBT模試を出題基準の分野比率で自動編成（Vercel Cronが毎日 `/api/internal/create-exams/` を叩いて実行） |
 | `manage.py grade_mock_exam <id>` | 締切後の一括採点（偏差値・順位・分野別成績） |
 | `manage.py send_review_reminders` | 復習期限5問以上のユーザーへ Web Push（1日1回） |
 | `manage.py cleanup_student_id_images` | 承認後90日を過ぎた学生証画像の削除 |

@@ -11,12 +11,11 @@ const STATUS_LABEL = {
 
 const EXAM_TYPE_LABEL = { CBT: "CBT", KOKUSHI: "医師国家試験" };
 
-const KIND_ORDER = ["large", "cbt_once", "monthly", "weekly"];
+const KIND_ORDER = ["large", "cbt_once", "monthly"];
 const KIND_TITLE = {
-  large: "国試 大型模試（国試2ヶ月前に開催）",
-  cbt_once: "CBT模試（生涯1回）",
-  monthly: "月次模試（毎月1日）",
-  weekly: "週次小テスト（毎週金曜）",
+  large: "国試模試（国試2ヶ月前に開催）",
+  cbt_once: "CBT模試（生涯1回・4年生のみ）",
+  monthly: "月次実力テスト（毎月1日）",
 };
 
 function groupByKind(exams) {
@@ -81,7 +80,11 @@ export default function ExamList() {
                   {EXAM_TYPE_LABEL[exam.exam_type]} ・ {exam.question_count}問 ・{" "}
                   {exam.duration_minutes}分
                   {exam.kind === "cbt_once" && " ・ 生涯1回のみ"}
-                  {exam.target_grade_min &&
+                  {exam.target_grade_min != null &&
+                    exam.target_grade_min === exam.target_grade_max &&
+                    ` ・ 対象 ${exam.target_grade_min}年`}
+                  {exam.target_grade_min != null &&
+                    exam.target_grade_min !== exam.target_grade_max &&
                     ` ・ 対象 ${exam.target_grade_min}〜${exam.target_grade_max ?? 6}年`}
                 </p>
                 {exam.status === "open" && !submitted && (

@@ -2,6 +2,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../api";
 
+const CBT_BLOCK_COUNT = 6;
+
+/** CBT模試（kind=cbt_once）は実際のCBTと同様に6ブロック構成で受験する。
+ * ブロックの最後で「次」に進むと、そのブロックの問題には戻れなくなる
+ * （実際のCBTのブロック制を簡易に再現。厳密な試験監督ではなく、
+ * 学習ツールとして雰囲気を合わせる目的）。 */
+function blockRangeFor(index, total) {
+  const size = Math.max(1, Math.ceil(total / CBT_BLOCK_COUNT));
+  const block = Math.floor(index / size);
+  const start = block * size;
+  const end = Math.min(start + size, total) - 1;
+  return { block, size, start, end };
+}
+
 /** 模試の受験画面: 1問ずつ・フラグ・見直し一覧・サーバ基準タイマー。
  * 残り時間はサーバの deadline を真とし、フロントは表示のみ (spec フェーズ5)。 */
 export default function Session() {
@@ -51,6 +65,8 @@ export default function Session() {
     () => questions.filter((q) => answers[q.id]).length,
     [questions, answers]
   );
+  const isBlockExam = data?.kind === "cbt_once";
+  const { block, start: blockStart, end: blockEnd } = blockRangeFor(index, questions.length);
 
   if (error) return <p className="error">{error}</p>;
   if (!data || !question) return <p>読み込み中...</p>;
@@ -102,27 +118,38 @@ export default function Session() {
     return (
       <div className="screen">
         <div className="quiz-topbar">
-          <span className="quiz-topbar-title">見直し一覧</span>
+          <span className="quiz-topbar-title">
+            {isBlockExam ? `見直し一覧（第${block + 1}ブロック）` : "見直し一覧"}
+          </span>
           <span className="progress">
             解答 {answeredCount}/{questions.length}
           </span>
         </div>
+        {isBlockExam && (
+          <p className="exam-meta">
+            CBT模試は他のブロックの問題を見直すことはできません（実際のCBTのブロック制と同じ）。
+          </p>
+        )}
         <div className="exam-grid">
-          {questions.map((q, i) => (
-            <button
-              key={q.id}
-              className={`exam-grid-cell${answers[q.id] ? " answered" : ""}${
-                flags.has(q.id) ? " flagged" : ""
-              }`}
-              onClick={() => {
-                setIndex(i);
-                setShowReview(false);
-              }}
-            >
-              {i + 1}
-              {flags.has(q.id) && "🚩"}
-            </button>
-          ))}
+          {questions.map((q, i) => {
+            const outsideBlock = isBlockExam && (i < blockStart || i > blockEnd);
+            return (
+              <button
+                key={q.id}
+                className={`exam-grid-cell${answers[q.id] ? " answered" : ""}${
+                  flags.has(q.id) ? " flagged" : ""
+                }`}
+                disabled={outsideBlock}
+                onClick={() => {
+                  setIndex(i);
+                  setShowReview(false);
+                }}
+              >
+                {i + 1}
+                {flags.has(q.id) && "🚩"}
+              </button>
+            );
+          })}
         </div>
         <button className="cta-button" onClick={handleSubmit}>
           提出する
@@ -138,6 +165,7 @@ export default function Session() {
     <div className="screen">
       <div className="quiz-topbar">
         <span className="quiz-topbar-title">
+          {isBlockExam && `第${block + 1}ブロック（全${CBT_BLOCK_COUNT}ブロック）　`}
           第{index + 1}問 / {questions.length}
         </span>
         <span className={`progress${timeUp || (remaining ?? 0) < 300 ? " exam-time-low" : ""}`}>
@@ -176,13 +204,25 @@ export default function Session() {
         <button
           className="toolbar-btn"
           onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          disabled={index === 0}
+          disabled={index === 0 || (isBlockExam && index === blockStart)}
         >
           ◁ 前
         </button>
         <button
           className="toolbar-btn"
-          onClick={() => setIndex((i) => Math.min(questions.length - 1, i + 1))}
+          onClick={() => {
+            if (isBlockExam && index === blockEnd && index < questions.length - 1) {
+              if (
+                !window.confirm(
+                  `第${block + 1}ブロックを終了して、第${block + 2}ブロックに進みますか？` +
+                    "このブロックの問題には、以後戻れません。"
+                )
+              ) {
+                return;
+              }
+            }
+            setIndex((i) => Math.min(questions.length - 1, i + 1));
+          }}
           disabled={index === questions.length - 1}
         >
           次 ▷

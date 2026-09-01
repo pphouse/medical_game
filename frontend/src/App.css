@@ -1682,6 +1682,11 @@
 
 .exam-grid-cell.flagged { border-color: #f59e0b; }
 
+.exam-grid-cell:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .exam-section-heading { color: var(--text-h); font-size: 15px; margin: 12px 0 4px; }
 
 .exam-section-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }

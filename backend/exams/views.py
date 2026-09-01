@@ -3,6 +3,8 @@
 
 from django.conf import settings
 from django.core.management import call_command
+from django.core.management.base import CommandError
+from io import StringIO
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import exceptions
@@ -436,6 +438,7 @@ class ExamQuestionsView(APIView):
             {
                 "deadline": result.deadline(),
                 "submitted_at": result.submitted_at,
+                "kind": exam.kind,
                 "questions": QuestionSerializer(questions, many=True).data,
                 "my_answers": answers,
             }
@@ -600,3 +603,38 @@ class InternalAggregateView(APIView):
         for period in periods:
             call_command("aggregate_rankings", "--period", period)
         return Response({"status": "ok", "periods": periods})
+
+
+class InternalCreateExamsView(APIView):
+    """POST/GET /api/internal/create-exams/ — 定期開催模試の自動生成トリガ。
+
+    毎日1回 Vercel Cron から叩く想定。create_scheduled_exam は kind ごとに
+    「同じ日付の分は作成済みならスキップ」（monthly/large）・「未終了の
+    インスタンスがあれば作成しない」（cbt_once）という冪等性を持つので、
+    このエンドポイント自体は毎日何度呼ばれても安全（多くの日は何も
+    作成せず終わる）。"""
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return self.post(request)
+
+    def post(self, request):
+        require_internal_caller(request)
+
+        # kind ごとに独立させる: 1つの exam_type で問題プールが尽きていても
+        # （CommandError）他の kind の生成まで巻き込んで失敗させない。
+        created = {}
+        for kind in (
+            MockExam.Kind.MONTHLY,
+            MockExam.Kind.LARGE,
+            MockExam.Kind.CBT_ONCE,
+        ):
+            out = StringIO()
+            try:
+                call_command("create_scheduled_exam", "--kind", kind, stdout=out)
+                created[kind] = out.getvalue().strip()
+            except CommandError as e:
+                created[kind] = f"error: {e}"
+        return Response({"status": "ok", "created": created})
