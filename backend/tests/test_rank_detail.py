@@ -42,8 +42,8 @@ def snapshot(profile, metric, value, rank, scope="national", university=None):
 @pytest.mark.django_db
 class TestRankDetail:
     def test_me_reports_rank_and_percentile(self):
-        client, profile = auth_client()
-        other = Profile.objects.create(id="00000000-0000-0000-0000-000000000001")
+        client, profile = auth_client(grade=4)
+        other = Profile.objects.create(id="00000000-0000-0000-0000-000000000001", grade=4)
         snapshot(profile, RankingSnapshot.Metric.SOLVED, value=100, rank=2)
         snapshot(other, RankingSnapshot.Metric.SOLVED, value=200, rank=1)
 
@@ -54,19 +54,26 @@ class TestRankDetail:
         assert body["me"]["percentile"] == 100.0
 
     def test_not_ranked_is_reported(self):
-        client, profile = auth_client()
+        client, profile = auth_client(grade=4)
         body = client.get("/api/ranking/detail/?scope=national&metric=solved").json()
         assert body["me"]["eligible"] is False
 
-    def test_university_scope_without_university_is_ineligible(self):
+    def test_grade_unset_is_ineligible(self):
+        """学年未設定では同学年ランキングの対象にできない。"""
         client, profile = auth_client()
+        body = client.get("/api/ranking/detail/?scope=national&metric=solved").json()
+        assert body["me"]["eligible"] is False
+        assert "学年" in body["me"]["reason"]
+
+    def test_university_scope_without_university_is_ineligible(self):
+        client, profile = auth_client(grade=4)
         body = client.get("/api/ranking/detail/?scope=university&metric=solved").json()
         assert body["me"]["eligible"] is False
         assert body["distribution"] == []
 
     def test_distribution_pairs_solved_and_accuracy_by_profile(self):
-        client, profile = auth_client()
-        other = Profile.objects.create(id="00000000-0000-0000-0000-000000000002")
+        client, profile = auth_client(grade=4)
+        other = Profile.objects.create(id="00000000-0000-0000-0000-000000000002", grade=4)
         snapshot(profile, RankingSnapshot.Metric.SOLVED, value=120, rank=2)
         snapshot(profile, RankingSnapshot.Metric.ACCURACY, value=60.0, rank=2)
         snapshot(other, RankingSnapshot.Metric.SOLVED, value=300, rank=1)
@@ -78,8 +85,8 @@ class TestRankDetail:
 
     def test_distribution_excludes_solved_only_profiles(self):
         """正答率スナップショットが無い（100問未満）ユーザーは散布図に出さない。"""
-        client, profile = auth_client()
-        other = Profile.objects.create(id="00000000-0000-0000-0000-000000000003")
+        client, profile = auth_client(grade=4)
+        other = Profile.objects.create(id="00000000-0000-0000-0000-000000000003", grade=4)
         snapshot(profile, RankingSnapshot.Metric.SOLVED, value=50, rank=2)
         snapshot(profile, RankingSnapshot.Metric.ACCURACY, value=70.0, rank=1)
         snapshot(other, RankingSnapshot.Metric.SOLVED, value=10, rank=3)
@@ -90,16 +97,16 @@ class TestRankDetail:
         assert body["distribution"][0]["is_me"] is True
 
     def test_university_scope_only_includes_same_university(self):
-        client, profile = auth_client()
+        client, profile = auth_client(grade=4)
         u1 = University.objects.create(name="A大学")
         u2 = University.objects.create(name="B大学")
         profile.university = u1
         profile.save(update_fields=["university"])
         same = Profile.objects.create(
-            id="00000000-0000-0000-0000-000000000004", university=u1
+            id="00000000-0000-0000-0000-000000000004", university=u1, grade=4
         )
         other_univ = Profile.objects.create(
-            id="00000000-0000-0000-0000-000000000005", university=u2
+            id="00000000-0000-0000-0000-000000000005", university=u2, grade=4
         )
         snapshot(profile, RankingSnapshot.Metric.SOLVED, value=100, rank=1, scope="university", university=u1)
         snapshot(profile, RankingSnapshot.Metric.ACCURACY, value=90.0, rank=1, scope="university", university=u1)

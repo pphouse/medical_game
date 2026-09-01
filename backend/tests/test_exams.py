@@ -78,6 +78,14 @@ class TestExamFlow:
         assert "correct_choice_key" not in text
         assert "explanation" not in text
 
+    def test_questions_include_exam_kind_for_block_display(self):
+        """CBT模試のブロック表示（フロント側）に使う。"""
+        client, _ = auth_client(grade=4)
+        exam = make_exam(kind=MockExam.Kind.CBT_ONCE, exam_type="CBT")
+        client.post(f"/api/exams/{exam.id}/start/")
+        body = client.get(f"/api/exams/{exam.id}/questions/").json()
+        assert body["kind"] == "cbt_once"
+
     def test_answers_rejected_after_time_limit(self):
         client, profile = auth_client()
         exam = make_exam(duration=1, closes_in=600)
@@ -215,6 +223,91 @@ class TestScheduledExamCommand:
         assert exam.effective_status() == MockExam.Status.OPEN
 
 
+class TestInternalCreateExamsEndpoint:
+    """Vercel Cron / pg_cron から叩く模試の自動生成トリガ。"""
+
+    def test_rejects_bad_token(self, client):
+        res = client.post(
+            "/api/internal/create-exams/",
+            data="{}",
+            content_type="application/json",
+            headers={"X-Internal-Token": "wrong"},
+        )
+        assert res.status_code in (401, 403)
+
+    def test_valid_token_creates_scheduled_exams(self, client, settings):
+        for exam_type in ("CBT", "KOKUSHI"):
+            for i in range(5):
+                make_question(
+                    question_text=f"{exam_type}内部設問{i}", correct_choice_key="A", exam_type=exam_type
+                )
+        res = client.post(
+            "/api/internal/create-exams/",
+            data="{}",
+            content_type="application/json",
+            headers={"X-Internal-Token": settings.INTERNAL_API_TOKEN},
+        )
+        assert res.status_code == 200
+        assert MockExam.objects.filter(kind=MockExam.Kind.MONTHLY).count() == 2
+
+    def test_vercel_cron_get_with_bearer_secret_works(self, client, settings):
+        settings.CRON_SECRET = "test-cron-secret"
+        for exam_type in ("CBT", "KOKUSHI"):
+            for i in range(5):
+                make_question(
+                    question_text=f"{exam_type}-cron設問{i}", correct_choice_key="A", exam_type=exam_type
+                )
+        res = client.get(
+            "/api/internal/create-exams/",
+            headers={"Authorization": "Bearer test-cron-secret"},
+        )
+        assert res.status_code == 200
+
+    def test_one_exam_types_empty_pool_does_not_block_the_others(self, client, settings):
+        """KOKUSHI の問題プールが尽きていても、CBTのmonthly/cbt_onceは作られる。"""
+        for i in range(5):
+            make_question(question_text=f"CBT単独設問{i}", correct_choice_key="A", exam_type="CBT")
+        res = client.post(
+            "/api/internal/create-exams/",
+            data="{}",
+            content_type="application/json",
+            headers={"X-Internal-Token": settings.INTERNAL_API_TOKEN},
+        )
+        assert res.status_code == 200
+        body = res.json()
+        assert "error" in body["created"]["large"]  # KOKUSHIの問題が無い
+        assert MockExam.objects.filter(kind=MockExam.Kind.CBT_ONCE, exam_type="CBT").exists()
+        assert MockExam.objects.filter(kind=MockExam.Kind.MONTHLY, exam_type="CBT").exists()
+
+
+class TestScheduledExamIdempotency:
+    """Vercel Cron から毎日叩いても、同じ日付分は重複作成しない。"""
+
+    def test_calling_monthly_twice_the_same_day_creates_only_one_pair(self):
+        # --open-now/--start は明示的な上書きとして冪等性チェックを飛ばす
+        # （デモ用）ので、ここでは実際の Cron 呼び出しと同じ「無指定」で叩く。
+        for exam_type in ("CBT", "KOKUSHI"):
+            for i in range(10):
+                make_question(
+                    question_text=f"{exam_type}冪等設問{i}", correct_choice_key="A", exam_type=exam_type
+                )
+        call_command("create_scheduled_exam", "--kind", "monthly")
+        call_command("create_scheduled_exam", "--kind", "monthly")
+        assert MockExam.objects.filter(kind=MockExam.Kind.MONTHLY).count() == 2
+
+
+class TestCbtOnceDefaults:
+    """CBT模試（生涯1回）の既定値: 実際のCBTに合わせて4年生のみ・320問構成。"""
+
+    def test_default_targets_grade_4_only(self):
+        for i in range(5):
+            make_question(question_text=f"CBT既定設問{i}", correct_choice_key="A", exam_type="CBT")
+        call_command("create_scheduled_exam", "--kind", "cbt_once", "--open-now")
+        exam = MockExam.objects.get(kind=MockExam.Kind.CBT_ONCE)
+        assert exam.target_grade_min == 4
+        assert exam.target_grade_max == 4
+
+
 class TestCbtOnceExam:
     """CBT模試（生涯1回）: 提出と同時に個別採点され、二度目は受験できない。"""
 
@@ -239,9 +332,9 @@ class TestCbtOnceExam:
         assert blocked.status_code == 400
 
 
-class TestWeeklyMonthlyPoints:
+class TestMonthlyPoints:
     def test_grading_awards_points_and_updates_rank_pool(self):
-        exam = make_exam(n_questions=4, kind=MockExam.Kind.WEEKLY, exam_type="CBT")
+        exam = make_exam(n_questions=4, kind=MockExam.Kind.MONTHLY, exam_type="CBT")
         c1, p1 = auth_client()
         c2, p2 = auth_client()
         start_and_answer_all(c1, exam, key="A")  # 全問正解
@@ -320,7 +413,8 @@ class TestPointsRankingScope:
 
 
 class TestExamGradeGating:
-    """1〜4年生はCBT、5〜6年生は国試の模試を受けられる (spec)。"""
+    """月次実力テストは、CBT版は1〜4年生限定・国試版は学年制限なし。
+    1〜4年生は両方見え、5〜6年生は国試版だけが見える (spec)。"""
 
     def _create_monthly(self):
         # 出題プールが空だとコマンドが失敗するので、両方の試験種別を用意する。
@@ -340,17 +434,17 @@ class TestExamGradeGating:
         assert cbt.target_grade_min is None  # 下限なし = 1年生から
         assert cbt.target_grade_max == 4
 
-    def test_kokushi_exam_targets_grades_5_and_up(self):
+    def test_kokushi_exam_has_no_grade_restriction(self):
         exams = self._create_monthly()
         kokushi = exams["KOKUSHI"]
-        assert kokushi.target_grade_min == 5
+        assert kokushi.target_grade_min is None
         assert kokushi.target_grade_max is None
 
-    def test_fourth_year_sees_only_the_cbt_exam(self):
+    def test_fourth_year_sees_both_cbt_and_kokushi(self):
         self._create_monthly()
         client, _ = auth_client(grade=4)
         types = {e["exam_type"] for e in client.get("/api/exams/").json()}
-        assert types == {"CBT"}
+        assert types == {"CBT", "KOKUSHI"}
 
     def test_fifth_year_sees_only_the_kokushi_exam(self):
         self._create_monthly()

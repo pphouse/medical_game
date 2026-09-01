@@ -19,7 +19,7 @@ from django.urls import include, path
 
 from accounts.views import InternalAdvanceGradesView
 from config.health import HealthView
-from exams.views import InternalAggregateView
+from exams.views import InternalAggregateView, InternalCreateExamsView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,5 +33,6 @@ urlpatterns = [
     path('api/exams/', include('exams.urls')),
     path('api/ranking/', include('exams.urls_ranking')),
     path('api/internal/aggregate/', InternalAggregateView.as_view(), name='internal-aggregate'),
+    path('api/internal/create-exams/', InternalCreateExamsView.as_view(), name='internal-create-exams'),
     path('api/internal/advance-grades/', InternalAdvanceGradesView.as_view(), name='internal-advance-grades'),
 ]

@@ -187,9 +187,8 @@ function SubjectReview({ onStartSession }) {
 }
 
 const KIND_LABEL = {
-  weekly: "週次小テスト",
-  monthly: "月次模試",
-  large: "大型模試",
+  monthly: "月次実力テスト",
+  large: "国試模試",
   cbt_once: "CBT模試",
 };
 

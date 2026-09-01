@@ -299,34 +299,10 @@
   border-color: var(--accent);
 }
 
-.course-row-all {
-  background: var(--accent-bg);
-  border-color: var(--accent);
-}
-
-.course-row-all .course-letter {
-  background: var(--accent-grad);
-  color: white;
-}
-
 .course-row-top {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.course-letter {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--accent-bg);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 800;
 }
 
 .course-name {
@@ -1620,6 +1596,16 @@
 
 .battle-waiting { color: var(--text); font-size: 13px; }
 
+.battle-my-verdict {
+  text-align: center;
+  font-weight: 800;
+  font-size: 15px;
+  margin: 4px 0;
+}
+
+.battle-my-verdict.correct { color: var(--correct); }
+.battle-my-verdict.incorrect { color: var(--incorrect); }
+
 .battle-buzz-list {
   display: flex;
   flex-wrap: wrap;
@@ -1705,6 +1691,11 @@
 }
 
 .exam-grid-cell.flagged { border-color: #f59e0b; }
+
+.exam-grid-cell:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
 
 .exam-section-heading { color: var(--text-h); font-size: 15px; margin: 12px 0 4px; }
 
@@ -2044,52 +2035,24 @@
   border-color: var(--accent);
 }
 
-.rank-detail-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  background: rgba(10, 15, 26, 0.5);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+.ranking-card-tile-clickable.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
 
-.rank-detail-sheet {
-  width: 100%;
-  max-width: 480px;
-  max-height: 88vh;
-  overflow-y: auto;
-  background: var(--bg-a);
-  border-radius: 22px 22px 0 0;
-  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+/* 順位タイルの詳細（散布図・直近30日の演習数）。クリックしなくても
+ * 常にランキングカードの下にインライン表示する（モーダルではない）。 */
+.rank-detail-inline {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.25);
+  padding-top: 4px;
 }
 
-.rank-detail-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.rank-detail-head h3 {
+.rank-detail-inline-title {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-h);
-}
-
-.rank-detail-close {
-  border: none;
-  background: var(--card-bg);
-  color: var(--text);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  font-size: 18px;
-  line-height: 1;
-  box-shadow: var(--shadow-sm);
 }
 
 .yesterday-stats {
@@ -2764,3 +2727,152 @@
   .battle-heading-ja { color: #2563eb; background: none; }
 }
 
+
+/* 科目一覧（問題演習トップ）。テコプラ系QB由来の「一覧+右端に開始ボタン」
+   という構造は踏襲しつつ、色は単色ではなく categoryTheme の分野配色を
+   帯びさせ、シェブロンは飾りではなく評価内訳（◎○△✕未演習）を開閉する
+   実用機能にしている。 */
+.subject-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subject-row {
+  border: 1px solid var(--t-border, var(--card-border));
+  border-radius: 16px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  padding: 4px 6px 12px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.subject-row:has(.subject-row-main:hover) {
+  box-shadow: var(--shadow-md);
+}
+
+.subject-row-top {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.subject-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  text-align: left;
+}
+
+.subject-badge {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--t-icon, var(--accent-bg));
+  color: var(--t-text, var(--accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.subject-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  color: var(--text-h);
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subject-total-pill {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--t-text, var(--accent));
+  background: var(--t-bg, var(--accent-bg));
+  border: 1px solid var(--t-border, var(--card-border));
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.subject-arrow {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--accent-grad);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subject-arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+.subject-toggle {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  border-radius: 999px;
+}
+
+.subject-toggle:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.subject-toggle svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.15s;
+}
+
+.subject-toggle.open svg {
+  transform: rotate(180deg);
+}
+
+.subject-stat {
+  margin: 2px 14px 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.subject-detail {
+  margin: 10px 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subject-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.subject-legend-chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: white;
+}

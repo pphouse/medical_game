@@ -67,7 +67,7 @@ function SectionHeading({ icon, title }) {
   );
 }
 
-const EXAM_KIND_LABEL = { monthly: "月次模試", large: "大型模試" };
+const EXAM_KIND_LABEL = { monthly: "月次実力テスト", large: "国試模試", cbt_once: "CBT模試" };
 
 // "" は未選択で、学年から自動で決まる（サーバの resolved_exam_type が実効値）。
 const EXAM_PREFERENCES = [
@@ -202,9 +202,13 @@ export default function MyPage() {
     api.rankingExams().then(setExamHistory).catch(() => {});
   }, []);
 
+  // 毎月開催の実力テストと、1回だけ受けられる大規模模試（国試模試・CBT模試）
+  // の成績をここでいつでも見られるようにする。
   const seiseki = examHistory
     ? examHistory.filter(
-        (r) => (r.kind === "monthly" || r.kind === "large") && r.submitted !== false
+        (r) =>
+          (r.kind === "monthly" || r.kind === "large" || r.kind === "cbt_once") &&
+          r.submitted !== false
       )
     : null;
 
@@ -368,7 +372,7 @@ export default function MyPage() {
           {seiseki === null ? (
             <p>読み込み中...</p>
           ) : seiseki.length === 0 ? (
-            <p>まだ月次模試・大型模試の受験記録はありません。</p>
+            <p>まだ模試の受験記録はありません。</p>
           ) : (
             seiseki.map((r) => (
               <div key={r.mock_exam_id} className="profile-row">
