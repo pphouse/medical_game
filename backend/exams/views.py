@@ -19,6 +19,7 @@ from accounts.ranktier import (
     tier_for_top_fraction,
 )
 from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
+from exams.ranking_utils import grade_ranked_rows
 from exams.grading import apply_irt_score, grade_single_result
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot
 from quiz.serializers import QuestionSerializer
@@ -38,6 +39,13 @@ class RankingView(APIView):
 
     レスポンスは entries に加えて自分の順位 (me) を必ず含める (spec 3-3)。
     メールアドレスは絶対に返さない。表示名未設定は「匿名ユーザー」。
+
+    個人ランキング（national/university）は同学年の中での順位にする
+    （対戦ランクは逆に全学年まとめる。学年ごとに解いている範囲が違う
+    問題演習だけの特別扱い）。RankingSnapshot.rank は学年をまたいだ全体
+    順位なので、ここでは使わず ranking_utils.grade_ranked_rows で
+    学年ごとに順位を振り直す。university_aggregate（大学を1単位とする
+    集計）は個人の学年に関係ないので対象外。
     """
 
     def get(self, request):
@@ -73,11 +81,8 @@ class RankingView(APIView):
                 )
             qs = qs.filter(university_id=profile.university_id)
 
-        entries_qs = qs.select_related(
-            "profile", "profile__university", "university_target"
-        ).order_by("rank", "-value")[:limit]
-
         if scope == RankingSnapshot.Scope.UNIVERSITY_AGGREGATE:
+            entries_qs = qs.select_related("university_target").order_by("rank", "-value")[:limit]
             entries = [
                 {
                     "rank": row.rank,
@@ -91,65 +96,87 @@ class RankingView(APIView):
                 }
                 for row in entries_qs
             ]
-        else:
-            entries = [
-                {
-                    "rank": row.rank,
-                    "display_name": (
-                        (row.profile.display_name or DISPLAY_NAME_FALLBACK)
-                        if row.profile
-                        else DISPLAY_NAME_FALLBACK
-                    ),
-                    "university": (
-                        row.profile.university.name
-                        if row.profile and row.profile.university
-                        else None
-                    ),
-                    "value": row.value,
-                    "is_me": row.profile_id == profile.id,
-                }
-                for row in entries_qs
-            ]
+            me = self._build_me_aggregate(profile, qs)
+            computed_at = qs.values_list("computed_at", flat=True).first()
+            return Response({"entries": entries, "me": me, "computed_at": computed_at})
 
-        me = self._build_me(profile, scope, metric, period, qs)
         computed_at = qs.values_list("computed_at", flat=True).first()
+        if profile.grade is None:
+            return Response(
+                {
+                    "entries": [],
+                    "me": {
+                        "rank": None,
+                        "value": None,
+                        "eligible": False,
+                        "reason": "学年が未設定です。マイページから設定してください。",
+                        "total": 0,
+                    },
+                    "computed_at": computed_at,
+                }
+            )
+
+        ranked_rows = grade_ranked_rows(
+            qs.select_related("profile", "profile__university"), profile.grade
+        )
+        entries = [
+            {
+                "rank": rank,
+                "display_name": (
+                    (row.profile.display_name or DISPLAY_NAME_FALLBACK)
+                    if row.profile
+                    else DISPLAY_NAME_FALLBACK
+                ),
+                "university": (
+                    row.profile.university.name
+                    if row.profile and row.profile.university
+                    else None
+                ),
+                "value": row.value,
+                "is_me": row.profile_id == profile.id,
+            }
+            for rank, row in ranked_rows[:limit]
+        ]
+        me = self._build_me_individual(profile, scope, metric, period, ranked_rows)
         return Response({"entries": entries, "me": me, "computed_at": computed_at})
 
-    def _build_me(self, profile, scope, metric, period, qs):
-        # total: 母集団のサイズ。フロントの「上位X%」表示に使う（spec: パーセンタイルは
-        # 常にランキング画面と同じ「厳密に自分より上の人数/母集団」の考え方に揃える）。
+    def _build_me_aggregate(self, profile, qs):
         total = qs.count()
-
-        if scope == RankingSnapshot.Scope.UNIVERSITY_AGGREGATE:
-            if not profile.university_id:
-                return {
-                    "rank": None,
-                    "value": None,
-                    "eligible": False,
-                    "reason": "所属大学が未設定です。",
-                    "total": total,
-                }
-            row = qs.filter(university_target_id=profile.university_id).first()
-            if row:
-                return {
-                    "rank": row.rank,
-                    "value": row.value,
-                    "eligible": True,
-                    "reason": None,
-                    "total": total,
-                }
+        if not profile.university_id:
             return {
                 "rank": None,
                 "value": None,
                 "eligible": False,
-                "reason": "対象メンバーが5人未満のため、大学ランキングの対象外です。",
+                "reason": "所属大学が未設定です。",
                 "total": total,
             }
-
-        row = qs.filter(profile=profile).first()
+        row = qs.filter(university_target_id=profile.university_id).first()
         if row:
             return {
                 "rank": row.rank,
+                "value": row.value,
+                "eligible": True,
+                "reason": None,
+                "total": total,
+            }
+        return {
+            "rank": None,
+            "value": None,
+            "eligible": False,
+            "reason": "対象メンバーが5人未満のため、大学ランキングの対象外です。",
+            "total": total,
+        }
+
+    def _build_me_individual(self, profile, scope, metric, period, ranked_rows):
+        # total: 同学年内の母集団サイズ。フロントの「上位X%」表示に使う。
+        total = len(ranked_rows)
+        match = next(
+            ((rank, row) for rank, row in ranked_rows if row.profile_id == profile.id), None
+        )
+        if match:
+            rank, row = match
+            return {
+                "rank": rank,
                 "value": row.value,
                 "eligible": True,
                 "reason": None,
@@ -177,6 +204,7 @@ class RankingView(APIView):
                     ),
                     "total": total,
                 }
+
         return {"rank": None, "value": None, "eligible": True, "reason": None, "total": total}
 
 

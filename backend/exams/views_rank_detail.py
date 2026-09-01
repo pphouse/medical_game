@@ -21,6 +21,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import RankingSnapshot
+from .ranking_utils import grade_ranked_rows
 
 DAILY_HISTORY_DAYS = 30
 # ランキング集計と同じ対象（対戦・模試の連打を含めない）。
@@ -28,7 +29,11 @@ RANKED_CONTEXTS = ("solo", "review")
 
 
 class RankDetailView(APIView):
-    """GET /api/ranking/detail/?scope=national|university&metric=solved|accuracy"""
+    """GET /api/ranking/detail/?scope=national|university&metric=solved|accuracy
+
+    RankingView と同じく同学年の中での順位・分布にする（対戦ランクとは違う
+    問題演習だけの特別扱い。詳しくは ranking_utils のコメント参照）。
+    """
 
     def get(self, request):
         scope = request.query_params.get("scope", RankingSnapshot.Scope.NATIONAL)
@@ -52,17 +57,28 @@ class RankDetailView(APIView):
                 )
             qs = qs.filter(university_id=profile.university_id)
 
-        my_row = qs.filter(profile=profile).first()
-        total = qs.count()
+        if profile.grade is None:
+            return Response(
+                {
+                    "me": {"eligible": False, "reason": "学年が未設定です。マイページから設定してください。"},
+                    "distribution": [],
+                    "daily": self._daily_history(profile),
+                    "yesterday": self._yesterday(profile),
+                }
+            )
+
+        ranked_rows = grade_ranked_rows(qs, profile.grade)
+        total = len(ranked_rows)
+        match = next((r for r in ranked_rows if r[1].profile_id == profile.id), None)
         me = (
             {
                 "eligible": True,
-                "rank": my_row.rank,
-                "value": my_row.value,
+                "rank": match[0],
+                "value": match[1].value,
                 "out_of": total,
-                "percentile": round((my_row.rank / total) * 100, 1) if total else None,
+                "percentile": round((match[0] / total) * 100, 1) if total else None,
             }
-            if my_row
+            if match
             else {"eligible": False, "reason": "まだランキングの対象になっていません。"}
         )
 
@@ -76,9 +92,9 @@ class RankDetailView(APIView):
         )
 
     def _distribution(self, scope, profile):
-        """演習数×正答率の散布図。両方のスナップショットが揃っている
+        """演習数×正答率の散布図。同学年・両方のスナップショットが揃っている
         プロフィールだけを対象にする（正答率は100問未満だと存在しない）。"""
-        base = {"scope": scope, "period": "all"}
+        base = {"scope": scope, "period": "all", "profile__grade": profile.grade}
         if scope == RankingSnapshot.Scope.UNIVERSITY:
             base["university_id"] = profile.university_id
 

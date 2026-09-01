@@ -2020,52 +2020,24 @@
   border-color: var(--accent);
 }
 
-.rank-detail-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  background: rgba(10, 15, 26, 0.5);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+.ranking-card-tile-clickable.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
 
-.rank-detail-sheet {
-  width: 100%;
-  max-width: 480px;
-  max-height: 88vh;
-  overflow-y: auto;
-  background: var(--bg-a);
-  border-radius: 22px 22px 0 0;
-  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+/* 順位タイルの詳細（散布図・直近30日の演習数）。クリックしなくても
+ * 常にランキングカードの下にインライン表示する（モーダルではない）。 */
+.rank-detail-inline {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.25);
+  padding-top: 4px;
 }
 
-.rank-detail-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.rank-detail-head h3 {
+.rank-detail-inline-title {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-h);
-}
-
-.rank-detail-close {
-  border: none;
-  background: var(--card-bg);
-  color: var(--text);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  font-size: 18px;
-  line-height: 1;
-  box-shadow: var(--shadow-sm);
 }
 
 .yesterday-stats {
