@@ -283,17 +283,57 @@ class TestInternalCreateExamsEndpoint:
 class TestScheduledExamIdempotency:
     """Vercel Cron から毎日叩いても、同じ日付分は重複作成しない。"""
 
-    def test_calling_monthly_twice_the_same_day_creates_only_one_pair(self):
-        # --open-now/--start は明示的な上書きとして冪等性チェックを飛ばす
-        # （デモ用）ので、ここでは実際の Cron 呼び出しと同じ「無指定」で叩く。
+    def test_repeated_monthly_runs_never_duplicate_the_same_date(self):
+        """--open-now/--start は明示的な上書きとして冪等性チェックを飛ばす
+        （デモ用）ので、ここでは実際の Cron 呼び出しと同じ「無指定」で叩く。
+
+        1回目で今月分（即開催）、2回目で翌月分（予約）が作られ、3回目以降は
+        どちらも作成済みなので何も増えない。"""
         for exam_type in ("CBT", "KOKUSHI"):
             for i in range(10):
                 make_question(
                     question_text=f"{exam_type}冪等設問{i}", correct_choice_key="A", exam_type=exam_type
                 )
+        for _ in range(3):
+            call_command("create_scheduled_exam", "--kind", "monthly")
+
+        rows = MockExam.objects.filter(kind=MockExam.Kind.MONTHLY, exam_type="CBT")
+        dates = [e.start_at.date() for e in rows]
+        assert len(dates) == len(set(dates))  # 同じ日付の重複が無い
+        assert len(dates) == 2  # 今月分 + 翌月分だけ
+
+
+class TestMonthlyBackfill:
+    """今月分の月次実力テストが無ければ即開催で作る（Cron導入直後に
+    「受験できる模試が1件も無い」状態が続かないようにする）。"""
+
+    def _seed(self):
+        for exam_type in ("CBT", "KOKUSHI"):
+            for i in range(20):
+                make_question(
+                    question_text=f"{exam_type}穴埋め設問{i}", correct_choice_key="A", exam_type=exam_type
+                )
+
+    def test_first_run_creates_an_exam_open_right_now(self):
+        self._seed()
+        call_command("create_scheduled_exam", "--kind", "monthly")
+
+        exams = MockExam.objects.filter(kind=MockExam.Kind.MONTHLY)
+        assert exams.count() == 2
+        for exam in exams:
+            assert exam.effective_status() == MockExam.Status.OPEN
+            # 数日で閉じず、月末まで受けられる。
+            assert exam.end_at > timezone.now() + datetime.timedelta(days=1)
+
+    def test_second_run_schedules_next_month_instead_of_duplicating(self):
+        self._seed()
         call_command("create_scheduled_exam", "--kind", "monthly")
         call_command("create_scheduled_exam", "--kind", "monthly")
-        assert MockExam.objects.filter(kind=MockExam.Kind.MONTHLY).count() == 2
+
+        exams = MockExam.objects.filter(kind=MockExam.Kind.MONTHLY, exam_type="CBT")
+        # 今月分（即開催）と翌月分（予約）の2本になり、重複はしない。
+        assert exams.count() == 2
+        assert exams.filter(start_at__gt=timezone.now()).count() == 1
 
 
 class TestCbtOnceDefaults:

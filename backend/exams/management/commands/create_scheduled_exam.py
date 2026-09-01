@@ -214,9 +214,6 @@ class Command(BaseCommand):
         return exam
 
     def _create_monthly(self, now, options):
-        def default_start():
-            return next_month_first(now)
-
         default_count, default_duration, default_window = 15, 20, 72
         title_base = "月次実力テスト"
 
@@ -227,11 +224,35 @@ class Command(BaseCommand):
             (Question.ExamType.CBT, None, 4, "（CBT）"),
             (Question.ExamType.KOKUSHI, None, None, "（医師国家試験）"),
         ]
+        local_now = now.astimezone(JST)
         for exam_type, grade_min, grade_max, suffix in flavors:
+            has_this_month = MockExam.objects.filter(
+                kind=MockExam.Kind.MONTHLY,
+                exam_type=exam_type,
+                start_at__year=local_now.year,
+                start_at__month=local_now.month,
+            ).exists()
+
+            def default_start(has_this_month=has_this_month):
+                # 今月分がまだ無ければ即開催にする。そうしないと、初回や
+                # Cron導入直後に「受験できる模試が1件も無い（翌月分の予約
+                # だけがある）」状態が最大1ヶ月続いてしまう。
+                if not has_this_month:
+                    return now - datetime.timedelta(minutes=1)
+                return next_month_first(now)
+
+            # 月初に開く通常の回は72時間の開催枠。今月分の穴埋めで即開催する
+            # 回は、月末まで受けられるようにする（数日で閉じると結局
+            # 「受験できる模試が無い」に戻ってしまうため）。
+            window_hours = default_window
+            if not has_this_month:
+                until = next_month_first(now, hour=0)
+                window_hours = max(1, round((until - now).total_seconds() / 3600))
+
             self._create_one(
                 now, options, kind=MockExam.Kind.MONTHLY, exam_type=exam_type,
                 default_count=default_count, default_duration=default_duration,
-                default_window_hours=default_window, target_grade_min=grade_min,
+                default_window_hours=window_hours, target_grade_min=grade_min,
                 target_grade_max=grade_max, novel_only=True,
                 default_start=default_start, default_title=title_base, title_suffix=suffix,
             )
