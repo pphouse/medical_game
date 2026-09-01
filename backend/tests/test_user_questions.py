@@ -124,6 +124,24 @@ class TestQuestionCreation:
         bad = {**QUESTION_PAYLOAD, "correct_choice_key": "F"}
         assert client.post("/api/quiz/questions/", bad, format="json").status_code == 400
 
+    def test_question_text_cannot_be_blank(self):
+        """本文が空の設問は保存させない。
+
+        モデルが blank=True なので、シリアライザで宣言しないと DRF が
+        required=False / allow_blank=True を作ってしまい、本文の無い設問が
+        作れてしまう。アプリ側は本文が空だと「（本文なし）」とだけ表示する
+        ので、実際に本番へ本文の無い行が並んだ。
+        """
+        client, _ = verified_client()
+        for bad_text in ["", "   ", "\n\t "]:
+            bad = {**QUESTION_PAYLOAD, "question_text": bad_text}
+            res = client.post("/api/quiz/questions/", bad, format="json")
+            assert res.status_code == 400, f"{bad_text!r} が通ってしまった"
+            assert "question_text" in res.json()
+
+        del bad["question_text"]
+        assert client.post("/api/quiz/questions/", bad, format="json").status_code == 400
+
 
 class TestQuestionEditing:
     def test_only_owner_or_moderator(self):
