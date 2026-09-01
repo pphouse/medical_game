@@ -221,6 +221,33 @@ describe("対戦ラウンド内の状態 (Match)", () => {
     expect(refresh).toHaveBeenCalled();
   });
 
+  it("回答すると相手を待たずにすぐ自分の正誤が分かる", async () => {
+    api.battleAnswer.mockResolvedValue({ correct: true, correct_choice_key: "A" });
+    const refresh = vi.fn().mockResolvedValue();
+    renderMatch(inProgress(), refresh);
+
+    fireEvent.click(screen.getByRole("button", { name: /利尿薬/ }));
+    fireEvent.click(screen.getByRole("button", { name: "A で回答する" }));
+    await act(async () => {});
+
+    expect(screen.getByText("○ 正解！")).toBeInTheDocument();
+    // 相手の判定を待たずに表示されている（refresh の結果を待つ必要が無い）。
+    expect(screen.getByRole("button", { name: /利尿薬/ })).toHaveClass("correct");
+  });
+
+  it("不正解のときは選んだ選択肢と正解の選択肢がそれぞれ分かる", async () => {
+    api.battleAnswer.mockResolvedValue({ correct: false, correct_choice_key: "B" });
+    renderMatch(inProgress());
+
+    fireEvent.click(screen.getByRole("button", { name: /利尿薬/ }));
+    fireEvent.click(screen.getByRole("button", { name: "A で回答する" }));
+    await act(async () => {});
+
+    expect(screen.getByText("✕ 不正解…")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /利尿薬/ })).toHaveClass("incorrect");
+    expect(screen.getByRole("button", { name: /抗菌薬/ })).toHaveClass("correct");
+  });
+
   it("回答済みなら相手待ちの表示になり、選択肢は押せない", () => {
     renderMatch(inProgress({ i_have_answered: true, answered_profile_ids: ["me"] }));
 

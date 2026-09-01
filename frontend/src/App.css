@@ -1596,6 +1596,16 @@
 
 .battle-waiting { color: var(--text); font-size: 13px; }
 
+.battle-my-verdict {
+  text-align: center;
+  font-weight: 800;
+  font-size: 15px;
+  margin: 4px 0;
+}
+
+.battle-my-verdict.correct { color: var(--correct); }
+.battle-my-verdict.incorrect { color: var(--incorrect); }
+
 .battle-buzz-list {
   display: flex;
   flex-wrap: wrap;
