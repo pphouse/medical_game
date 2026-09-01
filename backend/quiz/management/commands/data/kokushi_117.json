@@ -217,7 +217,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-A-12",
-      "category": "消化管",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "性感染症でないのはどれか。",
       "choices": [
@@ -931,7 +931,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-B-3",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "医師の職業倫理に反するのはどれか。",
       "choices": [
@@ -2053,7 +2053,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-C-4",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "災害医療について正しいのはどれか。",
       "choices": [
@@ -2597,7 +2597,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-C-26",
-      "category": "呼吸器",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "院内感染の対策として陰圧空調の個室で管理すべきなのはどれか。",
       "choices": [
@@ -3447,7 +3447,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-D-13",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "ボールなどによる前胸部打撲後の心停止について正しいのはどれか。",
       "choices": [
@@ -4399,7 +4399,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-E-4",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "トリアージタッグ〈識別札〉について誤っているのはどれか。",
       "choices": [
@@ -4943,7 +4943,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-E-24",
-      "category": "医学総論",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "標準予防策〈standard precautions〉について正しいのはどれか。",
       "choices": [
@@ -5147,7 +5147,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-E-32",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "4歳の男児。自宅で径3cmのぶどうを食べたとき、急に激しくむせて顔色が悪くなったため救急車で搬入された。救急車内では、意識はあるが両手で首をつかんで苦しそうにしており、救急隊員によりHeimlich法が実施されたが状況は改善しなかった。病院到着直後にモニターを装着していると意識を失った。頸動脈を触知しない。直ちに行う処置として適切なのはどれか。",
       "choices": [
@@ -5385,7 +5385,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-F-1",
-      "category": "呼吸器",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "Tリンパ球機能低下による日和見感染症でないのはどれか。",
       "choices": [
@@ -5725,7 +5725,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-F-19",
-      "category": "麻酔科",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "待期的に行う全身麻酔下の手術で、術前に確保すべき清澄水の絶飲時間はどれか。",
       "choices": [
@@ -6507,7 +6507,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-F-54",
-      "category": "麻酔科",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "1か月の女児。1か月健診で心雑音を指摘され、母親に連れられて来院した。普段は元気にしており、哺乳も良好だという。自宅で母乳を飲んでから約2時間30分が経過している。身長と体重の計測をしている際に目覚め、診察を待っている間に泣き出した。診察室で胸部の聴診を試みたが、母親に抱かれていても泣き続けており、聴診は困難である。心雑音を評価するために最も適切な対応はどれか。",
       "choices": [

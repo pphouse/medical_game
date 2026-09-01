@@ -1815,7 +1815,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "115-B-23",
-      "category": "呼吸器",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "市中肺炎に対する抗菌薬適正使用の原則について、適切なのはどれか。",
       "choices": [
@@ -2835,7 +2835,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "115-C-40",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "旅客機が着陸に失敗し、機体が大破した。空港の救急車・消防車の他に、周辺の消防署に応援が要請された。救命救急センターに患者を搬送するため、ドクターヘリも現場に向かっており、まもなく到着する予定である。ドクターヘリで搬送する場合、優先すべき患者はどれか。",
       "choices": [
@@ -5317,7 +5317,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "115-F-19",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "創傷の治療・処置について誤っているのはどれか。",
       "choices": [
@@ -5385,7 +5385,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "115-F-21",
-      "category": "産科",
+      "category": "放射線科",
       "difficulty": "standard",
       "question_text": "100mGy以上の放射線被曝が原因で胎児奇形(構造異常)が発生する可能性が高い時期はどれか。",
       "choices": [
@@ -5521,7 +5521,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "115-F-25",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "労働衛生管理の手法として生物学的モニタリングが用いられるのはどれか。",
       "choices": [

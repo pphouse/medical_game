@@ -319,7 +319,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-A-10",
-      "category": "産科",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "梅毒で誤っているのはどれか。",
       "choices": [
@@ -2087,7 +2087,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-B-29",
-      "category": "呼吸器",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "64歳の男性。夜間の盗汗、微熱および持続する咳嗽を主訴に来院した。4年前から関節リウマチで疾患修飾性抗リウマチ薬〈DMARD〉及び生物学的製剤で治療中である。1か月前から夜間の盗汗、微熱および咳嗽が出現した。症状が持続するため自宅近くの診療所を受診した。心音と呼吸音とに異常を認めない。胸部エックス線写真で右上肺野に空洞陰影を認めた。この患者で空気感染予防策の必要性を判断する検査はどれか。",
       "choices": [
@@ -2257,7 +2257,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-B-35",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "38歳の男性。交通外傷後の右胸部痛と呼吸困難とを主訴に救急車で搬入された。乗用車運転中に中央分離帯に正面衝突し胸部を強打した。意識は清明。体温35.4°C。心拍数108/分、整。血圧88/60 mmHg。呼吸数28/分。SpO2 88%(リザーバー付マスク10L/分酸素投与下)。瞳孔径は両側4mmで対光反射は正常である。発声は可能で口腔内分泌物はない。毛細血管再充満時間3秒である。皮膚には冷汗と湿潤を認める。頸静脈の怒張がみられる。右胸部は視診で胸郭膨隆、触診で皮下気腫、打診で鼓音および聴診で呼吸音減弱を認める。心音に異常を認めない。直ちに行うべき治療はどれか。",
       "choices": [
@@ -3379,7 +3379,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-C-40",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "身元不明の中年男性。30分前に震度7の地震で倒壊した建物の下敷きになっているところを救出された。呼びかけに反応がない。呼吸数32/分、浅い。毛細血管再充満時間は3秒。両側下腿は挫滅による大量の出血がある。末梢は冷感が著明である。被災地は広域であり、建物の下敷きになった負傷者が多数いる。この患者につけるトリアージタッグの色で適切なのはどれか。",
       "choices": [
@@ -3617,7 +3617,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-C-47",
-      "category": "呼吸器",
+      "category": "放射線科",
       "difficulty": "standard",
       "question_text": "76歳の男性。右胸痛を主訴に来院した。1か月前から右前胸部痛を自覚し、8日前から右顔面および右上肢の腫脹を伴うようになった。意識は清明。身長159 cm、体重52kg。体温35.9°C。脈拍96/分、整。血圧138/78 mmHg。呼吸数20/分。SpO2 95%(room air)。視診と触診とで右胸部から頸部および上肢にかけて浮腫と腫脹とを認める。血液生化学所見:CEA75ng/mL(基準5以下)。胸部エックス線写真で右上肺野縦隔側に腫瘤を認めた。胸腹部造影CTで腫瘍による上大静脈の圧排、肝転移と左副腎転移を認めた。肺癌と診断され、右上肺野縦隔側腫瘤への放射線治療を行うこととした。この患者に対する放射線治療で期待される効果はどれか。",
       "choices": [
@@ -4127,7 +4127,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-D-6",
-      "category": "腎・泌尿器",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "成人男性の急性腎盂腎炎をきたす原因で最も頻度が高いのはどれか。",
       "choices": [
@@ -4671,7 +4671,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-D-42",
-      "category": "麻酔科",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "3歳の男児。呼吸困難を主訴に母親に連れられて来院した。1週間前から夜間の咳嗽が出現し、昨夜から呼吸困難が出現したため救急外来を受診した。意識は清明。身長92cm、体重13kg。体温37.2°C。座位で脈拍120/分、整。血圧110/78 mmHg。呼吸数36/分。SpO2 96%(room air)。両側鎖骨上窩に径2cmの腫瘤を触知する。心音は異常なく、胸部にstridorを聴取する。腹部は平坦、軟で、肝・脾を触知しない。血液所見:赤血球450万、Hb12.1g/dL、Ht38 %、白血球20,000(芽球14 %、好中球27%、好酸球3%、単球6%、リンパ球50%)、血小板35万。胸部エックス線写真で縦隔に大きな腫瘤陰影を認める。仰臥位で呼吸困難とチアノーゼが急速に出現し、SpO2は74%に低下した。座位に戻しマスク10L/分の酸素投与でSpO2は98%に改善し、呼吸困難は軽減した。適切な対応はどれか。",
       "choices": [
@@ -4841,7 +4841,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-D-55",
-      "category": "呼吸器",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "78歳の男性。入院中に肺炎を発症し喀痰検査を施行したところ多剤耐性緑膿菌を検出した。感染予防策で適切なのはどれか。",
       "choices": [
@@ -5181,7 +5181,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-E-8",
-      "category": "呼吸器",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "標準予防策が適用されている患者に対し、医療従事者がディスポーザブル手袋を着用せずに取り扱えるのはどれか。",
       "choices": [
@@ -6201,7 +6201,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-F-2",
-      "category": "皮膚科",
+      "category": "放射線科",
       "difficulty": "standard",
       "question_text": "放射線の身体的影響で晩期反応〈障害〉はどれか。",
       "choices": [
@@ -6235,7 +6235,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-F-3",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "骨盤外傷を疑う患者の診察で誤っているのはどれか。",
       "choices": [

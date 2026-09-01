@@ -54,8 +54,26 @@ class TestTaxonomy:
                 assert target in GENERIC_BY_EXAM[CBT]
 
     def test_kokushi_follows_the_qb_chapters(self):
-        for chapter in ("消化管", "肝・胆・膵", "免疫・膠原病", "麻酔科", "必修問題"):
+        for chapter in ("消化管", "肝・胆・膵", "免疫・膠原病", "必修問題"):
             assert chapter in KOKUSHI_CATEGORIES
+
+    def test_emergency_toxicology_anesthesia_are_one_subject(self):
+        """救急・中毒・麻酔は1科目にまとめてある。
+
+        単独では国試4問（麻酔科）・0問（中毒）しかなく、科目として選んでも
+        演習にならなかった。旧科目名が本番DBに残っているので、そちらからの
+        読み替えも保つ。
+        """
+        for names in (KOKUSHI_CATEGORIES, CBT_CATEGORIES):
+            assert "救急・中毒・麻酔" in names
+            for gone in ("救急", "中毒", "麻酔科", "中毒・環境"):
+                assert gone not in names, f"{gone} が残っている"
+        for exam in (CBT, KOKUSHI):
+            for generic in ("救急", "麻酔", "中毒・環境異常症"):
+                assert GENERIC_BY_EXAM[exam][generic] == "救急・中毒・麻酔"
+        # 本番DBに残る旧科目名からも辿り着けること。
+        for old_name in ("中毒", "中毒・環境", "麻酔科", "救急・集中治療"):
+            assert normalize(old_name, "", None, KOKUSHI) == "救急・中毒・麻酔"
 
     def test_cbt_follows_the_core_curriculum_volumes(self):
         for name in ("基礎医学", "医学総論・公衆衛生・診療の基本", "多選択肢・4連問"):
@@ -75,7 +93,7 @@ class TestBlueprintCode:
             ("D-12", "内分泌・代謝", "代謝・内分泌"),
             ("D-15", "精神", "精神科"),
             ("E-2", "感染症", "感染症"),
-            ("E-6", "救急", "救急"),
+            ("E-6", "救急・中毒・麻酔", "救急・中毒・麻酔"),
             ("E-7", "小児（成長と発達）", "小児科"),
             ("B-1", "医学総論・公衆衛生・診療の基本", "公衆衛生"),
             ("C-2", "基礎医学", "医学総論"),

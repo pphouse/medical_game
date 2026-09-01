@@ -727,7 +727,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-47",
-      "category": "婦人科・乳腺外科",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "32歳の女性。昨晩同意のない性行為を強要され、本日警察官に付き添われて受診した。警察官から被害状況の説明を受け、診察をすることになった。月経周期は28日型、整、順。最終月経は12日前から5日間。対応として適切でないのはどれか。",
       "choices": [
@@ -1407,7 +1407,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-17",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "小児の二次救命処置を2名で行う場合、人工呼吸と胸骨圧迫の比で正しいのはどれか。",
       "choices": [
@@ -1645,7 +1645,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-B-25",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "48歳の女性。右上肢の運動障害を主訴に来院した。昨晩飲酒後、食卓の椅子で右の肘掛けにもたれかかって寝たところ、目が覚めると右手関節の背屈ができなくなっていたため受診した。既往歴に特記すべきことはない。意識は清明。身長165 cm、体重53kg。体温36.3°C。体表に外傷はない。橈骨動脈は両側で良好に触知する。頸部痛はない。右手背に感覚鈍麻がある。右手関節の背屈ができず、右手指のMP関節の伸展ができない。上下肢の他の筋力は正常である。障害が疑われるのはどれか。",
       "choices": [
@@ -2665,7 +2665,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-C-41",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "84歳の女性。頭痛を主訴に来院した。今朝自宅内の段差で転倒し頭部を打撲し、頭痛を生じたため息子に付き添われて受診した。最近は歩行が小刻みになり自宅内でも転倒が多いという。息子とは同居しているが日中は仕事で不在である。自宅近くの診療所を不定期に受診しているが詳細は不明で、薬が自宅に多く残されているという。身長152cm、体重46kg。頭部以外に疼痛の訴えはない。歩行は小刻みで、両側上肢に筋強剛を認める。振戦はない。血液所見:赤血球421万、Hb12.0 g/dL、Ht39%、白血球7,600、血小板28万。血液生化学所見:総蛋白6.0g/dL、アルブミン3.4g/dL、尿素窒素25mg/dL、クレアチニン0.7mg/dL、血糖150 mg/dL、HbA1c6.9% (基準4.6〜6.2)、Na143mEq/L、K4.3mEq/L、Cl108 mEq/L。頭部単純CTで頭蓋内出血を認めない。この患者への対応で適切でないのはどれか。",
       "choices": [
@@ -4807,7 +4807,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-30",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "3歳の女児。全身けいれんが持続するため救急車で搬入された。昨晩から38°C台の発熱が持続している。食事の摂取は少ないが水分の摂取はできている。嘔吐や下痢はない。今朝、全身けいれんがはじまり約15分間持続しているため母親が救急車を要請した。来院時も全身けいれんが持続しており、チアノーゼを認める。この児に行うべき処置として優先度が低いのはどれか。",
       "choices": [
@@ -5079,7 +5079,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-3",
-      "category": "婦人科・乳腺外科",
+      "category": "放射線科",
       "difficulty": "standard",
       "question_text": "最も放射線感受性が低いのはどれか。",
       "choices": [
@@ -5725,7 +5725,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-39",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "66歳の男性。自宅アパートから出火し、焼け跡から死体で発見された。死因等の特定のために司法解剖された。剖検時の所見でこの男性が火災発生時に生存していたことを示すのはどれか。",
       "choices": [

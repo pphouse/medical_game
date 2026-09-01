@@ -2495,7 +2495,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-C-8",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "病院搬入時にショックを合併する鈍的外傷患者のエックス線撮影で、胸部とともに撮影する部位はどれか。",
       "choices": [
@@ -3413,7 +3413,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-C-47",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "58歳の女性。既往歴に特記すべきことはない。昨日、交通事故で死亡した息子の通夜があった。息子の傍にいたいと言って棺が安置されている部屋に行ったまま、朝になっても帰ってこないのを不審に思った夫が部屋に行ったところ、棺内に上半身を入れた状態で死亡しているのを発見した。死因で考えられるのはどれか。",
       "choices": [
@@ -3549,7 +3549,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-C-53",
-      "category": "小児科",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "医師と保護者との会話を以下に示す。父親:「5歳の男の子です。幼稚園の先生から『4月から年長組になったので、小学校に入学するまでに接種すべき予防接種があります。夏休みに接種に行ってください』と言われたので、来ました」医師:「これまでの予防接種歴はどうですか」父親:「定期接種はすべて接種しています」医師:「直近の予防接種はいつですか」父親:「昨年の夏休みです」この児に接種すべき予防接種はどれか。",
       "choices": [
@@ -3719,7 +3719,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-D-4",
-      "category": "救急",
+      "category": "救急・中毒・麻酔",
       "difficulty": "standard",
       "question_text": "食中毒の予防で加熱が最も有効なのはどれか。",
       "choices": [
@@ -5011,7 +5011,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-E-4",
-      "category": "医学総論",
+      "category": "感染症",
       "difficulty": "standard",
       "question_text": "性感染症が疑われる患者に対して、性交渉歴に関する病歴聴取を行う場合に正しいのはどれか。",
       "choices": [
@@ -6371,7 +6371,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-F-11",
-      "category": "神経",
+      "category": "放射線科",
       "difficulty": "standard",
       "question_text": "原発巣コントロール良好な転移性脳腫瘍の治療で、定位放射線照射が適切なのはどれか。",
       "choices": [
