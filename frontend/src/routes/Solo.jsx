@@ -1,84 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
-import { getCategoryTheme } from "../categoryTheme";
 import ProgressBar from "../components/ProgressBar";
 import ProgressDonut from "../components/ProgressDonut";
 import { useProfile } from "../context/ProfileContext";
 import { STUDENT_VERIFICATION_ENABLED } from "../features";
-
-const MASTERY_LEGEND = [
-  { level: "double_circle", label: "◎" },
-  { level: "circle", label: "○" },
-  { level: "triangle", label: "△" },
-  { level: "cross", label: "✕" },
-  { level: "unstudied", label: "－" },
-];
-
-/** 科目一覧の1行。タップで演習開始、シェブロンで内訳（評価の内訳バー）を
- * 開閉する。科目ごとの配色（categoryTheme）を帯びさせて、
- * 単色一覧よりも分野を目で拾いやすくしている。 */
-function SubjectRow({ p, examType, navigate, expanded, onToggle }) {
-  const theme = getCategoryTheme(p.category);
-  const solved = p.total - p.remaining;
-
-  const go = () =>
-    navigate(
-      `/solo/${encodeURIComponent(p.category)}${
-        examType ? `?exam_type=${encodeURIComponent(examType)}` : ""
-      }`,
-    );
-
-  return (
-    <div className={`subject-row theme-${theme.key}`}>
-      <div className="subject-row-top">
-        <button className="subject-row-main" onClick={go}>
-          <span className="subject-badge">{theme.letter}</span>
-          <span className="subject-name">{p.category}</span>
-          <span className="subject-total-pill">全{p.total}問</span>
-          <span className="subject-arrow" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path
-                d="M5 12h13M13 6l6 6-6 6"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
-        </button>
-        <button
-          className={`subject-toggle${expanded ? " open" : ""}`}
-          onClick={onToggle}
-          aria-label={expanded ? "内訳を閉じる" : "内訳を開く"}
-          aria-expanded={expanded}
-        >
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      </div>
-
-      <p className="subject-stat">
-        演習数：{solved}／{p.total}問
-      </p>
-
-      {expanded && (
-        <div className="subject-detail">
-          <ProgressBar counts={p.counts} total={p.total} />
-          <div className="subject-legend">
-            {MASTERY_LEGEND.map((m) => (
-              <span key={m.level} className={`subject-legend-chip chip-${m.level}`}>
-                {m.label} {p.counts[m.level]}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /** 試験種別のタブ。CBT と国試は分野の切り方が違ううえ問題数も桁が近いので、
  * 混ぜて一覧にすると目的の分野を探せない。
@@ -116,7 +42,6 @@ export default function Solo() {
   const [summary, setSummary] = useState(null);
   const [allCounts, setAllCounts] = useState(null); // 円グラフ用：学年フィルタなしの全体集計
   const [reviewDue, setReviewDue] = useState(0);
-  const [expandedCategory, setExpandedCategory] = useState(null);
 
   useEffect(() => {
     api.summary().then(setSummary).catch(() => {});
@@ -217,18 +142,28 @@ export default function Solo() {
         </p>
       )}
 
-      <div className="subject-list">
-        {progress?.map((p) => (
-          <SubjectRow
+      <div className="course-list">
+        {progress?.map((p, i) => (
+          <button
             key={p.category}
-            p={p}
-            examType={examType}
-            navigate={navigate}
-            expanded={expandedCategory === p.category}
-            onToggle={() =>
-              setExpandedCategory((c) => (c === p.category ? null : p.category))
+            className="course-row"
+            onClick={() =>
+              navigate(
+                `/solo/${encodeURIComponent(p.category)}${
+                  examType ? `?exam_type=${encodeURIComponent(examType)}` : ""
+                }`,
+              )
             }
-          />
+          >
+            <div className="course-row-top">
+              <span className="course-letter">{String.fromCharCode(65 + i)}</span>
+              <span className="course-name">
+                {p.category} <span className="course-count">({p.total})</span>
+              </span>
+              <span className="course-remaining">残り{p.remaining}問</span>
+            </div>
+            <ProgressBar counts={p.counts} total={p.total} />
+          </button>
         ))}
       </div>
     </div>
