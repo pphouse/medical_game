@@ -236,6 +236,18 @@
   border-color: var(--accent);
 }
 
+/* 演習の入口はいちばん使うので、塗りつぶしの青で目立たせる。 */
+.quick-link-primary {
+  background: var(--accent-grad);
+  border-color: transparent;
+  color: #fff;
+}
+
+.quick-link-primary:not(.disabled):hover {
+  border-color: transparent;
+  filter: brightness(1.05);
+}
+
 .quick-link.disabled {
   opacity: 0.5;
   color: var(--text);

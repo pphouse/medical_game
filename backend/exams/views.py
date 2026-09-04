@@ -22,7 +22,7 @@ from accounts.ranktier import (
 )
 from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
 from exams.ranking_utils import grade_ranked_rows
-from exams.grading import apply_irt_score, grade_single_result
+from exams.grading import apply_irt_score, copy_result_to_history, grade_single_result
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot
 from quiz.serializers import QuestionSerializer
 
@@ -512,6 +512,16 @@ class ExamSubmitView(APIView):
         if result.submitted_at is None:
             result.submitted_at = timezone.now()
             result.save(update_fields=["submitted_at"])
+            # 採点（順位・偏差値の集計）を待たずに「模試復習」で解き直せる
+            # ように、解答をここで解答履歴へ複写しておく。採点時にも同じ
+            # 複写が走るが冪等。
+            copy_result_to_history(
+                result,
+                {
+                    mq.question_id: mq.question
+                    for mq in exam.mock_questions.select_related("question")
+                },
+            )
             if exam.kind == MockExam.Kind.CBT_ONCE:
                 self._grade_cbt_once(exam, result)
         return Response({"submitted_at": result.submitted_at})
