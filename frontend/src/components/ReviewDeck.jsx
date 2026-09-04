@@ -10,6 +10,9 @@ import { shuffled } from "../shuffle";
 const TABS = [
   { key: "CBT", label: "CBT", examType: "CBT" },
   { key: "KOKUSHI", label: "医師国家試験", examType: "KOKUSHI" },
+  // 試験種別をまたいで解きたいとき用。CBTと国試で分野の切り方は違うが、
+  // ここは分野を自分で選ぶ画面なので混ざっても探せなくならない。
+  { key: "all", label: "すべて", examType: "" },
   { key: "mock", label: "模試復習", source: "mock" },
   { key: "battle", label: "対戦復習", source: "battle" },
 ];
@@ -54,7 +57,8 @@ function toggle(set, key) {
  * 空集合は「絞り込まない」= 全部が対象。
  *
  * `fixedExamType` を渡すとその試験種別に固定し、試験種別の選択欄は出さない
- * （CBT / 国試タブはタブ自体が試験種別なので）。`source` を渡すと、その
+ * （CBT / 国試 / すべて のタブはタブ自体が試験種別なので）。空文字は
+ * 「絞り込まない＝すべて」で、未指定の null とは別物。`source` を渡すと、その
  * 文脈（模試・対戦）で自分が解いたことのある問題だけが対象になる。
  * `mockExam` を渡すと、その1回の模試で出題された問題だけが対象になる。 */
 function FilteredPractice({
@@ -114,7 +118,9 @@ function FilteredPractice({
 
   return (
     <>
-      {!fixedExamType && (
+      {/* タブ自体が試験種別のとき（CBT / 国試 / すべて）は選択欄を出さない。
+          "" は「絞り込まない」なので、未指定の null と区別する。 */}
+      {fixedExamType === null && (
         <div className="filter-group">
           <span className="filter-group-title">試験種別</span>
           <div className="filter-chip-row">
@@ -315,7 +321,7 @@ export default function ReviewDeck() {
       <FilteredPractice
         key={`${active.key}-${active.key === "mock" ? mockExam : ""}`}
         onStartSession={onStartSession}
-        fixedExamType={active.examType ?? null}
+        fixedExamType={active.examType === undefined ? null : active.examType}
         source={active.source ?? null}
         mockExam={active.key === "mock" ? mockExam : null}
       />
