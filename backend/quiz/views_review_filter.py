@@ -8,6 +8,11 @@
                                 &mastery=cross,triangle,unstudied
                                 &attempts=1,2,3plus
                                 &exam_type=CBT
+                                &source=mock
+
+``source`` は「どこで解いた問題か」で、模試復習（mock）・対戦復習（battle）の
+入口に使う。指定すると、その文脈で自分が解いたことのある問題だけに絞る。
+模試や対戦を重ねるたび対象が増えていく。
 
 いずれの絞り込みも省略時は「制限なし」。空文字で渡された場合も同じ扱いにする
 （フロントで全解除したときに `categories=` が飛んでくる）。
@@ -26,6 +31,10 @@ from .views import latest_answers
 ATTEMPT_BUCKETS = {"1": (1, 1), "2": (2, 2), "3plus": (3, None)}
 
 MASTERY_VALUES = set(AnswerHistory.MasteryLevel.values)
+
+# 「どこで解いた問題か」で絞る値。solo/review も指定はできるが、画面から
+# 使うのは模試復習・対戦復習の2つ。
+SOURCE_VALUES = set(AnswerHistory.Context.values)
 
 # 一度に返す上限。条件次第で全問が該当しうるので、演習セットとして現実的な
 # 大きさで頭打ちにする。
@@ -50,6 +59,21 @@ class ReviewFilterView(APIView):
         exam_type = request.query_params.get("exam_type")
         if exam_type:
             visible = visible.filter(exam_type=exam_type)
+
+        source = request.query_params.get("source")
+        if source:
+            if source not in SOURCE_VALUES:
+                raise exceptions.ValidationError(f"未知の出題元です: {source}")
+            answered_ids = AnswerHistory.objects.filter(
+                user=request.user, context=source
+            ).values_list("question_id", flat=True)
+            visible = visible.filter(id__in=answered_ids)
+
+        # 科目の絞り込みより前の集合から、選べる科目を出す。模試・対戦で
+        # 解いた問題がまだ無い科目までチップに並べても選べないだけなので。
+        available_categories = sorted(
+            visible.values_list("category", flat=True).distinct()
+        )
 
         categories = _csv_param(request, "categories")
         if categories:
@@ -86,7 +110,12 @@ class ReviewFilterView(APIView):
             page, many=True, context={"history_by_question": history_by_question}
         )
         return Response(
-            {"count": total, "truncated": total > MAX_QUESTIONS, "results": serializer.data}
+            {
+                "count": total,
+                "truncated": total > MAX_QUESTIONS,
+                "available_categories": available_categories,
+                "results": serializer.data,
+            }
         )
 
     def _filter_by_mastery(self, user, qs, mastery):

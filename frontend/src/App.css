@@ -236,6 +236,18 @@
   border-color: var(--accent);
 }
 
+/* 演習の入口はいちばん使うので、塗りつぶしの青で目立たせる。 */
+.quick-link-primary {
+  background: var(--accent-grad);
+  border-color: transparent;
+  color: #fff;
+}
+
+.quick-link-primary:not(.disabled):hover {
+  border-color: transparent;
+  filter: brightness(1.05);
+}
+
 .quick-link.disabled {
   opacity: 0.5;
   color: var(--text);
@@ -2151,6 +2163,41 @@
 
 .scatter-grid-dashed {
   stroke-dasharray: 3 3;
+}
+
+/* 演習状況の月送り。 */
+.daily-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.daily-month {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+}
+
+.daily-nav {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--accent);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.daily-nav:disabled {
+  opacity: 0.3;
+  color: var(--text);
+}
+
+.daily-total {
+  margin: 2px 0 0;
+  text-align: center;
 }
 
 .scatter-axis-label {

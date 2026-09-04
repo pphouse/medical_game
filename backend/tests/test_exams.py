@@ -713,3 +713,47 @@ class TestResultIsAvailableRightAfterSubmitting:
 
         assert body["status"] == "grading"
         assert "review" not in body
+
+
+class TestMockAnswersFeedTheReviewDeck:
+    """模試で解いた問題が「模試復習」に随時追加されること。
+
+    以前は採点（＝順位・偏差値の集計）まで解答履歴へ複写していなかったので、
+    受験直後に解き直せなかった。
+    """
+
+    def test_submitting_adds_the_questions_to_the_mock_review(self):
+        client, profile = auth_client(grade=4)
+        exam = make_exam(n_questions=4)
+        start_and_answer_all(client, exam, key="A")
+
+        body = client.get("/api/quiz/review-filter/?source=mock").json()
+
+        assert body["count"] == 4
+        assert AnswerHistory.objects.filter(user=profile, context="mock").count() == 4
+        # 習熟度は付けない（模試は評価を付ける場ではない）
+        assert set(
+            AnswerHistory.objects.filter(user=profile, context="mock").values_list(
+                "mastery_level", flat=True
+            )
+        ) == {"unstudied"}
+
+    def test_grading_after_submitting_does_not_duplicate_the_history(self):
+        client, profile = auth_client(grade=4)
+        exam = make_exam(n_questions=4)
+        start_and_answer_all(client, exam, key="A")
+
+        call_command("grade_mock_exam", "--exam-id", exam.id, "--force")
+
+        assert AnswerHistory.objects.filter(user=profile, context="mock").count() == 4
+
+    def test_taking_a_second_exam_grows_the_review_set(self):
+        client, _ = auth_client(grade=4)
+        first = make_exam(n_questions=4)
+        start_and_answer_all(client, first, key="A")
+        assert client.get("/api/quiz/review-filter/?source=mock").json()["count"] == 4
+
+        second = make_exam(n_questions=3)
+        start_and_answer_all(client, second, key="A")
+
+        assert client.get("/api/quiz/review-filter/?source=mock").json()["count"] == 7
