@@ -51,22 +51,56 @@ function DistributionChart({ points }) {
   );
 }
 
+// 演習数の縦軸は日ごとの実績に合わせて伸縮させず、300を基準に固定する
+// （日によって目盛りが変わると増減が読み取れないため）。300を超える日が
+// あるときだけ、その日が振り切れないよう100刻みで上に伸ばす。
+const DAILY_AXIS_MAX = 300;
+const DAILY_AXIS_STEP = 100;
+
+function dailyAxisMax(counts) {
+  const peak = Math.max(0, ...counts);
+  if (peak <= DAILY_AXIS_MAX) return DAILY_AXIS_MAX;
+  return Math.ceil(peak / DAILY_AXIS_STEP) * DAILY_AXIS_STEP;
+}
+
 /** 直近30日の演習数（自分のみ）。 */
 function DailyChart({ daily }) {
   const w = 320;
   const h = 130;
   const pad = { l: 30, r: 8, t: 10, b: 20 };
-  const max = niceMax(Math.max(1, ...daily.map((d) => d.count)));
+  const max = dailyAxisMax(daily.map((d) => d.count));
   const stepX = (w - pad.l - pad.r) / Math.max(1, daily.length - 1);
   const x = (i) => pad.l + i * stepX;
   const y = (v) => h - pad.b - (v / max) * (h - pad.t - pad.b);
+  // 100ごとの目盛り（0 は実線の基準線として別に引く）。
+  const gridValues = [];
+  for (let v = DAILY_AXIS_STEP; v <= max; v += DAILY_AXIS_STEP) gridValues.push(v);
 
   return (
     <svg width="100%" viewBox={`0 0 ${w} ${h}`} className="scatter-chart">
+      {gridValues.map((v) => (
+        <line
+          key={v}
+          x1={pad.l}
+          x2={w - pad.r}
+          y1={y(v)}
+          y2={y(v)}
+          className="scatter-grid scatter-grid-dashed"
+        />
+      ))}
+      {gridValues.map((v) => (
+        <text
+          key={`label-${v}`}
+          x={pad.l - 6}
+          y={y(v)}
+          className="scatter-axis-label"
+          textAnchor="end"
+          dominantBaseline="middle"
+        >
+          {v}
+        </text>
+      ))}
       <line x1={pad.l} x2={w - pad.r} y1={y(0)} y2={y(0)} className="scatter-grid" />
-      <text x={pad.l - 6} y={y(max)} className="scatter-axis-label" textAnchor="end" dominantBaseline="middle">
-        {max}
-      </text>
       <text x={pad.l - 6} y={y(0)} className="scatter-axis-label" textAnchor="end" dominantBaseline="middle">
         0
       </text>

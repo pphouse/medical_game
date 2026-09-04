@@ -2105,6 +2105,10 @@
   stroke-width: 1;
 }
 
+.scatter-grid-dashed {
+  stroke-dasharray: 3 3;
+}
+
 .scatter-axis-label {
   font-size: 8px;
   fill: var(--text);
@@ -2751,3 +2755,47 @@
   .battle-heading-ja { color: #2563eb; background: none; }
 }
 
+
+/* 問題一覧の下に置く「間違いの報告」導線 */
+.report-link {
+  align-self: center;
+  margin: 14px 0 4px;
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 12.5px;
+  text-decoration: underline;
+}
+
+.report-link:hover { color: var(--accent); }
+
+.report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.report-form textarea {
+  font: inherit;
+  font-weight: 500;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-h);
+  resize: vertical;
+}
+
+.report-form textarea:focus,
+.report-form select:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+
+.report-done {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--correct);
+}

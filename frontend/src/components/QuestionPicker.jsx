@@ -24,6 +24,110 @@ const MASTERY_ICON = {
 
 const DIFFICULTY_LABEL = { 1: "易", 2: "標準", 3: "難" };
 
+// backend の QuestionReport.Reason と対応（値がずれると 400 になる）。
+const REPORT_REASONS = [
+  { key: "wrong_answer", label: "正解が誤っている" },
+  { key: "ambiguous", label: "設問が曖昧" },
+  { key: "typo", label: "誤字脱字" },
+  { key: "inappropriate", label: "不適切な内容" },
+  { key: "other", label: "その他" },
+];
+
+/** 一覧の下に置く「間違いの報告」フォーム。管理者の通報一覧に届く。
+ * 通報が3件付いた問題は自動で出題から外れる（サーバ側の仕組み）。 */
+function ReportForm({ questions }) {
+  const [open, setOpen] = useState(false);
+  const [questionId, setQuestionId] = useState("");
+  const [reason, setReason] = useState(REPORT_REASONS[0].key);
+  const [detail, setDetail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState(null);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!questionId) return;
+    setSending(true);
+    setError(null);
+    try {
+      await api.reportQuestion(Number(questionId), { reason, detail: detail.trim() });
+      setDone(true);
+      setDetail("");
+      setQuestionId("");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button className="report-link" onClick={() => setOpen(true)}>
+        問題に間違いを見つけたら報告する
+      </button>
+    );
+  }
+
+  return (
+    <form className="mypage-card report-form" onSubmit={handleSubmit}>
+      <h3 className="exam-section-heading" style={{ marginTop: 0 }}>
+        間違いの報告
+      </h3>
+      <p className="exam-meta">
+        気づいた点を管理者に送れます。内容を確認して修正します。
+      </p>
+
+      {done && <p className="report-done">報告しました。ご協力ありがとうございます。</p>}
+
+      <label className="profile-field">
+        <span className="profile-field-label">対象の問題</span>
+        <select value={questionId} onChange={(e) => setQuestionId(e.target.value)} required>
+          <option value="">選択してください</option>
+          {questions.map((q, i) => (
+            <option key={q.id} value={q.id}>
+              第{i + 1}問: {(q.case_stem || q.question_text || "").slice(0, 30)}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="profile-field">
+        <span className="profile-field-label">種類</span>
+        <select value={reason} onChange={(e) => setReason(e.target.value)}>
+          {REPORT_REASONS.map((r) => (
+            <option key={r.key} value={r.key}>
+              {r.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="profile-field">
+        <span className="profile-field-label">詳細（任意）</span>
+        <textarea
+          rows={3}
+          value={detail}
+          maxLength={1000}
+          placeholder="どこがどう間違っているか、分かる範囲で教えてください。"
+          onChange={(e) => setDetail(e.target.value)}
+        />
+      </label>
+
+      {error && <p className="error">{error}</p>}
+
+      <div className="profile-editor-actions">
+        <button type="button" className="toolbar-btn" onClick={() => setOpen(false)}>
+          閉じる
+        </button>
+        <button type="submit" className="cta-button" disabled={sending || !questionId}>
+          {sending ? "送信中..." : "報告を送る"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function formatResponseTime(ms) {
   if (ms == null) return null;
   const totalSec = Math.round(ms / 1000);
@@ -207,6 +311,8 @@ export default function QuestionPicker() {
           );
         })}
       </div>
+
+      <ReportForm questions={filtered} />
     </div>
   );
 }
