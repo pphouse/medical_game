@@ -54,8 +54,14 @@ function toggle(set, key) {
  *
  * `fixedExamType` を渡すとその試験種別に固定し、試験種別の選択欄は出さない
  * （CBT / 国試タブはタブ自体が試験種別なので）。`source` を渡すと、その
- * 文脈（模試・対戦）で自分が解いたことのある問題だけが対象になる。 */
-function FilteredPractice({ onStartSession, fixedExamType = null, source = null }) {
+ * 文脈（模試・対戦）で自分が解いたことのある問題だけが対象になる。
+ * `mockExam` を渡すと、その1回の模試で出題された問題だけが対象になる。 */
+function FilteredPractice({
+  onStartSession,
+  fixedExamType = null,
+  source = null,
+  mockExam = null,
+}) {
   const { profile } = useProfile();
   // null は「まだ手動で選んでいない」＝マイページの設定（未選択なら学年から
   // 決まる resolved_exam_type）に従う。一度選んだらそれ以降はそちらを優先。
@@ -72,7 +78,7 @@ function FilteredPractice({ onStartSession, fixedExamType = null, source = null 
   // 一旦リセットする（前の試験種別にしかない科目が残ると混乱するため）。
   useEffect(() => {
     setSelectedCategories(new Set());
-  }, [examType, source]);
+  }, [examType, source, mockExam]);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,13 +90,14 @@ function FilteredPractice({ onStartSession, fixedExamType = null, source = null 
         attempts: [...selectedAttempts],
         examType,
         source,
+        mockExam,
       })
       .then((data) => !cancelled && setResult(data))
       .catch((e) => !cancelled && setError(e.message));
     return () => {
       cancelled = true;
     };
-  }, [selectedCategories, selectedMastery, selectedAttempts, examType, source]);
+  }, [selectedCategories, selectedMastery, selectedAttempts, examType, source, mockExam]);
 
   if (error) return <p className="error">{error}</p>;
   if (!result) return <p>読み込み中...</p>;
@@ -100,7 +107,7 @@ function FilteredPractice({ onStartSession, fixedExamType = null, source = null 
 
   // 模試・対戦の復習は、まだ一度も解いていないと対象が空になる。絞り込みの
   // 結果ゼロなのか、そもそも履歴が無いのかを取り違えないよう文言を分ける。
-  if (source && categories.length === 0 && selectedCategories.size === 0) {
+  if (source && !mockExam && categories.length === 0 && selectedCategories.size === 0) {
     return <p>{EMPTY_SOURCE_MESSAGE[source]}</p>;
   }
 
@@ -205,27 +212,36 @@ const KIND_LABEL = {
   cbt_once: "CBT模試",
 };
 
-/** 受験した模試の一覧。結果画面（見直し・解説）への入口。 */
-function TakenExams() {
-  const navigate = useNavigate();
+/** 復習する模試を選ぶ。先頭が「すべての模試」で、以下は1回ずつ。 */
+function MockExamPicker({ selected, onSelect }) {
   const [rows, setRows] = useState(null);
 
   useEffect(() => {
     api.rankingExams().then(setRows).catch(() => setRows([]));
   }, []);
 
-  const submitted = (rows ?? []).filter((r) => r.submitted !== false);
-  if (!submitted.length) return null;
+  const taken = (rows ?? []).filter((r) => r.submitted !== false);
 
   return (
     <div className="filter-group">
-      <span className="filter-group-title">受験した模試</span>
+      <span className="filter-group-title">復習する模試</span>
       <div className="course-list">
-        {submitted.map((r) => (
+        <button
+          className={`course-row mock-pick${selected === null ? " active" : ""}`}
+          onClick={() => onSelect(null)}
+        >
+          <div className="course-row-top">
+            <span className="course-name">すべての模試を復習</span>
+            <span className="course-count">
+              {taken.length ? `${taken.length}回ぶん` : ""}
+            </span>
+          </div>
+        </button>
+        {taken.map((r) => (
           <button
             key={r.mock_exam_id}
-            className="course-row"
-            onClick={() => navigate(`/exams/${r.mock_exam_id}/result`)}
+            className={`course-row mock-pick${selected === r.mock_exam_id ? " active" : ""}`}
+            onClick={() => onSelect(r.mock_exam_id)}
           >
             <div className="course-row-top">
               <span className="course-name">
@@ -239,6 +255,11 @@ function TakenExams() {
           </button>
         ))}
       </div>
+      {rows && taken.length === 0 && (
+        <p className="exam-meta">
+          まだ受験した模試がありません。模試を受けると、ここで1回ずつ復習できます。
+        </p>
+      )}
     </div>
   );
 }
@@ -249,6 +270,8 @@ export default function ReviewDeck() {
     navigate("/quiz", { state: { ...session, backTo: "/review" } });
   const { profile } = useProfile();
   const [tabKey, setTabKey] = useState(null);
+  // null は「すべての模試」。模試を選ぶとその1回だけが対象になる。
+  const [mockExam, setMockExam] = useState(null);
   // 既定はマイページの設定（未選択なら学年から決まる resolved_exam_type）。
   const active = TABS.find((t) => t.key === tabKey)
     ?? TABS.find((t) => t.key === (profile?.resolved_exam_type ?? "CBT"))
@@ -269,13 +292,16 @@ export default function ReviewDeck() {
         ))}
       </div>
 
-      {active.key === "mock" && <TakenExams />}
+      {active.key === "mock" && (
+        <MockExamPicker selected={mockExam} onSelect={setMockExam} />
+      )}
 
       <FilteredPractice
-        key={active.key}
+        key={`${active.key}-${active.key === "mock" ? mockExam : ""}`}
         onStartSession={onStartSession}
         fixedExamType={active.examType ?? null}
         source={active.source ?? null}
+        mockExam={active.key === "mock" ? mockExam : null}
       />
     </div>
   );

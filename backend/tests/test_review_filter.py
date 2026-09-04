@@ -223,3 +223,90 @@ class TestSourceFilter:
     def test_an_unknown_source_is_rejected(self):
         client, _ = auth_client()
         assert client.get("/api/quiz/review-filter/?source=nope").status_code == 400
+
+
+@pytest.mark.django_db
+class TestMockExamFilter:
+    """1回の模試だけを復習する入口。"""
+
+    def taken_exam(self, client, n_questions=3):
+        from tests.test_exams import make_exam, start_and_answer_all
+
+        exam = make_exam(n_questions=n_questions)
+        start_and_answer_all(client, exam, key="A")
+        return exam
+
+    def test_it_limits_to_that_exams_questions(self):
+        client, _ = auth_client(grade=4)
+        first = self.taken_exam(client, n_questions=3)
+        second = self.taken_exam(client, n_questions=2)
+
+        body = client.get(f"/api/quiz/review-filter/?mock_exam={first.id}").json()
+
+        assert body["count"] == 3
+        picked = {q["id"] for q in body["results"]}
+        assert picked == set(first.mock_questions.values_list("question_id", flat=True))
+        assert not picked & set(
+            second.mock_questions.values_list("question_id", flat=True)
+        )
+
+    def test_unanswered_questions_of_that_exam_are_included(self):
+        """出題されたのに手が出なかった問題こそ復習したい。"""
+        from tests.test_exams import make_exam
+
+        client, _ = auth_client(grade=4)
+        exam = make_exam(n_questions=3)
+        client.post(f"/api/exams/{exam.id}/start/")
+        # 1問だけ答えて提出する
+        first_q = exam.mock_questions.order_by("order").first().question_id
+        client.post(
+            f"/api/exams/{exam.id}/answers/",
+            {"question_id": first_q, "selected_choice_key": "A"},
+            format="json",
+        )
+        client.post(f"/api/exams/{exam.id}/submit/")
+
+        body = client.get(f"/api/quiz/review-filter/?mock_exam={exam.id}").json()
+
+        assert body["count"] == 3
+
+    def test_an_exam_you_have_not_taken_is_rejected(self):
+        from tests.test_exams import make_exam
+
+        client, _ = auth_client(grade=4)
+        exam = make_exam(n_questions=2)  # 受験していない
+
+        res = client.get(f"/api/quiz/review-filter/?mock_exam={exam.id}")
+
+        assert res.status_code == 400
+        assert "受験していない" in res.content.decode()
+
+    def test_someone_elses_exam_is_rejected(self):
+        client, _ = auth_client(grade=4)
+        other, _ = auth_client(grade=4, display_name="ほかの人")
+        exam = self.taken_exam(other, n_questions=2)
+
+        assert client.get(f"/api/quiz/review-filter/?mock_exam={exam.id}").status_code == 400
+
+    def test_it_combines_with_the_other_filters(self):
+        client, profile = auth_client(grade=4)
+        exam = self.taken_exam(client, n_questions=3)
+        target = exam.mock_questions.order_by("order").first().question
+        AnswerHistory.objects.create(
+            user=profile,
+            question=target,
+            correct=False,
+            mastery_level="cross",
+            response_time_ms=1000,
+            context="review",
+        )
+
+        body = client.get(
+            f"/api/quiz/review-filter/?mock_exam={exam.id}&mastery=cross"
+        ).json()
+
+        assert [q["id"] for q in body["results"]] == [target.id]
+
+    def test_a_bad_id_is_rejected(self):
+        client, _ = auth_client(grade=4)
+        assert client.get("/api/quiz/review-filter/?mock_exam=abc").status_code == 400

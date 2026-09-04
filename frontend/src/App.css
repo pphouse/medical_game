@@ -1585,6 +1585,12 @@
   font-size: 13px;
 }
 
+/* 復習する模試の選択。選んでいるものを枠で示す。 */
+.mock-pick.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
 .battle-room-note {
   margin: 4px 0 0;
   font-size: 12px;
