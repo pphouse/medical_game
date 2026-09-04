@@ -607,6 +607,7 @@ def build_review(exam, result):
                 "choices": question.choices,
                 "correct_choice_key": question.correct_choice_key,
                 "explanation": strip_boilerplate(question.explanation),
+                "choice_explanations": question.choice_explanations,
                 "my_choice": my_choice,
                 "answered": bool(my_choice),
                 "correct": my_choice == question.correct_choice_key,

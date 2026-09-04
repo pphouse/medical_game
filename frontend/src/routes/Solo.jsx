@@ -41,14 +41,9 @@ export default function Solo() {
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
   const [allCounts, setAllCounts] = useState(null); // 円グラフ用：学年フィルタなしの全体集計
-  const [reviewDue, setReviewDue] = useState(0);
 
   useEffect(() => {
     api.summary().then(setSummary).catch(() => {});
-    api
-      .reviewSummary()
-      .then((s) => setReviewDue(s.due_now))
-      .catch(() => {});
     api
       .progress()
       .then((rows) => {
@@ -111,7 +106,6 @@ export default function Solo() {
       <div className="quick-links">
         <button className="quick-link quick-link-primary" onClick={() => navigate("/review")}>
           総合演習
-          {reviewDue > 0 && <span className="menu-badge">{reviewDue > 99 ? "99+" : reviewDue}</span>}
         </button>
         {STUDENT_VERIFICATION_ENABLED && (
           <button className="quick-link" onClick={() => navigate("/create")}>

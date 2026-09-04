@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useProfile } from "../context/ProfileContext";
+import { shuffled } from "../shuffle";
 
 // 演習の入口。CBT / 国試は問題バンク全体から、模試復習 / 対戦復習は
 // 「自分がそこで解いたことのある問題」から出題する（模試や対戦を重ねる
@@ -183,19 +184,34 @@ function FilteredPractice({
         </div>
       </div>
 
-      <button
-        className="cta-button"
-        disabled={count === 0}
-        onClick={() =>
-          onStartSession({
-            title: "演習問題",
-            questions: result.results,
-            context: "review",
-          })
-        }
-      >
-        {count === 0 ? "条件に合う問題がありません" : `演習を始める（${count}問）`}
-      </button>
+      <div className="start-button-row">
+        <button
+          className="cta-button"
+          disabled={count === 0}
+          onClick={() =>
+            onStartSession({
+              title: "演習問題",
+              questions: result.results,
+              context: "review",
+            })
+          }
+        >
+          {count === 0 ? "条件に合う問題がありません" : `演習を始める（${count}問）`}
+        </button>
+        <button
+          className="cta-button cta-button-secondary"
+          disabled={count === 0}
+          onClick={() =>
+            onStartSession({
+              title: "演習問題",
+              questions: shuffled(result.results),
+              context: "review",
+            })
+          }
+        >
+          <span className="shuffle-icon">⇄</span> シャッフルして始める ▶
+        </button>
+      </div>
 
       {result.truncated && (
         <p className="course-count">

@@ -173,4 +173,26 @@ describe("総合演習", () => {
       await screen.findByRole("button", { name: "演習を始める（12問）" }),
     ).toBeInTheDocument();
   });
+
+  it("そのままの順とシャッフルの2つから始められる", async () => {
+    api.reviewFilter.mockResolvedValue(filterResult({ count: 5 }));
+    renderDeck();
+
+    expect(
+      await screen.findByRole("button", { name: "演習を始める（5問）" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "⇄ シャッフルして始める ▶" }),
+    ).toBeInTheDocument();
+  });
+
+  it("問題が0件のときはどちらも押せない", async () => {
+    api.reviewFilter.mockResolvedValue(filterResult({ count: 0 }));
+    renderDeck();
+
+    expect(
+      await screen.findByRole("button", { name: "条件に合う問題がありません" }),
+    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "⇄ シャッフルして始める ▶" })).toBeDisabled();
+  });
 });
