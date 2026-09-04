@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../../api";
 import ExplanationText from "../../components/ExplanationText";
 import TierBadge from "../../components/TierBadge";
@@ -10,8 +10,24 @@ import TierBadge from "../../components/TierBadge";
  *   large   : 分野別偏差値・得点分布
  *   cbt_once: 予想IRT（θ・偏差値相当スケール）
  */
+// 模試の日程は日本時間で決まっている（毎月1日・国試の2ヶ月前）ので、
+// 端末のタイムゾーンではなく JST で表示する。時差のある端末だと日付が
+// 1日ずれてしまうため。
+const JST_DATE = new Intl.DateTimeFormat("ja-JP", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+function formatDate(iso) {
+  if (!iso) return null;
+  return JST_DATE.format(new Date(iso));
+}
+
 export default function Result() {
   const { examId } = useParams();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
@@ -34,9 +50,25 @@ export default function Result() {
     );
   }
 
+  // 提出直後は得点・正誤・解説だけ。順位や偏差値は他の受験者の結果が
+  // そろってからなので、いつどこで見られるかを案内する。
+  const graded = data.status === "graded";
   const hasDeviation = data.deviation_score != null;
   const hasDistribution = Boolean(data.score_distribution?.buckets?.length);
   const hasSectionDeviation = Object.keys(data.section_deviation_scores || {}).length > 0;
+  const rankingDate = formatDate(data.ranking_available_at);
+
+  // 見直しの設問をそのまま問題演習へ渡す（解説つきで解き直せる）。
+  function practiceAll() {
+    navigate("/quiz", {
+      state: {
+        title: `模試の復習: ${data.title}`,
+        questions: data.review,
+        context: "review",
+        backTo: `/exams/${examId}/result`,
+      },
+    });
+  }
 
   return (
     <div className="screen">
@@ -51,7 +83,7 @@ export default function Result() {
           <span className="summary-pct-label">得点</span>
         </div>
         <div className="summary-ranks">
-          {data.rank != null && (
+          {graded && data.rank != null && (
             <div className="rank-stat">
               <span className="rank-label">全国順位</span>
               <span className="rank-value">
@@ -60,13 +92,13 @@ export default function Result() {
               </span>
             </div>
           )}
-          {data.university_rank != null && (
+          {graded && data.university_rank != null && (
             <div className="rank-stat">
               <span className="rank-label">学内順位</span>
               <span className="rank-value">{data.university_rank}位</span>
             </div>
           )}
-          {hasDeviation && (
+          {graded && hasDeviation && (
             <div className="rank-stat">
               <span className="rank-label">偏差値</span>
               <span className="rank-value">{data.deviation_score}</span>
@@ -74,6 +106,19 @@ export default function Result() {
           )}
         </div>
       </div>
+
+      {!graded && (
+        <div className="mypage-card exam-pending-card">
+          <p className="exam-pending-title">成績は集計中です</p>
+          <p className="exam-meta">
+            {`全国順位・学内順位・偏差値は${rankingDate ?? "翌月1日"}に「ランキング」タブの` +
+              "「模試」から確認できます。下の見直しでは、いまのうちに正誤と解説を確認できます。"}
+          </p>
+          <Link to="/ranking?category=exams" className="toolbar-btn exam-pending-link">
+            ランキングを見る
+          </Link>
+        </div>
+      )}
 
       {data.points_delta != null && (
         <div className="mypage-card">
@@ -104,7 +149,8 @@ export default function Result() {
         </div>
       )}
 
-      <h3 className="exam-section-heading">分野別スコア</h3>
+      {graded && <h3 className="exam-section-heading">分野別スコア</h3>}
+      {graded && (
       <div className="mypage-card">
         {Object.entries(data.section_scores).map(([area, rate]) => (
           <div key={area} className="exam-section-row">
@@ -121,8 +167,9 @@ export default function Result() {
           </div>
         ))}
       </div>
+      )}
 
-      {hasDistribution && (
+      {graded && hasDistribution && (
         <>
           <h3 className="exam-section-heading">得点分布</h3>
           <div className="mypage-card">
@@ -149,6 +196,15 @@ export default function Result() {
       )}
 
       <h3 className="exam-section-heading">見直し</h3>
+      <div className="exam-review-actions">
+        <button className="cta-button" onClick={practiceAll}>
+          この模試の問題を演習する ▶
+        </button>
+        <p className="exam-meta">
+          出題された問題を問題演習の画面で解き直せます。評価（◎○△✕）を付けると
+          復習デッキにも入ります。
+        </p>
+      </div>
       {data.review.map((row) => {
         const correct = row.my_choice === row.correct_choice_key;
         return (
