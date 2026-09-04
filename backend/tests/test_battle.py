@@ -250,12 +250,12 @@ class TestLeaveRoom:
         assert not room.participants.filter(user=profiles[1]).exists()
 
     def test_host_leaving_waiting_room_hands_off_to_next_participant(self):
-        clients, profiles, code = make_room(participants=3)
+        clients, profiles, code = make_room(participants=2)
         res = clients[0].post(f"/api/battle/rooms/{code}/leave/")
         assert res.status_code == 200
         room = BattleRoom.objects.get(room_code=code)
-        assert room.participants.count() == 2
-        assert room.host_id in (profiles[1].id, profiles[2].id)
+        assert room.participants.count() == 1
+        assert room.host_id == profiles[1].id
 
     def test_last_participant_leaving_waiting_room_deletes_it(self):
         clients, profiles, code = make_room(participants=2)
@@ -657,3 +657,32 @@ class TestResultQuestionReview:
         assert row["answered"] is False
         assert row["correct"] is False
         assert row["selected_choice_key"] is None
+
+
+class TestRoomHoldsTwoPlayers:
+    """対戦ルームは1対1。HPの削り合いが2人を前提にした計算なので、
+    3人目は入れない。"""
+
+    def test_a_third_player_cannot_join(self):
+        clients, _, code = make_room(participants=2)
+        third, _ = auth_client(display_name="3人目")
+
+        res = third.post(f"/api/battle/rooms/{code}/join/")
+
+        assert res.status_code == 400
+        assert "2人" in res.content.decode()
+        assert BattleRoom.objects.get(room_code=code).participants.count() == 2
+
+    def test_rejoining_still_works_for_someone_already_in(self):
+        """満室でも、すでに入っている人の再入室は通ること（冪等）。"""
+        clients, _, code = make_room(participants=2)
+        assert clients[1].post(f"/api/battle/rooms/{code}/join/").status_code == 200
+        assert BattleRoom.objects.get(room_code=code).participants.count() == 2
+
+    def test_a_freed_slot_can_be_taken(self):
+        clients, _, code = make_room(participants=2)
+        clients[1].post(f"/api/battle/rooms/{code}/leave/")
+        third, _ = auth_client(display_name="3人目")
+
+        assert third.post(f"/api/battle/rooms/{code}/join/").status_code == 200
+        assert BattleRoom.objects.get(room_code=code).participants.count() == 2

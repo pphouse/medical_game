@@ -58,8 +58,10 @@ from .scoring import (
     resolve_round_damage,
 )
 
+# 対戦は1対1。HPの削り合い（片方だけ正解なら相手に20%、両方正解なら遅い
+# 側に10%）が2人を前提にした計算なので、人数もそれに合わせて固定する。
 MIN_PARTICIPANTS = 2
-MAX_PARTICIPANTS = 8
+MAX_PARTICIPANTS = 2
 
 
 def get_room(code):
@@ -296,7 +298,7 @@ class RoomJoinView(APIView):
         if room.status != BattleRoom.Status.WAITING:
             raise exceptions.ValidationError("この対戦はすでに開始されています。")
         if room.participants.count() >= MAX_PARTICIPANTS:
-            raise exceptions.ValidationError("満室です。")
+            raise exceptions.ValidationError("この対戦ルームはすでに2人います。")
         BattleParticipant.objects.create(room=room, user=request.user)
         return Response({"room_code": room.room_code})
 

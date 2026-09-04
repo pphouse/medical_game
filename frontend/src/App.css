@@ -1585,6 +1585,13 @@
   font-size: 13px;
 }
 
+.battle-room-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.75;
+}
+
 .battle-participant-row {
   display: flex;
   justify-content: space-between;

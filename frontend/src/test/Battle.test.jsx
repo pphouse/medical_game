@@ -110,6 +110,20 @@ describe("対戦ルームの状態遷移 (Room)", () => {
     expect(startButton).toBeDisabled();
   });
 
+  it("waiting: コードの共有と、ロビーに戻るとリセットされる旨を伝える", async () => {
+    api.battleState.mockResolvedValue({
+      room: { room_code: "123456", status: "waiting", question_count: 10 },
+      participants: [{ display_name: "ホスト", is_host: true, is_me: true, connected: true }],
+    });
+
+    renderRoom();
+
+    expect(await screen.findByText("このコードを友達に共有してください。")).toBeInTheDocument();
+    expect(
+      screen.getByText("※対戦ロビーに戻るとコードはリセットされます"),
+    ).toBeInTheDocument();
+  });
+
   it("finished: 勝敗バナーとHP・ランクの増減を表示する", async () => {
     api.battleState.mockResolvedValue({
       room: { room_code: "123456", status: "finished", question_count: 10 },
