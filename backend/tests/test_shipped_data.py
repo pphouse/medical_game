@@ -141,6 +141,22 @@ class TestShippedData:
             last[block] = num
         assert not bad, "設問番号が戻っている:\n" + "\n".join(bad)
 
+    # 語の途中に紛れ込むダッシュ。「自己免疫— 性膵炎」のように、PDFの行を
+    # つなぐときに区切り記号が本文へ落ちることがある。pdfplumber の版が
+    # 変わると出方も変わるので、取り込みをやり直したときに気づけるようにする。
+    # 同梱データ全2,249問で0件、いまの環境で作り直すと3件出た。
+    DASH_IN_WORD = re.compile(r"[ぁ-んァ-ヶ一-龥][—–―][ぁ-んァ-ヶ一-龥]")
+
+    def test_no_dash_inside_words(self, path):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = [
+            f"{code}.{field}: …{text[max(0, m.start() - 8):m.start() + 12]}…"
+            for code, field, text in iter_texts(payload)
+            for m in [self.DASH_IN_WORD.search(text)]
+            if m
+        ]
+        assert not bad, "語中にダッシュが紛れている:\n" + "\n".join(bad)
+
     def test_no_glyph_corruption(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))
         bad = [
