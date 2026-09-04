@@ -81,7 +81,9 @@ POSITION_KANJI_THEN_LATIN = re.compile(
 BRACKET_LOOKALIKE = re.compile(r"°(?![CF])(?=[A-Za-zぁ-んァ-ヶ一-龥])|–")
 
 # 語頭の字が落ちて意味が変わる語。「倦怠感」から倦が落ちると「怠感」になる。
-DROPPED_WORD_HEAD = re.compile(r"(?<![倦])怠感|(?<![末])梢血|(?<![大])腿骨")
+# 「大腿骨」の大が落ちた形を捕まえる検査。「下腿骨」は正当な語なので
+# 除く（下腿骨骨幹部骨折で誤検出した）。
+DROPPED_WORD_HEAD = re.compile(r"(?<![倦])怠感|(?<![末])梢血|(?<![大下])腿骨")
 
 # 語中に紛れ込んだ列区切り。組合せ問題の左右2列を見分けるため、字間が
 # 広い箇所に "—" を差し込んでいる（scripts/import_kokushi.py）。均等割りで
