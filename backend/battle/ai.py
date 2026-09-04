@@ -3,8 +3,9 @@
 対戦中に相手が離脱・無応答になった場合も同じランク帯のAIに自動で
 入れ替わる)。
 
-AI と分からないよう、毎回ランダムな日本人名っぽい表示名と、実在の大学
-一覧からランダムに選んだ所属大学を持つ「使い捨ての」Profile
+AI と分からないよう、毎回ランダムなニックネーム（他の利用者と同じ雰囲気の
+ハンドルネーム）と、実在の大学一覧からランダムに選んだ所属大学を持つ
+「使い捨ての」Profile
 （is_ai=True）をその都度作る。固定の "AI（Bランク）" のような1体を
 使い回す旧方式は、同じ偽名が複数の対戦相手の前に繰り返し現れて
 見破られる要因になるためやめた。
@@ -20,6 +21,7 @@ import uuid
 from django.utils import timezone
 
 from accounts.models import Profile, University
+from accounts.nicknames import random_nickname
 from battle.models import BattleBuzz
 from battle.scoring import round_time_limit_seconds
 from quiz.models import AnswerHistory
@@ -47,30 +49,14 @@ MIN_ANSWER_SECONDS = 3.5
 ANSWER_AFTER_OPPONENT_SECONDS = 2.0
 DEFAULT_AI_TIER = "B"  # 未ランクの相手と対戦する場合の既定の強さ
 
-# 表示名の候補。フルネーム風とニックネーム風を混ぜて、いかにも「AI」という
-# 雰囲気を出さないようにする（実在の人物を指さない一般的な組み合わせ）。
-_SURNAMES = [
-    "佐藤", "鈴木", "高橋", "田中", "伊藤", "渡辺", "山本", "中村", "小林", "加藤",
-    "吉田", "山田", "佐々木", "松本", "井上", "木村", "林", "斎藤", "清水", "森",
-]
-_GIVEN_NAMES = [
-    "陽翔", "蓮", "湊", "樹", "颯太", "陸", "大和", "悠真", "結菜", "陽菜",
-    "凛", "咲良", "美咲", "葵", "さくら", "楓", "杏", "澪", "遥", "光",
-]
-# ニックネームは実在の人名っぽくない「ハンドルネーム」寄りにする。
-_NICKNAMES = [
-    "にゃん", "怠けた医", "rinrin", "3浪医", "ねむい", "みかん",
-    "kanan", "留年こわい", "もち", "ちくわ", "国試たすけて", "らむね",
-    "Dr.たまご", "ぽんぽこ", "あさひ", "5年生", "コーヒー中毒", "たぬき",
-]
-
-# 表示名は「苗字だけ」「下の名前だけ」「ニックネーム」の3パターン。
-# フルネームは実在の人物を指しているように見えやすいので使わない。
-_NAME_STYLES = (_SURNAMES, _GIVEN_NAMES, _NICKNAMES)
+# 表示名はニックネーム（ハンドルネーム）だけにする。実在の人名は
+# フルネームはもちろん、姓だけ・名だけも使わない — 実在の人物を指している
+# ように見えるうえ、同姓同名の利用者に紐づけて読まれる余地があるため。
+# 候補はデモ用のシードデータと共通（accounts.nicknames）。
 
 
 def _random_display_name():
-    return random.choice(random.choice(_NAME_STYLES))
+    return random_nickname()
 
 
 def _random_university():
