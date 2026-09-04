@@ -1,10 +1,10 @@
 """Ranking API (spec フェーズ3) + Mock-exam API (spec フェーズ5) + internal hook."""
 
 
-from django.conf import settings
+from io import StringIO
+
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from io import StringIO
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import exceptions
@@ -13,17 +13,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import Profile
-from config.internal_auth import require_internal_caller
 from accounts.ranktier import (
     compute_tier,
     progress_for_points,
     rank_state,
     tier_for_top_fraction,
 )
+from config.internal_auth import require_internal_caller
 from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
-from exams.ranking_utils import grade_ranked_rows
 from exams.grading import apply_irt_score, grade_single_result
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot
+from exams.ranking_refresh import ensure_fresh
+from exams.ranking_utils import grade_ranked_rows
 from quiz.serializers import QuestionSerializer
 
 DISPLAY_NAME_FALLBACK = "匿名ユーザー"
@@ -63,6 +64,10 @@ class RankingView(APIView):
             raise exceptions.ValidationError("scope が不正です")
         if metric not in RankingSnapshot.Metric.values:
             raise exceptions.ValidationError("metric が不正です")
+
+        # スナップショットが古ければここで集計し直す。本番にはバッチを回す
+        # スケジューラが無く、放っておくと順位が凍結するため（ranking_refresh）。
+        ensure_fresh(period)
 
         profile = request.user
         qs = RankingSnapshot.objects.filter(scope=scope, period=period, metric=metric)

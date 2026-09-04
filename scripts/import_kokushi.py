@@ -99,6 +99,19 @@ NOISE_LINE = re.compile(r"DKIX|DDKKIIXX|^\s*$")
 # 別冊（画像）を参照している設問。これらは取り込まない。
 IMAGE_REF = re.compile(r"別冊|を別に示す|別に示す")
 
+# 図表を参照する設問。「家系図を示す」「以下に示す」と書いてあるのに参照先が
+# 本文に入っていないものは、図が無いと解けない。会話文や表を本文に取り込めて
+# いる設問は必ず長くなるので、本文の長さで見分ける。実際に「家系図を示す。
+# この疾患の遺伝形式はどれか。」(41字) のような解きようのない設問が公開まで
+# 通り抜けていた。
+FIGURE_REF = re.compile(
+    r"(家系図|図|表|写真|画像|グラフ|シェーマ|電気泳動|カレンダー|推移)を(以下に|別に)?示す"
+    # 「模式図に示す」のように助詞が「に」の形。表は本文に取り込めるので
+    # 「表に示す」は含めない（実際に取り込めている設問がある）。
+    r"|(模式図|図|写真|画像|グラフ|シェーマ)に示す"
+)
+FIGURE_REF_MIN_BODY = 120
+
 # 複数選択・計算問題。現行スキーマに入らない。
 MULTI_SELECT = re.compile(r"[２2３3４4]\s*つ選べ")
 
@@ -304,6 +317,14 @@ def _fix_symbol_font(fontname: str, text: str) -> str:
 # フォント（第117〜119回の学名表記など）はCIDがそのまま出るので、この並びで戻す。
 # PyMuPDF の解決結果と座標で突き合わせて確認した（CID 9479→'C' から始まる
 # "Chlamydia pneumoniae" がそのまま復元できる）。
+# 1つのグリフが複数文字に対応するもの。座標で PyMuPDF の結果を借りる経路は
+# 1文字しか受け取れず、「第XIII因子」が「第X因子」になってしまう（第117回
+# D41・F21 で実際に起きた。第X因子はビタミンK依存性なので、設問の正答が
+# 成立しなくなる）。CIDから直に引いて xref より優先する。
+_AJ1_MULTI: dict[int, str] = {
+    0x2067: "XIII",
+}
+
 _AJ1_LATIN: dict[int, str] = {
     9444: " ",
     **{9477 + i: chr(ord("A") + i) for i in range(26)},
@@ -521,7 +542,9 @@ def _pdfplumber_lines(path: Path) -> list[str]:
                     # /Differences を持たないフォント（Identity-H）では、
                     # ここに出る番号は符号ではなく Adobe-Japan1 のCIDそのもの。
                     latin = _AJ1_LATIN.get(code) if not table else None
+                    multi = _AJ1_MULTI.get(code) if not table else None
                     fixed = (table.get(code)
+                             or multi
                              or xref.get((ch["fontname"], code))
                              or latin
                              or UNRESOLVED)
@@ -731,6 +754,7 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
 
     out = []
     prev_end = 0
+    last_num = 0
     for r_i, run in enumerate(runs):
         next_start = runs[r_i + 1][0] if r_i + 1 < len(runs) else len(lines)
 
@@ -751,20 +775,25 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
 
         # 設問文＝直前の設問の選択肢が終わってから ａ 行の手前まで
         stem_lines = lines[prev_end : run[0]]
-        # 最後の番号行から始める（前問の選択肢の折り返しを巻き込まないため）
-        start = 0
-        for k, line in enumerate(stem_lines):
-            if Q_START.match(line):
-                start = k
-        stem_lines = stem_lines[start:]
         prev_end = run[-1] + 1
 
-        if not stem_lines:
+        # 最後の番号行から始める（前問の選択肢の折り返しを巻き込まないため）。
+        # ただし設問番号はブロック内で単調に増えるので、直前の番号を超える
+        # ものだけを候補にする。折り返した症例文の行が「2 日前から下腹部痛
+        # も…」のように番号行に見えることがあり、第119回C44がそこから
+        # 切り出されて設問文が欠け、正答表の照合も C002 とずれていた。
+        start = None
+        for k, line in enumerate(stem_lines):
+            m = Q_START.match(line)
+            if m and int(m.group(1)) > last_num:
+                start = k
+        if start is None:
             continue
+        stem_lines = stem_lines[start:]
+
         m = Q_START.match(stem_lines[0])
-        if not m:
-            continue
         num = int(m.group(1))
+        last_num = num
         stem = _join_wrapped([m.group(2)] + stem_lines[1:])
         out.append((num, stem, texts))
     return out
@@ -788,9 +817,19 @@ def build_explanation(exam: int, block: str, num: int, answer_key: str,
     )
 
 
+# NFKC は丸数字を裸の数字に変えてしまう（①→1）。第118回F27の選択肢
+# 「①2　②5　③3」が「12 25 33」になり、設問が成立しなくなっていた。
+# 変換の前後で私用領域に退避させて守る。ローマ数字は逆に半角へ寄せたい
+# （「第Ⅷ因子」→「第VIII因子」）ので対象にしない。
+_ENCLOSED = {chr(c): chr(0xE000 + c - 0x2460) for c in range(0x2460, 0x2500)}
+_ENCLOSED_BACK = {v: k for k, v in _ENCLOSED.items()}
+
+
 def normalize(text: str) -> str:
     """全角英数字を半角に寄せる。医学用語の全角カナはそのまま残す。"""
-    return unicodedata.normalize("NFKC", text)
+    text = "".join(_ENCLOSED.get(ch, ch) for ch in text)
+    text = unicodedata.normalize("NFKC", text)
+    return "".join(_ENCLOSED_BACK.get(ch, ch) for ch in text)
 
 
 def main() -> int:
@@ -830,6 +869,10 @@ def main() -> int:
                 stats["series"] += 1
                 continue
             if IMAGE_REF.search(body):
+                stats["image"] += 1
+                continue
+            if FIGURE_REF.search(body) and len(body) < FIGURE_REF_MIN_BODY:
+                # 参照先の図表が本文に入っておらず、設問だけでは解けない。
                 stats["image"] += 1
                 continue
             if MULTI_SELECT.search(body):

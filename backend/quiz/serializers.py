@@ -163,6 +163,9 @@ class UserQuestionSerializer(serializers.ModelSerializer):
     場合に作成者の所属で強制上書きする（ビュー側で設定）。
     """
 
+    # 本文は必須。理由は AdminQuestionSerializer 側のコメントと同じ。
+    question_text = serializers.CharField(allow_blank=False, trim_whitespace=True)
+
     class Meta:
         model = Question
         fields = [

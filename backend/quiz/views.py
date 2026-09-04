@@ -97,6 +97,10 @@ class HomeSummaryView(APIView):
 
     def get(self, request):
         from exams.models import RankingSnapshot
+        from exams.ranking_refresh import ensure_fresh
+
+        # ホームに出す順位もスナップショット由来なので、同じく鮮度を保つ。
+        ensure_fresh("all")
 
         visible = Question.objects.visible_to(request.user)
         total_questions = visible.count()

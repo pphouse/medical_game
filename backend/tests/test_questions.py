@@ -269,10 +269,14 @@ class TestBundledKokushiBatches:
     @pytest.mark.parametrize("exam", EXAMS)
     def test_questions_are_well_formed(self, exam):
         for q, _ in self._bodies(exam):
-            assert len(q["choices"]) == 5, q["id"]
-            assert q["correct_choice_id"] in {"A", "B", "C", "D", "E"}, q["id"]
+            # 国試の選択肢は通常ａ〜ｅの5つだが、ｆまである設問が稀にある
+            # （第116回F75の「診断と死産届の組合せ」は3×2で6択）。
+            assert 5 <= len(q["choices"]) <= 6, q["id"]
+            keys = [c["id"] for c in q["choices"]]
+            assert keys == list("ABCDEF"[: len(keys)]), q["id"]
+            assert q["correct_choice_id"] in set(keys), q["id"]
             texts = [c["text"] for c in q["choices"]]
-            assert len(set(texts)) == 5, q["id"]
+            assert len(set(texts)) == len(texts), q["id"]  # 選択肢の重複なし
             assert all(texts), q["id"]
 
     def test_corpus_size(self):
@@ -325,3 +329,44 @@ class TestExamTypeFilter:
         assert res.status_code == 200
         results = res.json()["results"]
         assert [q["question_text"] for q in results] == ["国試の循環器問題"]
+
+
+class TestSeedDemoSamples:
+    """seed_demo のサンプル設問。
+
+    SAMPLE_QUESTIONS に question_text が無く、seed_demo の get_or_create の
+    defaults にも入っていなかったため、本番に本文の無い設問が15問（CBT 10 /
+    国試 5）できていた。モデルが blank=True なので保存でき、アプリ側は
+    「（本文なし）」と出すだけで、気づけるところが無かった。
+    """
+
+    def test_every_sample_has_a_question_text(self):
+        from quiz.management.commands.seed_demo import SAMPLE_QUESTIONS
+
+        missing = [
+            i for i, q in enumerate(SAMPLE_QUESTIONS, 1)
+            if not (q.get("question_text") or "").strip()
+        ]
+        assert not missing, f"question_text の無いサンプル設問: {missing}"
+
+    def test_seed_demo_writes_the_question_text(self, db):
+        """defaults に入れ忘れると本文が空のまま作られる。"""
+        from django.core.management import call_command
+
+        from quiz.management.commands.seed_demo import SAMPLE_QUESTIONS
+        from quiz.models import Question
+
+        call_command("seed_demo")
+        blank = Question.objects.filter(question_text="").count()
+        assert blank == 0, f"本文が空の設問が {blank} 件できた"
+        # サンプルの設問文がそのまま入っていること。
+        for q in SAMPLE_QUESTIONS[:3]:
+            assert Question.objects.filter(question_text=q["question_text"]).exists()
+
+    def test_correct_answer_is_among_the_choices(self):
+        """設問文を後から書いたので、正答と選択肢の対応が崩れていないか見る。"""
+        from quiz.management.commands.seed_demo import SAMPLE_QUESTIONS
+
+        for i, q in enumerate(SAMPLE_QUESTIONS, 1):
+            keys = [c["key"] for c in q["choices"]]
+            assert q["correct_choice_key"] in keys, f"{i}問目の正答が選択肢に無い"
