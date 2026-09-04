@@ -31,6 +31,7 @@ UserQuestionSerializer のどちらにも空チェックが無く、モデルが
 """
 
 import argparse
+import ast
 import glob
 import json
 import os
@@ -51,12 +52,55 @@ EMPTY_COND = "btrim(coalesce(q.question_text, '')) = ''"
 
 
 def fingerprint(choices):
-    """同梱JSONから、本番DBと同じ指紋を作る。
+    """本番DBと同じ指紋を作る。
 
-    取り込み時に {"id","text"} が {"key","text"} へ変換される
-    （import_questions.convert_choices）ので、ここでは id を key として扱う。
+    同梱JSONは {"id","text"}、seed_demo と本番DBは {"key","text"}。
+    取り込み時に id が key へ変換される（import_questions.convert_choices）
+    ので、どちらの形でも同じ指紋になるようにする。
     """
-    return "|".join(f"{c['id']}:{c['text']}" for c in choices)
+    return "|".join(f"{c.get('id', c.get('key'))}:{c['text']}" for c in choices)
+
+
+def load_seed_demo():
+    """seed_demo.py のサンプル設問。
+
+    本番にある本文が空の15行（CBT 10 / 国試 5）はこれ。SAMPLE_QUESTIONS に
+    question_text が無く、seed_demo の defaults にも入っていなかったため、
+    本文が空のまま作られていた。両方直したが、既に入っている行は
+    get_or_create の defaults では更新されないので、ここから復元値を作る。
+
+    blueprint_code を持たないので、当てられるのは選択肢の指紋だけ。
+
+    seed_demo は先頭で Django を import するため、そのまま読み込むと落ちる。
+    構文木から SAMPLE_QUESTIONS の定義だけを取り出す。
+    """
+    path = os.path.join(ROOT, "backend/quiz/management/commands/seed_demo.py")
+    tree = ast.parse(open(path, encoding="utf-8").read())
+    node = None
+    for stmt in tree.body:
+        if isinstance(stmt, ast.Assign) and any(
+            getattr(t, "id", None) == "SAMPLE_QUESTIONS" for t in stmt.targets
+        ):
+            node = stmt.value
+    if node is None:
+        raise SystemExit("seed_demo.py に SAMPLE_QUESTIONS が無い")
+
+    rows = []
+    for item in node.elts:
+        # dict(question_text=..., category=..., ...) の形だけを想定する。
+        fields = {kw.arg: ast.literal_eval(kw.value) for kw in item.keywords}
+        text = (fields.get("question_text") or "").strip()
+        if not text:
+            raise SystemExit(f"seed_demo の設問に question_text が無い: {fields.get('category')}")
+        rows.append(
+            {
+                "code": "",
+                "exam_type": fields["exam_type"],
+                "fp": fingerprint(fields["choices"]),
+                "text": text,
+            }
+        )
+    return rows
 
 
 def load_rows():
@@ -231,7 +275,7 @@ def main():
     )
     args = parser.parse_args()
 
-    rows = load_rows()
+    rows = load_rows() + load_seed_demo()
     code_rows = by_code(rows)
     fp_rows = by_fingerprint(rows)
 
