@@ -16,12 +16,14 @@ const EXAM_TABS = [
   { key: "", label: "すべて" },
 ];
 
+// 理解できている側から並べる（◎→未演習）。他の画面の5段階表示や
+// 問題一覧の評価チップと向きをそろえるため。
 const MASTERY_FILTERS = [
-  { key: "unstudied", label: "未演習" },
-  { key: "cross", label: "✕" },
-  { key: "triangle", label: "△" },
-  { key: "circle", label: "○" },
   { key: "double_circle", label: "◎" },
+  { key: "circle", label: "○" },
+  { key: "triangle", label: "△" },
+  { key: "cross", label: "✕" },
+  { key: "unstudied", label: "未演習" },
 ];
 
 const ATTEMPT_FILTERS = [
