@@ -263,10 +263,8 @@ class TestInternalCreateExamsEndpoint:
         )
         assert res.status_code == 200
 
-    def test_one_exam_types_empty_pool_does_not_block_the_others(self, client, settings):
-        """KOKUSHI の問題プールが尽きていても、CBTのmonthly/cbt_onceは作られる。"""
-        for i in range(5):
-            make_question(question_text=f"CBT単独設問{i}", correct_choice_key="A", exam_type="CBT")
+    def test_creates_every_kind_even_with_an_empty_question_pool(self, client, settings):
+        """問題が1問も無くても、受験できる模試一覧は用意される（仮設問で埋める）。"""
         res = client.post(
             "/api/internal/create-exams/",
             data="{}",
@@ -274,10 +272,64 @@ class TestInternalCreateExamsEndpoint:
             headers={"X-Internal-Token": settings.INTERNAL_API_TOKEN},
         )
         assert res.status_code == 200
-        body = res.json()
-        assert "error" in body["created"]["large"]  # KOKUSHIの問題が無い
-        assert MockExam.objects.filter(kind=MockExam.Kind.CBT_ONCE, exam_type="CBT").exists()
-        assert MockExam.objects.filter(kind=MockExam.Kind.MONTHLY, exam_type="CBT").exists()
+        for kind in (MockExam.Kind.MONTHLY, MockExam.Kind.LARGE, MockExam.Kind.CBT_ONCE):
+            exams = MockExam.objects.filter(kind=kind)
+            assert exams.exists(), kind
+            # 「受験できる」= 設問がぶら下がっている状態。
+            for exam in exams:
+                assert exam.mock_questions.count() == exam.question_count > 0
+
+
+class TestPlaceholderQuestions:
+    """本番の問題が無い間の繋ぎで作る仮設問は、模試だけに出す。
+
+    通常の問題演習・復習・ランキングに混ざると「意味の無い設問」が
+    学習体験に紛れ込むので、そこには絶対に出てはいけない。
+    """
+
+    def _create_exams(self):
+        call_command("create_scheduled_exam", "--kind", "monthly", "--open-now")
+
+    def test_placeholders_are_drafts_and_hidden_from_practice(self):
+        self._create_exams()
+        from quiz.models import Question
+
+        placeholders = Question.objects.filter(question_text__startswith="【仮】")
+        assert placeholders.exists()
+        # published ではないので、演習・復習・ランキングの母集団に入らない。
+        assert not placeholders.filter(status=Question.Status.PUBLISHED).exists()
+        assert not Question.objects.published().filter(
+            question_text__startswith="【仮】"
+        ).exists()
+
+    def test_placeholders_do_not_appear_in_the_practice_api(self):
+        self._create_exams()
+        client, _ = auth_client(grade=4)
+
+        progress = client.get("/api/quiz/progress/").json()
+        assert all(row["total"] == 0 for row in progress) or progress == []
+
+        listed = client.get("/api/quiz/questions/?category=未分類").json()
+        results = listed.get("results", listed)
+        assert results == []
+
+    def test_placeholder_exam_is_actually_takeable(self):
+        self._create_exams()
+        client, _ = auth_client(grade=4)
+        exam = MockExam.objects.filter(kind=MockExam.Kind.MONTHLY, exam_type="CBT").first()
+
+        assert client.post(f"/api/exams/{exam.id}/start/").status_code == 201
+        body = client.get(f"/api/exams/{exam.id}/questions/").json()
+        assert len(body["questions"]) == exam.question_count
+
+    def test_placeholders_are_reused_instead_of_piling_up(self):
+        from quiz.models import Question
+
+        self._create_exams()
+        first = Question.objects.filter(question_text__startswith="【仮】").count()
+        MockExam.objects.all().delete()
+        self._create_exams()
+        assert Question.objects.filter(question_text__startswith="【仮】").count() == first
 
 
 class TestScheduledExamIdempotency:

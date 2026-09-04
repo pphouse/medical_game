@@ -160,7 +160,9 @@ export default function Solo() {
               <span className="course-name">
                 {p.category} <span className="course-count">({p.total})</span>
               </span>
-              <span className="course-remaining">残り{p.remaining}問</span>
+              <span className="course-remaining">
+                {p.total - p.remaining}/{p.total}問
+              </span>
             </div>
             <ProgressBar counts={p.counts} total={p.total} />
           </button>

@@ -552,6 +552,25 @@ def classify(text: str, allowed: tuple[str, ...] | None = None) -> str | None:
     return best
 
 
+# 国試だけ「消化管」と「肝・胆・膵」を分ける（CBTは「消化器」でひとまとめ）。
+# 出題基準の D-7 は消化器系ひとまとめなので、本文の語で肝胆膵を切り出す。
+# ここに書くのは肝胆膵にしか出てこない語だけ。「腹痛」「黄疸」のような
+# 消化管側にも出る語を入れると、消化管の設問まで吸い寄せられる。
+HEPATOBILIARY_KEYWORDS = (
+    "肝硬変", "肝炎", "肝細胞癌", "肝不全", "肝性脳症", "脂肪肝", "肝生検",
+    "門脈", "食道静脈瘤", "胆石", "胆囊炎", "胆嚢炎", "胆管炎", "胆管癌",
+    "胆囊癌", "胆嚢癌", "総胆管", "膵炎", "膵癌", "膵頭", "膵管",
+    "原発性胆汁性", "自己免疫性肝炎", "Wilson病", "ヘモクロマトーシス",
+)
+
+
+def _split_digestive(text: str) -> str:
+    """国試の消化器の設問を「肝・胆・膵」と「消化管」に振り分ける。"""
+    if any(k in text for k in HEPATOBILIARY_KEYWORDS):
+        return "肝・胆・膵"
+    return "消化管"
+
+
 def normalize(
     category: str | None,
     text: str = "",
@@ -564,6 +583,16 @@ def normalize(
     無い場合だけ、旧分野名の読み替えと本文からの推定にフォールバックする。
     """
     exam = _exam(exam_type)
+    result = _normalize_raw(category, text, blueprint_code, exam)
+    # 国試の「消化管」は出題基準では肝胆膵と同じ区分なので、ここで分ける。
+    if exam == KOKUSHI and result == "消化管":
+        return _split_digestive(f"{category or ''}\n{text}")
+    return result
+
+
+def _normalize_raw(
+    category: str | None, text: str, blueprint_code: str | None, exam: str
+) -> str:
     from_code = category_for_blueprint_code(blueprint_code, exam)
     if from_code:
         return from_code

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api";
+import ExplanationText from "../../components/ExplanationText";
 import TierBadge from "../../components/TierBadge";
 
 /** ランクの進捗バー。対戦後は「増減前 → 増減後」へアニメーションさせる。 */
@@ -47,6 +48,83 @@ function RankBar({ rank }) {
           : "（最高ランク）"}
       </p>
     </div>
+  );
+}
+
+/** 出題された1問の振り返り。クリックで解説を開く。 */
+function ReviewRow({ row, open, onToggle }) {
+  // 無解答（時間切れ）は「不正解」と分けて見せる。自分の解答を思い出せない
+  // まま解説だけ読んでも復習にならないので、選んだ選択肢も残す。
+  const mark = row.correct ? "○" : row.answered ? "✕" : "－";
+  const markClass = row.correct ? "correct" : row.answered ? "incorrect" : "skipped";
+  return (
+    <li className={`battle-review-item${open ? " open" : ""}`}>
+      <button
+        type="button"
+        className="battle-review-head"
+        onClick={onToggle}
+        aria-expanded={open}
+      >
+        <span className={`battle-review-mark ${markClass}`}>{mark}</span>
+        <span className="battle-review-no">Q{row.round_number}</span>
+        <span className="battle-review-title">
+          {row.question_text || row.case_stem || "（設問文なし）"}
+        </span>
+        <span className="battle-review-caret">{open ? "▲" : "▼"}</span>
+      </button>
+
+      {open && (
+        <div className="battle-review-body">
+          <span className="badge category-badge">分野: {row.category}</span>
+          {row.case_stem && <p className="case-stem">{row.case_stem}</p>}
+          {row.question_text && <p className="question-text">{row.question_text}</p>}
+          <ul className="battle-review-choices">
+            {row.choices.map((c) => {
+              const isCorrect = c.key === row.correct_choice_key;
+              const isMine = c.key === row.selected_choice_key;
+              return (
+                <li
+                  key={c.key}
+                  className={`battle-review-choice${isCorrect ? " correct" : ""}${
+                    isMine && !isCorrect ? " incorrect" : ""
+                  }`}
+                >
+                  <span className="choice-key">{c.key}</span>
+                  <span>{c.text}</span>
+                  {isMine && <span className="battle-review-yours">あなたの解答</span>}
+                </li>
+              );
+            })}
+          </ul>
+          {!row.answered && <p className="battle-review-skipped">時間内に解答できませんでした。</p>}
+          <ExplanationText text={row.explanation} />
+        </div>
+      )}
+    </li>
+  );
+}
+
+function ReviewList({ questions }) {
+  const [openId, setOpenId] = useState(null);
+  if (!questions?.length) return null;
+  const correct = questions.filter((q) => q.correct).length;
+  return (
+    <section className="battle-review">
+      <h3 className="battle-review-heading">
+        出題された問題（{correct}/{questions.length}問 正解）
+      </h3>
+      <p className="battle-review-note">問題をタップすると解説が読めます。</p>
+      <ul className="battle-review-list">
+        {questions.map((row) => (
+          <ReviewRow
+            key={row.round_number}
+            row={row}
+            open={openId === row.round_number}
+            onToggle={() => setOpenId((cur) => (cur === row.round_number ? null : row.round_number))}
+          />
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -106,6 +184,8 @@ export default function Result({ code }) {
       </div>
 
       <RankBar rank={result.rank} />
+
+      <ReviewList questions={result.questions} />
 
       <div className="battle-result-actions">
         <Link to="/battle" className="cta-button battle-again-link">

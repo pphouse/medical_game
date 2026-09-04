@@ -556,6 +556,44 @@ class AnswerView(APIView):
         )
 
 
+def result_questions(room, profile):
+    """対戦で出題された問題の振り返り。
+
+    決着済み（closed_at がある）ラウンドだけを対象に、自分がどう答えたかと
+    解説を返す。まだ開いているラウンドを混ぜると、途中終了した対戦で「誰も
+    答えていない問題」が振り返りに並んでしまう。無解答（時間切れ）は
+    correct=false ではなく answered=false で区別する。解説は対戦が終わって
+    から読むものなので、ここで初めて返す。
+    """
+    rows = []
+    rounds = (
+        room.rounds.filter(closed_at__isnull=False)
+        .select_related("question", "question__question_set")
+        .prefetch_related("buzzes")
+        .order_by("round_number")
+    )
+    for round_ in rounds:
+        mine = next((b for b in round_.buzzes.all() if b.profile_id == profile.id), None)
+        q = round_.question
+        rows.append(
+            {
+                "round_number": round_.round_number,
+                "question_id": q.id,
+                "category": q.category,
+                "exam_type": q.exam_type,
+                "case_stem": q.question_set.case_stem if q.question_set_id else None,
+                "question_text": q.question_text,
+                "choices": q.choices,
+                "correct_choice_key": q.correct_choice_key,
+                "explanation": q.explanation,
+                "answered": mine is not None,
+                "selected_choice_key": mine.selected_choice_key if mine else None,
+                "correct": bool(mine.is_correct) if mine else False,
+            }
+        )
+    return rows
+
+
 class RoomResultView(APIView):
     def get(self, request, code):
         room = get_room(code)
@@ -599,6 +637,7 @@ class RoomResultView(APIView):
             {
                 "status": room.status,
                 "standings": standings,
+                "questions": result_questions(room, request.user),
                 "my_points": None if request.user.is_ai else request.user.points,
                 "my_tier": None if request.user.is_ai else state["tier"],
                 "rank": {

@@ -19,8 +19,11 @@ kind ごとの仕様:
             4年生のみ、320問・6ブロック構成）。既存の未終了インスタンスが
             あれば重複作成しない。
 
-問題は published/public から、CBT 出題基準の構成比に近づけるため
-blueprint の area（なければカテゴリ）ごとの問題数比で比例配分して抽選する。
+問題は published/public から、本番の出題構成比（quiz/blueprint_weights）
+に沿って科目ごとに比例配分して抽選する。バンクの科目ごとの問題数をその
+まま比率にすると、たまたま問題を多く作った科目が模試でも多く出てしまう。
+プールが足りない分は仮設問（placeholder_pool）で埋めるので、本番の問題が
+まだ無くても「受験できる模試」は必ず用意される。
 """
 
 import datetime
@@ -31,8 +34,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
-from exams.management.commands.grade_mock_exam import area_of
 from exams.models import MockExam, MockQuestion
+from quiz.blueprint_weights import weights_for
 from quiz.models import Question
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
@@ -73,22 +76,127 @@ def months_before(date_str, months):
     raise AssertionError("unreachable")
 
 
-def pick_pool(base_qs, count, *, prefer_ids=None, exclude_ids=None):
-    """area 比例配分で抽選する。`prefer_ids` があればそれを優先母集団にし、
-    不足分は `exclude_ids` を除いた残りプールから補充する。"""
+# 仮設問の目印。question_text の先頭に付ける。
+PLACEHOLDER_PREFIX = "【仮】"
+
+
+def placeholder_pool(exam_type, count):
+    """出題プールが足りないときに使う仮設問を、必要数そろえて返す。
+
+    本番の問題がまだ登録されていなくても模試を「受験できる」状態にする
+    ための繋ぎ。``status=draft`` で作るので Question.objects.published() /
+    visible_to() には掛からず、通常の問題演習・ランキング・復習には一切
+    出てこない。模試は MockQuestion 経由で直接参照するため出題はできる。
+
+    実問題が published で入れば、そちらが優先されて仮設問は使われなくなる
+    （既に作られた模試の中身は差し替わらないので、実問題が揃ったら次回の
+    開催分から自然に置き換わる）。
+    """
+    if count <= 0:
+        return []
+
+    is_placeholder = {
+        "exam_type": exam_type,
+        "status": Question.Status.DRAFT,
+        "question_text__startswith": PLACEHOLDER_PREFIX,
+    }
+    existing = list(Question.objects.filter(**is_placeholder).order_by("id")[:count])
+    missing = count - len(existing)
+    if missing <= 0:
+        return existing
+
+    offset = Question.objects.filter(**is_placeholder).count()
+    created = Question.objects.bulk_create(
+        [
+            Question(
+                category="未分類",
+                exam_type=exam_type,
+                difficulty=Question.Difficulty.NORMAL,
+                # 本物の医学的な設問と紛れないよう、内容は明示的に「仮」とする。
+                question_text=(
+                    f"{PLACEHOLDER_PREFIX}準備中の設問です（{offset + i + 1}）。"
+                    "本番の問題が登録されるまでの仮の設問のため、内容に意味はありません。"
+                ),
+                choices=[{"key": k, "text": f"選択肢{k}"} for k in "ABCDE"],
+                correct_choice_key="A",
+                explanation="仮の設問のため解説はありません。",
+                status=Question.Status.DRAFT,
+                source=Question.Source.OFFICIAL,
+            )
+            for i in range(missing)
+        ]
+    )
+    return existing + created
+
+
+def allocate(quotas, capacity, total):
+    """重み ``quotas`` にしたがって ``total`` 問を科目へ割り当てる。
+
+    ``capacity`` はその科目に実在する問題数の上限。上限に当たった科目の
+    余りは、まだ余裕のある科目へ同じ比率で配り直す（配り切れなければ
+    合計は total より少なくなる。呼び出し側で残りを補充する）。
+    """
+    allocation = {name: 0 for name in quotas}
+    remaining = min(total, sum(capacity.get(n, 0) for n in quotas))
+    live = {n: w for n, w in quotas.items() if w > 0 and capacity.get(n, 0) > 0}
+    while remaining > 0 and live:
+        weight_sum = sum(live.values())
+        # 比例配分の実数を出し、整数部を配ってから端数の大きい順に1問ずつ。
+        exact = {n: remaining * w / weight_sum for n, w in live.items()}
+        added = 0
+        for name, value in sorted(exact.items(), key=lambda kv: (-kv[1], kv[0])):
+            room = capacity[name] - allocation[name]
+            take = min(int(value), room)
+            allocation[name] += take
+            added += take
+        leftover = remaining - added
+        for name, _v in sorted(exact.items(), key=lambda kv: (-(kv[1] % 1), kv[0])):
+            if leftover <= 0:
+                break
+            if allocation[name] < capacity[name]:
+                allocation[name] += 1
+                leftover -= 1
+                added += 1
+        remaining -= added
+        live = {n: w for n, w in live.items() if allocation[n] < capacity[n]}
+        if added == 0:
+            break
+    return allocation
+
+
+def pick_pool(base_qs, count, *, prefer_ids=None, exclude_ids=None, exam_type=None):
+    """出題構成比にしたがって抽選する。`prefer_ids` があればそれを優先母集団に
+    し、不足分は `exclude_ids` を除いた残りプールから補充する。
+
+    比率は**本番の試験の出題構成比**（quiz/blueprint_weights）で決める。
+    プールの科目ごとの問題数をそのまま比率に使うと、たまたま問題を多く
+    作った科目が模試でも多く出てしまうため。重み表に無い科目（仮設問の
+    「未分類」など）はプール内の実数を重みとして扱い、締め出さない。
+    """
     exclude_ids = exclude_ids or set()
     pool = [q for q in base_qs if q.id not in exclude_ids]
     preferred = [q for q in pool if prefer_ids is None or q.id in prefer_ids] if prefer_ids is not None else pool
 
+    weights = weights_for(exam_type) if exam_type else {}
+
     def proportional(questions, n):
-        by_area = {}
+        by_category = {}
         for question in questions:
-            by_area.setdefault(area_of(question), []).append(question)
+            by_category.setdefault(question.category, []).append(question)
+        if not weights:
+            # 重み表が無い試験種別では、従来どおり出題基準の area 比で配る。
+            quotas = {c: len(qs) for c, qs in by_category.items()}
+        else:
+            quotas = {
+                c: weights.get(c) or len(qs) / max(1, len(questions))
+                for c, qs in by_category.items()
+            }
+        capacity = {c: len(qs) for c, qs in by_category.items()}
+        allocation = allocate(quotas, capacity, n)
         picked = []
-        for _area, qs in sorted(by_area.items()):
-            share = max(1, round(n * len(qs) / len(questions))) if questions else 0
+        for category, qs in sorted(by_category.items()):
             random.shuffle(qs)
-            picked.extend(qs[:share])
+            picked.extend(qs[: allocation[category]])
         random.shuffle(picked)
         return picked[:n]
 
@@ -171,8 +279,6 @@ class Command(BaseCommand):
             Question.objects.published()
             .filter(visibility=Question.Visibility.PUBLIC, exam_type=exam_type)
         )
-        if not base_qs:
-            raise CommandError(f"exam_type={exam_type} の published/public 問題がありません")
 
         prefer_ids = None
         if novel_only:
@@ -188,11 +294,19 @@ class Command(BaseCommand):
                     )
                 )
 
-        picked = pick_pool(base_qs, min(count, len(base_qs)), prefer_ids=prefer_ids)
+        picked = pick_pool(
+            base_qs, min(count, len(base_qs)), prefer_ids=prefer_ids, exam_type=exam_type
+        )
         if len(picked) < count:
+            # 本番の問題がまだ足りなくても「受験できる模試」は用意する。
+            filler = placeholder_pool(exam_type, count - len(picked))
             self.stdout.write(
-                self.style.WARNING(f"問題プールが不足しています（{len(picked)}/{count}問で作成します）")
+                self.style.WARNING(
+                    f"exam_type={exam_type} の問題が {len(picked)}/{count}問しかないため、"
+                    f"残り{len(filler)}問を仮設問で埋めます"
+                )
             )
+            picked = picked + filler
 
         title = options["title"] or (default_title + title_suffix)
         exam = MockExam.objects.create(
@@ -278,13 +392,18 @@ class Command(BaseCommand):
             Question.objects.published()
             .filter(visibility=Question.Visibility.PUBLIC, exam_type=Question.ExamType.CBT)
         )
-        if not base_qs:
-            raise CommandError("CBT の published/public 問題がありません")
-        picked = pick_pool(base_qs, min(count, len(base_qs)))
+        picked = pick_pool(
+            base_qs, min(count, len(base_qs)), exam_type=Question.ExamType.CBT
+        )
         if len(picked) < count:
+            filler = placeholder_pool(Question.ExamType.CBT, count - len(picked))
             self.stdout.write(
-                self.style.WARNING(f"問題プールが不足しています（{len(picked)}/{count}問で作成します）")
+                self.style.WARNING(
+                    f"CBTの問題が {len(picked)}/{count}問しかないため、"
+                    f"残り{len(filler)}問を仮設問で埋めます"
+                )
             )
+            picked = picked + filler
 
         exam = MockExam.objects.create(
             title=options["title"] or "CBT全国模試（生涯1回）",
