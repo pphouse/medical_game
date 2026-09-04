@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from quiz.categories import normalize as normalize_category
+from quiz.explanations import strip_boilerplate
 from quiz.models import Question, QuestionSet
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
@@ -26,7 +27,9 @@ def convert_choices(choices):
 def build_explanation(item):
     """Fold distractor_rationale into the explanation so reviewers and the
     result panel see why each wrong choice is wrong (spec 2-2)."""
-    explanation = item["explanation"]
+    # 取り込みバッチの決まり文句（出典URL・整形の注記）は解説として読む
+    # 中身が無いので、DBに入れる前に落とす。
+    explanation = strip_boilerplate(item["explanation"])
     rationale = item.get("distractor_rationale")
     if rationale:
         lines = [f"{key}: {text}" for key, text in sorted(rationale.items())]
