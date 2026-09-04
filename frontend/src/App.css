@@ -1761,6 +1761,33 @@
 .exam-section-rate { width: 44px; text-align: right; font-size: 12px; font-weight: 700; }
 
 .exam-review-card { margin-bottom: 8px; }
+
+/* 提出直後（成績の集計待ち）の案内。 */
+.exam-pending-card {
+  border-left: 4px solid var(--accent);
+}
+
+.exam-pending-title {
+  margin: 0 0 4px;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.exam-pending-link {
+  display: inline-block;
+  margin-top: 8px;
+  text-decoration: none;
+}
+
+/* 見直しの上に置く「問題演習で解き直す」導線。 */
+.exam-review-actions {
+  margin-bottom: 12px;
+}
+
+.exam-review-actions .exam-meta {
+  margin-top: 6px;
+}
 .exam-review-head { font-weight: 800; color: var(--text-h); }
 .exam-review-text { font-size: 13px; }
 .exam-review-answer { font-size: 13px; font-weight: 700; }

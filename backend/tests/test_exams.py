@@ -169,8 +169,15 @@ class TestGrading:
         c2.post(f"/api/exams/{exam.id}/submit/")
         start_and_answer_all(c3, exam, key="B")  # 0/4
 
-        # 採点前は「採点中」
-        assert c1.get(f"/api/exams/{exam.id}/result/").json()["status"] == "grading"
+        # 採点（＝順位・偏差値の集計）前でも、得点と解説はすぐ見られる
+        before = c1.get(f"/api/exams/{exam.id}/result/").json()
+        assert before["status"] == "submitted"
+        assert before["score"] == 4
+        assert len(before["review"]) == 4
+        assert before["review"][0]["explanation"]
+        # 順位・偏差値はまだ返さない（他の受験者の結果が要る）
+        assert "rank" not in before
+        assert "deviation_score" not in before
 
         call_command("grade_mock_exam", "--exam-id", exam.id, "--force")
 
@@ -613,3 +620,96 @@ class TestExamListSelfHeal:
 
         assert list(MockExam.objects.values_list("id", flat=True)) == [exam.id]
 
+
+
+class TestResultIsAvailableRightAfterSubmitting:
+    """提出したら、順位の集計を待たずに得点・正誤・解説を見られること。
+
+    順位や偏差値は他の受験者の結果がそろうまで出せないが、復習は待たせる
+    ほど遠ざかるので分けて返す。
+    """
+
+    def submit(self, grade=4):
+        client, profile = auth_client(grade=grade)
+        exam = make_exam(n_questions=4)
+        start_and_answer_all(client, exam, key="A")  # 全問正解
+        return client, exam
+
+    def test_score_and_explanations_come_back_before_grading(self):
+        client, exam = self.submit()
+
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        assert body["status"] == "submitted"
+        assert body["score"] == 4
+        assert body["max_score"] == 4
+        assert len(body["review"]) == 4
+        for row in body["review"]:
+            assert row["correct"] is True
+            assert row["my_choice"] == "A"
+            assert row["correct_choice_key"] == "A"
+            assert row["explanation"]
+
+    def test_a_wrong_answer_is_marked_and_unanswered_is_distinguished(self):
+        client, profile = auth_client(grade=4)
+        exam = make_exam(n_questions=4)
+        client.post(f"/api/exams/{exam.id}/start/")
+        questions = client.get(f"/api/exams/{exam.id}/questions/").json()["questions"]
+        # 1問だけ間違え、1問は答えない
+        client.post(
+            f"/api/exams/{exam.id}/answers/",
+            {"question_id": questions[0]["id"], "selected_choice_key": "A"},
+            format="json",
+        )
+        client.post(
+            f"/api/exams/{exam.id}/answers/",
+            {"question_id": questions[1]["id"], "selected_choice_key": "B"},
+            format="json",
+        )
+        client.post(f"/api/exams/{exam.id}/submit/")
+
+        review = client.get(f"/api/exams/{exam.id}/result/").json()["review"]
+
+        assert [r["correct"] for r in review] == [True, False, False, False]
+        assert [r["answered"] for r in review] == [True, True, False, False]
+        assert review[2]["my_choice"] == ""
+
+    def test_the_ranking_is_not_leaked_before_grading(self):
+        client, exam = self.submit()
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+        for key in ("rank", "deviation_score", "percentile", "university_rank"):
+            assert key not in body
+
+    def test_it_says_when_the_ranking_becomes_available(self):
+        """成績は翌月1日にランキングタブで見られる、と案内するための日付。"""
+        import datetime
+
+        client, exam = self.submit()
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        available = datetime.datetime.fromisoformat(body["ranking_available_at"])
+        end = timezone.localtime(exam.end_at)
+        assert available.day == 1
+        assert (available.year, available.month) == (
+            (end.year + 1, 1) if end.month == 12 else (end.year, end.month + 1)
+        )
+        assert available > end
+
+    def test_the_review_carries_what_the_practice_screen_needs(self):
+        """見直しの設問をそのまま問題演習に渡して解き直せること。"""
+        client, exam = self.submit()
+        row = client.get(f"/api/exams/{exam.id}/result/").json()["review"][0]
+        for key in ("question_id", "category", "exam_type", "difficulty", "choices"):
+            assert key in row, key
+        assert len(row["choices"]) >= 2
+        assert all({"key", "text"} <= set(c) for c in row["choices"])
+
+    def test_an_unsubmitted_exam_still_says_grading(self):
+        client, _ = auth_client(grade=4)
+        exam = make_exam(n_questions=4)
+        client.post(f"/api/exams/{exam.id}/start/")
+
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        assert body["status"] == "grading"
+        assert "review" not in body

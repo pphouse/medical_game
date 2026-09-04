@@ -551,44 +551,94 @@ class ExamSubmitView(APIView):
         )
 
 
+def next_month_first_local(after):
+    """``after`` の翌月1日 0:00（JST）。模試の成績がランキングに出る日。
+
+    集計は開催が終わってから走るので、結果画面では「翌月1日にランキング
+    タブで見られる」と案内する。
+    """
+    local = timezone.localtime(after)
+    year, month = local.year, local.month + 1
+    if month == 13:
+        month, year = 1, year + 1
+    return local.replace(
+        year=year, month=month, day=1, hour=0, minute=0, second=0, microsecond=0
+    )
+
+
+def build_review(exam, result):
+    """模試の全問見直し。設問・選択肢・自分の解答・正解・解説を返す。
+
+    問題演習の画面にそのまま渡せるよう、QuestionSerializer と同じ形の
+    設問データ（choices・category・difficulty など）も含める。
+    """
+    mine = {a.question_id: a.selected_choice_key for a in result.answers.all()}
+    rows = []
+    for mq in (
+        exam.mock_questions.select_related("question", "question__question_set")
+        .order_by("order")
+    ):
+        question = mq.question
+        my_choice = mine.get(mq.question_id, "")
+        rows.append(
+            {
+                "order": mq.order,
+                "question_id": question.id,
+                "category": question.category,
+                "exam_type": question.exam_type,
+                "difficulty": question.difficulty,
+                "question_type": question.question_type,
+                "set_order": mq.order,
+                "case_stem": (
+                    question.question_set.case_stem if question.question_set_id else None
+                ),
+                "question_text": question.question_text,
+                "choices": question.choices,
+                "correct_choice_key": question.correct_choice_key,
+                "explanation": question.explanation,
+                "my_choice": my_choice,
+                "answered": bool(my_choice),
+                "correct": my_choice == question.correct_choice_key,
+            }
+        )
+    return rows
+
+
 class ExamResultView(APIView):
     """GET /api/exams/{id}/result/ — status=graded になるまで「採点中」。"""
 
     def get(self, request, exam_id):
         exam = get_object_or_404(MockExam, pk=exam_id)
         result = MockResult.objects.filter(user=request.user, mock_exam=exam).first()
-        if exam_status_for(exam, result) != MockExam.Status.GRADED:
+        graded = exam_status_for(exam, result) == MockExam.Status.GRADED
+        if result is None or result.submitted_at is None:
+            # まだ提出していない（＝受験記録が無いか受験途中）。
             return Response({"status": "grading", "message": "採点中です。しばらくお待ちください。"})
-        if result is None:
-            raise exceptions.NotFound("この模試の受験記録がありません。")
+
+        review = build_review(exam, result)
+        # 得点・正誤・解説は提出した時点で本人に返す。順位や偏差値と違って
+        # 他の受験者の結果を待つ必要がなく、待たせるほど復習から遠ざかる。
+        # result.score は採点コマンドが入れる値で、未採点なら 0 のままなので、
+        # 採点前は見直しから数え直す（0点と「まだ集計していない」は別物）。
+        my_score = result.score if graded else sum(1 for row in review if row["correct"])
+        common = {
+            "title": exam.title,
+            "kind": exam.kind,
+            "exam_type": exam.exam_type,
+            "score": my_score,
+            "max_score": exam.mock_questions.count(),
+            "review": review,
+            # 全国順位・偏差値は集計後にランキングタブへ出る。
+            "ranking_available_at": next_month_first_local(exam.end_at),
+        }
+        if not graded:
+            return Response({**common, "status": "submitted"})
 
         total = MockResult.objects.filter(mock_exam=exam).count()
-        review = [
-            {
-                "order": mq.order,
-                "question_id": mq.question_id,
-                "question_text": mq.question.question_text,
-                "correct_choice_key": mq.question.correct_choice_key,
-                "explanation": mq.question.explanation,
-                "my_choice": next(
-                    (
-                        a.selected_choice_key
-                        for a in result.answers.all()
-                        if a.question_id == mq.question_id
-                    ),
-                    "",
-                ),
-            }
-            for mq in exam.mock_questions.select_related("question").order_by("order")
-        ]
         return Response(
             {
+                **common,
                 "status": "graded",
-                "title": exam.title,
-                "kind": exam.kind,
-                "exam_type": exam.exam_type,
-                "score": result.score,
-                "max_score": exam.mock_questions.count(),
                 "rank": result.rank,
                 "out_of": total,
                 "university_rank": result.university_rank,
@@ -602,7 +652,6 @@ class ExamResultView(APIView):
                 "tier_after": compute_tier(request.user) if result.points_delta is not None else None,
                 "irt_theta": result.irt_theta,
                 "irt_scaled_score": result.irt_scaled_score,
-                "review": review,
             }
         )
 
