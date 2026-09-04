@@ -5,11 +5,11 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from quiz.categories import normalize as normalize_category
+from quiz.explanations import strip_boilerplate
 from quiz.models import Question, QuestionSet
 
-DEFAULT_DATA_FILE = (
-    Path(__file__).resolve().parent / "data" / "cbt_batch_core_2026.json"
-)
+DATA_DIR = Path(__file__).resolve().parent / "data"
+DEFAULT_DATA_FILE = DATA_DIR / "cbt_batch_core_2026.json"
 
 DIFFICULTY_MAP = {
     "easy": Question.Difficulty.EASY,
@@ -27,7 +27,9 @@ def convert_choices(choices):
 def build_explanation(item):
     """Fold distractor_rationale into the explanation so reviewers and the
     result panel see why each wrong choice is wrong (spec 2-2)."""
-    explanation = item["explanation"]
+    # 取り込みバッチの決まり文句（出典URL・整形の注記）は解説として読む
+    # 中身が無いので、DBに入れる前に落とす。
+    explanation = strip_boilerplate(item["explanation"])
     rationale = item.get("distractor_rationale")
     if rationale:
         lines = [f"{key}: {text}" for key, text in sorted(rationale.items())]
@@ -45,13 +47,34 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--file",
-            default=str(DEFAULT_DATA_FILE),
+            default=None,
             help="Path to the JSON file (see schemas/question_batch.schema.json).",
         )
+        parser.add_argument(
+            "--all",
+            action="store_true",
+            help=(
+                "同梱のバッチ（data/*.json）をすべて取り込む。国試は114〜119回の"
+                "1000問超が同梱されているが、既定のファイルはCBTの1本だけなので、"
+                "問題数が足りないときはこちらを使う。"
+            ),
+        )
+
+    def handle(self, *args, **options):
+        if options["all"] and options["file"]:
+            raise CommandError("--all と --file は同時に指定できません")
+        if options["all"]:
+            paths = sorted(DATA_DIR.glob("*.json"))
+            if not paths:
+                raise CommandError(f"No batch files found in {DATA_DIR}")
+        else:
+            paths = [Path(options["file"] or DEFAULT_DATA_FILE)]
+
+        for path in paths:
+            self._import_file(path)
 
     @transaction.atomic
-    def handle(self, *args, **options):
-        data_path = Path(options["file"])
+    def _import_file(self, data_path):
         if not data_path.exists():
             raise CommandError(f"File not found: {data_path}")
         payload = json.loads(data_path.read_text(encoding="utf-8"))

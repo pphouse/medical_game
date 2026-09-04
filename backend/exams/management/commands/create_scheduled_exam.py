@@ -1,26 +1,29 @@
 """定期開催模試の自動生成。
 
-    python manage.py create_scheduled_exam --kind weekly    # 次の金曜19:00 JST, 10問 x (CBT/国試)
-    python manage.py create_scheduled_exam --kind monthly   # 来月1日10:00 JST, 30問 x (CBT/国試)
-    python manage.py create_scheduled_exam --kind large     # 国試の2ヶ月前10:00 JST, 国試のみ大型
+    python manage.py create_scheduled_exam --kind monthly   # 来月1日10:00 JST, 15問 x (CBT/国試)
+    python manage.py create_scheduled_exam --kind large     # 国試の2ヶ月前10:00 JST, 国試模試
     python manage.py create_scheduled_exam --kind cbt_once  # 常時受験可・生涯1回のCBT模試（初回のみ作成）
     python manage.py create_scheduled_exam --kind monthly --open-now --count 5   # デモ用
 
-kind ごとの仕様（spec）:
-  weekly  : 毎週金曜開催。10問。出題は正答率50〜80%の問題（十分な解答数がある
-            問題が足りない場合は残りを通常プールから補充）。CBT/医師国家試験の
-            2本を作成し、対象学年でフロントの表示を振り分ける
-            （CBT版=4年生以下限定、国試版=学年制限なし＝全学年に表示）。
-  monthly : 毎月1日開催。30問。「新出問題」＝過去にどの模試にも出題されていない
-            問題を優先（不足時は既出からも補充）。CBT/国試の2本、学年振り分けは
-            weekly と同じ。
-  large   : 国家試験の2ヶ月前に開催する大型模試（国試のみ、対象学年5年生以上）。
+冪等性: 同じ日付（monthly/large）・既存の未終了インスタンス（cbt_once）が
+あれば作成をスキップする。Vercel Cron から毎日叩いても重複作成しない。
+
+kind ごとの仕様:
+  monthly : 毎月1日開催。15問・20分。「新出問題」＝過去にどの模試にも出題
+            されていない問題を優先（不足時は既出からも補充）。CBT/医師国家試験
+            の2本を作成する。CBT版は対象学年1〜4年生、国試版は5年生以上
+            － 自分の受ける試験の模試だけが一覧に出る。
+  large   : 国家試験の2ヶ月前に開催する国試模試（国試のみ、対象学年5年生以上）。
             新出問題を優先し、詳細な分野別・総合の偏差値を採点コマンド側で算出する。
   cbt_once: いつでも受験できるが「ユーザーごとに生涯1回」の CBT 模試（対象学年
-            4年生以下）。既存の未終了インスタンスがあれば重複作成しない。
+            4年生のみ、320問・6ブロック構成）。既存の未終了インスタンスが
+            あれば重複作成しない。
 
-問題は published/public から、CBT 出題基準の構成比に近づけるため
-blueprint の area（なければカテゴリ）ごとの問題数比で比例配分して抽選する。
+問題は published/public から、本番の出題構成比（quiz/blueprint_weights）
+に沿って科目ごとに比例配分して抽選する。バンクの科目ごとの問題数をその
+まま比率にすると、たまたま問題を多く作った科目が模試でも多く出てしまう。
+プールが足りない分は仮設問（placeholder_pool）で埋めるので、本番の問題が
+まだ無くても「受験できる模試」は必ず用意される。
 """
 
 import datetime
@@ -31,8 +34,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
-from exams.management.commands.grade_mock_exam import area_of
 from exams.models import MockExam, MockQuestion
+from quiz.blueprint_weights import weights_for
 from quiz.models import Question
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
@@ -73,22 +76,127 @@ def months_before(date_str, months):
     raise AssertionError("unreachable")
 
 
-def pick_pool(base_qs, count, *, prefer_ids=None, exclude_ids=None):
-    """area 比例配分で抽選する。`prefer_ids` があればそれを優先母集団にし、
-    不足分は `exclude_ids` を除いた残りプールから補充する。"""
+# 仮設問の目印。question_text の先頭に付ける。
+PLACEHOLDER_PREFIX = "【仮】"
+
+
+def placeholder_pool(exam_type, count):
+    """出題プールが足りないときに使う仮設問を、必要数そろえて返す。
+
+    本番の問題がまだ登録されていなくても模試を「受験できる」状態にする
+    ための繋ぎ。``status=draft`` で作るので Question.objects.published() /
+    visible_to() には掛からず、通常の問題演習・ランキング・復習には一切
+    出てこない。模試は MockQuestion 経由で直接参照するため出題はできる。
+
+    実問題が published で入れば、そちらが優先されて仮設問は使われなくなる
+    （既に作られた模試の中身は差し替わらないので、実問題が揃ったら次回の
+    開催分から自然に置き換わる）。
+    """
+    if count <= 0:
+        return []
+
+    is_placeholder = {
+        "exam_type": exam_type,
+        "status": Question.Status.DRAFT,
+        "question_text__startswith": PLACEHOLDER_PREFIX,
+    }
+    existing = list(Question.objects.filter(**is_placeholder).order_by("id")[:count])
+    missing = count - len(existing)
+    if missing <= 0:
+        return existing
+
+    offset = Question.objects.filter(**is_placeholder).count()
+    created = Question.objects.bulk_create(
+        [
+            Question(
+                category="未分類",
+                exam_type=exam_type,
+                difficulty=Question.Difficulty.NORMAL,
+                # 本物の医学的な設問と紛れないよう、内容は明示的に「仮」とする。
+                question_text=(
+                    f"{PLACEHOLDER_PREFIX}準備中の設問です（{offset + i + 1}）。"
+                    "本番の問題が登録されるまでの仮の設問のため、内容に意味はありません。"
+                ),
+                choices=[{"key": k, "text": f"選択肢{k}"} for k in "ABCDE"],
+                correct_choice_key="A",
+                explanation="仮の設問のため解説はありません。",
+                status=Question.Status.DRAFT,
+                source=Question.Source.OFFICIAL,
+            )
+            for i in range(missing)
+        ]
+    )
+    return existing + created
+
+
+def allocate(quotas, capacity, total):
+    """重み ``quotas`` にしたがって ``total`` 問を科目へ割り当てる。
+
+    ``capacity`` はその科目に実在する問題数の上限。上限に当たった科目の
+    余りは、まだ余裕のある科目へ同じ比率で配り直す（配り切れなければ
+    合計は total より少なくなる。呼び出し側で残りを補充する）。
+    """
+    allocation = {name: 0 for name in quotas}
+    remaining = min(total, sum(capacity.get(n, 0) for n in quotas))
+    live = {n: w for n, w in quotas.items() if w > 0 and capacity.get(n, 0) > 0}
+    while remaining > 0 and live:
+        weight_sum = sum(live.values())
+        # 比例配分の実数を出し、整数部を配ってから端数の大きい順に1問ずつ。
+        exact = {n: remaining * w / weight_sum for n, w in live.items()}
+        added = 0
+        for name, value in sorted(exact.items(), key=lambda kv: (-kv[1], kv[0])):
+            room = capacity[name] - allocation[name]
+            take = min(int(value), room)
+            allocation[name] += take
+            added += take
+        leftover = remaining - added
+        for name, _v in sorted(exact.items(), key=lambda kv: (-(kv[1] % 1), kv[0])):
+            if leftover <= 0:
+                break
+            if allocation[name] < capacity[name]:
+                allocation[name] += 1
+                leftover -= 1
+                added += 1
+        remaining -= added
+        live = {n: w for n, w in live.items() if allocation[n] < capacity[n]}
+        if added == 0:
+            break
+    return allocation
+
+
+def pick_pool(base_qs, count, *, prefer_ids=None, exclude_ids=None, exam_type=None):
+    """出題構成比にしたがって抽選する。`prefer_ids` があればそれを優先母集団に
+    し、不足分は `exclude_ids` を除いた残りプールから補充する。
+
+    比率は**本番の試験の出題構成比**（quiz/blueprint_weights）で決める。
+    プールの科目ごとの問題数をそのまま比率に使うと、たまたま問題を多く
+    作った科目が模試でも多く出てしまうため。重み表に無い科目（仮設問の
+    「未分類」など）はプール内の実数を重みとして扱い、締め出さない。
+    """
     exclude_ids = exclude_ids or set()
     pool = [q for q in base_qs if q.id not in exclude_ids]
     preferred = [q for q in pool if prefer_ids is None or q.id in prefer_ids] if prefer_ids is not None else pool
 
+    weights = weights_for(exam_type) if exam_type else {}
+
     def proportional(questions, n):
-        by_area = {}
+        by_category = {}
         for question in questions:
-            by_area.setdefault(area_of(question), []).append(question)
+            by_category.setdefault(question.category, []).append(question)
+        if not weights:
+            # 重み表が無い試験種別では、従来どおり出題基準の area 比で配る。
+            quotas = {c: len(qs) for c, qs in by_category.items()}
+        else:
+            quotas = {
+                c: weights.get(c) or len(qs) / max(1, len(questions))
+                for c, qs in by_category.items()
+            }
+        capacity = {c: len(qs) for c, qs in by_category.items()}
+        allocation = allocate(quotas, capacity, n)
         picked = []
-        for _area, qs in sorted(by_area.items()):
-            share = max(1, round(n * len(qs) / len(questions))) if questions else 0
+        for category, qs in sorted(by_category.items()):
             random.shuffle(qs)
-            picked.extend(qs[:share])
+            picked.extend(qs[: allocation[category]])
         random.shuffle(picked)
         return picked[:n]
 
@@ -125,10 +233,10 @@ class Command(BaseCommand):
                 default_count=100, default_duration=180, default_window_hours=24,
                 target_grade_min=5, target_grade_max=None, novel_only=True,
                 default_start=lambda: months_before(settings.NATIONAL_EXAM_DATE, 2),
-                default_title="医師国家試験 直前 大型模試",
+                default_title="国試模試（国試2ヶ月前）",
             )
-        elif kind in (MockExam.Kind.WEEKLY, MockExam.Kind.MONTHLY):
-            self._create_weekly_or_monthly(now, options, kind)
+        elif kind == MockExam.Kind.MONTHLY:
+            self._create_monthly(now, options)
         else:  # pragma: no cover - argparse choices already restrict this
             raise CommandError("unknown kind")
 
@@ -150,6 +258,18 @@ class Command(BaseCommand):
         default_start, default_title, title_suffix="",
     ):
         start = self._resolve_start(now, options, default_start)
+        # 冪等性: --start/--open-now の明示指定が無い定期実行では、同じ日付の
+        # 分を作成済みならスキップする（Vercel Cron から毎日叩いても
+        # 重複作成しないため）。
+        if not options["open_now"] and not options["start"] and MockExam.objects.filter(
+            kind=kind, exam_type=exam_type, start_at__date=start.date()
+        ).exists():
+            self.stdout.write(
+                self.style.WARNING(
+                    f"{kind}/{exam_type} は {start.date()} 開催分を作成済みのためスキップします。"
+                )
+            )
+            return None
         window_hours = options["window_hours"] or default_window_hours
         end = start + datetime.timedelta(hours=window_hours)
         count = options["count"] or default_count
@@ -159,8 +279,6 @@ class Command(BaseCommand):
             Question.objects.published()
             .filter(visibility=Question.Visibility.PUBLIC, exam_type=exam_type)
         )
-        if not base_qs:
-            raise CommandError(f"exam_type={exam_type} の published/public 問題がありません")
 
         prefer_ids = None
         if novel_only:
@@ -176,11 +294,19 @@ class Command(BaseCommand):
                     )
                 )
 
-        picked = pick_pool(base_qs, min(count, len(base_qs)), prefer_ids=prefer_ids)
+        picked = pick_pool(
+            base_qs, min(count, len(base_qs)), prefer_ids=prefer_ids, exam_type=exam_type
+        )
         if len(picked) < count:
+            # 本番の問題がまだ足りなくても「受験できる模試」は用意する。
+            filler = placeholder_pool(exam_type, count - len(picked))
             self.stdout.write(
-                self.style.WARNING(f"問題プールが不足しています（{len(picked)}/{count}問で作成します）")
+                self.style.WARNING(
+                    f"exam_type={exam_type} の問題が {len(picked)}/{count}問しかないため、"
+                    f"残り{len(filler)}問を仮設問で埋めます"
+                )
             )
+            picked = picked + filler
 
         title = options["title"] or (default_title + title_suffix)
         exam = MockExam.objects.create(
@@ -201,97 +327,49 @@ class Command(BaseCommand):
         )
         return exam
 
-    def _create_weekly_or_monthly(self, now, options, kind):
-        if kind == MockExam.Kind.WEEKLY:
+    def _create_monthly(self, now, options):
+        default_count, default_duration, default_window = 15, 20, 72
+        title_base = "月次実力テスト"
 
-            def default_start():
-                return next_weekday_at(now, weekday=4, hour=19)  # 金曜
-
-            default_count, default_duration, default_window = 10, 20, 24
-            novel_only = False  # spec: 正答率50〜80%（新出縛りではない）
-            title_base = "週次小テスト"
-        else:
-
-            def default_start():
-                return next_month_first(now)
-
-            default_count, default_duration, default_window = 30, 60, 72
-            novel_only = True  # spec: 新出問題
-            title_base = "月次模試"
-
-        # 学年で受けられる模試を分ける (spec): 1〜4年生はCBT、5〜6年生は国試。
-        # 以前は国試版に学年制限が無く、4年生以下にも国試模試が見えていた。
+        # 学年で見える模試を分ける: 4年生以下はCBT版だけ、5年生以上は国試版
+        # だけ。CBTを受けるのは4年生まで、そこから先は国試に向かうので、
+        # 自分の受ける試験と関係ない模試は一覧に出さない。
         flavors = [
             (Question.ExamType.CBT, None, 4, "（CBT）"),
             (Question.ExamType.KOKUSHI, 5, None, "（医師国家試験）"),
         ]
+        local_now = now.astimezone(JST)
         for exam_type, grade_min, grade_max, suffix in flavors:
-            if kind == MockExam.Kind.WEEKLY:
-                self._create_weekly_pool(
-                    now, options, exam_type=exam_type, grade_min=grade_min, grade_max=grade_max,
-                    default_start=default_start, default_count=default_count,
-                    default_duration=default_duration, default_window_hours=default_window,
-                    title=title_base + suffix,
-                )
-            else:
-                self._create_one(
-                    now, options, kind=kind, exam_type=exam_type,
-                    default_count=default_count, default_duration=default_duration,
-                    default_window_hours=default_window, target_grade_min=grade_min,
-                    target_grade_max=grade_max, novel_only=novel_only,
-                    default_start=default_start, default_title=title_base, title_suffix=suffix,
-                )
+            has_this_month = MockExam.objects.filter(
+                kind=MockExam.Kind.MONTHLY,
+                exam_type=exam_type,
+                start_at__year=local_now.year,
+                start_at__month=local_now.month,
+            ).exists()
 
-    @transaction.atomic
-    def _create_weekly_pool(
-        self, now, options, *, exam_type, grade_min, grade_max, default_start,
-        default_count, default_duration, default_window_hours, title,
-    ):
-        """週次小テスト専用: 正答率50〜80%の問題を優先母集団にする。"""
-        start = self._resolve_start(now, options, default_start)
-        window_hours = options["window_hours"] or default_window_hours
-        end = start + datetime.timedelta(hours=window_hours)
-        count = options["count"] or default_count
-        duration = options["duration"] or default_duration
+            def default_start(has_this_month=has_this_month):
+                # 今月分がまだ無ければ即開催にする。そうしないと、初回や
+                # Cron導入直後に「受験できる模試が1件も無い（翌月分の予約
+                # だけがある）」状態が最大1ヶ月続いてしまう。
+                if not has_this_month:
+                    return now - datetime.timedelta(minutes=1)
+                return next_month_first(now)
 
-        base_qs = list(
-            Question.objects.published()
-            .filter(visibility=Question.Visibility.PUBLIC, exam_type=exam_type)
-        )
-        if not base_qs:
-            raise CommandError(f"exam_type={exam_type} の published/public 問題がありません")
+            # 月初に開く通常の回は72時間の開催枠。今月分の穴埋めで即開催する
+            # 回は、月末まで受けられるようにする（数日で閉じると結局
+            # 「受験できる模試が無い」に戻ってしまうため）。
+            window_hours = default_window
+            if not has_this_month:
+                until = next_month_first(now, hour=0)
+                window_hours = max(1, round((until - now).total_seconds() / 3600))
 
-        mid_difficulty_ids = {
-            q.id
-            for q in base_qs
-            if q.answer_count >= Question.MIN_ANSWERS_FOR_CORRECT_RATE and 50 <= q.correct_rate <= 80
-        }
-        if len(mid_difficulty_ids) < count:
-            self.stdout.write(
-                self.style.WARNING(
-                    f"正答率50〜80%の問題が {len(mid_difficulty_ids)}/{count} 問しかないため、"
-                    "残りは通常プールから補充します"
-                )
+            self._create_one(
+                now, options, kind=MockExam.Kind.MONTHLY, exam_type=exam_type,
+                default_count=default_count, default_duration=default_duration,
+                default_window_hours=window_hours, target_grade_min=grade_min,
+                target_grade_max=grade_max, novel_only=True,
+                default_start=default_start, default_title=title_base, title_suffix=suffix,
             )
-        picked = pick_pool(base_qs, min(count, len(base_qs)), prefer_ids=mid_difficulty_ids)
-
-        exam = MockExam.objects.create(
-            title=options["title"] or title, kind=MockExam.Kind.WEEKLY, exam_type=exam_type,
-            start_at=start, end_at=end,
-            question_count=len(picked), duration_minutes=duration,
-            target_grade_min=grade_min, target_grade_max=grade_max,
-        )
-        MockQuestion.objects.bulk_create(
-            MockQuestion(mock_exam=exam, question=question, order=i + 1)
-            for i, question in enumerate(picked)
-        )
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"created MockExam #{exam.id} '{exam.title}' (weekly/{exam_type}) {len(picked)}問 "
-                f"({start.isoformat()} 〜 {end.isoformat()})"
-            )
-        )
-        return exam
 
     @transaction.atomic
     def _create_cbt_once(self, now, options):
@@ -307,27 +385,33 @@ class Command(BaseCommand):
 
         start = now - datetime.timedelta(minutes=1)
         end = start + datetime.timedelta(days=365 * 100)  # 実質「常時受験可」
-        count = options["count"] or 100
-        duration = options["duration"] or 120
+        count = options["count"] or 320  # 実際のCBTと同じ320問・6ブロック構成
+        duration = options["duration"] or 360
 
         base_qs = list(
             Question.objects.published()
             .filter(visibility=Question.Visibility.PUBLIC, exam_type=Question.ExamType.CBT)
         )
-        if not base_qs:
-            raise CommandError("CBT の published/public 問題がありません")
-        picked = pick_pool(base_qs, min(count, len(base_qs)))
+        picked = pick_pool(
+            base_qs, min(count, len(base_qs)), exam_type=Question.ExamType.CBT
+        )
         if len(picked) < count:
+            filler = placeholder_pool(Question.ExamType.CBT, count - len(picked))
             self.stdout.write(
-                self.style.WARNING(f"問題プールが不足しています（{len(picked)}/{count}問で作成します）")
+                self.style.WARNING(
+                    f"CBTの問題が {len(picked)}/{count}問しかないため、"
+                    f"残り{len(filler)}問を仮設問で埋めます"
+                )
             )
+            picked = picked + filler
 
         exam = MockExam.objects.create(
             title=options["title"] or "CBT全国模試（生涯1回）",
             kind=MockExam.Kind.CBT_ONCE, exam_type=Question.ExamType.CBT,
             start_at=start, end_at=end,
             question_count=len(picked), duration_minutes=duration,
-            target_grade_min=None, target_grade_max=4,
+            # 実際のCBTに合わせて4年生のみ対象（1〜3年生はまだ受けられない）。
+            target_grade_min=4, target_grade_max=4,
         )
         MockQuestion.objects.bulk_create(
             MockQuestion(mock_exam=exam, question=question, order=i + 1)

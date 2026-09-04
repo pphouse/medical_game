@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ProfileProvider } from "../context/ProfileContext";
 import Ranking from "../routes/Ranking";
 
 vi.mock("../api", () => ({
@@ -9,10 +10,26 @@ vi.mock("../api", () => ({
     rankingExams: vi.fn(),
     pointsRanking: vi.fn(),
     exams: vi.fn(),
+    // RankingCard 経由で常時呼ばれる（クリックしなくても詳細をインライン表示するため）。
+    rankDetail: vi.fn(() => new Promise(() => {})), // 明示的に検証しないテストでは解決させない
+    // ProfileProvider が学内バナー用のプロフィールを取りに行く。
+    bootstrap: vi.fn(() =>
+      Promise.resolve({ university: { id: 1, name: "北海道大学" }, grade: 5 })
+    ),
   },
 }));
 
 import { api } from "../api";
+
+function renderRanking() {
+  return render(
+    <MemoryRouter>
+      <ProfileProvider>
+        <Ranking />
+      </ProfileProvider>
+    </MemoryRouter>
+  );
+}
 
 describe("ランキング画面", () => {
   beforeEach(() => {
@@ -28,7 +45,7 @@ describe("ランキング画面", () => {
       me: { eligible: true, rank: 2, value: 200 },
     });
 
-    render(<Ranking />, { wrapper: MemoryRouter });
+    renderRanking();
 
     expect(await screen.findByText("太郎")).toBeInTheDocument();
     expect(screen.getByText("A大学")).toBeInTheDocument();
@@ -51,7 +68,7 @@ describe("ランキング画面", () => {
       },
     });
 
-    render(<Ranking />, { wrapper: MemoryRouter });
+    renderRanking();
 
     expect(
       await screen.findByText("正答率ランキングは100問以上解くと対象になります（あと58問）")
@@ -65,7 +82,7 @@ describe("ランキング画面", () => {
       me: null,
     });
 
-    render(<Ranking />, { wrapper: MemoryRouter });
+    renderRanking();
     await screen.findByText("太郎");
 
     fireEvent.click(screen.getByRole("button", { name: "月間" }));
@@ -82,7 +99,7 @@ describe("ランキング画面", () => {
   it("学内に切り替えると scope=university で再取得する", async () => {
     api.ranking.mockResolvedValue({ entries: [], me: null });
 
-    render(<Ranking />, { wrapper: MemoryRouter });
+    renderRanking();
     fireEvent.click(screen.getByRole("button", { name: "学内" }));
 
     expect(api.ranking).toHaveBeenLastCalledWith({
@@ -96,7 +113,7 @@ describe("ランキング画面", () => {
     api.ranking.mockResolvedValue({ entries: [], me: null });
     api.pointsRanking.mockResolvedValue({ entries: [], me: null });
 
-    render(<Ranking />, { wrapper: MemoryRouter });
+    renderRanking();
     fireEvent.click(screen.getByRole("button", { name: "対戦" }));
 
     expect(await screen.findByRole("button", { name: "全国" })).toBeInTheDocument();
@@ -123,7 +140,7 @@ describe("ランキング画面", () => {
       },
     ]);
 
-    render(<Ranking />, { wrapper: MemoryRouter });
+    renderRanking();
     fireEvent.click(screen.getByRole("button", { name: "模試" }));
 
     expect(await screen.findByText("第3回 全国CBT模試")).toBeInTheDocument();
@@ -150,12 +167,55 @@ describe("ランキング画面", () => {
       },
     ]);
 
-    render(<Ranking />, { wrapper: MemoryRouter });
+    renderRanking();
     fireEvent.click(screen.getByRole("button", { name: "模試" }));
 
     expect(await screen.findByText("第1回 全国CBT模試")).toBeInTheDocument();
     expect(screen.getByText(/12位/)).toBeInTheDocument();
     // 未採点の模試は順位の代わりに「採点中」
     expect(screen.getByText(/採点中/)).toBeInTheDocument();
+  });
+
+  it("学内を選ぶと自分の大学と学年の枠が出る", async () => {
+    api.ranking.mockResolvedValue({ entries: [], me: null });
+
+    renderRanking();
+    fireEvent.click(screen.getByRole("button", { name: "学内" }));
+
+    expect(await screen.findByText("北海道大学")).toBeInTheDocument();
+    expect(screen.getByText("5年")).toBeInTheDocument();
+  });
+
+  it("全国のときは所属の枠を出さない", async () => {
+    api.ranking.mockResolvedValue({ entries: [], me: null });
+
+    renderRanking();
+    await screen.findByRole("button", { name: "全国" });
+
+    expect(screen.queryByText("北海道大学")).not.toBeInTheDocument();
+  });
+
+  it("順位の詳細はクリックしなくても常に表示される", async () => {
+    api.ranking.mockResolvedValue({
+      entries: [],
+      me: { eligible: true, rank: 3, value: 120, total: 40 },
+    });
+    api.rankDetail.mockResolvedValue({
+      me: { eligible: true, rank: 3, out_of: 40 },
+      distribution: [],
+      daily: [{ date: "2026-08-31", count: 2 }],
+      yesterday: { date: "2026-08-31", count: 2, diff: 1 },
+    });
+
+    renderRanking();
+
+    // 演習数タイルをクリックしなくても、詳細（演習数の詳細見出し）が出る。
+    expect(await screen.findByText("演習数の詳細")).toBeInTheDocument();
+    expect(api.rankDetail).toHaveBeenCalledWith("national", "solved");
+
+    // 正答率タイルをクリックすると、詳細の対象がそちらに切り替わる。
+    fireEvent.click(screen.getByRole("button", { name: /正答率/ }));
+    expect(await screen.findByText("正答率の詳細")).toBeInTheDocument();
+    expect(api.rankDetail).toHaveBeenCalledWith("national", "accuracy");
   });
 });

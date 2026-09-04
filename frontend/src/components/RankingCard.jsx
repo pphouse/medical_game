@@ -20,7 +20,7 @@ function topPercent(rank, total) {
   return Math.max(1, Math.round((rank / total) * 100));
 }
 
-function Tile({ icon, label, me, onClick }) {
+function Tile({ icon, label, me, active, onClick }) {
   if (!me || me.eligible === false) {
     return (
       <div className="ranking-card-tile">
@@ -34,7 +34,10 @@ function Tile({ icon, label, me, onClick }) {
   }
   const pct = topPercent(me.rank, me.total);
   return (
-    <button className="ranking-card-tile ranking-card-tile-clickable" onClick={onClick}>
+    <button
+      className={`ranking-card-tile ranking-card-tile-clickable${active ? " active" : ""}`}
+      onClick={onClick}
+    >
       <span className="ranking-card-tile-icon">{ICONS[icon]}</span>
       <div className="ranking-card-tile-body">
         <span className="ranking-card-tile-value">
@@ -49,12 +52,13 @@ function Tile({ icon, label, me, onClick }) {
 }
 
 /** 問題演習のランキングカード：演習数・正答率の順位を表示する。
- * 各タイルをクリックすると、分布と直近の演習状況の詳細（RankDetail）を開く。
+ * 詳細（分布・直近の演習状況）はクリックしなくても常にこのカードの下に
+ * 表示する。タイルはどちらの指標の詳細を出すかを切り替えるトグル。
  * 全国/学内の切り替えは画面側で一本化しているので、scope は親から受け取る。 */
 export default function RankingCard({ scope = "national" }) {
   const [solved, setSolved] = useState(null);
   const [accuracy, setAccuracy] = useState(null);
-  const [detailMetric, setDetailMetric] = useState(null);
+  const [detailMetric, setDetailMetric] = useState("solved");
 
   useEffect(() => {
     let cancelled = false;
@@ -75,12 +79,22 @@ export default function RankingCard({ scope = "national" }) {
 
   return (
     <div className="ranking-card">
-      <Tile icon="solved" label="演習数" me={solved} onClick={() => setDetailMetric("solved")} />
-      <Tile icon="accuracy" label="正答率" me={accuracy} onClick={() => setDetailMetric("accuracy")} />
+      <Tile
+        icon="solved"
+        label="演習数"
+        me={solved}
+        active={detailMetric === "solved"}
+        onClick={() => setDetailMetric("solved")}
+      />
+      <Tile
+        icon="accuracy"
+        label="正答率"
+        me={accuracy}
+        active={detailMetric === "accuracy"}
+        onClick={() => setDetailMetric("accuracy")}
+      />
 
-      {detailMetric && (
-        <RankDetail scope={scope} metric={detailMetric} onClose={() => setDetailMetric(null)} />
-      )}
+      <RankDetail scope={scope} metric={detailMetric} />
     </div>
   );
 }

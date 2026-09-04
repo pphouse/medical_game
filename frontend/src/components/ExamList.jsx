@@ -11,12 +11,24 @@ const STATUS_LABEL = {
 
 const EXAM_TYPE_LABEL = { CBT: "CBT", KOKUSHI: "医師国家試験" };
 
-const KIND_ORDER = ["large", "cbt_once", "monthly", "weekly"];
+const KIND_ORDER = ["large", "cbt_once", "monthly"];
 const KIND_TITLE = {
-  large: "国試 大型模試（国試2ヶ月前に開催）",
-  cbt_once: "CBT模試（生涯1回）",
-  monthly: "月次模試（毎月1日）",
-  weekly: "週次小テスト（毎週金曜）",
+  large: "国試模試（国試2ヶ月前に開催）",
+  cbt_once: "CBT模試（生涯1回・4年生のみ）",
+  monthly: "月次実力テスト（毎月1日）",
+};
+// どんな模試なのかの概要。開催中の回が無い学年でも「何があるか」は
+// 分かるようにしたいので、模試の有無に関わらず常に出す。
+const KIND_SUMMARY = {
+  large: "医師国家試験の2ヶ月前に1回だけ開催する100問・180分の総合模試。分野別と総合の偏差値が出ます。対象は5年生以上。",
+  cbt_once: "本番と同じ320問・6ブロック構成のCBT模試。生涯に1回だけ受験できます。対象は4年生。",
+  monthly: "毎月1日に開催する15問・20分の実力テスト。4年生以下はCBT版、5年生以上は医師国家試験版を受験できます。",
+};
+// その学年で受けられる回が無いときに、理由の見当がつくよう添える一言。
+const KIND_EMPTY = {
+  large: "対象は5年生以上です。国試の2ヶ月前になると受験できます。",
+  cbt_once: "対象は4年生です。学年はマイページから確認・変更できます。",
+  monthly: "いまは開催中の回がありません。毎月1日に次の回が開きます。",
 };
 
 function groupByKind(exams) {
@@ -24,10 +36,13 @@ function groupByKind(exams) {
   for (const exam of exams) {
     (groups[exam.kind] ??= []).push(exam);
   }
-  return KIND_ORDER.filter((k) => groups[k]?.length).map((k) => ({
+  // 該当する回が無い種別も含めて全種別を並べる（何があるかの概要を出すため）。
+  return KIND_ORDER.map((k) => ({
     kind: k,
     title: KIND_TITLE[k] ?? k,
-    exams: groups[k],
+    summary: KIND_SUMMARY[k],
+    empty: KIND_EMPTY[k],
+    exams: groups[k] ?? [],
   }));
 }
 
@@ -58,14 +73,13 @@ export default function ExamList() {
 
   return (
     <>
-      {exams.length === 0 && (
-        <div className="empty-card">
-          現在あなたの学年で受験できる模試はありません。学年はマイページから確認・変更できます。
-        </div>
-      )}
       {groups.map((group) => (
         <div key={group.kind}>
           <h3 className="exam-section-heading">{group.title}</h3>
+          <p className="exam-section-summary">{group.summary}</p>
+          {group.exams.length === 0 && (
+            <div className="empty-card exam-empty">{group.empty}</div>
+          )}
           {group.exams.map((exam) => {
             const started = Boolean(exam.my_result?.started_at);
             const submitted = Boolean(exam.my_result?.submitted_at);
@@ -81,7 +95,11 @@ export default function ExamList() {
                   {EXAM_TYPE_LABEL[exam.exam_type]} ・ {exam.question_count}問 ・{" "}
                   {exam.duration_minutes}分
                   {exam.kind === "cbt_once" && " ・ 生涯1回のみ"}
-                  {exam.target_grade_min &&
+                  {exam.target_grade_min != null &&
+                    exam.target_grade_min === exam.target_grade_max &&
+                    ` ・ 対象 ${exam.target_grade_min}年`}
+                  {exam.target_grade_min != null &&
+                    exam.target_grade_min !== exam.target_grade_max &&
                     ` ・ 対象 ${exam.target_grade_min}〜${exam.target_grade_max ?? 6}年`}
                 </p>
                 {exam.status === "open" && !submitted && (

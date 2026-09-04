@@ -64,6 +64,8 @@ export default function Match({ state, refresh, onLeave }) {
   const { round, participants, last_result: lastResult } = state;
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState(null);
+  // 自分が回答した直後の正誤（相手の回答を待たずに即表示する）。
+  const [myAnswer, setMyAnswer] = useState(null);
   const [remaining, setRemaining] = useState(null);
   const [flash, setFlash] = useState(null);
   const [intro, setIntro] = useState(true);
@@ -79,11 +81,12 @@ export default function Match({ state, refresh, onLeave }) {
     return () => clearTimeout(t);
   }, []);
 
-  // ラウンドが変わったら選択をリセット
+  // ラウンドが変わったら選択と直前の正誤表示をリセット
   useEffect(() => {
     if (round?.id && seenRoundRef.current !== round.id) {
       seenRoundRef.current = round.id;
       setSelected(null);
+      setMyAnswer(null);
     }
   }, [round?.id]);
 
@@ -120,7 +123,10 @@ export default function Match({ state, refresh, onLeave }) {
     if (!selected) return;
     setBusy(true);
     try {
-      await api.battleAnswer(round.id, selected);
+      // 相手の回答を待たず、自分の正誤はこの時点ですぐ分かる
+      // （自分の正誤だけでは相手の解答は漏れないので先出しして問題ない）。
+      const res = await api.battleAnswer(round.id, selected);
+      setMyAnswer(res);
       await refresh();
     } catch (e) {
       alert(e.message);
@@ -182,18 +188,33 @@ export default function Match({ state, refresh, onLeave }) {
         <p className="question-text">{question.question_text}</p>
 
         <div className="choices">
-          {question.choices.map((choice) => (
-            <button
-              key={choice.key}
-              className={`choice battle-choice${selected === choice.key ? " selected" : ""}`}
-              disabled={answered || busy}
-              onClick={() => setSelected(choice.key)}
-            >
-              <span className="choice-key">{choice.key}</span>
-              <span>{choice.text}</span>
-            </button>
-          ))}
+          {question.choices.map((choice) => {
+            let cls = "choice battle-choice";
+            if (myAnswer) {
+              if (choice.key === myAnswer.correct_choice_key) cls += " correct";
+              else if (choice.key === selected) cls += " incorrect";
+            } else if (selected === choice.key) {
+              cls += " selected";
+            }
+            return (
+              <button
+                key={choice.key}
+                className={cls}
+                disabled={answered || busy}
+                onClick={() => setSelected(choice.key)}
+              >
+                <span className="choice-key">{choice.key}</span>
+                <span>{choice.text}</span>
+              </button>
+            );
+          })}
         </div>
+
+        {myAnswer && (
+          <p className={`battle-my-verdict${myAnswer.correct ? " correct" : " incorrect"}`}>
+            {myAnswer.correct ? "○ 正解！" : "✕ 不正解…"}
+          </p>
+        )}
 
         {answered ? (
           <p className="battle-waiting">

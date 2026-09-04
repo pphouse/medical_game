@@ -17,15 +17,14 @@ class MockExam(models.Model):
         GRADED = "graded", "採点済"
 
     class Kind(models.TextChoices):
-        WEEKLY = "weekly", "週次小テスト"
-        MONTHLY = "monthly", "月次模試"
-        LARGE = "large", "大型模試（国試直前）"
+        MONTHLY = "monthly", "月次実力テスト"
+        LARGE = "large", "国試模試（国試2ヶ月前）"
         CBT_ONCE = "cbt_once", "CBT模試（生涯1回）"
 
     title = models.CharField(max_length=255)
     kind = models.CharField(
         max_length=20, choices=Kind.choices, default=Kind.MONTHLY,
-        help_text="週次/月次はポイントが増減する。大型/CBTは対象学年を絞った参考成績のみ",
+        help_text="月次はポイントが増減する。国試模試/CBT模試は対象学年を絞った参考成績のみ",
     )
     exam_type = models.CharField(
         max_length=10,

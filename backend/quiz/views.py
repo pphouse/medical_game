@@ -120,14 +120,24 @@ class HomeSummaryView(APIView):
         overall_correct_rate = round((own["acc"] or 0) * 100, 1)
 
         def snapshot_rank(scope, **extra):
+            # ランキング画面（RankingView）と同じく同学年の中での順位にする
+            # ので、RankingSnapshot.rank（学年をまたいだ全体順位）はそのまま
+            # 使わず、grade_ranked_rows で学年ごとに振り直す。
+            if request.user.grade is None:
+                return {"rank": None, "out_of": 0}
+            from exams.ranking_utils import grade_ranked_rows
+
             qs = RankingSnapshot.objects.filter(
                 scope=scope,
                 period="all",
                 metric=RankingSnapshot.Metric.SOLVED,
                 **extra,
             )
-            row = qs.filter(profile=request.user).first()
-            return {"rank": row.rank if row else None, "out_of": qs.count()}
+            ranked_rows = grade_ranked_rows(qs, request.user.grade)
+            match = next(
+                (r for r in ranked_rows if r[1].profile_id == request.user.id), None
+            )
+            return {"rank": match[0] if match else None, "out_of": len(ranked_rows)}
 
         national_rank = snapshot_rank(RankingSnapshot.Scope.NATIONAL)
         university_rank = (

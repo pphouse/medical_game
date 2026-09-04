@@ -1,18 +1,29 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
+import { useProfile } from "../context/ProfileContext";
 
 const TABS = [
   { key: "subject", label: "科目ごと" },
   { key: "exams", label: "模試" },
 ];
 
+// CBT と国試は分野の切り方が違ううえ問題数も桁が近いので、混ぜて一覧に
+// すると目的の科目を探せない（問題演習画面と同じ理由・同じ既定値）。
+const EXAM_TABS = [
+  { key: "CBT", label: "CBT" },
+  { key: "KOKUSHI", label: "医師国家試験" },
+  { key: "", label: "すべて" },
+];
+
+// 理解できている側から並べる（◎→未演習）。他の画面の5段階表示や
+// 問題一覧の評価チップと向きをそろえるため。
 const MASTERY_FILTERS = [
-  { key: "unstudied", label: "未演習" },
-  { key: "cross", label: "✕" },
-  { key: "triangle", label: "△" },
-  { key: "circle", label: "○" },
   { key: "double_circle", label: "◎" },
+  { key: "circle", label: "○" },
+  { key: "triangle", label: "△" },
+  { key: "cross", label: "✕" },
+  { key: "unstudied", label: "未演習" },
 ];
 
 const ATTEMPT_FILTERS = [
@@ -31,6 +42,11 @@ function toggle(set, key) {
 /** 科目・評価・演習回数を掛け合わせて演習セットを作る。
  * 空集合は「絞り込まない」= 全部が対象。 */
 function SubjectReview({ onStartSession }) {
+  const { profile } = useProfile();
+  // null は「まだ手動で選んでいない」＝マイページの設定（未選択なら学年から
+  // 決まる resolved_exam_type）に従う。一度選んだらそれ以降はそちらを優先。
+  const [examTypeOverride, setExamTypeOverride] = useState(null);
+  const examType = examTypeOverride ?? profile?.resolved_exam_type ?? "CBT";
   const [categories, setCategories] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState(new Set());
   const [selectedMastery, setSelectedMastery] = useState(new Set());
@@ -39,11 +55,19 @@ function SubjectReview({ onStartSession }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+    setCategories(null);
+    // 試験種別で分野の切り方が違うので、切り替えたら科目の絞り込みは
+    // 一旦リセットする（前の試験種別にしかない科目が残ると混乱するため）。
+    setSelectedCategories(new Set());
     api
-      .progress()
-      .then((rows) => setCategories(rows.map((r) => r.category)))
-      .catch((e) => setError(e.message));
-  }, []);
+      .progress(examType)
+      .then((rows) => !cancelled && setCategories(rows.map((r) => r.category)))
+      .catch((e) => !cancelled && setError(e.message));
+    return () => {
+      cancelled = true;
+    };
+  }, [examType]);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,13 +77,14 @@ function SubjectReview({ onStartSession }) {
         categories: [...selectedCategories],
         mastery: [...selectedMastery],
         attempts: [...selectedAttempts],
+        examType,
       })
       .then((data) => !cancelled && setResult(data))
       .catch((e) => !cancelled && setError(e.message));
     return () => {
       cancelled = true;
     };
-  }, [selectedCategories, selectedMastery, selectedAttempts]);
+  }, [selectedCategories, selectedMastery, selectedAttempts, examType]);
 
   if (error) return <p className="error">{error}</p>;
   if (!categories) return <p>読み込み中...</p>;
@@ -68,6 +93,21 @@ function SubjectReview({ onStartSession }) {
 
   return (
     <>
+      <div className="filter-group">
+        <span className="filter-group-title">試験種別</span>
+        <div className="filter-chip-row">
+          {EXAM_TABS.map((t) => (
+            <button
+              key={t.key || "all"}
+              className={`filter-chip${examType === t.key ? " active" : ""}`}
+              onClick={() => setExamTypeOverride(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="filter-group">
         <div className="filter-group-head">
           <span className="filter-group-title">科目</span>
@@ -149,9 +189,8 @@ function SubjectReview({ onStartSession }) {
 }
 
 const KIND_LABEL = {
-  weekly: "週次小テスト",
-  monthly: "月次模試",
-  large: "大型模試",
+  monthly: "月次実力テスト",
+  large: "国試模試",
   cbt_once: "CBT模試",
 };
 

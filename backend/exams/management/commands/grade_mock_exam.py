@@ -1,4 +1,4 @@
-"""模試の採点コマンド（週次/月次/大型模試向け。CBT模試(生涯1回)は対象外）。
+"""模試の採点コマンド（月次実力テスト/国試模試向け。CBT模試(生涯1回)は対象外）。
 
     python manage.py grade_mock_exam --exam-id 1 [--force]
 
@@ -9,8 +9,8 @@ context="mock" で複写し、5段階習熟度は付与しない（未演習の�
 模試後の復習で改めて分類させる）。
 
 kind による追加処理:
-  weekly/monthly: 順位バケット＋解答速度ボーナスで対戦と合算のランクポイントを増減
-  large         : 分野別の偏差値 + 得点分布ヒストグラムを算出（ポイントは増減しない）
+  monthly: 順位バケット＋解答速度ボーナスで対戦と合算のランクポイントを増減
+  large  : 分野別の偏差値 + 得点分布ヒストグラムを算出（ポイントは増減しない）
 
 CBT模試（生涯1回, kind=cbt_once）は受験者ごとに受験終了タイミングが違う
 （いつでも受験可・生涯1回）ため、このバッチコマンドではなく提出時に
@@ -77,7 +77,7 @@ class Command(BaseCommand):
         update_fields = [
             "score", "rank", "percentile", "deviation_score", "section_scores", "university_rank",
         ]
-        if exam.kind in (MockExam.Kind.WEEKLY, MockExam.Kind.MONTHLY):
+        if exam.kind == MockExam.Kind.MONTHLY:
             apply_exam_points(ordered)
             update_fields.append("points_delta")
         elif exam.kind == MockExam.Kind.LARGE:

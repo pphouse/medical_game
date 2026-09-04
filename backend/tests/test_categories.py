@@ -156,6 +156,28 @@ class TestNormalize:
     def test_unknown_exam_type_is_treated_as_cbt(self):
         assert normalize(None, "", "D-9", "OSCE") == "産婦人科"
 
+    def test_kokushi_splits_hepatobiliary_out_of_the_gi_tract(self):
+        """国試だけ「消化管」と「肝・胆・膵」を分ける（CBTは消化器のまま）。
+
+        出題基準の D-7 は消化器系ひとまとめなので、コードだけでは分けられず
+        本文の語で振り分ける。
+        """
+        liver = "60歳の男性。肝硬変による食道静脈瘤の破裂で搬送された。"
+        gut = "40歳の女性。潰瘍性大腸炎の増悪で血便が続いている。"
+
+        assert normalize("消化器", liver, exam_type=KOKUSHI) == "肝・胆・膵"
+        assert normalize("消化器", gut, exam_type=KOKUSHI) == "消化管"
+        # 出題基準コードがあっても本文で分ける
+        assert normalize(None, liver, "D-7", KOKUSHI) == "肝・胆・膵"
+        assert normalize(None, gut, "D-7", KOKUSHI) == "消化管"
+        # CBT の科目立てには肝・胆・膵が無いので、どちらも消化器のまま
+        assert normalize("消化器", liver, exam_type=CBT) == "消化器"
+        assert normalize(None, liver, "D-7", CBT) == "消化器"
+
+    def test_a_gi_question_without_hepatobiliary_words_stays_in_the_gi_tract(self):
+        """腹痛・黄疸のような両方に出る語では肝胆膵に寄せないこと。"""
+        assert normalize("消化管", "腹痛と黄疸を訴えている。", exam_type=KOKUSHI) == "消化管"
+
 
 class TestClassify:
     def test_returns_a_generic_organ_name(self):

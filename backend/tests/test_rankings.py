@@ -106,7 +106,7 @@ class TestAccuracyGate:
 
     def test_api_explains_ineligibility_reason(self):
         questions = make_questions(42)
-        client, profile = auth_client(display_name="がんばる人")
+        client, profile = auth_client(display_name="がんばる人", grade=4)
         seed_answers(profile, questions, correct=True)
         call_command("aggregate_rankings", "--period", "all")
 
@@ -118,7 +118,7 @@ class TestAccuracyGate:
 
     def test_api_returns_me_and_no_email(self):
         questions = make_questions(10)
-        client, profile = auth_client(display_name="ランカー")
+        client, profile = auth_client(display_name="ランカー", grade=4)
         seed_answers(profile, questions, correct=True)
         call_command("aggregate_rankings", "--period", "all")
 
@@ -166,9 +166,9 @@ class TestUnsolvedUsersRankLast:
 
     def test_api_shows_zero_solved_users_rank_instead_of_dash(self):
         questions = make_questions(3)
-        other = make_profile(display_name="他の人")
+        other = make_profile(display_name="他の人", grade=4)
         seed_answers(other, questions, correct=True)
-        client, profile = auth_client(display_name="未着手")
+        client, profile = auth_client(display_name="未着手", grade=4)
 
         call_command("aggregate_rankings", "--period", "all")
 
@@ -177,6 +177,51 @@ class TestUnsolvedUsersRankLast:
         assert me["eligible"] is True
         assert me["rank"] == 2
         assert me["value"] == 0.0
+
+
+class TestGradeScopedIndividualRanking:
+    """問題演習の個人ランキング（national/university）は同学年の中だけで
+    順位を付ける（対戦ランクは全学年まとめるので、ここだけの特別扱い）。"""
+
+    def test_grade_unset_user_is_ineligible(self):
+        client, profile = auth_client(display_name="学年未設定")
+        res = client.get("/api/ranking/?scope=national&metric=solved&period=all")
+        me = res.json()["me"]
+        assert me["eligible"] is False
+        assert "学年" in me["reason"]
+
+    def test_different_grade_peer_is_excluded_and_rank_is_contiguous(self):
+        questions = make_questions(5)
+        top_other_grade = make_profile(display_name="6年生の猛者", grade=6)
+        seed_answers(top_other_grade, questions, correct=True)
+
+        client, profile = auth_client(display_name="4年生", grade=4)
+        seed_answers(profile, questions[:2], correct=True)
+
+        call_command("aggregate_rankings", "--period", "all")
+
+        res = client.get("/api/ranking/?scope=national&metric=solved&period=all")
+        body = res.json()
+        # 他学年の猛者はランキングにもエントリー一覧にも出てこない。
+        assert body["me"]["rank"] == 1
+        assert body["me"]["total"] == 1
+        assert all(e["display_name"] != "6年生の猛者" for e in body["entries"])
+
+    def test_same_grade_peers_rank_together(self):
+        questions = make_questions(5)
+        client, profile = auth_client(display_name="4年生A", grade=4)
+        seed_answers(profile, questions, correct=True)
+        peer = make_profile(display_name="4年生B", grade=4)
+        seed_answers(peer, questions[:2], correct=True)
+
+        call_command("aggregate_rankings", "--period", "all")
+
+        res = client.get("/api/ranking/?scope=national&metric=solved&period=all")
+        body = res.json()
+        assert body["me"]["rank"] == 1
+        assert body["me"]["total"] == 2
+        names = {e["display_name"] for e in body["entries"]}
+        assert names == {"4年生A", "4年生B"}
 
 
 class TestUniversityAggregate:
@@ -253,7 +298,9 @@ class TestLazyRefresh:
 
     def test_new_learner_appears_without_running_the_batch(self):
         questions = make_questions(3)
-        veteran = make_profile(display_name="先輩")
+        # ランキングは同学年の中での順位なので、学年を揃えないと
+        # 比較対象にならない（main でそう変わった）。
+        veteran = make_profile(display_name="先輩", grade=4)
         seed_answers(veteran, questions, correct=True)
         call_command("aggregate_rankings", "--period", "all", verbosity=0)
         # 「誰かが一度手で集計したきり放置」の状態。以降バッチは一切回さない。
@@ -261,7 +308,7 @@ class TestLazyRefresh:
             computed_at=timezone.now() - datetime.timedelta(days=3)
         )
 
-        newcomer = make_profile(display_name="新人")
+        newcomer = make_profile(display_name="新人", grade=4)
         seed_answers(newcomer, questions[:2], correct=True)
 
         client, _ = auth_client(newcomer)
@@ -273,14 +320,14 @@ class TestLazyRefresh:
 
     def test_home_summary_also_refreshes(self):
         questions = make_questions(3)
-        veteran = make_profile(display_name="先輩")
+        veteran = make_profile(display_name="先輩", grade=4)
         seed_answers(veteran, questions, correct=True)
         call_command("aggregate_rankings", "--period", "all", verbosity=0)
         RankingSnapshot.objects.update(
             computed_at=timezone.now() - datetime.timedelta(days=3)
         )
 
-        newcomer = make_profile(display_name="新人")
+        newcomer = make_profile(display_name="新人", grade=4)
         seed_answers(newcomer, questions[:2], correct=True)
 
         client, _ = auth_client(newcomer)

@@ -414,8 +414,32 @@ class TestRoundTimeLimit:
             assert _ai_target_delay("D", long_q, seed_key=(i, "d")) < limit
 
 
+class TestAiDisplayName:
+    """AIの表示名は「苗字だけ」「下の名前だけ」「ニックネーム」の3パターン。
+
+    フルネーム（苗字＋名前）は実在の人物を指しているように見えるので使わない。
+    """
+
+    def test_never_generates_a_full_name(self):
+        from battle.ai import _GIVEN_NAMES, _NICKNAMES, _SURNAMES, _random_display_name
+
+        allowed = set(_SURNAMES) | set(_GIVEN_NAMES) | set(_NICKNAMES)
+        names = {_random_display_name() for _ in range(300)}
+        assert names <= allowed
+        # 「佐藤 陽翔」のように連結された名前が出ていないこと。
+        assert all(" " not in name for name in names)
+
+    def test_uses_every_style(self):
+        from battle.ai import _GIVEN_NAMES, _NICKNAMES, _SURNAMES, _random_display_name
+
+        names = {_random_display_name() for _ in range(300)}
+        assert names & set(_SURNAMES)
+        assert names & set(_GIVEN_NAMES)
+        assert names & set(_NICKNAMES)
+
+
 class TestMatchTimeoutWindow:
-    def test_timeout_falls_within_20_to_40_seconds(self):
+    def test_timeout_falls_within_the_configured_window(self):
         from battle.matchmaking import (
             MATCH_TIMEOUT_MAX_SECONDS,
             MATCH_TIMEOUT_MIN_SECONDS,
@@ -447,16 +471,20 @@ class TestMatchTimeoutWindow:
             make_question(question_text=f"待機設問{i}", correct_choice_key="A")
         client, _ = auth_client(display_name="待つ人", grade=4)
         ticket_id = client.post("/api/battle/quickmatch/", {}, format="json").json()["ticket_id"]
+        from battle.matchmaking import (
+            MATCH_TIMEOUT_MAX_SECONDS,
+            MATCH_TIMEOUT_MIN_SECONDS,
+        )
 
-        # 19秒経過ではまだ切り替わらない（下限20秒）
+        # 下限（10秒）より手前ではまだ切り替わらない
         MatchmakingTicket.objects.filter(pk=ticket_id).update(
-            created_at=timezone.now() - timezone_delta(19)
+            created_at=timezone.now() - timezone_delta(MATCH_TIMEOUT_MIN_SECONDS - 1)
         )
         assert client.get(f"/api/battle/quickmatch/{ticket_id}/").json()["status"] == "waiting"
 
-        # 41秒経過なら必ず切り替わる（上限40秒）
+        # 上限（25秒）を過ぎれば必ず切り替わる
         MatchmakingTicket.objects.filter(pk=ticket_id).update(
-            created_at=timezone.now() - timezone_delta(41)
+            created_at=timezone.now() - timezone_delta(MATCH_TIMEOUT_MAX_SECONDS + 1)
         )
         assert client.get(f"/api/battle/quickmatch/{ticket_id}/").json()["status"] == "ai_matched"
 
@@ -580,3 +608,51 @@ class TestLeavePenalty:
 
         profiles[1].refresh_from_db()
         assert profiles[1].points == 250 - LEAVE_PENALTY_POINTS
+
+
+class TestResultQuestionReview:
+    """対戦後に「出た問題」と自分の正誤・解説を返すこと。"""
+
+    def test_result_lists_each_question_with_my_verdict_and_explanation(self):
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+
+        round_id = current_round_id(clients[0], code)
+        answer(clients[0], round_id, "A")  # 正解
+        answer(clients[1], round_id, "B")  # 不正解
+        round_id = current_round_id(clients[0], code)
+        answer(clients[0], round_id, "B")  # 不正解
+        answer(clients[1], round_id, "A")  # 正解
+
+        rows = clients[0].get(f"/api/battle/rooms/{code}/result/").json()["questions"]
+
+        # 出題済みのラウンドだけ（=解答した2問）が、出題順で並ぶ
+        assert [r["round_number"] for r in rows] == [1, 2]
+        assert [r["correct"] for r in rows] == [True, False]
+        assert [r["selected_choice_key"] for r in rows] == ["A", "B"]
+        assert all(r["answered"] for r in rows)
+        # 解説と正解キーは対戦が終わってから読めるようになる
+        assert all(r["explanation"] and r["correct_choice_key"] == "A" for r in rows)
+        assert all(r["question_text"].startswith("バトル設問") for r in rows)
+        assert all(len(r["choices"]) >= 2 for r in rows)
+
+        # 相手には相手自身の正誤が返る
+        opponent_rows = clients[1].get(f"/api/battle/rooms/{code}/result/").json()["questions"]
+        assert [r["correct"] for r in opponent_rows] == [False, True]
+
+    def test_unanswered_question_is_marked_as_unanswered_not_wrong(self):
+        clients, profiles, code = make_room()
+        clients[0].post(f"/api/battle/rooms/{code}/start/")
+        round_id = current_round_id(clients[0], code)
+
+        answer(clients[0], round_id, "A")
+        # clients[1] は答えないまま時間切れ
+        BattleRound.objects.filter(pk=round_id).update(
+            revealed_at=timezone.now() - timezone_delta(round_time_limit_seconds(None) + 1)
+        )
+        clients[1].get(f"/api/battle/rooms/{code}/state/")
+
+        row = clients[1].get(f"/api/battle/rooms/{code}/result/").json()["questions"][0]
+        assert row["answered"] is False
+        assert row["correct"] is False
+        assert row["selected_choice_key"] is None

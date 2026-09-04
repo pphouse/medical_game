@@ -51,22 +51,56 @@ function DistributionChart({ points }) {
   );
 }
 
+// 演習数の縦軸は日ごとの実績に合わせて伸縮させず、300を基準に固定する
+// （日によって目盛りが変わると増減が読み取れないため）。300を超える日が
+// あるときだけ、その日が振り切れないよう100刻みで上に伸ばす。
+const DAILY_AXIS_MAX = 300;
+const DAILY_AXIS_STEP = 100;
+
+function dailyAxisMax(counts) {
+  const peak = Math.max(0, ...counts);
+  if (peak <= DAILY_AXIS_MAX) return DAILY_AXIS_MAX;
+  return Math.ceil(peak / DAILY_AXIS_STEP) * DAILY_AXIS_STEP;
+}
+
 /** 直近30日の演習数（自分のみ）。 */
 function DailyChart({ daily }) {
   const w = 320;
   const h = 130;
   const pad = { l: 30, r: 8, t: 10, b: 20 };
-  const max = niceMax(Math.max(1, ...daily.map((d) => d.count)));
+  const max = dailyAxisMax(daily.map((d) => d.count));
   const stepX = (w - pad.l - pad.r) / Math.max(1, daily.length - 1);
   const x = (i) => pad.l + i * stepX;
   const y = (v) => h - pad.b - (v / max) * (h - pad.t - pad.b);
+  // 100ごとの目盛り（0 は実線の基準線として別に引く）。
+  const gridValues = [];
+  for (let v = DAILY_AXIS_STEP; v <= max; v += DAILY_AXIS_STEP) gridValues.push(v);
 
   return (
     <svg width="100%" viewBox={`0 0 ${w} ${h}`} className="scatter-chart">
+      {gridValues.map((v) => (
+        <line
+          key={v}
+          x1={pad.l}
+          x2={w - pad.r}
+          y1={y(v)}
+          y2={y(v)}
+          className="scatter-grid scatter-grid-dashed"
+        />
+      ))}
+      {gridValues.map((v) => (
+        <text
+          key={`label-${v}`}
+          x={pad.l - 6}
+          y={y(v)}
+          className="scatter-axis-label"
+          textAnchor="end"
+          dominantBaseline="middle"
+        >
+          {v}
+        </text>
+      ))}
       <line x1={pad.l} x2={w - pad.r} y1={y(0)} y2={y(0)} className="scatter-grid" />
-      <text x={pad.l - 6} y={y(max)} className="scatter-axis-label" textAnchor="end" dominantBaseline="middle">
-        {max}
-      </text>
       <text x={pad.l - 6} y={y(0)} className="scatter-axis-label" textAnchor="end" dominantBaseline="middle">
         0
       </text>
@@ -93,8 +127,9 @@ function DailyChart({ daily }) {
   );
 }
 
-/** 順位タイルをクリックしたときの詳細（散布図・直近30日・昨日の演習状況）。 */
-export default function RankDetail({ scope, metric, onClose }) {
+/** 順位の詳細（散布図・直近30日・昨日の演習状況）。クリックして開く
+ * モーダルではなく、ランキング画面の下に常時インラインで表示する。 */
+export default function RankDetail({ scope, metric }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
@@ -111,76 +146,69 @@ export default function RankDetail({ scope, metric, onClose }) {
   }, [scope, metric]);
 
   return (
-    <div className="rank-detail-overlay" onClick={onClose}>
-      <div className="rank-detail-sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="rank-detail-head">
-          <h3>{METRIC_LABEL[metric] ?? metric}の詳細</h3>
-          <button className="rank-detail-close" onClick={onClose} aria-label="閉じる">
-            ×
-          </button>
-        </div>
+    <div className="rank-detail-inline">
+      <h3 className="rank-detail-inline-title">{METRIC_LABEL[metric] ?? metric}の詳細</h3>
 
-        {error && <p className="error">{error}</p>}
-        {!data && !error && <p>読み込み中...</p>}
+      {error && <p className="error">{error}</p>}
+      {!data && !error && <p>読み込み中...</p>}
 
-        {data && (
-          <>
-            <div className="mypage-card">
-              <h4 className="exam-section-heading" style={{ marginTop: 0 }}>
-                昨日（{data.yesterday.date}）の演習状況
-              </h4>
-              <div className="yesterday-stats">
-                <div className="yesterday-stat">
-                  <span className="rank-tile-label">
-                    {METRIC_LABEL[metric]}順位
-                  </span>
-                  <span className="rank-tile-value">
-                    {data.me.eligible ? data.me.rank : "―"}
-                    <span className="rank-tile-unit">位 / {data.me.out_of ?? 0}人中</span>
-                  </span>
-                </div>
-                <div className="yesterday-stat">
-                  <span className="rank-tile-label">演習数</span>
-                  <span className="rank-tile-value">
-                    {data.yesterday.count}
-                    <span className="rank-tile-unit">問</span>
-                  </span>
-                </div>
-                <div className="yesterday-stat">
-                  <span className="rank-tile-label">前日比</span>
-                  <span className="rank-tile-value">
-                    {data.yesterday.diff > 0 ? "+" : data.yesterday.diff === 0 ? "±" : ""}
-                    {data.yesterday.diff}
-                  </span>
-                </div>
+      {data && (
+        <>
+          <div className="mypage-card">
+            <h4 className="exam-section-heading" style={{ marginTop: 0 }}>
+              昨日（{data.yesterday.date}）の演習状況
+            </h4>
+            <div className="yesterday-stats">
+              <div className="yesterday-stat">
+                <span className="rank-tile-label">
+                  {METRIC_LABEL[metric]}順位
+                </span>
+                <span className="rank-tile-value">
+                  {data.me.eligible ? data.me.rank : "―"}
+                  <span className="rank-tile-unit">位 / {data.me.out_of ?? 0}人中</span>
+                </span>
+              </div>
+              <div className="yesterday-stat">
+                <span className="rank-tile-label">演習数</span>
+                <span className="rank-tile-value">
+                  {data.yesterday.count}
+                  <span className="rank-tile-unit">問</span>
+                </span>
+              </div>
+              <div className="yesterday-stat">
+                <span className="rank-tile-label">前日比</span>
+                <span className="rank-tile-value">
+                  {data.yesterday.diff > 0 ? "+" : data.yesterday.diff === 0 ? "±" : ""}
+                  {data.yesterday.diff}
+                </span>
               </div>
             </div>
+          </div>
 
-            <div className="mypage-card">
-              <h4 className="exam-section-heading" style={{ marginTop: 0 }}>
-                演習状況（直近30日・あなたの演習数）
-              </h4>
-              <DailyChart daily={data.daily} />
-            </div>
+          <div className="mypage-card">
+            <h4 className="exam-section-heading" style={{ marginTop: 0 }}>
+              演習状況（直近30日・あなたの演習数）
+            </h4>
+            <DailyChart daily={data.daily} />
+          </div>
 
-            <div className="mypage-card">
-              <h4 className="exam-section-heading" style={{ marginTop: 0 }}>
-                演習問題数に対する正答率分布
-              </h4>
-              {data.distribution.length === 0 ? (
-                <p className="exam-meta">
-                  正答率ランキングは100問以上の解答が必要です。まだ分布を表示できる母集団がありません。
-                </p>
-              ) : (
-                <>
-                  <DistributionChart points={data.distribution} />
-                  <p className="exam-meta">● あなたの位置　○ 他の学習者</p>
-                </>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+          <div className="mypage-card">
+            <h4 className="exam-section-heading" style={{ marginTop: 0 }}>
+              演習問題数に対する正答率分布
+            </h4>
+            {data.distribution.length === 0 ? (
+              <p className="exam-meta">
+                正答率ランキングは100問以上の解答が必要です。まだ分布を表示できる母集団がありません。
+              </p>
+            ) : (
+              <>
+                <DistributionChart points={data.distribution} />
+                <p className="exam-meta">● あなたの位置　○ 他の学習者</p>
+              </>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

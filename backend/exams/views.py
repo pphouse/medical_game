@@ -1,7 +1,10 @@
 """Ranking API (spec フェーズ3) + Mock-exam API (spec フェーズ5) + internal hook."""
 
 
+from io import StringIO
+
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import exceptions
@@ -21,6 +24,7 @@ from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
 from exams.grading import apply_irt_score, grade_single_result
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot
 from exams.ranking_refresh import ensure_fresh
+from exams.ranking_utils import grade_ranked_rows
 from quiz.serializers import QuestionSerializer
 
 DISPLAY_NAME_FALLBACK = "匿名ユーザー"
@@ -38,6 +42,13 @@ class RankingView(APIView):
 
     レスポンスは entries に加えて自分の順位 (me) を必ず含める (spec 3-3)。
     メールアドレスは絶対に返さない。表示名未設定は「匿名ユーザー」。
+
+    個人ランキング（national/university）は同学年の中での順位にする
+    （対戦ランクは逆に全学年まとめる。学年ごとに解いている範囲が違う
+    問題演習だけの特別扱い）。RankingSnapshot.rank は学年をまたいだ全体
+    順位なので、ここでは使わず ranking_utils.grade_ranked_rows で
+    学年ごとに順位を振り直す。university_aggregate（大学を1単位とする
+    集計）は個人の学年に関係ないので対象外。
     """
 
     def get(self, request):
@@ -77,11 +88,8 @@ class RankingView(APIView):
                 )
             qs = qs.filter(university_id=profile.university_id)
 
-        entries_qs = qs.select_related(
-            "profile", "profile__university", "university_target"
-        ).order_by("rank", "-value")[:limit]
-
         if scope == RankingSnapshot.Scope.UNIVERSITY_AGGREGATE:
+            entries_qs = qs.select_related("university_target").order_by("rank", "-value")[:limit]
             entries = [
                 {
                     "rank": row.rank,
@@ -95,65 +103,87 @@ class RankingView(APIView):
                 }
                 for row in entries_qs
             ]
-        else:
-            entries = [
-                {
-                    "rank": row.rank,
-                    "display_name": (
-                        (row.profile.display_name or DISPLAY_NAME_FALLBACK)
-                        if row.profile
-                        else DISPLAY_NAME_FALLBACK
-                    ),
-                    "university": (
-                        row.profile.university.name
-                        if row.profile and row.profile.university
-                        else None
-                    ),
-                    "value": row.value,
-                    "is_me": row.profile_id == profile.id,
-                }
-                for row in entries_qs
-            ]
+            me = self._build_me_aggregate(profile, qs)
+            computed_at = qs.values_list("computed_at", flat=True).first()
+            return Response({"entries": entries, "me": me, "computed_at": computed_at})
 
-        me = self._build_me(profile, scope, metric, period, qs)
         computed_at = qs.values_list("computed_at", flat=True).first()
+        if profile.grade is None:
+            return Response(
+                {
+                    "entries": [],
+                    "me": {
+                        "rank": None,
+                        "value": None,
+                        "eligible": False,
+                        "reason": "学年が未設定です。マイページから設定してください。",
+                        "total": 0,
+                    },
+                    "computed_at": computed_at,
+                }
+            )
+
+        ranked_rows = grade_ranked_rows(
+            qs.select_related("profile", "profile__university"), profile.grade
+        )
+        entries = [
+            {
+                "rank": rank,
+                "display_name": (
+                    (row.profile.display_name or DISPLAY_NAME_FALLBACK)
+                    if row.profile
+                    else DISPLAY_NAME_FALLBACK
+                ),
+                "university": (
+                    row.profile.university.name
+                    if row.profile and row.profile.university
+                    else None
+                ),
+                "value": row.value,
+                "is_me": row.profile_id == profile.id,
+            }
+            for rank, row in ranked_rows[:limit]
+        ]
+        me = self._build_me_individual(profile, scope, metric, period, ranked_rows)
         return Response({"entries": entries, "me": me, "computed_at": computed_at})
 
-    def _build_me(self, profile, scope, metric, period, qs):
-        # total: 母集団のサイズ。フロントの「上位X%」表示に使う（spec: パーセンタイルは
-        # 常にランキング画面と同じ「厳密に自分より上の人数/母集団」の考え方に揃える）。
+    def _build_me_aggregate(self, profile, qs):
         total = qs.count()
-
-        if scope == RankingSnapshot.Scope.UNIVERSITY_AGGREGATE:
-            if not profile.university_id:
-                return {
-                    "rank": None,
-                    "value": None,
-                    "eligible": False,
-                    "reason": "所属大学が未設定です。",
-                    "total": total,
-                }
-            row = qs.filter(university_target_id=profile.university_id).first()
-            if row:
-                return {
-                    "rank": row.rank,
-                    "value": row.value,
-                    "eligible": True,
-                    "reason": None,
-                    "total": total,
-                }
+        if not profile.university_id:
             return {
                 "rank": None,
                 "value": None,
                 "eligible": False,
-                "reason": "対象メンバーが5人未満のため、大学ランキングの対象外です。",
+                "reason": "所属大学が未設定です。",
                 "total": total,
             }
-
-        row = qs.filter(profile=profile).first()
+        row = qs.filter(university_target_id=profile.university_id).first()
         if row:
             return {
                 "rank": row.rank,
+                "value": row.value,
+                "eligible": True,
+                "reason": None,
+                "total": total,
+            }
+        return {
+            "rank": None,
+            "value": None,
+            "eligible": False,
+            "reason": "対象メンバーが5人未満のため、大学ランキングの対象外です。",
+            "total": total,
+        }
+
+    def _build_me_individual(self, profile, scope, metric, period, ranked_rows):
+        # total: 同学年内の母集団サイズ。フロントの「上位X%」表示に使う。
+        total = len(ranked_rows)
+        match = next(
+            ((rank, row) for rank, row in ranked_rows if row.profile_id == profile.id), None
+        )
+        if match:
+            rank, row = match
+            return {
+                "rank": rank,
                 "value": row.value,
                 "eligible": True,
                 "reason": None,
@@ -181,6 +211,7 @@ class RankingView(APIView):
                     ),
                     "total": total,
                 }
+
         return {"rank": None, "value": None, "eligible": True, "reason": None, "total": total}
 
 
@@ -334,11 +365,36 @@ def exam_payload(exam, result=None, now=None):
     return data
 
 
+def ensure_exams_exist(now=None):
+    """受験できる模試が1件も無ければ、その場で定期開催分を作る。
+
+    模試の生成は Vercel Cron（/api/internal/create-exams/）に任せているが、
+    Cron が未設定・失敗している環境や、デプロイ直後でまだ一度も走っていない
+    環境では模試が1件も無く、一覧が「受験できる模試はありません」だけに
+    なってしまう。一覧を開いたときに埋め合わせておく。
+
+    create_scheduled_exam は冪等（同じ日付・未終了インスタンスがあれば
+    作らない）で、月次は今月分が無ければ即開催で作る。開催中の模試が
+    できた時点でこの関数は何もしなくなるので、毎回の一覧表示で走ることは
+    ない。問題プールが足りなくても仮設問で埋まるので失敗しない。
+    """
+    now = now or timezone.now()
+    if MockExam.objects.filter(start_at__lte=now, end_at__gte=now).exists():
+        return
+    for kind in (MockExam.Kind.MONTHLY, MockExam.Kind.LARGE, MockExam.Kind.CBT_ONCE):
+        try:
+            call_command("create_scheduled_exam", "--kind", kind, stdout=StringIO())
+        except CommandError:
+            # 1つの kind が作れなくても、他の kind の生成と一覧表示は続ける。
+            continue
+
+
 class ExamListView(APIView):
     """GET /api/exams/ — status・対象学年でフィルタ (spec フェーズ5)."""
 
     def get(self, request):
         now = timezone.now()
+        ensure_exams_exist(now)
         qs = MockExam.objects.order_by("-start_at")
         status_filter = request.query_params.get("status")
         grade = request.user.grade
@@ -412,6 +468,7 @@ class ExamQuestionsView(APIView):
             {
                 "deadline": result.deadline(),
                 "submitted_at": result.submitted_at,
+                "kind": exam.kind,
                 "questions": QuestionSerializer(questions, many=True).data,
                 "my_answers": answers,
             }
@@ -576,3 +633,38 @@ class InternalAggregateView(APIView):
         for period in periods:
             call_command("aggregate_rankings", "--period", period)
         return Response({"status": "ok", "periods": periods})
+
+
+class InternalCreateExamsView(APIView):
+    """POST/GET /api/internal/create-exams/ — 定期開催模試の自動生成トリガ。
+
+    毎日1回 Vercel Cron から叩く想定。create_scheduled_exam は kind ごとに
+    「同じ日付の分は作成済みならスキップ」（monthly/large）・「未終了の
+    インスタンスがあれば作成しない」（cbt_once）という冪等性を持つので、
+    このエンドポイント自体は毎日何度呼ばれても安全（多くの日は何も
+    作成せず終わる）。"""
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return self.post(request)
+
+    def post(self, request):
+        require_internal_caller(request)
+
+        # kind ごとに独立させる: 1つの exam_type で問題プールが尽きていても
+        # （CommandError）他の kind の生成まで巻き込んで失敗させない。
+        created = {}
+        for kind in (
+            MockExam.Kind.MONTHLY,
+            MockExam.Kind.LARGE,
+            MockExam.Kind.CBT_ONCE,
+        ):
+            out = StringIO()
+            try:
+                call_command("create_scheduled_exam", "--kind", kind, stdout=out)
+                created[kind] = out.getvalue().strip()
+            except CommandError as e:
+                created[kind] = f"error: {e}"
+        return Response({"status": "ok", "created": created})
