@@ -17,16 +17,32 @@ const KIND_TITLE = {
   cbt_once: "CBT模試（生涯1回・4年生のみ）",
   monthly: "月次実力テスト（毎月1日）",
 };
+// どんな模試なのかの概要。開催中の回が無い学年でも「何があるか」は
+// 分かるようにしたいので、模試の有無に関わらず常に出す。
+const KIND_SUMMARY = {
+  large: "本番の2ヶ月前に1回だけ開催する100問・180分の総合模試。分野別と総合の偏差値が出ます。対象は5年生以上。",
+  cbt_once: "本番と同じ320問・6ブロック構成のCBT模試。生涯に1回だけ受験できます。対象は4年生。",
+  monthly: "毎月1日に開催する15問・20分の実力テスト。CBT版と医師国家試験版があり、4年生以下は両方、5年生以上は国試版を受験できます。",
+};
+// その学年で受けられる回が無いときに、理由の見当がつくよう添える一言。
+const KIND_EMPTY = {
+  large: "いまは開催予定がありません。国試の2ヶ月前になると受験できます。",
+  cbt_once: "対象は4年生です。学年はマイページから確認・変更できます。",
+  monthly: "いまは開催中の回がありません。毎月1日に次の回が開きます。",
+};
 
 function groupByKind(exams) {
   const groups = {};
   for (const exam of exams) {
     (groups[exam.kind] ??= []).push(exam);
   }
-  return KIND_ORDER.filter((k) => groups[k]?.length).map((k) => ({
+  // 該当する回が無い種別も含めて全種別を並べる（何があるかの概要を出すため）。
+  return KIND_ORDER.map((k) => ({
     kind: k,
     title: KIND_TITLE[k] ?? k,
-    exams: groups[k],
+    summary: KIND_SUMMARY[k],
+    empty: KIND_EMPTY[k],
+    exams: groups[k] ?? [],
   }));
 }
 
@@ -57,14 +73,13 @@ export default function ExamList() {
 
   return (
     <>
-      {exams.length === 0 && (
-        <div className="empty-card">
-          現在あなたの学年で受験できる模試はありません。学年はマイページから確認・変更できます。
-        </div>
-      )}
       {groups.map((group) => (
         <div key={group.kind}>
           <h3 className="exam-section-heading">{group.title}</h3>
+          <p className="exam-section-summary">{group.summary}</p>
+          {group.exams.length === 0 && (
+            <div className="empty-card exam-empty">{group.empty}</div>
+          )}
           {group.exams.map((exam) => {
             const started = Boolean(exam.my_result?.started_at);
             const submitted = Boolean(exam.my_result?.submitted_at);

@@ -1727,6 +1727,19 @@
 
 .exam-section-heading { color: var(--text-h); font-size: 15px; margin: 12px 0 4px; }
 
+/* 模試の種別ごとの概要。開催中の回が無くても「何があるか」は常に見せる。 */
+.exam-section-summary {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.exam-empty {
+  font-size: 12.5px;
+}
+
 .exam-section-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
 
 .exam-section-name { width: 56px; font-weight: 700; font-size: 13px; }

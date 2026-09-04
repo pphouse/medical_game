@@ -543,3 +543,58 @@ class TestExamGradeGating:
         client, _ = auth_client(grade=5)
         types = {e["exam_type"] for e in client.get("/api/exams/").json()}
         assert types == {"KOKUSHI"}
+
+
+class TestExamListSelfHeal:
+    """模試が1件も無い環境でも、一覧を開けば受験できる回が用意されること。
+
+    生成は Cron に任せているが、Cron が未設定・失敗しているとユーザーには
+    「受験できる模試はありません」しか出ない。一覧側で埋め合わせる。
+    """
+
+    def test_the_list_creates_the_exams_when_none_exist(self):
+        client, _ = auth_client(grade=4)
+        assert MockExam.objects.count() == 0
+
+        rows = client.get("/api/exams/").json()
+
+        assert rows, "模試が1件も無い状態でも一覧は空にならないこと"
+        assert MockExam.objects.exists()
+        # 受験ボタンが出るように、いま受けられる回が含まれること
+        assert any(r["status"] == "open" for r in rows)
+        # 出題数ぶんの問題がひも付いていること（仮設問で埋まる）
+        for exam in MockExam.objects.all():
+            assert exam.mock_questions.count() == exam.question_count > 0
+
+    def test_a_created_exam_is_actually_startable(self):
+        client, _ = auth_client(grade=4)
+        rows = client.get("/api/exams/").json()
+        openable = next(r for r in rows if r["status"] == "open")
+
+        assert client.post(f"/api/exams/{openable['id']}/start/").status_code == 201
+        body = client.get(f"/api/exams/{openable['id']}/questions/").json()
+        assert len(body["questions"]) == openable["question_count"]
+
+    @pytest.mark.parametrize("grade", [1, 2, 3, 4, 5, 6])
+    def test_every_grade_gets_something_to_take(self, grade):
+        client, _ = auth_client(grade=grade)
+        rows = client.get("/api/exams/").json()
+        assert any(r["status"] == "open" for r in rows), f"{grade}年が受験できる模試が無い"
+
+    def test_it_does_not_keep_creating_exams_on_every_request(self):
+        client, _ = auth_client(grade=4)
+        client.get("/api/exams/")
+        before = MockExam.objects.count()
+
+        client.get("/api/exams/")
+        client.get("/api/exams/")
+
+        assert MockExam.objects.count() == before
+
+    def test_it_leaves_an_existing_open_exam_alone(self):
+        client, _ = auth_client(grade=4)
+        exam = make_exam()
+
+        client.get("/api/exams/")
+
+        assert list(MockExam.objects.values_list("id", flat=True)) == [exam.id]

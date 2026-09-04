@@ -360,11 +360,36 @@ def exam_payload(exam, result=None, now=None):
     return data
 
 
+def ensure_exams_exist(now=None):
+    """受験できる模試が1件も無ければ、その場で定期開催分を作る。
+
+    模試の生成は Vercel Cron（/api/internal/create-exams/）に任せているが、
+    Cron が未設定・失敗している環境や、デプロイ直後でまだ一度も走っていない
+    環境では模試が1件も無く、一覧が「受験できる模試はありません」だけに
+    なってしまう。一覧を開いたときに埋め合わせておく。
+
+    create_scheduled_exam は冪等（同じ日付・未終了インスタンスがあれば
+    作らない）で、月次は今月分が無ければ即開催で作る。開催中の模試が
+    できた時点でこの関数は何もしなくなるので、毎回の一覧表示で走ることは
+    ない。問題プールが足りなくても仮設問で埋まるので失敗しない。
+    """
+    now = now or timezone.now()
+    if MockExam.objects.filter(start_at__lte=now, end_at__gte=now).exists():
+        return
+    for kind in (MockExam.Kind.MONTHLY, MockExam.Kind.LARGE, MockExam.Kind.CBT_ONCE):
+        try:
+            call_command("create_scheduled_exam", "--kind", kind, stdout=StringIO())
+        except CommandError:
+            # 1つの kind が作れなくても、他の kind の生成と一覧表示は続ける。
+            continue
+
+
 class ExamListView(APIView):
     """GET /api/exams/ — status・対象学年でフィルタ (spec フェーズ5)."""
 
     def get(self, request):
         now = timezone.now()
+        ensure_exams_exist(now)
         qs = MockExam.objects.order_by("-start_at")
         status_filter = request.query_params.get("status")
         grade = request.user.grade
