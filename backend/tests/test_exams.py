@@ -505,8 +505,11 @@ class TestPointsRankingScope:
 
 
 class TestExamGradeGating:
-    """月次実力テストは、CBT版は1〜4年生限定・国試版は学年制限なし。
-    1〜4年生は両方見え、5〜6年生は国試版だけが見える (spec)。"""
+    """自分が受ける試験の模試だけが一覧に出ること。
+
+    CBTを受けるのは4年生まで、そこから先は国試に向かうので、4年生以下には
+    国試の模試を、5年生以上にはCBTの模試を出さない。
+    """
 
     def _create_monthly(self):
         # 出題プールが空だとコマンドが失敗するので、両方の試験種別を用意する。
@@ -526,23 +529,34 @@ class TestExamGradeGating:
         assert cbt.target_grade_min is None  # 下限なし = 1年生から
         assert cbt.target_grade_max == 4
 
-    def test_kokushi_exam_has_no_grade_restriction(self):
+    def test_kokushi_exam_targets_the_fifth_year_and_up(self):
         exams = self._create_monthly()
         kokushi = exams["KOKUSHI"]
-        assert kokushi.target_grade_min is None
-        assert kokushi.target_grade_max is None
+        assert kokushi.target_grade_min == 5
+        assert kokushi.target_grade_max is None  # 上限なし = 6年生まで
+        assert not kokushi.is_open_for(4)
+        assert kokushi.is_open_for(5)
 
-    def test_fourth_year_sees_both_cbt_and_kokushi(self):
+    @pytest.mark.parametrize("grade", [1, 2, 3, 4])
+    def test_up_to_fourth_year_sees_only_cbt(self, grade):
         self._create_monthly()
-        client, _ = auth_client(grade=4)
+        client, _ = auth_client(grade=grade)
         types = {e["exam_type"] for e in client.get("/api/exams/").json()}
-        assert types == {"CBT", "KOKUSHI"}
+        assert types == {"CBT"}
 
-    def test_fifth_year_sees_only_the_kokushi_exam(self):
+    @pytest.mark.parametrize("grade", [5, 6])
+    def test_fifth_year_and_up_sees_only_kokushi(self, grade):
         self._create_monthly()
-        client, _ = auth_client(grade=5)
+        client, _ = auth_client(grade=grade)
         types = {e["exam_type"] for e in client.get("/api/exams/").json()}
         assert types == {"KOKUSHI"}
+
+    def test_a_user_without_a_grade_sees_every_exam(self):
+        """学年未設定のうちは絞り込まない（マイページで設定するまでの間）。"""
+        self._create_monthly()
+        client, _ = auth_client(grade=None)
+        types = {e["exam_type"] for e in client.get("/api/exams/").json()}
+        assert types == {"CBT", "KOKUSHI"}
 
 
 class TestExamListSelfHeal:
@@ -598,3 +612,4 @@ class TestExamListSelfHeal:
         client.get("/api/exams/")
 
         assert list(MockExam.objects.values_list("id", flat=True)) == [exam.id]
+
