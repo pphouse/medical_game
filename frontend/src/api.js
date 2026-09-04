@@ -182,8 +182,15 @@ export const api = {
   },
   rankingExams: () => get("/ranking/exams/"),
   // 順位クリック時の詳細（散布図・直近30日の演習数・昨日の演習状況）
-  rankDetail: (scope, metric) =>
-    get(`/ranking/detail/?${new URLSearchParams({ scope, metric })}`),
+  // month は "YYYY-MM"。省略すると今月ぶんの演習状況が返る。
+  rankDetail: (scope, metric, month) =>
+    get(
+      `/ranking/detail/?${new URLSearchParams({
+        scope,
+        metric,
+        ...(month ? { month } : {}),
+      })}`,
+    ),
   // 対戦＋模試（週次/月次）合算ポイントランキング（SS〜Dランク）
   pointsRanking: (scope) => get(`/ranking/points/?${new URLSearchParams({ scope })}`),
   submitAnswer: (payload) => post("/quiz/answers/", payload),
