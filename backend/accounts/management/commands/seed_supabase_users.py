@@ -2,12 +2,15 @@ from django.core.management.base import BaseCommand
 
 from accounts.provisioning import ensure_profile, supabase_admin_configured
 
+# 表示名は実在の人名を避けてニックネームにする（accounts.nicknames と
+# 同じ方針）。デモのスクリーンショットがそのまま実在の人物の名前に
+# 見えてしまうため。
 DEMO_USERS = [
     # (email, display_name, university, grade, verified)
-    ("demo1@example.com", "山田太郎", "サンプル医科大学", 4, True),
-    ("demo2@example.com", "佐藤花子", "サンプル医科大学", 4, True),
-    ("demo3@example.com", "鈴木一郎", "東京大学", 3, True),
-    ("demo4@example.com", "田中美咲", "京都大学", 5, False),
+    ("demo1@example.com", "ねむい", "サンプル医科大学", 4, True),
+    ("demo2@example.com", "国試たすけて", "サンプル医科大学", 4, True),
+    ("demo3@example.com", "ちくわ", "東京大学", 3, True),
+    ("demo4@example.com", "3浪医", "京都大学", 5, False),
 ]
 
 DEMO_PASSWORD = "demo-password-123"
