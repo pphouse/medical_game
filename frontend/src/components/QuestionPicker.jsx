@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 
+// 理解できている側から並べる（◎→未演習）。復習デッキの評価フィルタや
+// 解答後の5段階ボタンと向きをそろえる。
 const FILTERS = [
   { key: "all", label: "すべて" },
-  { key: "unstudied", label: "未演習" },
   { key: "double_circle", label: "◎" },
   { key: "circle", label: "○" },
   { key: "triangle", label: "△" },
   { key: "cross", label: "✕" },
+  { key: "unstudied", label: "未演習" },
 ];
 
 /** ◎○△✕未演習の5段階。初期状態は全部が選択済み。 */
