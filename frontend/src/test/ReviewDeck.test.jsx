@@ -42,13 +42,28 @@ describe("総合演習", () => {
     api.reviewFilter.mockResolvedValue(filterResult());
   });
 
-  it("CBT・医師国家試験・模試復習・対戦復習の4つの欄を出す", async () => {
+  it("CBT・医師国家試験・すべて・模試復習・対戦復習の欄を出す", async () => {
     renderDeck();
 
     expect(await screen.findByText("総合演習")).toBeInTheDocument();
-    for (const label of ["CBT", "医師国家試験", "模試復習", "対戦復習"]) {
+    for (const label of ["CBT", "医師国家試験", "すべて", "模試復習", "対戦復習"]) {
       expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
     }
+  });
+
+  it("すべてタブは試験種別で絞らない", async () => {
+    renderDeck();
+    await screen.findByText("科目");
+
+    fireEvent.click(screen.getByRole("button", { name: "すべて" }));
+
+    await waitFor(() =>
+      expect(api.reviewFilter).toHaveBeenCalledWith(
+        expect.objectContaining({ examType: "", source: null }),
+      ),
+    );
+    // タブ自体が試験種別なので、選択欄は重ねて出さない
+    expect(screen.queryByText("試験種別")).not.toBeInTheDocument();
   });
 
   it("CBTタブは試験種別をCBTに固定し、試験種別の選択欄は出さない", async () => {
