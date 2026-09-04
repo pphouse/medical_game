@@ -21,6 +21,8 @@ kind ごとの仕様:
 
 問題は published/public から、CBT 出題基準の構成比に近づけるため
 blueprint の area（なければカテゴリ）ごとの問題数比で比例配分して抽選する。
+プールが足りない分は仮設問（placeholder_pool）で埋めるので、本番の問題が
+まだ無くても「受験できる模試」は必ず用意される。
 """
 
 import datetime
@@ -71,6 +73,59 @@ def months_before(date_str, months):
         except ValueError:
             continue
     raise AssertionError("unreachable")
+
+
+# 仮設問の目印。question_text の先頭に付ける。
+PLACEHOLDER_PREFIX = "【仮】"
+
+
+def placeholder_pool(exam_type, count):
+    """出題プールが足りないときに使う仮設問を、必要数そろえて返す。
+
+    本番の問題がまだ登録されていなくても模試を「受験できる」状態にする
+    ための繋ぎ。``status=draft`` で作るので Question.objects.published() /
+    visible_to() には掛からず、通常の問題演習・ランキング・復習には一切
+    出てこない。模試は MockQuestion 経由で直接参照するため出題はできる。
+
+    実問題が published で入れば、そちらが優先されて仮設問は使われなくなる
+    （既に作られた模試の中身は差し替わらないので、実問題が揃ったら次回の
+    開催分から自然に置き換わる）。
+    """
+    if count <= 0:
+        return []
+
+    is_placeholder = {
+        "exam_type": exam_type,
+        "status": Question.Status.DRAFT,
+        "question_text__startswith": PLACEHOLDER_PREFIX,
+    }
+    existing = list(Question.objects.filter(**is_placeholder).order_by("id")[:count])
+    missing = count - len(existing)
+    if missing <= 0:
+        return existing
+
+    offset = Question.objects.filter(**is_placeholder).count()
+    created = Question.objects.bulk_create(
+        [
+            Question(
+                category="未分類",
+                exam_type=exam_type,
+                difficulty=Question.Difficulty.NORMAL,
+                # 本物の医学的な設問と紛れないよう、内容は明示的に「仮」とする。
+                question_text=(
+                    f"{PLACEHOLDER_PREFIX}準備中の設問です（{offset + i + 1}）。"
+                    "本番の問題が登録されるまでの仮の設問のため、内容に意味はありません。"
+                ),
+                choices=[{"key": k, "text": f"選択肢{k}"} for k in "ABCDE"],
+                correct_choice_key="A",
+                explanation="仮の設問のため解説はありません。",
+                status=Question.Status.DRAFT,
+                source=Question.Source.OFFICIAL,
+            )
+            for i in range(missing)
+        ]
+    )
+    return existing + created
 
 
 def pick_pool(base_qs, count, *, prefer_ids=None, exclude_ids=None):
@@ -171,8 +226,6 @@ class Command(BaseCommand):
             Question.objects.published()
             .filter(visibility=Question.Visibility.PUBLIC, exam_type=exam_type)
         )
-        if not base_qs:
-            raise CommandError(f"exam_type={exam_type} の published/public 問題がありません")
 
         prefer_ids = None
         if novel_only:
@@ -190,9 +243,15 @@ class Command(BaseCommand):
 
         picked = pick_pool(base_qs, min(count, len(base_qs)), prefer_ids=prefer_ids)
         if len(picked) < count:
+            # 本番の問題がまだ足りなくても「受験できる模試」は用意する。
+            filler = placeholder_pool(exam_type, count - len(picked))
             self.stdout.write(
-                self.style.WARNING(f"問題プールが不足しています（{len(picked)}/{count}問で作成します）")
+                self.style.WARNING(
+                    f"exam_type={exam_type} の問題が {len(picked)}/{count}問しかないため、"
+                    f"残り{len(filler)}問を仮設問で埋めます"
+                )
             )
+            picked = picked + filler
 
         title = options["title"] or (default_title + title_suffix)
         exam = MockExam.objects.create(
@@ -278,13 +337,16 @@ class Command(BaseCommand):
             Question.objects.published()
             .filter(visibility=Question.Visibility.PUBLIC, exam_type=Question.ExamType.CBT)
         )
-        if not base_qs:
-            raise CommandError("CBT の published/public 問題がありません")
         picked = pick_pool(base_qs, min(count, len(base_qs)))
         if len(picked) < count:
+            filler = placeholder_pool(Question.ExamType.CBT, count - len(picked))
             self.stdout.write(
-                self.style.WARNING(f"問題プールが不足しています（{len(picked)}/{count}問で作成します）")
+                self.style.WARNING(
+                    f"CBTの問題が {len(picked)}/{count}問しかないため、"
+                    f"残り{len(filler)}問を仮設問で埋めます"
+                )
             )
+            picked = picked + filler
 
         exam = MockExam.objects.create(
             title=options["title"] or "CBT全国模試（生涯1回）",
