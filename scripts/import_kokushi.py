@@ -630,6 +630,49 @@ def _usable_count(lines: list[str]) -> int:
     return n
 
 
+# pdfplumber が語の途中に挟むダッシュ。「自己免疫— 性膵炎」「誤って— いる」の
+# ように、和文の途中へ EM DASH と空白が入る。PyMuPDF の描画には出てこない
+# ので抽出側の産物で、和文の組版として現れる形でもない（日本語のダッシュは
+# 「——」と重ねるか前後を空ける）。第119回の全6ブロックで38件見つかり、
+# 38件とも取り除いた形が PyMuPDF の描画に一致した。
+#
+# 欧文や数字に挟まる形（「50Torr—、」「第— 3次」）も残るが、そちらは
+# 字種の条件を広げると正当なダッシュまで巻き込む。連問の抽出では
+# verify_against_pymupdf() で本文ごと照合するので、そこで弾く。
+_STRAY_DASH = re.compile(r"(?<=[ぁ-んァ-ヶ一-龥])[—–―][ 　]?(?=[ぁ-んァ-ヶ一-龥])")
+
+
+def _drop_stray_dash(line: str) -> str:
+    return _STRAY_DASH.sub("", line)
+
+
+def flat_pymupdf_text(path: Path) -> str:
+    """照合用に PyMuPDF の描画を空白抜きで1本にしたもの。
+
+    pdfplumber の抽出には字の入れ替わり（「25,000(」が「25,00(0 」になる等）
+    が混じることがある。取り出した本文がこちらに含まれるかを見れば、
+    そうした壊れ方をまとめて弾ける。
+    """
+    try:
+        import pymupdf
+    except ImportError:  # pragma: no cover - 実行環境の案内
+        return ""
+    try:
+        with pymupdf.open(path) as doc:
+            raw = "".join(pg.get_text() for pg in doc)
+    except Exception:  # pragma: no cover - 壊れたPDFでも取り込みは続ける
+        return ""
+    # 第114〜116回は PyMuPDF 側が ToUnicode を持たないフォントを読めず、
+    # 制御文字を出す（"\x02か月の乳児" の形）。そういう回は基準に使えない
+    # ので、照合そのものを行わない。
+    if is_unusable(raw):
+        return ""
+    try:
+        return _for_compare(raw)
+    except Exception:  # pragma: no cover - 壊れたPDFでも取り込みは続ける
+        return ""
+
+
 def pdf_lines(path: Path) -> list[str]:
     """本文を行のリストで返す。抽出器は回ごとに向き不向きがあるため実測で選ぶ。
 
@@ -642,7 +685,7 @@ def pdf_lines(path: Path) -> list[str]:
     取り出せた問数が多いほうを採用する。グリフ解決を入れた後は全回で pdfplumber が
     上回る（第114回 141→402問など）が、判定は残しておく。
     """
-    plumber = _pdfplumber_lines(path)
+    plumber = [_drop_stray_dash(ln) for ln in _pdfplumber_lines(path)]
     if not any(UNRESOLVED in ln for ln in plumber):
         return plumber
     mupdf = _pymupdf_lines(path)
@@ -671,6 +714,89 @@ def parse_answers(text: str) -> dict[str, list[str]]:
 
 
 CHOICE_LINE = re.compile(rf"^([{CHOICE_MARKS}])[ 　]+(\S.*)$")
+
+
+# 照合でぶつかる字形の揺れ。NFKC では寄らないものだけをここで潰す。
+# 波ダッシュ U+301C は NFKC の対象外だが、PyMuPDF 側は全角チルダ U+FF5E を
+# 出し、そちらは NFKC で "~" になるため食い違う（「基準124〜222」で実際に
+# ぶつかった）。マイナス記号も同様に複数の字が混ざる。
+_COMPARE_MAP = str.maketrans({
+    "〜": "~", "～": "~", "∼": "~",
+    "−": "-", "–": "-", "—": "-", "‐": "-", "―": "-",
+})
+
+
+def _for_compare(text: str) -> str:
+    """照合用の形。空白を落とし、字形の揺れを NFKC で寄せる。
+
+    pdfplumber と PyMuPDF で「〜」(波ダッシュ) と「～」(全角チルダ)、全角と
+    半角の括弧などが食い違う。実際に「（基準124〜222）」でぶつかり、
+    連問50組のうち35組がここで落ちていた。ここで作るのは比べるための形
+    だけで、保存する本文は元のまま。
+    """
+    flat = unicodedata.normalize("NFKC", re.sub(r"\s+", "", text))
+    return flat.translate(_COMPARE_MAP)
+
+
+def text_in_reference(text: str, reference: str) -> bool:
+    """取り出した本文が PyMuPDF の描画にも在るか。
+
+    pdfplumber の抽出には字の入れ替わり（「25,000(」が「25,00(0 」になる等）
+    が混じることがある。空白を除いて突き合わせれば、そうした壊れ方を
+    まとめて弾ける。参照が取れなかったときは判定しない（True）。
+    """
+    if not reference:
+        return True
+    return _for_compare(text) in reference
+
+
+def series_groups(lines: list[str]) -> dict[int, str]:
+    """連問の設問番号 -> 共有する症例文。
+
+    PDFでは
+        次の文を読み、47、48の問いに答えよ。
+        <症例文>
+        47 <設問文>
+        ａ …
+    の順に並ぶ。症例文は導入行の次から、組の最初の設問番号行の手前まで。
+
+    国試の連問は2問組か3問組で、CBTの四連問（question_sets）とは形が違う。
+    症例文を各設問の本文の頭に付けて、1問ずつ解ける独立した設問にする。
+    そのままだと設問文だけでは成立せず、これまで丸ごと落としていた
+    （第119回で50問、6回ぶんで約300問）。
+    """
+    groups: dict[int, str] = {}
+    for i, line in enumerate(lines):
+        m = SERIES_HEAD.search(line)
+        if not m:
+            continue
+        spec = unicodedata.normalize("NFKC", m.group(1))
+        nums: set[int] = set()
+        for part in re.split(r"[、,]", spec):
+            part = part.strip()
+            rng = re.fullmatch(r"(\d+)\s*[〜～\-]\s*(\d+)", part)
+            if rng:
+                nums.update(range(int(rng.group(1)), int(rng.group(2)) + 1))
+            elif part.isdigit():
+                nums.add(int(part))
+        if not nums:
+            continue
+
+        first = min(nums)
+        body: list[str] = []
+        for cont in lines[i + 1 :]:
+            mm = Q_START.match(cont)
+            if mm and int(mm.group(1)) == first:
+                break
+            if SERIES_HEAD.search(cont):
+                break
+            body.append(cont)
+        stem = _join_wrapped(body).strip()
+        if not stem:
+            continue
+        for n in nums:
+            groups[n] = stem
+    return groups
 
 
 def series_numbers(lines: list[str]) -> set[int]:
@@ -870,16 +996,24 @@ def main() -> int:
         pdf = fetch(f"{cfg['pdf_base']}/{cfg['prefix']}{block}_01.pdf",
                     cache / f"{block}.pdf")
         lines = pdf_lines(pdf)
-        series = series_numbers(lines)
+        groups = series_groups(lines)
+        reference = flat_pymupdf_text(pdf)
         for num, stem, texts in parse_block(lines):
             stats["total"] += 1
             qid = f"{letter}{num:03d}"
-            body = stem + "".join(texts)
 
-            if num in series:
-                # 症例文を共有する連問。設問文だけでは成立しないため取り込まない。
-                stats["series"] += 1
-                continue
+            if num in groups:
+                # 症例文を共有する連問。設問文だけでは成立しないので、
+                # 症例文を頭に付けて1問ずつ解ける形にする。
+                case = groups[num]
+                if not text_in_reference(case, reference):
+                    # pdfplumber の抽出に字の入れ替わりなどが混じっている。
+                    # 症例文は長く誤りが目立つので、照合できないものは落とす。
+                    stats["series"] += 1
+                    continue
+                stem = case + "\n" + stem
+
+            body = stem + "".join(texts)
             if IMAGE_REF.search(body):
                 stats["image"] += 1
                 continue
