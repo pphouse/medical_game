@@ -145,12 +145,32 @@ def write_sql(path, codes, composed, part=None):
         )
 
 
+def split_by_size(codes, composed, limit):
+    """1本あたりが limit バイトを超えないように分ける。
+
+    Supabase の SQL Editor は1クエリ1MB前後が上限。問数で機械的に切ると
+    解説の長さの差でファイルサイズがばらつき、余裕のあるファイルまで
+    増えてしまうので、実際の大きさで詰める。
+    """
+    groups, cur, cur_size = [], [], 0
+    for code in codes:
+        n = len(composed[code].encode()) + len(code) + 16
+        if cur and cur_size + n > limit:
+            groups.append(cur)
+            cur, cur_size = [], 0
+        cur.append(code)
+        cur_size += n
+    if cur:
+        groups.append(cur)
+    return groups
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--write", action="store_true", help="設問JSONの explanation を書き換える")
     parser.add_argument("--sql", help="本番反映用のSQLを書き出す")
-    parser.add_argument("--chunk", type=int, default=250,
-                        help="分割SQLの1ファイルあたりの問数。0で分割しない")
+    parser.add_argument("--chunk-kb", type=int, default=500,
+                        help="分割SQL1本あたりの目安サイズ(KB)。0で分割しない")
     args = parser.parse_args()
 
     questions = load_questions()
@@ -199,9 +219,9 @@ def main():
         size = os.path.getsize(args.sql)
         print(f"  SQL: {args.sql} ({len(codes)}問, {size / 1024:.0f}KB)")
 
-        if args.chunk > 0 and len(codes) > args.chunk:
+        if args.chunk_kb > 0 and size > args.chunk_kb:
             stem, ext = os.path.splitext(args.sql)
-            groups = [codes[i : i + args.chunk] for i in range(0, len(codes), args.chunk)]
+            groups = split_by_size(codes, composed, args.chunk_kb * 1024)
             for i, group in enumerate(groups, start=1):
                 path = f"{stem}_{i:02d}{ext}"
                 write_sql(path, group, composed, part=(i, len(groups)))

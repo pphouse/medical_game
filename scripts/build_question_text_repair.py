@@ -203,11 +203,31 @@ def write_sql(path, code_rows, fp_rows, part=None, totals=None):
         fh.write("COMMIT;\n")
 
 
+def split_by_size(rows, limit, key):
+    """1本あたりが limit バイトを超えないように分ける。
+
+    設問ごとに本文の長さが違うので、問数で切るとサイズがばらついて、
+    余裕のあるファイルまで増えてしまう。実際の大きさで詰める。
+    """
+    groups, cur, cur_size = [], [], 0
+    for r in rows:
+        n = len(r["text"].encode()) + len(r[key].encode()) + 16
+        if cur and cur_size + n > limit:
+            groups.append(cur)
+            cur, cur_size = [], 0
+        cur.append(r)
+        cur_size += n
+    if cur:
+        groups.append(cur)
+    return groups
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--sql", required=True, help="書き出し先")
     parser.add_argument(
-        "--chunk", type=int, default=250, help="分割1ファイルあたりの問数。0で分割しない"
+        "--chunk-kb", type=int, default=500,
+        help="分割SQL1本あたりの目安サイズ(KB)。0で分割しない",
     )
     args = parser.parse_args()
 
@@ -229,10 +249,12 @@ def main():
     write_sql(args.sql, code_rows, fp_rows)
     print(f"  SQL: {args.sql} ({os.path.getsize(args.sql) / 1024:.0f}KB)")
 
-    if args.chunk > 0:
+    if args.chunk_kb > 0:
         stem, ext = os.path.splitext(args.sql)
-        cg = [code_rows[i : i + args.chunk] for i in range(0, len(code_rows), args.chunk)]
-        fg = [fp_rows[i : i + args.chunk] for i in range(0, len(fp_rows), args.chunk)]
+        # 1本の中に (1) と (2) の両方が入るので、それぞれ半分ずつを上限にする。
+        half = args.chunk_kb * 1024 // 2
+        cg = split_by_size(code_rows, half, key="code")
+        fg = split_by_size(fp_rows, half, key="fp")
         n = max(len(cg), len(fg))
         for i in range(n):
             path = f"{stem}_{i + 1:02d}{ext}"
