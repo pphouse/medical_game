@@ -1,6 +1,8 @@
 :root {
   --text: #4a5567;
   --text-h: #1c2a3f;
+  /* 出典表記など、本文より一段落とす文字色。 */
+  --text-muted: #7b879b;
   --bg-a: #eaf3ff;
   --bg-b: #e3f1ff;
   --bg-c: #eafcff;
@@ -48,6 +50,7 @@
   :root {
     --text: #b9c6db;
     --text-h: #eef4ff;
+    --text-muted: #8798b2;
     --bg-a: #0b1526;
     --bg-b: #0d1b2e;
     --bg-c: #0a1c24;

@@ -829,6 +829,24 @@
   margin-bottom: 0;
 }
 
+/* 出典と免責。解説本文より目立たせない。 */
+.explanation-note {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.explanation-note p {
+  margin: 0 0 4px;
+}
+
+.explanation-note p:last-child {
+  margin-bottom: 0;
+}
+
 .progress-donut { flex-shrink: 0; }
 .progress-donut-label {
   fill: white;
