@@ -24,6 +24,7 @@ from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
 from exams.ranking_utils import grade_ranked_rows
 from exams.grading import apply_irt_score, copy_result_to_history, grade_single_result
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot
+from quiz.explanations import strip_boilerplate
 from quiz.serializers import QuestionSerializer
 
 DISPLAY_NAME_FALLBACK = "匿名ユーザー"
@@ -605,7 +606,7 @@ def build_review(exam, result):
                 "question_text": question.question_text,
                 "choices": question.choices,
                 "correct_choice_key": question.correct_choice_key,
-                "explanation": question.explanation,
+                "explanation": strip_boilerplate(question.explanation),
                 "my_choice": my_choice,
                 "answered": bool(my_choice),
                 "correct": my_choice == question.correct_choice_key,
