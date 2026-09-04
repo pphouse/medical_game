@@ -343,9 +343,13 @@
 }
 
 .course-remaining {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 800;
   color: var(--accent);
+  /* 「12/79問」の桁が動いて見えないよう等幅の数字にする。 */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .progress-bar {
@@ -2225,6 +2229,154 @@
   padding: 4px 12px;
 }
 
+/* ===== 対戦後の問題振り返り ========================================= */
+
+.battle-review {
+  margin: 16px 0;
+}
+
+.battle-review-heading {
+  margin: 0 0 2px;
+  font-size: 15px;
+}
+
+.battle-review-note {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.battle-review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.battle-review-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  overflow: hidden;
+}
+
+.battle-review-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.battle-review-mark {
+  flex: none;
+  width: 22px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.battle-review-mark.correct {
+  color: var(--correct);
+}
+
+.battle-review-mark.incorrect {
+  color: var(--incorrect);
+}
+
+.battle-review-mark.skipped {
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.battle-review-no {
+  flex: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.battle-review-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  /* 一覧では1行に畳む。全文は開いたときに読む。 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.battle-review-caret {
+  flex: none;
+  font-size: 10px;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.battle-review-body {
+  padding: 0 12px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.battle-review-body .case-stem,
+.battle-review-body .question-text {
+  font-size: 13.5px;
+}
+
+.battle-review-choices {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.battle-review-choice {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.battle-review-choice.correct {
+  color: var(--correct);
+  background: var(--correct-bg);
+  border-color: var(--correct-border);
+}
+
+.battle-review-choice.incorrect {
+  color: var(--incorrect);
+  background: var(--incorrect-bg);
+  border-color: var(--incorrect-border);
+}
+
+.battle-review-yours {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.battle-review-skipped {
+  margin: 4px 0;
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.75;
+}
+
 .battle-result-actions {
   display: flex;
   flex-direction: column;
@@ -2798,4 +2950,36 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--correct);
+}
+
+/* ランキングで学内を見ているときの所属表示（例: 北海道大学 5年） */
+.ranking-scope-banner {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--accent-grad);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.ranking-scope-univ {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.ranking-scope-grade {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.ranking-scope-banner-empty {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px dashed var(--border);
+  font-size: 12.5px;
+  font-weight: 600;
+  box-shadow: none;
 }

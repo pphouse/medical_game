@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import ExamList from "../components/ExamList";
 import RankingCard from "../components/RankingCard";
+import { useProfile } from "../context/ProfileContext";
 import TierBadge from "../components/TierBadge";
 
 const CATEGORIES = [
@@ -230,7 +231,28 @@ function ExamHistory() {
   );
 }
 
+/** 学内ランキングを見ているとき、どの母集団の順位なのかを明示する枠。
+ * 例:「北海道大学 5年」。所属や学年が未設定なら設定を促す。 */
+function UniversityBanner({ profile }) {
+  const university = profile?.university?.name;
+  const grade = profile?.grade;
+  if (!university && !grade) {
+    return (
+      <div className="ranking-scope-banner ranking-scope-banner-empty">
+        所属大学と学年がマイページで未設定です
+      </div>
+    );
+  }
+  return (
+    <div className="ranking-scope-banner">
+      <span className="ranking-scope-univ">{university ?? "所属大学未設定"}</span>
+      <span className="ranking-scope-grade">{grade ? `${grade}年` : "学年未設定"}</span>
+    </div>
+  );
+}
+
 export default function Ranking() {
+  const { profile } = useProfile();
   const [category, setCategory] = useState("practice");
   const [scope, setScope] = useState("national");
   const [period, setPeriod] = useState("all");
@@ -243,6 +265,10 @@ export default function Ranking() {
 
       {/* 模試は自分の受験履歴なので、全国/学内の絞り込みは出さない。 */}
       {category !== "exams" && <ChipRow options={SCOPES} value={scope} onChange={setScope} />}
+
+      {category !== "exams" && scope === "university" && (
+        <UniversityBanner profile={profile} />
+      )}
 
       {/* 対戦のポイントは累計値のため、通算/月間は問題演習にだけ出す。 */}
       {category === "practice" && (

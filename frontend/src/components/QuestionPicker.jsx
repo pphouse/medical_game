@@ -160,6 +160,11 @@ export default function QuestionPicker() {
   // 同じ分野名が CBT と国試の両方にあるので、一覧で選んだ試験種別を持ち回る。
   const examType = searchParams.get("exam_type") ?? "";
   const soloUrl = `/solo${examType ? `?exam_type=${encodeURIComponent(examType)}` : ""}`;
+  // 演習中の「戻る」はこの問題一覧に戻す（分野一覧まで戻すと、続けて別の
+  // 問題を解きたいときに毎回選び直しになるため）。
+  const pickerUrl = `/solo/${encodeURIComponent(category)}${
+    examType ? `?exam_type=${encodeURIComponent(examType)}` : ""
+  }`;
   const [questions, setQuestions] = useState(null);
   const [error, setError] = useState(null);
   // 初期状態は5段階すべてが選択済み。チップを押すとその段階だけを外せる
@@ -227,7 +232,7 @@ export default function QuestionPicker() {
           disabled={filtered.length === 0}
           onClick={() =>
             navigate("/quiz", {
-              state: { title: `分野別演習: ${category}`, questions: filtered, backTo: soloUrl },
+              state: { title: `分野別演習: ${category}`, questions: filtered, backTo: pickerUrl },
             })
           }
         >
@@ -241,7 +246,7 @@ export default function QuestionPicker() {
               state: {
                 title: `分野別演習: ${category}`,
                 questions: shuffled(filtered),
-                backTo: soloUrl,
+                backTo: pickerUrl,
               },
             })
           }
@@ -269,7 +274,7 @@ export default function QuestionPicker() {
                   state: {
                     title: `分野別演習: ${category}`,
                     questions: filtered,
-                    backTo: soloUrl,
+                    backTo: pickerUrl,
                     startIndex: i,
                   },
                 })

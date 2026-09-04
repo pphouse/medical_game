@@ -154,6 +154,71 @@ describe("対戦ルームの状態遷移 (Room)", () => {
     expect(screen.getByRole("link", { name: "ホームに戻る" })).toBeInTheDocument();
   });
 
+  it("finished: 出題された問題の正誤一覧を出し、クリックで解説を開く", async () => {
+    api.battleState.mockResolvedValue({
+      room: { room_code: "123456", status: "finished", question_count: 10 },
+      participants: [],
+    });
+    api.battleResult.mockResolvedValue({
+      standings: [
+        { rank: 1, display_name: "ホスト", is_me: true, score: 1, hp: 100, correct_count: 1 },
+        { rank: 2, display_name: "相手", is_me: false, score: 0, hp: 0, correct_count: 0 },
+      ],
+      rank: { before: null, after: {}, delta: 0, promoted: false, demoted: false },
+      questions: [
+        {
+          round_number: 1,
+          question_id: 11,
+          category: "循環器",
+          exam_type: "CBT",
+          case_stem: null,
+          question_text: "正解した問題",
+          choices: [
+            { key: "A", text: "あ" },
+            { key: "B", text: "い" },
+          ],
+          correct_choice_key: "A",
+          explanation: "正解の解説文",
+          answered: true,
+          selected_choice_key: "A",
+          correct: true,
+        },
+        {
+          round_number: 2,
+          question_id: 12,
+          category: "消化器",
+          exam_type: "CBT",
+          case_stem: null,
+          question_text: "間違えた問題",
+          choices: [
+            { key: "A", text: "あ" },
+            { key: "B", text: "い" },
+          ],
+          correct_choice_key: "B",
+          explanation: "不正解の解説文",
+          answered: true,
+          selected_choice_key: "A",
+          correct: false,
+        },
+      ],
+    });
+
+    renderRoom();
+
+    expect(await screen.findByText("出題された問題（1/2問 正解）")).toBeInTheDocument();
+    // 正誤が一覧の時点で分かること
+    const rows = screen.getAllByRole("button", { expanded: false });
+    const wrong = rows.find((b) => b.textContent.includes("間違えた問題"));
+    expect(wrong.textContent).toContain("✕");
+    expect(rows.find((b) => b.textContent.includes("正解した問題")).textContent).toContain("○");
+
+    // 開くまで解説は出さない
+    expect(screen.queryByText("不正解の解説文")).not.toBeInTheDocument();
+    fireEvent.click(wrong);
+    expect(screen.getByText("不正解の解説文")).toBeInTheDocument();
+    expect(screen.getByText("あなたの解答")).toBeInTheDocument();
+  });
+
   it("finished: 昇格したときは RANK UP! を出す", async () => {
     api.battleState.mockResolvedValue({
       room: { room_code: "123456", status: "finished", question_count: 10 },

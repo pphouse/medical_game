@@ -57,16 +57,20 @@ _GIVEN_NAMES = [
     "陽翔", "蓮", "湊", "樹", "颯太", "陸", "大和", "悠真", "結菜", "陽菜",
     "凛", "咲良", "美咲", "葵", "さくら", "楓", "杏", "澪", "遥", "光",
 ]
+# ニックネームは実在の人名っぽくない「ハンドルネーム」寄りにする。
 _NICKNAMES = [
-    "ゆうた", "けんと", "みさき", "しょうた", "りく", "あおい", "はると",
-    "みくる", "そら", "つばさ", "ののか", "ゆい", "かい", "あかり",
+    "にゃん", "怠けた医", "rinrin", "3浪医", "ねむい", "みかん",
+    "kanan", "留年こわい", "もち", "ちくわ", "国試たすけて", "らむね",
+    "Dr.たまご", "ぽんぽこ", "あさひ", "5年生", "コーヒー中毒", "たぬき",
 ]
+
+# 表示名は「苗字だけ」「下の名前だけ」「ニックネーム」の3パターン。
+# フルネームは実在の人物を指しているように見えやすいので使わない。
+_NAME_STYLES = (_SURNAMES, _GIVEN_NAMES, _NICKNAMES)
 
 
 def _random_display_name():
-    if random.random() < 0.3:
-        return random.choice(_NICKNAMES)
-    return f"{random.choice(_SURNAMES)} {random.choice(_GIVEN_NAMES)}"
+    return random.choice(random.choice(_NAME_STYLES))
 
 
 def _random_university():

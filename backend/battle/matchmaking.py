@@ -1,7 +1,7 @@
 """クイックマッチ（対戦のマッチメイキング）。
 
 spec: オンラインの中でも同じレベルの人がマッチしやすいようにする。
-一定時間（20〜40秒）マッチしない場合はAI対戦とし、そのユーザーのランクに合わせた
+一定時間（10〜25秒）マッチしない場合はAI対戦とし、そのユーザーのランクに合わせた
 頭脳のAIとマッチさせる。
 
 ポーリング駆動（このアプリは常駐ワーカーを持たないサーバーレス志向,
@@ -21,8 +21,8 @@ from battle.models import BattleParticipant, BattleRoom, MatchmakingTicket
 
 # 相手が見つからないときにAIとマッチするまでの待ち時間（秒）。
 # 毎回同じ秒数だと機械的に見えるので、チケットごとにこの範囲でばらつかせる。
-MATCH_TIMEOUT_MIN_SECONDS = 20
-MATCH_TIMEOUT_MAX_SECONDS = 40
+MATCH_TIMEOUT_MIN_SECONDS = 10
+MATCH_TIMEOUT_MAX_SECONDS = 25
 
 
 def match_timeout_for(ticket):
