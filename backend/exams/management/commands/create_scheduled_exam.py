@@ -11,8 +11,8 @@
 kind ごとの仕様:
   monthly : 毎月1日開催。15問・20分。「新出問題」＝過去にどの模試にも出題
             されていない問題を優先（不足時は既出からも補充）。CBT/医師国家試験
-            の2本を作成する。CBT版は対象学年1〜4年生、国試版は学年制限なし
-            （全学年に表示）－ 4年生以下は両方、5年生以上は国試版のみ見える。
+            の2本を作成する。CBT版は対象学年1〜4年生、国試版は5年生以上
+            － 自分の受ける試験の模試だけが一覧に出る。
   large   : 国家試験の2ヶ月前に開催する国試模試（国試のみ、対象学年5年生以上）。
             新出問題を優先し、詳細な分野別・総合の偏差値を採点コマンド側で算出する。
   cbt_once: いつでも受験できるが「ユーザーごとに生涯1回」の CBT 模試（対象学年
@@ -331,12 +331,12 @@ class Command(BaseCommand):
         default_count, default_duration, default_window = 15, 20, 72
         title_base = "月次実力テスト"
 
-        # 学年で見える模試を分ける: CBT版は1〜4年生限定、国試版は学年制限
-        # なし（全学年に表示）。1〜4年生は両方見え、5年生以上は国試版だけ
-        # 見える形になる。
+        # 学年で見える模試を分ける: 4年生以下はCBT版だけ、5年生以上は国試版
+        # だけ。CBTを受けるのは4年生まで、そこから先は国試に向かうので、
+        # 自分の受ける試験と関係ない模試は一覧に出さない。
         flavors = [
             (Question.ExamType.CBT, None, 4, "（CBT）"),
-            (Question.ExamType.KOKUSHI, None, None, "（医師国家試験）"),
+            (Question.ExamType.KOKUSHI, 5, None, "（医師国家試験）"),
         ]
         local_now = now.astimezone(JST)
         for exam_type, grade_min, grade_max, suffix in flavors:
