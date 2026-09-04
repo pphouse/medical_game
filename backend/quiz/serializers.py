@@ -1,6 +1,18 @@
 from rest_framework import serializers
 
+from .explanations import strip_boilerplate
 from .models import AnswerHistory, Question, QuestionReport, ReviewSchedule
+
+
+class ExplanationField(serializers.CharField):
+    """解説を返すときに取り込み時の定型文（出典URL・整形の注記など）を落とす。
+
+    取り込み・掃除コマンド側でも落としているが、返す側でも落としておけば
+    掃除を流していないデータベースでも表示に出ない。
+    """
+
+    def to_representation(self, value):
+        return strip_boilerplate(super().to_representation(value))
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -69,6 +81,7 @@ class ReviewQuestionSerializer(serializers.ModelSerializer):
     """Moderator-only: includes the answer and review metadata."""
 
     case_stem = serializers.SerializerMethodField()
+    explanation = ExplanationField()
 
     class Meta:
         model = Question

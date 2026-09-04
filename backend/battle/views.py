@@ -38,6 +38,7 @@ from accounts.ranktier import (
     rank_state,
     tier_for_points,
 )
+from quiz.explanations import strip_boilerplate
 from quiz.models import AnswerHistory, Question
 from quiz.serializers import QuestionSerializer
 from quiz.views import update_review_schedule
@@ -474,7 +475,7 @@ class RoomStateView(APIView):
             payload["last_result"] = {
                 "number": last_closed.round_number,
                 "correct_choice_key": last_closed.question.correct_choice_key,
-                "explanation": last_closed.question.explanation,
+                "explanation": strip_boilerplate(last_closed.question.explanation),
                 "winner": (winner.profile.display_name or "匿名ユーザー") if winner else None,
                 # 攻撃演出用: {profile_id: 受けたダメージ%} と決着理由。
                 "damage": outcome.get("damage", {}),
@@ -587,7 +588,7 @@ def result_questions(room, profile):
                 "question_text": q.question_text,
                 "choices": q.choices,
                 "correct_choice_key": q.correct_choice_key,
-                "explanation": q.explanation,
+                "explanation": strip_boilerplate(q.explanation),
                 "answered": mine is not None,
                 "selected_choice_key": mine.selected_choice_key if mine else None,
                 "correct": bool(mine.is_correct) if mine else False,

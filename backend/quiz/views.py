@@ -11,6 +11,7 @@ from config.permissions import IsModerator
 
 from .categories import category_sort_key
 from .models import AnswerHistory, Question, QuestionReport, ReviewSchedule
+from .explanations import strip_boilerplate
 from .serializers import (
     CategoryProgressSerializer,
     CategorySerializer,
@@ -406,7 +407,7 @@ class SubmitAnswerView(APIView):
                 "answer_history_id": answer_history.id,
                 "correct": is_correct,
                 "correct_choice_key": question.correct_choice_key,
-                "explanation": question.explanation,
+                "explanation": strip_boilerplate(question.explanation),
                 "correct_rate": question.public_correct_rate,
                 "mastery_level": auto_mastery,
                 "next_review_at": review_schedule.next_review_at if review_schedule else None,
