@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../../api";
+import ChoiceNotes from "../../components/ChoiceNotes";
 import ExplanationText from "../../components/ExplanationText";
 import TierBadge from "../../components/TierBadge";
 
@@ -219,6 +220,12 @@ export default function Result() {
             <p className="exam-review-answer">
               あなたの解答: {row.my_choice || "未解答"} ／ 正解: {row.correct_choice_key}
             </p>
+            <ChoiceNotes
+              choices={row.choices}
+              notes={row.choice_explanations}
+              correctKey={row.correct_choice_key}
+              myKey={row.my_choice}
+            />
             <ExplanationText text={row.explanation} />
           </div>
         );

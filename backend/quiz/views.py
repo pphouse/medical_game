@@ -10,8 +10,8 @@ from rest_framework.views import APIView
 from config.permissions import IsModerator
 
 from .categories import category_sort_key
-from .models import AnswerHistory, Question, QuestionReport, ReviewSchedule
 from .explanations import strip_boilerplate
+from .models import AnswerHistory, Question, QuestionReport, ReviewSchedule
 from .serializers import (
     CategoryProgressSerializer,
     CategorySerializer,
@@ -408,6 +408,7 @@ class SubmitAnswerView(APIView):
                 "correct": is_correct,
                 "correct_choice_key": question.correct_choice_key,
                 "explanation": strip_boilerplate(question.explanation),
+                "choice_explanations": question.choice_explanations,
                 "correct_rate": question.public_correct_rate,
                 "mastery_level": auto_mastery,
                 "next_review_at": review_schedule.next_review_at if review_schedule else None,

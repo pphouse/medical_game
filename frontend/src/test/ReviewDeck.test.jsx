@@ -93,6 +93,66 @@ describe("総合演習", () => {
     );
   });
 
+  it("模試復習は「すべての模試を復習」と模試ごとの選択を出す", async () => {
+    api.rankingExams.mockResolvedValue([
+      {
+        mock_exam_id: 7,
+        title: "月次実力テスト（CBT）",
+        kind: "monthly",
+        start_at: "2026-09-01T01:00:00Z",
+        submitted: true,
+      },
+      {
+        mock_exam_id: 8,
+        title: "CBT全国模試（生涯1回）",
+        kind: "cbt_once",
+        start_at: "2026-08-01T01:00:00Z",
+        submitted: true,
+      },
+    ]);
+    renderDeck();
+    await screen.findByText("科目");
+
+    fireEvent.click(screen.getByRole("button", { name: "模試復習" }));
+
+    expect(await screen.findByText("すべての模試を復習")).toBeInTheDocument();
+    expect(screen.getByText("月次実力テスト（CBT）")).toBeInTheDocument();
+    expect(screen.getByText("CBT全国模試（生涯1回）")).toBeInTheDocument();
+    // 既定は「すべての模試」なので、1回に絞り込まない
+    await waitFor(() =>
+      expect(api.reviewFilter).toHaveBeenCalledWith(
+        expect.objectContaining({ source: "mock", mockExam: null }),
+      ),
+    );
+  });
+
+  it("模試を1つ選ぶとその回だけに絞り、詳細設定もそのまま使える", async () => {
+    api.rankingExams.mockResolvedValue([
+      {
+        mock_exam_id: 7,
+        title: "月次実力テスト（CBT）",
+        kind: "monthly",
+        start_at: "2026-09-01T01:00:00Z",
+        submitted: true,
+      },
+    ]);
+    renderDeck();
+    await screen.findByText("科目");
+    fireEvent.click(screen.getByRole("button", { name: "模試復習" }));
+    await screen.findByText("すべての模試を復習");
+
+    fireEvent.click(screen.getByText("月次実力テスト（CBT）"));
+
+    await waitFor(() =>
+      expect(api.reviewFilter).toHaveBeenCalledWith(
+        expect.objectContaining({ mockExam: 7 }),
+      ),
+    );
+    expect(await screen.findByText("科目")).toBeInTheDocument();
+    expect(screen.getByText("評価")).toBeInTheDocument();
+    expect(screen.getByText("演習回数")).toBeInTheDocument();
+  });
+
   it("まだ模試で解いた問題が無いときは、その旨を案内する", async () => {
     renderDeck();
     await screen.findByText("科目");
@@ -112,5 +172,27 @@ describe("総合演習", () => {
     expect(
       await screen.findByRole("button", { name: "演習を始める（12問）" }),
     ).toBeInTheDocument();
+  });
+
+  it("そのままの順とシャッフルの2つから始められる", async () => {
+    api.reviewFilter.mockResolvedValue(filterResult({ count: 5 }));
+    renderDeck();
+
+    expect(
+      await screen.findByRole("button", { name: "演習を始める（5問）" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "⇄ シャッフルして始める ▶" }),
+    ).toBeInTheDocument();
+  });
+
+  it("問題が0件のときはどちらも押せない", async () => {
+    api.reviewFilter.mockResolvedValue(filterResult({ count: 0 }));
+    renderDeck();
+
+    expect(
+      await screen.findByRole("button", { name: "条件に合う問題がありません" }),
+    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "⇄ シャッフルして始める ▶" })).toBeDisabled();
   });
 });

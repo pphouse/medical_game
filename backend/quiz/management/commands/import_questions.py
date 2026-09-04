@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from quiz.categories import normalize as normalize_category
+from quiz.choice_explanations import split_choice_explanations
 from quiz.explanations import strip_boilerplate
 from quiz.models import Question, QuestionSet
 
@@ -25,16 +26,22 @@ def convert_choices(choices):
 
 
 def build_explanation(item):
-    """Fold distractor_rationale into the explanation so reviewers and the
-    result panel see why each wrong choice is wrong (spec 2-2)."""
+    """解説本文と、選択肢ごとの解説（distractor_rationale）を分けて返す。
+
+    選択肢の横に並べて表示したいので、本文に畳み込まず構造のまま持つ
+    （spec 2-2: どの誤答がなぜ誤りかを見せる）。
+    """
     # 取り込みバッチの決まり文句（出典URL・整形の注記）は解説として読む
     # 中身が無いので、DBに入れる前に落とす。
     explanation = strip_boilerplate(item["explanation"])
-    rationale = item.get("distractor_rationale")
-    if rationale:
-        lines = [f"{key}: {text}" for key, text in sorted(rationale.items())]
-        explanation = explanation + "\n\n【誤答選択肢の解説】\n" + "\n".join(lines)
-    return explanation
+    # 既に本文へ畳み込まれた形で来ることもあるので、その場合は切り出す。
+    explanation, folded = split_choice_explanations(explanation)
+    per_choice = {
+        str(key).strip().upper(): str(text).strip()
+        for key, text in (item.get("distractor_rationale") or {}).items()
+        if str(text).strip()
+    }
+    return explanation, {**folded, **per_choice}
 
 
 class Command(BaseCommand):
@@ -95,6 +102,7 @@ class Command(BaseCommand):
                 blueprint_code=q.get("blueprint_code", ""),
                 exam_type=q["exam_type"],
             )
+            explanation, choice_explanations = build_explanation(q)
             _, was_created = Question.objects.get_or_create(
                 category=category,
                 question_text=q["question_text"],
@@ -109,7 +117,8 @@ class Command(BaseCommand):
                     class_group=q.get("class_group", ""),
                     choices=convert_choices(q["choices"]),
                     correct_choice_key=q["correct_choice_id"],
-                    explanation=build_explanation(q),
+                    explanation=explanation,
+                    choice_explanations=choice_explanations,
                     visibility=Question.Visibility.PUBLIC,
                     # 強制 (spec 2-1): imported batches enter the review queue.
                     status=Question.Status.PENDING,
@@ -136,6 +145,7 @@ class Command(BaseCommand):
             )
             created_sets += 1
             for step in s["steps"]:
+                step_explanation, step_choice_explanations = build_explanation(step)
                 Question.objects.create(
                     category=set_category,
                     topic=s.get("disease", ""),
@@ -151,7 +161,8 @@ class Command(BaseCommand):
                     question_text=step["question_text"],
                     choices=convert_choices(step["choices"]),
                     correct_choice_key=step["correct_choice_id"],
-                    explanation=build_explanation(step),
+                    explanation=step_explanation,
+                    choice_explanations=step_choice_explanations,
                     visibility=Question.Visibility.PUBLIC,
                     status=Question.Status.PENDING,
                     source=Question.Source.LLM,

@@ -34,6 +34,7 @@ class AdminQuestionSerializer(serializers.ModelSerializer):
             "choices",
             "correct_choice_key",
             "explanation",
+            "choice_explanations",
             "visibility",
             "status",
             "source",

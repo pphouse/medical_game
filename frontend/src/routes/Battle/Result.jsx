@@ -82,6 +82,7 @@ function ReviewRow({ row, open, onToggle }) {
             {row.choices.map((c) => {
               const isCorrect = c.key === row.correct_choice_key;
               const isMine = c.key === row.selected_choice_key;
+              const note = row.choice_explanations?.[c.key];
               return (
                 <li
                   key={c.key}
@@ -89,9 +90,12 @@ function ReviewRow({ row, open, onToggle }) {
                     isMine && !isCorrect ? " incorrect" : ""
                   }`}
                 >
-                  <span className="choice-key">{c.key}</span>
-                  <span>{c.text}</span>
-                  {isMine && <span className="battle-review-yours">あなたの解答</span>}
+                  <span className="battle-review-choice-head">
+                    <span className="choice-key">{c.key}</span>
+                    <span>{c.text}</span>
+                    {isMine && <span className="battle-review-yours">あなたの解答</span>}
+                  </span>
+                  {note && <span className="choice-note">{note}</span>}
                 </li>
               );
             })}

@@ -157,7 +157,12 @@ class TestImportCommand:
         imported = Question.objects.get(question_text="テスト設問" * 10)
         assert imported.status == Question.Status.PENDING  # 強制 (spec 2-1)
         assert imported.source == Question.Source.LLM
-        assert "誤答選択肢の解説" in imported.explanation
+        # 選択肢ごとの解説は本文に畳み込まず、専用の項目に構造のまま入る
+        # （選択肢の横に並べて表示するため）。
+        assert imported.choice_explanations == {
+            "A": "誤り", "C": "誤り", "D": "誤り", "E": "誤り",
+        }
+        assert "誤答選択肢の解説" not in imported.explanation
         # choices are converted to the DB-canonical {"key","text"} form
         assert imported.choices[0] == {"key": "A", "text": "選択肢A"}
 

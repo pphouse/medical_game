@@ -110,13 +110,22 @@ export const api = {
   reviewSummary: () => get("/quiz/review-deck/summary/"),
   // 科目・評価・演習回数で絞った演習セット。空配列は「絞り込まない」。
   // source は「どこで解いた問題か」（mock=模試復習 / battle=対戦復習）。
-  reviewFilter: ({ categories = [], mastery = [], attempts = [], examType, source } = {}) => {
+  // mockExam を渡すとその1回の模試だけに絞る。
+  reviewFilter: ({
+    categories = [],
+    mastery = [],
+    attempts = [],
+    examType,
+    source,
+    mockExam,
+  } = {}) => {
     const query = new URLSearchParams();
     if (categories.length) query.set("categories", categories.join(","));
     if (mastery.length) query.set("mastery", mastery.join(","));
     if (attempts.length) query.set("attempts", attempts.join(","));
     if (examType) query.set("exam_type", examType);
     if (source) query.set("source", source);
+    if (mockExam) query.set("mock_exam", mockExam);
     return get(`/quiz/review-filter/?${query}`);
   },
 

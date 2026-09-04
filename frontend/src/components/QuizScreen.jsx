@@ -92,6 +92,7 @@ export default function QuizScreen({
         correct,
         correct_choice_key: question.correct_choice_key,
         explanation: question.explanation,
+        choice_explanations: question.choice_explanations ?? {},
         mastery_level: correct ? "circle" : "cross",
       });
       setMasteryLevel(correct ? "circle" : "cross");
@@ -177,16 +178,20 @@ export default function QuizScreen({
             } else if (choice.key === selectedKey) {
               cls += " selected";
             }
+            // 選択肢ごとの解説は解答後にだけ、その選択肢の下に出す。
+            const note = result ? result.choice_explanations?.[choice.key] : null;
             return (
-              <button
-                key={choice.key}
-                className={cls}
-                disabled={!!result || submitting}
-                onClick={() => setSelectedKey(choice.key)}
-              >
-                <span className="choice-key">{choice.key}</span>
-                <span>{choice.text}</span>
-              </button>
+              <div key={choice.key} className="choice-block">
+                <button
+                  className={cls}
+                  disabled={!!result || submitting}
+                  onClick={() => setSelectedKey(choice.key)}
+                >
+                  <span className="choice-key">{choice.key}</span>
+                  <span>{choice.text}</span>
+                </button>
+                {note && <p className="choice-note">{note}</p>}
+              </div>
             );
           })}
         </div>

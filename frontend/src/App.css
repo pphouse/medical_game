@@ -236,11 +236,13 @@
   border-color: var(--accent);
 }
 
-/* 演習の入口はいちばん使うので、塗りつぶしの青で目立たせる。 */
+/* 演習の入口はいちばん使うので、濃い青の塗りつぶしで目立たせる。
+   accent-grad（青→水色）だと白文字が薄く見えるため、単色の濃紺寄りにする。 */
 .quick-link-primary {
-  background: var(--accent-grad);
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
   border-color: transparent;
   color: #fff;
+  box-shadow: 0 2px 10px rgba(30, 58, 138, 0.35);
 }
 
 .quick-link-primary:not(.disabled):hover {
@@ -1583,6 +1585,127 @@
 
 .battle-room-hint {
   font-size: 13px;
+}
+
+/* 選択肢ごとの解説。正解・誤答それぞれ「なぜそうなのか」を選択肢の下に出す。 */
+.choice-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.choice-note {
+  margin: 4px 0 2px;
+  padding-left: 34px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.choice-note-list {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.choice-note-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.choice-note-row.correct {
+  border-color: var(--correct-border);
+  background: var(--correct-bg);
+}
+
+.choice-note-row.incorrect {
+  border-color: var(--incorrect-border);
+  background: var(--incorrect-bg);
+}
+
+.choice-note-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.choice-note-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.choice-note-row .choice-note {
+  padding-left: 0;
+  margin: 2px 0 0;
+}
+
+.battle-review-choice-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.battle-review-choice {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* 問題一覧の見出し。分野ごとの配色（theme-*）で塗る。 */
+.picker-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--t-border);
+  border-left: 5px solid var(--t-text);
+  border-radius: 14px;
+  background: var(--t-bg);
+}
+
+.picker-heading-letter {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--t-icon);
+  color: var(--t-text);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.picker-heading-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.picker-heading-category {
+  color: var(--t-text);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.picker-heading-sub {
+  color: var(--t-text);
+  opacity: 0.75;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 復習する模試の選択。選んでいるものを枠で示す。 */
+.mock-pick.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
 
 .battle-room-note {

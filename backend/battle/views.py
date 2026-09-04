@@ -476,6 +476,7 @@ class RoomStateView(APIView):
                 "number": last_closed.round_number,
                 "correct_choice_key": last_closed.question.correct_choice_key,
                 "explanation": strip_boilerplate(last_closed.question.explanation),
+                "choice_explanations": last_closed.question.choice_explanations,
                 "winner": (winner.profile.display_name or "匿名ユーザー") if winner else None,
                 # 攻撃演出用: {profile_id: 受けたダメージ%} と決着理由。
                 "damage": outcome.get("damage", {}),
@@ -589,6 +590,7 @@ def result_questions(room, profile):
                 "choices": q.choices,
                 "correct_choice_key": q.correct_choice_key,
                 "explanation": strip_boilerplate(q.explanation),
+                "choice_explanations": q.choice_explanations,
                 "answered": mine is not None,
                 "selected_choice_key": mine.selected_choice_key if mine else None,
                 "correct": bool(mine.is_correct) if mine else False,
