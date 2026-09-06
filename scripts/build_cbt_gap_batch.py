@@ -28,6 +28,11 @@ MODULES = [
     "cbt_gap_questions.psychiatry",
     "cbt_gap_questions.endocrine",
     "cbt_gap_questions.infection",
+    "cbt_gap_questions.ophthalmology",
+    "cbt_gap_questions.ent",
+    "cbt_gap_questions.dermatology",
+    "cbt_gap_questions.neurology",
+    "cbt_gap_questions.hematology",
 ]
 
 # 日本語入力の変換ミスでキリル文字などが紛れる。見た目で気づけないので
