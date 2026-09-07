@@ -1,6 +1,13 @@
 -- 本番に「解説準備中」のまま published で残っていた国試7問を直す。
 -- 何度流しても結果は同じ。
 --
+-- ⚠️ 先に quiz.0009（choice_explanations 列）を当てておくこと。未適用のまま
+--    流すと `column "choice_explanations" ... does not exist` で落ちる。
+--      manage.py migrate --settings=config.settings_migration
+--    か、CLI が使えなければ migrate_quiz_0009_choice_explanations.sql。
+--    いま何が当たっていないかは diagnose_migrations.sql で分かる。
+--    流し方は docs/production-sql.md。
+--
 -- 内訳（diagnose_missing_explanations.sql の結果どおり）:
 --   ・119-C-2   … 本文の冒頭が欠け、正答も誤っている（D → 正しくは B）
 --   ・その他6問 … 図表がないと解けない
