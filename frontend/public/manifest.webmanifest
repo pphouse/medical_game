@@ -1,0 +1,17 @@
+{
+  "name": "CBT・国試対策クイズ",
+  "short_name": "国試クイズ",
+  "lang": "ja",
+  "description": "CBT・医師国家試験の演習アプリ。分野別演習・間隔反復の復習・友だち対戦・全国模試。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eaf3ff",
+  "theme_color": "#eaf3ff",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

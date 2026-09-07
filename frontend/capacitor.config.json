@@ -1,0 +1,20 @@
+{
+  "appId": "jp.pphouse.medquiz",
+  "appName": "CBT国試クイズ",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "never",
+    "limitsNavigationsToAppBoundDomains": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 2000,
+      "backgroundColor": "#eaf3ff",
+      "showSpinner": false
+    },
+    "Keyboard": {
+      "resize": "native"
+    }
+  }
+}

@@ -20,13 +20,14 @@ Supabase を使います。
 ## リポジトリ構成
 
 ```
-backend/    Django + DRF（採点・集計・審査などの信頼ロジックはすべてここ）
-frontend/   React 19 + Vite（スマホ前提の SPA、/api を Django にプロキシ）
-supabase/   SQL マイグレーション（RLS・claim_buzz RPC・pg_cron）と Edge Function
-scripts/    出題基準 PDF 抽出 / LLM 問題生成 / 機械検証の CLI
-schemas/    問題バッチ JSON の JSON Schema
-data/       出題基準 CSV（サンプルのみコミット。全文は著作権のため生成物扱い）
-docs/       アーキテクチャ / Supabase セットアップ / 問題生成の各ドキュメント
+backend/       Django + DRF（採点・集計・審査などの信頼ロジックはすべてここ）
+frontend/      React 19 + Vite（スマホ前提の SPA、/api を Django にプロキシ）
+frontend/ios/  Capacitor が生成した Xcode プロジェクト（iOS アプリの殻）
+supabase/      SQL マイグレーション（RLS・claim_buzz RPC・pg_cron）と Edge Function
+scripts/       出題基準 PDF 抽出 / LLM 問題生成 / 機械検証の CLI
+schemas/       問題バッチ JSON の JSON Schema
+data/          出題基準 CSV（サンプルのみコミット。全文は著作権のため生成物扱い）
+docs/          アーキテクチャ / Supabase セットアップ / 問題生成 / iOS の各ドキュメント
 ```
 
 ## セットアップ
@@ -109,6 +110,8 @@ python manage.py aggregate_rankings         # スナップショット集計
 - [docs/supabase-setup.md](docs/supabase-setup.md) — Supabase プロジェクトの設定手順
 - [docs/question-generation.md](docs/question-generation.md) — LLM 問題生成パイプライン
 - [docs/deploy-vercel.md](docs/deploy-vercel.md) — Vercel（フロント + バックエンド）へのデプロイ手順
+- [docs/ios.md](docs/ios.md) — iOS アプリ（Capacitor）のビルド手順
+- [docs/ios-release.md](docs/ios-release.md) — TestFlight・App Store 提出の手順（Mac 側で実行）
 
 認証は Supabase Auth の**非対称署名鍵（RS256/ES256, JWKS）**に対応（`SUPABASE_URL`
 から JWKS を自動解決してローカル検証）。レガシー HS256（共有シークレット）も

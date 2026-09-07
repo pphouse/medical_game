@@ -3,7 +3,6 @@ from django.utils import timezone
 
 from battle.models import BattleRoom, BattleRound, MatchmakingTicket
 from battle.scoring import round_time_limit_seconds
-from quiz.models import AnswerHistory
 
 from .helpers import auth_client, make_question
 

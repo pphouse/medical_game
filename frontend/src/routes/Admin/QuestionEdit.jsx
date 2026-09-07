@@ -32,12 +32,20 @@ export default function AdminQuestionEdit() {
   // 分野は自由入力にしない。「循環器」と「循環器系」のように同じ分野が
   // 別名で増えるため、サーバが持つ正典から選ばせる。
   const [categories, setCategories] = useState([]);
+  // 分野のグループ（基礎医学・内科系…）。プルダウンの見出しに使う。
+  const [groups, setGroups] = useState([]);
 
   useEffect(() => {
     api
       .adminStats()
-      .then((s) => setCategories(s.canonical_categories ?? []))
-      .catch(() => setCategories([]));
+      .then((s) => {
+        setCategories(s.canonical_categories ?? []);
+        setGroups(s.category_groups ?? []);
+      })
+      .catch(() => {
+        setCategories([]);
+        setGroups([]);
+      });
   }, []);
 
   useEffect(() => {
@@ -133,9 +141,17 @@ export default function AdminQuestionEdit() {
           分野
           <select value={form.category} onChange={(e) => update("category", e.target.value)}>
             <option value="">（選択してください）</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
+            {groups.length > 0
+              ? groups.map((g) => (
+                  <optgroup key={g.group} label={g.group}>
+                    {g.categories.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </optgroup>
+                ))
+              : categories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
             {/* 正典に無い既存の値も、消えないように残して見せる */}
             {form.category && !categories.includes(form.category) && (
               <option value={form.category}>{form.category}（登録外）</option>

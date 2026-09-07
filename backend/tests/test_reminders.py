@@ -63,7 +63,11 @@ class TestReviewSummary:
         assert body["due_now"] == 3
         assert body["today"] == 3
         assert body["tomorrow"] == 1
-        assert body["this_week"] >= 4
+        # this_week は週末（月曜起点で日曜）までの件数。日曜に実行すると
+        # 「今週」は今日で終わるので、明日の分は入らない。曜日で結果が変わる
+        # 条件を固定で書くと日曜だけ落ちるため、その日の曜日から期待値を出す。
+        tomorrow_is_this_week = timezone.localtime().weekday() != 6
+        assert body["this_week"] == (4 if tomorrow_is_this_week else 3)
 
 
 class TestSendReminders:

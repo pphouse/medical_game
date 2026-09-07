@@ -48,9 +48,12 @@ class TestBlueprintWeights:
         assert set(targets.values()) == {MIN_QUESTIONS_PER_CATEGORY}
 
     def test_extra_questions_follow_the_exam_blueprint_not_the_bank(self):
-        """上積みは出題構成比の順に多くなる（必修 > 循環器 > 麻酔科）。"""
+        """上積みは出題構成比の順に多くなる（必修 > 循環器 > 放射線科）。"""
+        # 麻酔科は単独では4問しか出題されず科目として成立しないので、
+        # 救急・中毒とまとめた（quiz/categories.py）。下限側の比較対象は
+        # 残っている中で最も薄い放射線科にする。
         targets = target_counts("KOKUSHI", 2000)
-        assert targets["必修問題"] > targets["循環器"] > targets["麻酔科"]
+        assert targets["必修問題"] > targets["循環器"] > targets["放射線科"]
         assert share_of("KOKUSHI", "必修問題") > share_of("KOKUSHI", "麻酔科")
 
     def test_unknown_exam_type_has_no_weights(self):

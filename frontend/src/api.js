@@ -1,9 +1,16 @@
 import { supabase } from "./lib/supabase";
+import { isNative } from "./native";
 
 // Same-origin "/api" by default (dev proxy / same-domain deploy). Set
 // VITE_API_BASE_URL to the backend origin when the Django API is hosted on a
 // different domain than the frontend (e.g. a separate Vercel project).
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
+//
+// iOS アプリは capacitor://localhost から動くので、相対パスの "/api" は
+// アプリ自身のバンドルを指してしまい、絶対 URL でないと必ず失敗する。
+// ビルド時に落とすチェックが scripts/check-native-env.mjs にある。
+const CONFIGURED_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+export const apiOriginMissing = isNative && !CONFIGURED_BASE_URL;
+const BASE_URL = (CONFIGURED_BASE_URL || "/api").replace(/\/$/, "");
 
 export class ApiError extends Error {
   constructor(status, message) {
@@ -20,6 +27,14 @@ async function getAccessToken() {
 }
 
 async function request(path, options = {}) {
+  if (apiOriginMissing) {
+    throw new ApiError(
+      0,
+      "アプリのビルド時に VITE_API_BASE_URL（バックエンドの https URL）が" +
+        "設定されていません。frontend/.env.production を用意して、" +
+        "npm run ios:sync でビルドし直してください。",
+    );
+  }
   const headers = { "Content-Type": "application/json", ...(options.headers ?? {}) };
   const token = await getAccessToken();
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -91,6 +106,10 @@ export const api = {
   bootstrap: (payload = {}) => post("/auth/bootstrap/", payload),
   me: () => get("/auth/me/"),
   updateMe: (payload) => patch("/auth/me/", payload),
+  // 退会（取り消せない）。confirm はサーバ側でも必須で、うっかり
+  // DELETE が飛んだだけでは消えないようにしてある。
+  deleteAccount: () =>
+    request("/auth/me/", { method: "DELETE", body: JSON.stringify({ confirm: true }) }),
   universities: () => get("/auth/universities/"),
 
   // solo quiz

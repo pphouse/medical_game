@@ -16,6 +16,11 @@ from .serializers import VALID_CHOICE_KEYS
 class AdminQuestionSerializer(serializers.ModelSerializer):
     """管理者による問題の作成・編集。status と visibility も直接指定できる。"""
 
+    # 本文は必須。モデルが blank=True なので、何も宣言しないと DRF は
+    # required=False / allow_blank=True を作ってしまい、本文が空の設問を
+    # 保存できてしまう（本番に「（本文なし）」が並んだ原因）。PATCH では
+    # partial=True が required を外すので、部分更新は妨げずに空だけ弾ける。
+    question_text = serializers.CharField(allow_blank=False, trim_whitespace=True)
     case_stem = serializers.SerializerMethodField()
     report_count = serializers.SerializerMethodField()
 

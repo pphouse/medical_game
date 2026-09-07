@@ -847,6 +847,24 @@
   margin-bottom: 0;
 }
 
+/* 出典と免責。解説本文より目立たせない。 */
+.explanation-note {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.explanation-note p {
+  margin: 0 0 4px;
+}
+
+.explanation-note p:last-child {
+  margin-bottom: 0;
+}
+
 .progress-donut { flex-shrink: 0; }
 .progress-donut-label {
   fill: white;
@@ -979,7 +997,8 @@
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow-sm);
   position: sticky;
-  bottom: 12px;
+  /* iOS アプリは画面の端まで描くので、ホームインジケータの帯に潜り込ませない。 */
+  bottom: calc(12px + env(safe-area-inset-bottom));
 }
 
 .toolbar-btn {
@@ -1017,7 +1036,9 @@
 
 /* App shell with persistent bottom nav */
 .with-bottom-nav {
-  padding-bottom: 76px;
+  /* ナビ自体がホームインジケータの分だけ背が高くなる（.bottom-nav の padding）
+     ので、隠れないように同じ分だけ余分に空ける。 */
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
 }
 
 .bottom-nav {
@@ -1377,6 +1398,103 @@
   background: var(--card-bg);
   color: var(--incorrect);
   font-weight: 700;
+}
+
+/* 退会（取り消せない操作）とプライバシーポリシー。
+
+   赤は「不正解」に使っていない（--incorrect はアンバー）ので、ここだけは
+   破壊的操作の色として素の赤を使う。押し間違えたくない場所なので、他の
+   ボタンと同じ見た目にはしない。 */
+.mypage-legal-link {
+  display: inline-block;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+.danger-zone {
+  text-align: center;
+}
+
+.danger-link {
+  border: none;
+  background: none;
+  padding: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+.danger-card {
+  text-align: left;
+  border-color: #f0a9a9;
+}
+
+.danger-card h3 {
+  margin: 0 0 4px;
+  color: var(--text-h);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.danger-lead {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.danger-list {
+  margin: 0 0 12px;
+  padding-left: 1.2em;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.danger-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.danger-actions > * {
+  flex: 1;
+}
+
+.danger-button {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #c0392b;
+  background: #c0392b;
+  color: #fff;
+  font-weight: 700;
+}
+
+.danger-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* プライバシーポリシーなどの読み物。演習画面より行間を広く取る。 */
+.legal-updated {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.legal-card {
+  line-height: 1.85;
+}
+
+.legal-card h2 {
+  margin: 20px 0 8px;
+  font-size: 15px;
+}
+
+.legal-card h2:first-child {
+  margin-top: 0;
+}
+
+.legal-card ul {
+  margin: 0 0 12px;
+  padding-left: 1.2em;
 }
 
 /* Router: bottom-nav items are now links */

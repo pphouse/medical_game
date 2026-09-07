@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useProfile } from "../context/ProfileContext";
 import { STUDENT_VERIFICATION_ENABLED } from "../features";
@@ -189,6 +189,11 @@ function ProfileEditor({ user, onCancel, onSaved }) {
 export default function MyPage() {
   const { profile, refresh } = useProfile();
   const navigate = useNavigate();
+  // 退会の確認。誤操作で消えないよう、開いてから「削除」と入力させる。
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
   const [summary, setSummary] = useState(null);
   const [pointsInfo, setPointsInfo] = useState(null);
   const [examHistory, setExamHistory] = useState(null);
@@ -228,6 +233,20 @@ export default function MyPage() {
   async function handleSignOut() {
     if (supabase) await supabase.auth.signOut();
     navigate("/auth", { replace: true });
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await api.deleteAccount();
+      // アカウントはもう無いので、手元のセッションも捨ててから抜ける。
+      if (supabase) await supabase.auth.signOut();
+      navigate("/auth?deleted=1", { replace: true });
+    } catch (err) {
+      setDeleteError(err.message ?? String(err));
+      setDeleting(false);
+    }
   }
 
   if (!profile) {
@@ -445,6 +464,63 @@ export default function MyPage() {
         <button className="signout-button" onClick={handleSignOut}>
           ログアウト
         </button>
+      </div>
+
+      <div className="mypage-section">
+        <Link className="mypage-legal-link" to="/privacy">
+          プライバシーポリシー
+        </Link>
+      </div>
+
+      <div className="mypage-section danger-zone">
+        {!deleteOpen ? (
+          <button className="danger-link" onClick={() => setDeleteOpen(true)}>
+            アカウントを削除
+          </button>
+        ) : (
+          <div className="mypage-card danger-card">
+            <h3>アカウントを削除しますか？</h3>
+            <p className="danger-lead">この操作は取り消せません。</p>
+            <ul className="danger-list">
+              <li>プロフィール・解答履歴・復習予定・模試の結果・対戦の記録が消えます</li>
+              <li>ランキングからも外れます</li>
+              <li>あなたが作成した問題は、作成者の表示を外したうえで残ります
+                （解いている人の履歴が壊れるため）</li>
+              <li>ログインに使っているアカウントそのものが削除されます</li>
+            </ul>
+            <label className="auth-field">
+              続けるには「削除」と入力してください
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                autoComplete="off"
+                disabled={deleting}
+              />
+            </label>
+            {deleteError && <p className="error">{deleteError}</p>}
+            <div className="danger-actions">
+              <button
+                className="toolbar-btn"
+                onClick={() => {
+                  setDeleteOpen(false);
+                  setDeleteConfirmText("");
+                  setDeleteError(null);
+                }}
+                disabled={deleting}
+              >
+                やめる
+              </button>
+              <button
+                className="danger-button"
+                onClick={handleDeleteAccount}
+                disabled={deleting || deleteConfirmText.trim() !== "削除"}
+              >
+                {deleting ? "削除中..." : "完全に削除する"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
