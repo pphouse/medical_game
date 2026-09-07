@@ -93,43 +93,59 @@ FROM (VALUES
 ) AS v(blueprint_code, explanation, choice_explanations)
 WHERE q.exam_type = 'KOKUSHI' AND q.blueprint_code = v.blueprint_code;
 
--- 確認 (a): 公開中で解説が入っていない国試。0行なら完了。
-SELECT blueprint_code, status FROM quiz_question
-WHERE exam_type = 'KOKUSHI' AND status = 'published'
-  AND (explanation IS NULL OR explanation LIKE '%準備中%');
+-- 確認。Supabase の SQL Editor は最後の SELECT しか表示しないので、
+-- 5つの確認を1つの表にまとめてある。この結果をそのまま貼ってもらえれば
+-- 当たったかどうか分かる。秘密は含まれない。
+SELECT * FROM (
+    -- (a) 公開中で解説が入っていない国試。0問なら完了。
+    SELECT 'a. 解説なしの公開中の国試' AS 確認項目,
+           count(*)::text || '問（0であること）' AS 状態
+    FROM quiz_question
+    WHERE exam_type = 'KOKUSHI' AND status = 'published'
+      AND (explanation IS NULL OR explanation LIKE '%準備中%')
 
--- 確認 (b): 直した1問。正答が B、本文が171字になっていること。
-SELECT blueprint_code, correct_choice_key, category,
-       length(question_text) AS text_len,
-       jsonb_object_keys(choice_explanations) AS rationale_keys
-FROM quiz_question WHERE blueprint_code = '119-C-44';
+    UNION ALL
+    -- (b) 直した1問。正答 B・本文171字・誤答解説4件になっていること。
+    SELECT 'b. 119-C-44',
+           coalesce(
+               (SELECT '正答' || correct_choice_key || ' / ' || category
+                       || ' / 本文' || length(question_text)::text || '字'
+                       || ' / 誤答解説'
+                       || (SELECT count(*) FROM jsonb_object_keys(choice_explanations))::text || '件'
+                FROM quiz_question WHERE blueprint_code = '119-C-44'),
+               '見つからない（(1) が当たっていない）')
 
--- 確認 (c): 正答が誤っていた間に記録された解答の数。
--- 0 でなければ、その履歴の正誤は誤った正答キーで判定されている。
-SELECT count(*) AS affected_answer_histories
-FROM quiz_answerhistory h
-JOIN quiz_question q ON q.id = h.question_id
-WHERE q.blueprint_code = '119-C-44';
+    UNION ALL
+    -- (c) 正答が誤っていた間に記録された解答。0でなければ、その履歴は
+    --     誤った正答キーで正誤を判定されている。
+    SELECT 'c. 誤った正答で判定された解答',
+           (SELECT count(*)::text || '件'
+            FROM quiz_answerhistory h
+            JOIN quiz_question q ON q.id = h.question_id
+            WHERE q.blueprint_code = '119-C-44')
 
--- 確認 (d): 差し替えた4問。否定形の3問は本文が「設問は…」で始まって
--- 正答の読み方を示し、4問とも誤答解説が4件そろっていること。
-SELECT blueprint_code,
-       left(split_part(explanation, E'\n\n', 2), 34) AS body_head,
-       jsonb_object_keys_count.n AS rationale_count,
-       explanation LIKE '%出典：厚生労働省%' AS has_attribution
-FROM quiz_question,
-     LATERAL (SELECT count(*) FROM jsonb_object_keys(choice_explanations)) AS jsonb_object_keys_count(n)
-WHERE exam_type = 'KOKUSHI'
-  AND blueprint_code IN ('114-B-10', '116-C-41', '116-D-35', '117-A-20')
-ORDER BY blueprint_code;
+    UNION ALL
+    -- (d) 差し替えた4問。誤答解説が4件そろい、出典が残っていること。
+    SELECT 'd. ' || blueprint_code,
+           '誤答解説'
+           || (SELECT count(*) FROM jsonb_object_keys(choice_explanations))::text
+           || '件（4であること） / 出典'
+           || CASE WHEN explanation LIKE '%出典：厚生労働省%' THEN 'あり' ELSE 'なし' END
+           || ' / ' || left(split_part(explanation, E'\n\n', 2), 20)
+    FROM quiz_question
+    WHERE exam_type = 'KOKUSHI'
+      AND blueprint_code IN ('114-B-10', '116-C-41', '116-D-35', '117-A-20')
 
--- 確認 (e): 解説がまだ本文に畳み込まれたまま（choice_explanations が空）の
--- 公開中の国試の数。quiz.0010_backfill_choice_explanations を当てていないと
--- ここが0にならず、誤答の理由が選択肢の横に出ない。0でなければ知らせてほしい。
-SELECT count(*) AS folded_not_split
-FROM quiz_question
-WHERE exam_type = 'KOKUSHI' AND status = 'published'
-  AND explanation LIKE '%【誤答選択肢の解説】%'
-  AND choice_explanations = '{}'::jsonb;
+    UNION ALL
+    -- (e) 解説がまだ本文に畳み込まれたままの公開中の国試。0でなければ
+    --     kokushi_choice_explanations が当たっておらず、誤答の理由が
+    --     選択肢の横に出ない。
+    SELECT 'e. 畳み込まれたままの国試',
+           count(*)::text || '問（0であること）'
+    FROM quiz_question
+    WHERE exam_type = 'KOKUSHI' AND status = 'published'
+      AND explanation LIKE '%【誤答選択肢の解説】%'
+      AND choice_explanations = '{}'::jsonb
+) AS 確認 ORDER BY 確認項目;
 
 COMMIT;
