@@ -110,14 +110,18 @@ npm run ios:assets    # assets/icon-only.svg などから各サイズを生成
 Web（ホーム画面に追加）向けの `public/icons/*.png` は同じ SVG から
 `sharp-cli` で作ってある。差し替えたら両方を作り直すこと。
 
-## 6. Mac が無い場合
+## 6. TestFlight / App Store へ出す
+
+配布と審査の手順は [docs/ios-release.md](ios-release.md) に分けてある（どこまで自動化できるか、人がやるしかない初回設定、提出前チェック）。
+
+## 7. Mac が無い場合
 
 GitHub Actions の `macos-14` ランナーでビルド・署名・TestFlight 提出まで
 自動化できる（fastlane match / App Store Connect API キーを使う）。
 初回の証明書まわりの設定は手間なので、まず Mac を借りて手で1回通してから
 自動化するほうが早い。
 
-## 7. 提出前に必要なもの（審査で落ちるもの）
+## 8. 提出前に必要なもの（審査で落ちるもの）
 
 - **アカウント削除**（App Store Review Guideline 5.1.1(v)）: アカウントを作れる
   アプリは、**アプリ内から**アカウント削除を開始できないと審査で落ちる。
@@ -133,7 +137,7 @@ GitHub Actions の `macos-14` ランナーでビルド・署名・TestFlight 提
   `NSCameraUsageDescription` / `NSPhotoLibraryUsageDescription` の文面が
   実際の用途と合っているか確認する（設定済み）。
 
-## 8. よくある落とし穴
+## 9. よくある落とし穴
 
 | 症状 | 原因 |
 |---|---|

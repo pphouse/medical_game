@@ -110,7 +110,8 @@ python manage.py aggregate_rankings         # スナップショット集計
 - [docs/supabase-setup.md](docs/supabase-setup.md) — Supabase プロジェクトの設定手順
 - [docs/question-generation.md](docs/question-generation.md) — LLM 問題生成パイプライン
 - [docs/deploy-vercel.md](docs/deploy-vercel.md) — Vercel（フロント + バックエンド）へのデプロイ手順
-- [docs/ios.md](docs/ios.md) — iOS アプリ（Capacitor）のビルドと提出手順
+- [docs/ios.md](docs/ios.md) — iOS アプリ（Capacitor）のビルド手順
+- [docs/ios-release.md](docs/ios-release.md) — TestFlight・App Store 提出の手順（Mac 側で実行）
 
 認証は Supabase Auth の**非対称署名鍵（RS256/ES256, JWKS）**に対応（`SUPABASE_URL`
 から JWKS を自動解決してローカル検証）。レガシー HS256（共有シークレット）も
