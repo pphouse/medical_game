@@ -37,6 +37,32 @@ DISCLAIMER = (
 FOREIGN = re.compile(r"[Ѐ-ӿ가-힯฀-๿]")
 
 
+def _shipped_data_guards():
+    """同梱データの壊れ方を見分ける規則（backend/quiz/data_checks.py）を読む。
+
+    書いた文が「漢字が数字に化けた形」などに引っかかるのは取り込み後に
+    テストで分かるが、書いている最中に弾けたほうが早い。規則を二重に持つと
+    ずれるので、検査と同じ定義を読み込む。Django も pytest も要らない
+    素のモジュールなので、パス指定で直接読める。
+    """
+    import importlib.util
+
+    path = (
+        pathlib.Path(__file__).resolve().parent.parent / "backend/quiz/data_checks.py"
+    )
+    spec = importlib.util.spec_from_file_location("_data_checks", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return [
+        module.KANJI_DIGIT_KANJI,
+        module.BODY_KANJI_AFTER_DIGIT,
+        module.POSITION_KANJI_THEN_LATIN,
+    ]
+
+
+GUARDS = _shipped_data_guards()
+
+
 def _source_line(old):
     """既存の解説から出典表記を組み立て直す（回とコードとURLを引き継ぐ）。"""
     head = re.search(r"^出典：[^\n（(]*", old, re.M)
@@ -76,6 +102,13 @@ def fill(stem, entries):
                 raise ValueError(f"{code}: 日本語以外の文字が混ざっている: {text[:40]}")
             if "準備中" in text:
                 raise ValueError(f"{code}: プレースホルダのまま")
+            for guard in GUARDS:
+                m = guard.search(text)
+                if m:
+                    raise ValueError(
+                        f"{code}: 同梱データの検査に当たる書き方: "
+                        f"…{text[max(0, m.start() - 10):m.start() + 12]}…"
+                    )
 
         lines = [f"{k}「{choices[k]}」: {rationales[k]}" for k in sorted(rationales)]
         q["explanation"] = (
