@@ -123,12 +123,14 @@ GitHub Actions の `macos-14` ランナーでビルド・署名・TestFlight 提
 
 ## 8. 提出前に必要なもの（審査で落ちるもの）
 
-- **アカウント削除**（App Store Review Guideline 5.1.1(v)）: アカウントを作れる
-  アプリは、**アプリ内から**アカウント削除を開始できないと審査で落ちる。
-  現状このアプリに削除機能は無く、バックエンドにも削除エンドポイントが無い
-  （`backend/accounts/urls.py`）。**未対応の宿題**。
-- **プライバシーポリシーの URL**: App Store Connect で必須。収集している
-  項目（メールアドレス・大学名・学生証画像・解答履歴）を書く。
+- **アカウント削除**（App Store Review Guideline 5.1.1(v)）: **対応済み**。
+  マイページ →「アカウントを削除」→ 確認（「削除」と入力）で
+  `DELETE /api/auth/me/`。Profile とぶら下がる個人データ、学生証画像、
+  Supabase の auth.users まで消す（`backend/accounts/deletion.py`）。
+- **プライバシーポリシーの URL**: **対応済み**。アプリ内の `/privacy`
+  （未ログインでも読める）。App Store Connect にはフロントの公開 URL +
+  `/privacy` を登録する。運営者名と連絡先は `VITE_OPERATOR_NAME` /
+  `VITE_CONTACT_EMAIL` で入れる（未設定だと iOS ビルドが落ちる）。
 - **Sign in with Apple**: Google など第三者のログインを追加した時点で
   必須になる。現状はメール＋パスワードとマジックリンクだけなので不要。
 - **年齢制限とカテゴリ**: 医学教育アプリとして「メディカル」か「教育」。

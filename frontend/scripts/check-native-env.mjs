@@ -29,6 +29,13 @@ if (!env.VITE_SUPABASE_URL?.trim() || !env.VITE_SUPABASE_ANON_KEY?.trim()) {
   );
 }
 
+if (!env.VITE_OPERATOR_NAME?.trim() || !env.VITE_CONTACT_EMAIL?.trim()) {
+  problems.push(
+    "VITE_OPERATOR_NAME と VITE_CONTACT_EMAIL が必要です。" +
+      "運営者と連絡先の載っていないプライバシーポリシーは App Store の審査で通りません。",
+  );
+}
+
 if (problems.length) {
   process.stderr.write(
     `\niOS 向けビルドの設定が足りません（mode=${mode}）:\n\n` +

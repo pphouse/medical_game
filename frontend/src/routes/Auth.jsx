@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { useSession } from "../hooks/useSession";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
@@ -13,11 +13,15 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [notice, setNotice] = useState(
-    params.get("reason") === "expired"
-      ? "ログインの有効期限が切れました。もう一度ログインしてください。"
-      : null
-  );
+  const [notice, setNotice] = useState(() => {
+    if (params.get("deleted") === "1") {
+      return "アカウントを削除しました。ご利用ありがとうございました。";
+    }
+    if (params.get("reason") === "expired") {
+      return "ログインの有効期限が切れました。もう一度ログインしてください。";
+    }
+    return null;
+  });
   // iOS アプリではメールのリンクがアプリを開き直す形で戻ってくる。その処理に
   // 失敗したとき、nativeBootstrap.js がここに理由を渡してくる。
   const [error, setError] = useState(params.get("authError"));
@@ -192,6 +196,10 @@ export default function Auth() {
           パスワードなしでログイン（Magic Link をメールで受け取る）
         </button>
       </div>
+
+      <Link className="mypage-legal-link" to="/privacy">
+        プライバシーポリシー
+      </Link>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import uuid
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import exceptions
+from rest_framework import exceptions, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from config.internal_auth import require_internal_caller
 from config.permissions import IsModerator
 
+from .deletion import AccountDeletionError, delete_account
 from .models import (
     NotificationPreference,
     Profile,
@@ -24,6 +25,11 @@ from .storage import (
     create_signed_view_url,
     delete_student_id_image,
 )
+
+
+class ServiceUnavailable(exceptions.APIException):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    default_detail = "一時的に利用できません。"
 
 
 class UniversityListView(APIView):
@@ -64,6 +70,27 @@ class MeView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    def delete(self, request):
+        """アカウントの完全削除 (App Store Review Guideline 5.1.1(v))。
+
+        取り消せない操作なので、うっかり DELETE が飛んだだけでは消えない
+        よう本文で明示的な同意を求める。何が消えて何が残るかは
+        accounts/deletion.py を参照。
+        """
+        if request.data.get("confirm") is not True:
+            raise exceptions.ValidationError(
+                {"confirm": "アカウントを削除するには confirm: true が必要です。"}
+            )
+        try:
+            delete_account(request.user)
+        except AccountDeletionError as exc:
+            # 部分的に消えた状態で成功を返すと「消したのに残っている」に
+            # なるので、何も消していないことを明示して失敗させる。
+            raise ServiceUnavailable(
+                f"アカウントを削除できませんでした。時間をおいて試してください（{exc}）"
+            ) from exc
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class NotificationPreferenceView(APIView):

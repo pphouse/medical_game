@@ -1400,6 +1400,103 @@
   font-weight: 700;
 }
 
+/* 退会（取り消せない操作）とプライバシーポリシー。
+
+   赤は「不正解」に使っていない（--incorrect はアンバー）ので、ここだけは
+   破壊的操作の色として素の赤を使う。押し間違えたくない場所なので、他の
+   ボタンと同じ見た目にはしない。 */
+.mypage-legal-link {
+  display: inline-block;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+.danger-zone {
+  text-align: center;
+}
+
+.danger-link {
+  border: none;
+  background: none;
+  padding: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+.danger-card {
+  text-align: left;
+  border-color: #f0a9a9;
+}
+
+.danger-card h3 {
+  margin: 0 0 4px;
+  color: var(--text-h);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.danger-lead {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.danger-list {
+  margin: 0 0 12px;
+  padding-left: 1.2em;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.danger-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.danger-actions > * {
+  flex: 1;
+}
+
+.danger-button {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #c0392b;
+  background: #c0392b;
+  color: #fff;
+  font-weight: 700;
+}
+
+.danger-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* プライバシーポリシーなどの読み物。演習画面より行間を広く取る。 */
+.legal-updated {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.legal-card {
+  line-height: 1.85;
+}
+
+.legal-card h2 {
+  margin: 20px 0 8px;
+  font-size: 15px;
+}
+
+.legal-card h2:first-child {
+  margin-top: 0;
+}
+
+.legal-card ul {
+  margin: 0 0 12px;
+  padding-left: 1.2em;
+}
+
 /* Router: bottom-nav items are now links */
 .bottom-nav-item {
   text-decoration: none;

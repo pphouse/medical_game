@@ -25,7 +25,7 @@ def supabase_admin_configured():
     return bool(settings.SUPABASE_URL and settings.SUPABASE_SERVICE_ROLE_KEY)
 
 
-def _admin_headers():
+def admin_headers():
     key = settings.SUPABASE_SERVICE_ROLE_KEY
     return {"apikey": key, "Authorization": f"Bearer {key}"}
 
@@ -35,7 +35,7 @@ def create_supabase_user(email, password, display_name=""):
     base = settings.SUPABASE_URL.rstrip("/")
     resp = requests.post(
         f"{base}/auth/v1/admin/users",
-        headers=_admin_headers(),
+        headers=admin_headers(),
         json={
             "email": email,
             "password": password,
@@ -50,7 +50,7 @@ def create_supabase_user(email, password, display_name=""):
     if resp.status_code == 422:
         lookup = requests.get(
             f"{base}/auth/v1/admin/users",
-            headers=_admin_headers(),
+            headers=admin_headers(),
             params={"page": 1, "per_page": 200},
             timeout=15,
         )

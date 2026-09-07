@@ -46,7 +46,9 @@ App Store Connect の画面を正とすること。
       - 主要言語: 日本語
       - Bundle ID: `jp.pphouse.medquiz`（Certificates → Identifiers で先に登録）
       - SKU: 何でもよい（例 `medquiz-ios`）
-- [ ] **プライバシーポリシーの URL** を用意して公開しておく（必須）
+- [ ] `frontend/.env.production` に `VITE_OPERATOR_NAME` と
+      `VITE_CONTACT_EMAIL` を入れる（`/privacy` に載る。未設定だと
+      `npm run build:ios` が落ちる）
 
 ## 1. Mac 側セッションがやること
 
@@ -66,9 +68,11 @@ brew install fastlane   # または gem install fastlane
 VITE_API_BASE_URL=https://<バックエンドのドメイン>/api
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon key>
+VITE_OPERATOR_NAME=<運営者名。プライバシーポリシーに載る>
+VITE_CONTACT_EMAIL=<問い合わせ先メールアドレス>
 ```
 
-`npm run build:ios` がこの3つを検証してからビルドする。
+`npm run build:ios` がこれらを検証してからビルドする。
 
 ### ビルドと同期
 
@@ -116,9 +120,10 @@ fastlane deliver --submit_for_review
 
 ## 2. 提出前チェック
 
-- [ ] **アカウント削除がアプリ内から開始できる**（Guideline 5.1.1(v)）
-      — **未実装**。これが無いと確実に落ちる
+- [x] **アカウント削除がアプリ内から開始できる**（Guideline 5.1.1(v)）
+      — マイページ →「アカウントを削除」。審査メモに導線を書いておくと早い
 - [ ] プライバシーポリシーの URL を App Store Connect に設定
+      （`https://<フロントのドメイン>/privacy`）
 - [ ] App Privacy（収集データの申告）: メールアドレス・大学名・学生証画像・
       解答履歴。実装と食い違うと後で差し戻される
 - [ ] 説明文に**医療行為の助言ではない**旨を書く（医学教育アプリとして）
@@ -142,7 +147,7 @@ Resolution Center の返信だけは Web でやる。コードの修正が要る
 
 | 指摘 | 対応 |
 |---|---|
-| 5.1.1(v) アカウント削除が無い | アプリ内に削除導線を足す（上記） |
+| 5.1.1(v) アカウント削除が無い | 対応済み。見つけてもらえていないだけなら審査メモに導線を書く |
 | 5.1.1 不要な情報の要求 | 学生証アップロードを必須にしない |
 | 2.1 デモアカウントで確認できない | 審査メモに動くアカウントを書く |
 | 4.2 機能が最小限 | 実質は問題演習アプリなので通常は問題にならない |

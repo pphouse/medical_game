@@ -106,6 +106,10 @@ export const api = {
   bootstrap: (payload = {}) => post("/auth/bootstrap/", payload),
   me: () => get("/auth/me/"),
   updateMe: (payload) => patch("/auth/me/", payload),
+  // 退会（取り消せない）。confirm はサーバ側でも必須で、うっかり
+  // DELETE が飛んだだけでは消えないようにしてある。
+  deleteAccount: () =>
+    request("/auth/me/", { method: "DELETE", body: JSON.stringify({ confirm: true }) }),
   universities: () => get("/auth/universities/"),
 
   // solo quiz

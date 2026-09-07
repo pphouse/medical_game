@@ -117,7 +117,15 @@ class SupabaseJWTAuthentication(authentication.BaseAuthentication):
     def _get_or_create_profile(payload):
         # Imported lazily so this module can be referenced in settings
         # without triggering app loading at import time.
-        from accounts.models import Profile
+        from accounts.models import DeletedAccount, Profile
+
+        # 退会したアカウント。auth.users を消しても発行済みの JWT は有効期限
+        # まで検証を通るので、その間に飛んだリクエストで空の Profile が
+        # 生き返らないようにここで止める（accounts/deletion.py 参照）。
+        if DeletedAccount.objects.filter(pk=payload["sub"]).exists():
+            raise exceptions.AuthenticationFailed(
+                "このアカウントは削除されています。"
+            )
 
         metadata = payload.get("user_metadata") or {}
         email = payload.get("email") or ""
