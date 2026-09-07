@@ -82,18 +82,39 @@
   box-sizing: border-box;
 }
 
+html {
+  /* 端末を横向きにしたときに iOS が本文だけ勝手に拡大するのを止める。 */
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100svh;
   background: linear-gradient(160deg, var(--bg-a) 0%, var(--bg-b) 55%, var(--bg-c) 100%);
   background-attachment: fixed;
+  /* iOS アプリでは画面全体がゴムのように跳ねると Web サイトくささが出る。
+     中身のスクロールは #root 側に任せて、外枠は動かさない。 */
+  overscroll-behavior-y: none;
+  /* タップのたびに灰色の矩形が一瞬光るのを消す（:active で自前に出している）。 */
+  -webkit-tap-highlight-color: transparent;
 }
 
 #root {
   max-width: 720px;
   margin: 0 auto;
   min-height: 100svh;
-  padding: 20px 16px 64px;
+  /* iOS アプリは viewport-fit=cover で端まで描くので、ノッチ・ホーム
+     インジケータ・横向きの丸角の分をここで空ける。ブラウザでは 0 になる。 */
+  padding: calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 64px
+    calc(16px + env(safe-area-inset-left));
+}
+
+/* iOS は文字サイズが 16px 未満の入力欄にフォーカスすると勝手にズームし、
+   戻してくれない。個別指定のない入力欄をまとめて 16px 以上にしておく。 */
+input,
+select,
+textarea {
+  font-size: max(16px, 1em);
 }
 
 h1,

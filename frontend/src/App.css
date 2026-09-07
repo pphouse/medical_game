@@ -1021,7 +1021,9 @@
 
 /* App shell with persistent bottom nav */
 .with-bottom-nav {
-  padding-bottom: 76px;
+  /* ナビ自体がホームインジケータの分だけ背が高くなる（.bottom-nav の padding）
+     ので、隠れないように同じ分だけ余分に空ける。 */
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
 }
 
 .bottom-nav {
