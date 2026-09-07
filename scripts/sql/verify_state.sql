@@ -38,9 +38,15 @@ UNION ALL SELECT '7. 本文なしの設問',
         WHERE question_text IS NULL OR btrim(question_text) = '')::text || '問（0であること）'
 
 UNION ALL SELECT '8. 解説が未作成の国試',
+       -- 非公開にした設問は学習者に出ないので数えない。ここで status を見ないと、
+       -- 図表がないと解けない6問（項目14）を数えてしまう。
        (SELECT count(*) FROM quiz_question
-        WHERE exam_type = 'KOKUSHI'
-          AND (explanation IS NULL OR explanation LIKE '%準備中%'))::text || '問（0であること）'
+        WHERE exam_type = 'KOKUSHI' AND status = 'published'
+          AND (explanation IS NULL OR explanation LIKE '%準備中%'))::text
+       || '問が公開中（0であること）／非公開のものを含めると'
+       || (SELECT count(*) FROM quiz_question
+           WHERE exam_type = 'KOKUSHI'
+             AND (explanation IS NULL OR explanation LIKE '%準備中%'))::text || '問'
 
 UNION ALL SELECT '9. choice_explanations 列',
        CASE WHEN NOT EXISTS (SELECT 1 FROM information_schema.columns
