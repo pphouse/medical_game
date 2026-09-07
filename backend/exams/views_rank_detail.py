@@ -2,8 +2,8 @@
 
 - distribution: 母集団の「演習数×正答率」散布図（自分の位置を強調表示できる
   よう is_me を付ける）
-- daily: 自分の直近30日分の演習数（solo/review のみ、ランキングと同じ集計
-  対象）
+- daily: 自分の1ヶ月分（暦月）の演習数（solo/review のみ、ランキングと同じ
+  集計対象）。?month=YYYY-MM で過去の月に遡れる
 - yesterday: 昨日の演習数と、一昨日との差分
 
 RankingSnapshot は "all" 期間のスナップショットしか保持しない（洗い替え）ため、
@@ -23,9 +23,30 @@ from rest_framework.views import APIView
 from .models import RankingSnapshot
 from .ranking_utils import grade_ranked_rows
 
-DAILY_HISTORY_DAYS = 30
 # ランキング集計と同じ対象（対戦・模試の連打を含めない）。
 RANKED_CONTEXTS = ("solo", "review")
+
+
+def month_bounds(month):
+    """``datetime.date`` の (月初, 翌月初) を返す。"""
+    first = month.replace(day=1)
+    nxt = (
+        first.replace(year=first.year + 1, month=1)
+        if first.month == 12
+        else first.replace(month=first.month + 1)
+    )
+    return first, nxt
+
+
+def parse_month(raw, default):
+    """'YYYY-MM' をその月の1日として読む。未指定・不正なら default の月。"""
+    if not raw:
+        return default.replace(day=1)
+    try:
+        year, month = (int(part) for part in raw.split("-", 1))
+        return datetime.date(year, month, 1)
+    except (ValueError, TypeError) as e:
+        raise exceptions.ValidationError("month は YYYY-MM で指定してください") from e
 
 
 class RankDetailView(APIView):
@@ -36,6 +57,9 @@ class RankDetailView(APIView):
     """
 
     def get(self, request):
+        self.month = parse_month(
+            request.query_params.get("month"), timezone.localdate()
+        )
         scope = request.query_params.get("scope", RankingSnapshot.Scope.NATIONAL)
         metric = request.query_params.get("metric", RankingSnapshot.Metric.SOLVED)
         if scope not in (RankingSnapshot.Scope.NATIONAL, RankingSnapshot.Scope.UNIVERSITY):
@@ -52,6 +76,7 @@ class RankDetailView(APIView):
                         "me": {"eligible": False, "reason": "学内ランキングには所属大学の設定が必要です。"},
                         "distribution": [],
                         "daily": self._daily_history(profile),
+                        "daily_range": self._daily_range(profile),
                         "yesterday": self._yesterday(profile),
                     }
                 )
@@ -63,6 +88,7 @@ class RankDetailView(APIView):
                     "me": {"eligible": False, "reason": "学年が未設定です。マイページから設定してください。"},
                     "distribution": [],
                     "daily": self._daily_history(profile),
+                    "daily_range": self._daily_range(profile),
                     "yesterday": self._yesterday(profile),
                 }
             )
@@ -87,6 +113,7 @@ class RankDetailView(APIView):
                 "me": me,
                 "distribution": self._distribution(scope, profile),
                 "daily": self._daily_history(profile),
+                "daily_range": self._daily_range(profile),
                 "yesterday": self._yesterday(profile),
             }
         )
@@ -120,11 +147,18 @@ class RankDetailView(APIView):
         ]
 
     def _daily_history(self, profile):
-        """直近30日、自分の演習数（solo/review）。"""
-        since = timezone.now() - datetime.timedelta(days=DAILY_HISTORY_DAYS - 1)
+        """指定した月（既定は今月）の1日ごとの演習数（solo/review）。
+
+        暦月で切るので「何年何月ぶんか」がはっきりし、前後の月へ遡れる。
+        月末が来ていない今月ぶんは、まだ来ていない日も 0 として並べる
+        （グラフの横幅が月の途中で伸び縮みしないようにするため）。
+        """
+        first, next_first = month_bounds(self.month)
         rows = (
             profile.answer_histories.filter(
-                context__in=RANKED_CONTEXTS, answered_at__gte=since
+                context__in=RANKED_CONTEXTS,
+                answered_at__date__gte=first,
+                answered_at__date__lt=next_first,
             )
             .annotate(day=TruncDate("answered_at"))
             .values("day")
@@ -132,16 +166,39 @@ class RankDetailView(APIView):
         )
         counts_by_day = {row["day"]: row["count"] for row in rows}
 
-        today = timezone.localdate()
+        days = (next_first - first).days
         return [
             {
-                "date": (today - datetime.timedelta(days=offset)).isoformat(),
-                "count": counts_by_day.get(
-                    today - datetime.timedelta(days=offset), 0
-                ),
+                "date": (first + datetime.timedelta(days=offset)).isoformat(),
+                "count": counts_by_day.get(first + datetime.timedelta(days=offset), 0),
             }
-            for offset in range(DAILY_HISTORY_DAYS - 1, -1, -1)
+            for offset in range(days)
         ]
+
+    def _daily_range(self, profile):
+        """遡れる範囲。矢印を止める位置を決めるのに使う。
+
+        下限は最初に解いた月（履歴が無ければ今月）、上限は今月。
+        """
+        first_answer = (
+            profile.answer_histories.filter(context__in=RANKED_CONTEXTS)
+            .order_by("answered_at")
+            .values_list("answered_at", flat=True)
+            .first()
+        )
+        today = timezone.localdate()
+        earliest = (
+            timezone.localtime(first_answer).date().replace(day=1)
+            if first_answer
+            else today.replace(day=1)
+        )
+        # 表示中の月が下限より古いこともある（URLで直接指定された場合）。
+        earliest = min(earliest, self.month)
+        return {
+            "month": self.month.strftime("%Y-%m"),
+            "earliest_month": earliest.strftime("%Y-%m"),
+            "latest_month": today.strftime("%Y-%m"),
+        }
 
     def _yesterday(self, profile):
         today = timezone.localdate()

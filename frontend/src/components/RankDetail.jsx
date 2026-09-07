@@ -127,23 +127,77 @@ function DailyChart({ daily }) {
   );
 }
 
-/** 順位の詳細（散布図・直近30日・昨日の演習状況）。クリックして開く
+/** "YYYY-MM" を n ヶ月ずらす。 */
+function shiftMonth(month, delta) {
+  const [year, m] = month.split("-").map(Number);
+  const zero = (year * 12 + (m - 1)) + delta;
+  return `${Math.floor(zero / 12)}-${String((zero % 12) + 1).padStart(2, "0")}`;
+}
+
+function monthLabel(month) {
+  const [year, m] = month.split("-").map(Number);
+  return `${year}年${m}月`;
+}
+
+/** 演習状況（1ヶ月ぶん）。矢印で過去の月へ遡れる。 */
+function DailySection({ range, daily, onChangeMonth }) {
+  const month = range?.month;
+  // 記録のある最初の月より前と、今月より先には進めない。
+  const canGoBack = month && range.earliest_month && month > range.earliest_month;
+  const canGoForward = month && range.latest_month && month < range.latest_month;
+
+  return (
+    <div className="mypage-card">
+      <div className="daily-head">
+        <button
+          type="button"
+          className="daily-nav"
+          disabled={!canGoBack}
+          aria-label="前の月"
+          onClick={() => onChangeMonth(shiftMonth(month, -1))}
+        >
+          ◀
+        </button>
+        <h4 className="exam-section-heading daily-month">
+          {month ? monthLabel(month) : ""}の演習状況
+        </h4>
+        <button
+          type="button"
+          className="daily-nav"
+          disabled={!canGoForward}
+          aria-label="次の月"
+          onClick={() => onChangeMonth(shiftMonth(month, 1))}
+        >
+          ▶
+        </button>
+      </div>
+      <p className="exam-meta daily-total">
+        この月の演習数 {daily.reduce((sum, d) => sum + d.count, 0)}問
+      </p>
+      <DailyChart daily={daily} />
+    </div>
+  );
+}
+
+/** 順位の詳細（散布図・月ごとの演習状況・昨日の演習状況）。クリックして開く
  * モーダルではなく、ランキング画面の下に常時インラインで表示する。 */
 export default function RankDetail({ scope, metric }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  // null は「今月」。矢印を押したらその月を覚える。
+  const [month, setMonth] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     setData(null);
     api
-      .rankDetail(scope, metric)
+      .rankDetail(scope, metric, month)
       .then((d) => !cancelled && setData(d))
       .catch((e) => !cancelled && setError(e.message));
     return () => {
       cancelled = true;
     };
-  }, [scope, metric]);
+  }, [scope, metric, month]);
 
   return (
     <div className="rank-detail-inline">
@@ -185,12 +239,11 @@ export default function RankDetail({ scope, metric }) {
             </div>
           </div>
 
-          <div className="mypage-card">
-            <h4 className="exam-section-heading" style={{ marginTop: 0 }}>
-              演習状況（直近30日・あなたの演習数）
-            </h4>
-            <DailyChart daily={data.daily} />
-          </div>
+          <DailySection
+            range={data.daily_range}
+            daily={data.daily}
+            onChangeMonth={setMonth}
+          />
 
           <div className="mypage-card">
             <h4 className="exam-section-heading" style={{ marginTop: 0 }}>

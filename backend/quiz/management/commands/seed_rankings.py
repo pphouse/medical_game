@@ -13,26 +13,28 @@ from quiz.models import AnswerHistory, Question
 #
 # unique_target > 100 のユーザーだけが正答率ランキングに載る（100問ゲート,
 # spec 3-2）。それ未満のユーザーは eligible=false の理由表示のデモになる。
+# 表示名は実在の人名を避けてニックネームにする（accounts.nicknames と
+# 同じ方針）。メールアドレスの識別子（key）は変えず、表示名だけを変える。
 SAMPLE_STUDENTS = [
-    # (username, university, accuracy, unique_target)
-    ("sample_riko", "九州大学", 0.95, 120),
-    ("sample_sota", "東京大学", 0.90, 115),
-    ("sample_taro", "サンプル医科大学", 0.85, 110),
-    ("sample_nanami", "慶應義塾大学", 0.75, 105),
-    ("sample_yui", "サンプル医科大学", 0.70, 102),
-    ("sample_aoi", "東京大学", 0.65, 100),
-    ("sample_ren", "京都大学", 0.80, 80),
-    ("sample_daiki", "大阪大学", 0.60, 60),
-    ("sample_hanako", "サンプル医科大学", 0.55, 50),
-    ("sample_yuma", "東北大学", 0.50, 40),
-    ("sample_mio", "京都大学", 0.45, 30),
-    ("sample_haruto", "慶應義塾大学", 0.40, 25),
-    ("sample_kaito", "九州大学", 0.35, 20),
-    ("sample_kenji", "サンプル医科大学", 0.30, 15),
+    # (key, display_name, university, accuracy, unique_target)
+    ("sample_riko", "こつこつ", "九州大学", 0.95, 120),
+    ("sample_sota", "徹夜明け", "東京大学", 0.90, 115),
+    ("sample_taro", "ちくわ", "サンプル医科大学", 0.85, 110),
+    ("sample_nanami", "らむね", "慶應義塾大学", 0.75, 105),
+    ("sample_yui", "もち", "サンプル医科大学", 0.70, 102),
+    ("sample_aoi", "ぽんぽこ", "東京大学", 0.65, 100),
+    ("sample_ren", "カフェイン中毒", "京都大学", 0.80, 80),
+    ("sample_daiki", "ポリクリ中", "大阪大学", 0.60, 60),
+    ("sample_hanako", "みかん", "サンプル医科大学", 0.55, 50),
+    ("sample_yuma", "ねむい", "東北大学", 0.50, 40),
+    ("sample_mio", "しずく", "京都大学", 0.45, 30),
+    ("sample_haruto", "留年こわい", "慶應義塾大学", 0.40, 25),
+    ("sample_kaito", "たぬき", "九州大学", 0.35, 20),
+    ("sample_kenji", "国試たすけて", "サンプル医科大学", 0.30, 15),
     # 大学別ランキングのデモ用: サンプル医科大学だけ5人以上の認証済み
     # メンバーを揃える (spec 3-2: 5人未満の大学は除外)
-    ("sample_momo", "サンプル医科大学", 0.62, 45),
-    ("sample_itsuki", "サンプル医科大学", 0.58, 35),
+    ("sample_momo", "きなこ", "サンプル医科大学", 0.62, 45),
+    ("sample_itsuki", "あさひ", "サンプル医科大学", 0.58, 35),
 ]
 
 
@@ -59,10 +61,10 @@ class Command(BaseCommand):
         created_answers = 0
         now = timezone.now()
 
-        for username, university_name, accuracy, unique_target in SAMPLE_STUDENTS:
+        for key, display_name, university_name, accuracy, unique_target in SAMPLE_STUDENTS:
             user = ensure_profile(
-                email=f"{username}@example.com",
-                display_name=username,
+                email=f"{key}@example.com",
+                display_name=display_name,
                 university_name=university_name,
                 student_verified=True,
             )

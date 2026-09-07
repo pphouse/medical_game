@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import ExamList from "../components/ExamList";
 import RankingCard from "../components/RankingCard";
@@ -253,7 +254,13 @@ function UniversityBanner({ profile }) {
 
 export default function Ranking() {
   const { profile } = useProfile();
-  const [category, setCategory] = useState("practice");
+  // ?category=exams で模試タブを開いた状態にできる（模試の結果画面から
+  // 「成績はランキングタブで」と案内して飛ばすため）。
+  const [searchParams] = useSearchParams();
+  const initialCategory = CATEGORIES.some((c) => c.key === searchParams.get("category"))
+    ? searchParams.get("category")
+    : "practice";
+  const [category, setCategory] = useState(initialCategory);
   const [scope, setScope] = useState("national");
   const [period, setPeriod] = useState("all");
 

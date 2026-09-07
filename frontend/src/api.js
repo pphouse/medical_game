@@ -124,12 +124,23 @@ export const api = {
   reviewDeck: () => get("/quiz/review-deck/"),
   reviewSummary: () => get("/quiz/review-deck/summary/"),
   // 科目・評価・演習回数で絞った演習セット。空配列は「絞り込まない」。
-  reviewFilter: ({ categories = [], mastery = [], attempts = [], examType } = {}) => {
+  // source は「どこで解いた問題か」（mock=模試復習 / battle=対戦復習）。
+  // mockExam を渡すとその1回の模試だけに絞る。
+  reviewFilter: ({
+    categories = [],
+    mastery = [],
+    attempts = [],
+    examType,
+    source,
+    mockExam,
+  } = {}) => {
     const query = new URLSearchParams();
     if (categories.length) query.set("categories", categories.join(","));
     if (mastery.length) query.set("mastery", mastery.join(","));
     if (attempts.length) query.set("attempts", attempts.join(","));
     if (examType) query.set("exam_type", examType);
+    if (source) query.set("source", source);
+    if (mockExam) query.set("mock_exam", mockExam);
     return get(`/quiz/review-filter/?${query}`);
   },
 
@@ -195,8 +206,15 @@ export const api = {
   },
   rankingExams: () => get("/ranking/exams/"),
   // 順位クリック時の詳細（散布図・直近30日の演習数・昨日の演習状況）
-  rankDetail: (scope, metric) =>
-    get(`/ranking/detail/?${new URLSearchParams({ scope, metric })}`),
+  // month は "YYYY-MM"。省略すると今月ぶんの演習状況が返る。
+  rankDetail: (scope, metric, month) =>
+    get(
+      `/ranking/detail/?${new URLSearchParams({
+        scope,
+        metric,
+        ...(month ? { month } : {}),
+      })}`,
+    ),
   // 対戦＋模試（週次/月次）合算ポイントランキング（SS〜Dランク）
   pointsRanking: (scope) => get(`/ranking/points/?${new URLSearchParams({ scope })}`),
   submitAnswer: (payload) => post("/quiz/answers/", payload),

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../api";
+import { getCategoryTheme } from "../categoryTheme";
+import { shuffled } from "../shuffle";
 
 // 理解できている側から並べる（◎→未演習）。復習デッキの評価フィルタや
 // 解答後の5段階ボタンと向きをそろえる。
@@ -146,15 +148,6 @@ function formatDate(iso) {
   ).padStart(2, "0")}`;
 }
 
-function shuffled(arr) {
-  const out = arr.slice();
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
-
 export default function QuestionPicker() {
   const { category } = useParams();
   const navigate = useNavigate();
@@ -167,6 +160,7 @@ export default function QuestionPicker() {
   const pickerUrl = `/solo/${encodeURIComponent(category)}${
     examType ? `?exam_type=${encodeURIComponent(examType)}` : ""
   }`;
+  const theme = getCategoryTheme(category);
   const [questions, setQuestions] = useState(null);
   const [error, setError] = useState(null);
   // 初期状態は5段階すべてが選択済み。チップを押すとその段階だけを外せる
@@ -210,7 +204,15 @@ export default function QuestionPicker() {
       <button className="back-link" onClick={() => navigate(soloUrl)}>
         ← 分野一覧に戻る
       </button>
-      <h2>{category}：どの問題を解くか選ぶ</h2>
+      {/* 分野ごとの配色（categoryTheme）で見出しを塗る。演習中の結果画面や
+          分野一覧と同じ色なので、どの分野にいるか一目で分かる。 */}
+      <div className={`picker-heading theme-${theme.key}`}>
+        <span className="picker-heading-letter">{theme.letter}</span>
+        <span className="picker-heading-text">
+          <span className="picker-heading-category">{category}</span>
+          <span className="picker-heading-sub">どの問題を解くか選ぶ</span>
+        </span>
+      </div>
 
       <div className="filter-chip-row">
         {FILTERS.map((f) => {

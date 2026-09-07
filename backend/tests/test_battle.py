@@ -249,12 +249,12 @@ class TestLeaveRoom:
         assert not room.participants.filter(user=profiles[1]).exists()
 
     def test_host_leaving_waiting_room_hands_off_to_next_participant(self):
-        clients, profiles, code = make_room(participants=3)
+        clients, profiles, code = make_room(participants=2)
         res = clients[0].post(f"/api/battle/rooms/{code}/leave/")
         assert res.status_code == 200
         room = BattleRoom.objects.get(room_code=code)
-        assert room.participants.count() == 2
-        assert room.host_id in (profiles[1].id, profiles[2].id)
+        assert room.participants.count() == 1
+        assert room.host_id == profiles[1].id
 
     def test_last_participant_leaving_waiting_room_deletes_it(self):
         clients, profiles, code = make_room(participants=2)
@@ -415,27 +415,40 @@ class TestRoundTimeLimit:
 
 
 class TestAiDisplayName:
-    """AIの表示名は「苗字だけ」「下の名前だけ」「ニックネーム」の3パターン。
+    """AIの表示名はニックネーム（ハンドルネーム）だけ。
 
-    フルネーム（苗字＋名前）は実在の人物を指しているように見えるので使わない。
+    実在の人名はフルネームはもちろん、姓だけ・名だけも使わない — 実在の
+    人物を指しているように見えるうえ、同姓同名の利用者に紐づけて読まれる
+    余地があるため。
     """
 
-    def test_never_generates_a_full_name(self):
-        from battle.ai import _GIVEN_NAMES, _NICKNAMES, _SURNAMES, _random_display_name
+    def test_it_only_uses_nicknames(self):
+        from accounts.nicknames import NICKNAMES
+        from battle.ai import _random_display_name
 
-        allowed = set(_SURNAMES) | set(_GIVEN_NAMES) | set(_NICKNAMES)
         names = {_random_display_name() for _ in range(300)}
-        assert names <= allowed
+        assert names <= set(NICKNAMES)
         # 「佐藤 陽翔」のように連結された名前が出ていないこと。
-        assert all(" " not in name for name in names)
+        assert all(" " not in name and "　" not in name for name in names)
 
-    def test_uses_every_style(self):
-        from battle.ai import _GIVEN_NAMES, _NICKNAMES, _SURNAMES, _random_display_name
+    def test_it_spreads_across_the_pool(self):
+        """毎回同じ名前だと使い捨てのAIだと見破られる。"""
+        from battle.ai import _random_display_name
 
         names = {_random_display_name() for _ in range(300)}
-        assert names & set(_SURNAMES)
-        assert names & set(_GIVEN_NAMES)
-        assert names & set(_NICKNAMES)
+        assert len(names) > 20
+
+    def test_no_nickname_is_a_plain_japanese_personal_name(self):
+        """候補に実在の人名（姓・名）が紛れ込んでいないこと。"""
+        from accounts.nicknames import NICKNAMES
+
+        personal_names = {
+            "佐藤", "鈴木", "高橋", "田中", "伊藤", "渡辺", "山本", "中村",
+            "小林", "加藤", "吉田", "山田", "松本", "井上", "木村", "斎藤",
+            "陽翔", "蓮", "湊", "颯太", "悠真", "結菜", "陽菜", "咲良",
+            "美咲", "葵", "さくら", "楓", "澪", "遥",
+        }
+        assert not personal_names & set(NICKNAMES)
 
 
 class TestMatchTimeoutWindow:
@@ -656,3 +669,32 @@ class TestResultQuestionReview:
         assert row["answered"] is False
         assert row["correct"] is False
         assert row["selected_choice_key"] is None
+
+
+class TestRoomHoldsTwoPlayers:
+    """対戦ルームは1対1。HPの削り合いが2人を前提にした計算なので、
+    3人目は入れない。"""
+
+    def test_a_third_player_cannot_join(self):
+        clients, _, code = make_room(participants=2)
+        third, _ = auth_client(display_name="3人目")
+
+        res = third.post(f"/api/battle/rooms/{code}/join/")
+
+        assert res.status_code == 400
+        assert "2人" in res.content.decode()
+        assert BattleRoom.objects.get(room_code=code).participants.count() == 2
+
+    def test_rejoining_still_works_for_someone_already_in(self):
+        """満室でも、すでに入っている人の再入室は通ること（冪等）。"""
+        clients, _, code = make_room(participants=2)
+        assert clients[1].post(f"/api/battle/rooms/{code}/join/").status_code == 200
+        assert BattleRoom.objects.get(room_code=code).participants.count() == 2
+
+    def test_a_freed_slot_can_be_taken(self):
+        clients, _, code = make_room(participants=2)
+        clients[1].post(f"/api/battle/rooms/{code}/leave/")
+        third, _ = auth_client(display_name="3人目")
+
+        assert third.post(f"/api/battle/rooms/{code}/join/").status_code == 200
+        assert BattleRoom.objects.get(room_code=code).participants.count() == 2

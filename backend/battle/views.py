@@ -40,6 +40,7 @@ from accounts.ranktier import (
 from accounts.ranktier import (
     battle_points_delta as rank_points_delta,
 )
+from quiz.explanations import strip_boilerplate
 from quiz.models import AnswerHistory, Question
 from quiz.serializers import QuestionSerializer
 from quiz.views import update_review_schedule
@@ -60,8 +61,10 @@ from .scoring import (
     round_time_limit_seconds,
 )
 
+# 対戦は1対1。HPの削り合い（片方だけ正解なら相手に20%、両方正解なら遅い
+# 側に10%）が2人を前提にした計算なので、人数もそれに合わせて固定する。
 MIN_PARTICIPANTS = 2
-MAX_PARTICIPANTS = 8
+MAX_PARTICIPANTS = 2
 
 
 def get_room(code):
@@ -298,7 +301,7 @@ class RoomJoinView(APIView):
         if room.status != BattleRoom.Status.WAITING:
             raise exceptions.ValidationError("この対戦はすでに開始されています。")
         if room.participants.count() >= MAX_PARTICIPANTS:
-            raise exceptions.ValidationError("満室です。")
+            raise exceptions.ValidationError("この対戦ルームはすでに2人います。")
         BattleParticipant.objects.create(room=room, user=request.user)
         return Response({"room_code": room.room_code})
 
@@ -474,7 +477,8 @@ class RoomStateView(APIView):
             payload["last_result"] = {
                 "number": last_closed.round_number,
                 "correct_choice_key": last_closed.question.correct_choice_key,
-                "explanation": last_closed.question.explanation,
+                "explanation": strip_boilerplate(last_closed.question.explanation),
+                "choice_explanations": last_closed.question.choice_explanations,
                 "winner": (winner.profile.display_name or "匿名ユーザー") if winner else None,
                 # 攻撃演出用: {profile_id: 受けたダメージ%} と決着理由。
                 "damage": outcome.get("damage", {}),
@@ -587,7 +591,8 @@ def result_questions(room, profile):
                 "question_text": q.question_text,
                 "choices": q.choices,
                 "correct_choice_key": q.correct_choice_key,
-                "explanation": q.explanation,
+                "explanation": strip_boilerplate(q.explanation),
+                "choice_explanations": q.choice_explanations,
                 "answered": mine is not None,
                 "selected_choice_key": mine.selected_choice_key if mine else None,
                 "correct": bool(mine.is_correct) if mine else False,

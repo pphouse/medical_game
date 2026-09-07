@@ -236,6 +236,20 @@
   border-color: var(--accent);
 }
 
+/* 演習の入口はいちばん使うので、濃い青の塗りつぶしで目立たせる。
+   accent-grad（青→水色）だと白文字が薄く見えるため、単色の濃紺寄りにする。 */
+.quick-link-primary {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(30, 58, 138, 0.35);
+}
+
+.quick-link-primary:not(.disabled):hover {
+  border-color: transparent;
+  filter: brightness(1.05);
+}
+
 .quick-link.disabled {
   opacity: 0.5;
   color: var(--text);
@@ -983,7 +997,8 @@
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow-sm);
   position: sticky;
-  bottom: 12px;
+  /* iOS アプリは画面の端まで描くので、ホームインジケータの帯に潜り込ませない。 */
+  bottom: calc(12px + env(safe-area-inset-bottom));
 }
 
 .toolbar-btn {
@@ -1593,6 +1608,134 @@
   font-size: 13px;
 }
 
+/* 選択肢ごとの解説。正解・誤答それぞれ「なぜそうなのか」を選択肢の下に出す。 */
+.choice-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.choice-note {
+  margin: 4px 0 2px;
+  padding-left: 34px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.choice-note-list {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.choice-note-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.choice-note-row.correct {
+  border-color: var(--correct-border);
+  background: var(--correct-bg);
+}
+
+.choice-note-row.incorrect {
+  border-color: var(--incorrect-border);
+  background: var(--incorrect-bg);
+}
+
+.choice-note-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.choice-note-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.choice-note-row .choice-note {
+  padding-left: 0;
+  margin: 2px 0 0;
+}
+
+.battle-review-choice-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.battle-review-choice {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* 問題一覧の見出し。分野ごとの配色（theme-*）で塗る。 */
+.picker-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--t-border);
+  border-left: 5px solid var(--t-text);
+  border-radius: 14px;
+  background: var(--t-bg);
+}
+
+.picker-heading-letter {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--t-icon);
+  color: var(--t-text);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.picker-heading-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.picker-heading-category {
+  color: var(--t-text);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.picker-heading-sub {
+  color: var(--t-text);
+  opacity: 0.75;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 復習する模試の選択。選んでいるものを枠で示す。 */
+.mock-pick.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.battle-room-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.75;
+}
+
 .battle-participant-row {
   display: flex;
   justify-content: space-between;
@@ -1781,6 +1924,33 @@
 .exam-section-rate { width: 44px; text-align: right; font-size: 12px; font-weight: 700; }
 
 .exam-review-card { margin-bottom: 8px; }
+
+/* 提出直後（成績の集計待ち）の案内。 */
+.exam-pending-card {
+  border-left: 4px solid var(--accent);
+}
+
+.exam-pending-title {
+  margin: 0 0 4px;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.exam-pending-link {
+  display: inline-block;
+  margin-top: 8px;
+  text-decoration: none;
+}
+
+/* 見直しの上に置く「問題演習で解き直す」導線。 */
+.exam-review-actions {
+  margin-bottom: 12px;
+}
+
+.exam-review-actions .exam-meta {
+  margin-top: 6px;
+}
 .exam-review-head { font-weight: 800; color: var(--text-h); }
 .exam-review-text { font-size: 13px; }
 .exam-review-answer { font-size: 13px; font-weight: 700; }
@@ -2144,6 +2314,41 @@
 
 .scatter-grid-dashed {
   stroke-dasharray: 3 3;
+}
+
+/* 演習状況の月送り。 */
+.daily-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.daily-month {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+}
+
+.daily-nav {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--accent);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.daily-nav:disabled {
+  opacity: 0.3;
+  color: var(--text);
+}
+
+.daily-total {
+  margin: 2px 0 0;
+  text-align: center;
 }
 
 .scatter-axis-label {

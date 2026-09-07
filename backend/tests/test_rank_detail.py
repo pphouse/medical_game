@@ -119,7 +119,9 @@ class TestRankDetail:
         assert len(body["distribution"]) == 2
         assert all(p["solved"] != 999 for p in body["distribution"])
 
-    def test_daily_history_covers_30_days_with_zero_fill(self):
+    def test_daily_history_covers_the_whole_month_with_zero_fill(self):
+        import calendar
+
         client, profile = auth_client()
         q = make_question()
         AnswerHistory.objects.create(
@@ -131,11 +133,16 @@ class TestRankDetail:
             context="solo",
         )
         body = client.get("/api/ranking/detail/?scope=national&metric=solved").json()
-        assert len(body["daily"]) == 30
-        today = timezone.localdate().isoformat()
-        assert body["daily"][-1]["date"] == today
-        assert body["daily"][-1]["count"] == 1
-        assert body["daily"][0]["count"] == 0
+
+        today = timezone.localdate()
+        days_in_month = calendar.monthrange(today.year, today.month)[1]
+        # 月末が来ていなくても月まるごと並ぶ（グラフの横幅を月中で変えない）
+        assert len(body["daily"]) == days_in_month
+        assert body["daily"][0]["date"] == today.replace(day=1).isoformat()
+        assert body["daily"][-1]["date"] == today.replace(day=days_in_month).isoformat()
+        today_row = next(d for d in body["daily"] if d["date"] == today.isoformat())
+        assert today_row["count"] == 1
+        assert sum(d["count"] for d in body["daily"]) == 1
 
     def test_daily_history_excludes_battle_and_mock(self):
         client, profile = auth_client()
@@ -174,3 +181,81 @@ class TestRankDetail:
         client, _ = auth_client()
         res = client.get("/api/ranking/detail/?scope=university_aggregate")
         assert res.status_code == 400
+
+
+@pytest.mark.django_db
+class TestDailyHistoryMonthNavigation:
+    """演習状況は暦月で表示し、矢印で過去の月へ遡れること。"""
+
+    def answer_on(self, profile, question, when):
+        row = AnswerHistory.objects.create(
+            user=profile,
+            question=question,
+            correct=True,
+            mastery_level="circle",
+            response_time_ms=1000,
+            context="solo",
+        )
+        AnswerHistory.objects.filter(pk=row.pk).update(answered_at=when)
+        return row
+
+    def test_month_param_shows_that_month(self):
+        client, profile = auth_client()
+        q = make_question()
+        self.answer_on(profile, q, datetime.datetime(2026, 3, 15, 12, tzinfo=datetime.UTC))
+
+        body = client.get("/api/ranking/detail/?month=2026-03").json()
+
+        assert body["daily_range"]["month"] == "2026-03"
+        assert len(body["daily"]) == 31  # 3月
+        assert body["daily"][0]["date"] == "2026-03-01"
+        march_15 = next(d for d in body["daily"] if d["date"] == "2026-03-15")
+        assert march_15["count"] == 1
+
+    def test_other_months_are_not_mixed_in(self):
+        client, profile = auth_client()
+        q = make_question()
+        self.answer_on(profile, q, datetime.datetime(2026, 3, 15, 12, tzinfo=datetime.UTC))
+        self.answer_on(profile, q, datetime.datetime(2026, 4, 2, 12, tzinfo=datetime.UTC))
+
+        march = client.get("/api/ranking/detail/?month=2026-03").json()
+        april = client.get("/api/ranking/detail/?month=2026-04").json()
+
+        assert sum(d["count"] for d in march["daily"]) == 1
+        assert sum(d["count"] for d in april["daily"]) == 1
+        assert len(april["daily"]) == 30  # 4月
+
+    def test_february_of_a_leap_year_has_29_days(self):
+        client, _ = auth_client()
+        body = client.get("/api/ranking/detail/?month=2028-02").json()
+        assert len(body["daily"]) == 29
+
+    def test_december_rolls_over_to_january(self):
+        client, _ = auth_client()
+        body = client.get("/api/ranking/detail/?month=2026-12").json()
+        assert len(body["daily"]) == 31
+        assert body["daily"][-1]["date"] == "2026-12-31"
+
+    def test_the_range_says_how_far_back_the_arrows_go(self):
+        client, profile = auth_client()
+        q = make_question()
+        self.answer_on(profile, q, datetime.datetime(2026, 3, 15, 12, tzinfo=datetime.UTC))
+
+        body = client.get("/api/ranking/detail/").json()
+
+        today = timezone.localdate()
+        assert body["daily_range"]["month"] == today.strftime("%Y-%m")
+        assert body["daily_range"]["earliest_month"] == "2026-03"
+        assert body["daily_range"]["latest_month"] == today.strftime("%Y-%m")
+
+    def test_with_no_history_the_range_is_this_month_only(self):
+        client, _ = auth_client()
+        body = client.get("/api/ranking/detail/").json()
+        this_month = timezone.localdate().strftime("%Y-%m")
+        assert body["daily_range"]["earliest_month"] == this_month
+        assert body["daily_range"]["latest_month"] == this_month
+
+    def test_a_bad_month_is_rejected(self):
+        client, _ = auth_client()
+        assert client.get("/api/ranking/detail/?month=2026-99").status_code == 400
+        assert client.get("/api/ranking/detail/?month=nonsense").status_code == 400

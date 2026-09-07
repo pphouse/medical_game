@@ -7,12 +7,11 @@ import { useProfile } from "../context/ProfileContext";
 import { STUDENT_VERIFICATION_ENABLED } from "../features";
 
 /** 試験種別のタブ。CBT と国試は分野の切り方が違ううえ問題数も桁が近いので、
- * 混ぜて一覧にすると目的の分野を探せない。
+ * 混ぜて一覧にすると目的の分野を探せない（「すべて」は置かない）。
  * 既定はマイページの設定（未選択なら学年から自動）。 */
 const EXAM_TABS = [
   { key: "CBT", label: "CBT" },
   { key: "KOKUSHI", label: "医師国家試験" },
-  { key: "", label: "すべて" },
 ];
 
 const MASTERY_LEVELS = ["double_circle", "circle", "triangle", "cross", "unstudied"];
@@ -36,19 +35,15 @@ export default function Solo() {
   const [searchParams, setSearchParams] = useSearchParams();
   // URL 指定が最優先。無ければマイページの設定（未選択なら学年から決まる
   // resolved_exam_type）に従う。プロフィール取得前は CBT を仮置きする。
-  const examType = searchParams.get("exam_type") ?? profile?.resolved_exam_type ?? "CBT";
+  const examType =
+    searchParams.get("exam_type") || profile?.resolved_exam_type || "CBT";
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
   const [allCounts, setAllCounts] = useState(null); // 円グラフ用：学年フィルタなしの全体集計
-  const [reviewDue, setReviewDue] = useState(0);
 
   useEffect(() => {
     api.summary().then(setSummary).catch(() => {});
-    api
-      .reviewSummary()
-      .then((s) => setReviewDue(s.due_now))
-      .catch(() => {});
     api
       .progress()
       .then((rows) => {
@@ -109,8 +104,8 @@ export default function Solo() {
       )}
 
       <div className="quick-links">
-        <button className="quick-link" onClick={() => navigate("/review")}>
-          演習{reviewDue > 0 && <span className="menu-badge">{reviewDue > 99 ? "99+" : reviewDue}</span>}
+        <button className="quick-link quick-link-primary" onClick={() => navigate("/review")}>
+          総合演習
         </button>
         {STUDENT_VERIFICATION_ENABLED && (
           <button className="quick-link" onClick={() => navigate("/create")}>
@@ -124,9 +119,7 @@ export default function Solo() {
           <button
             key={tab.key || "all"}
             className={`filter-chip${examType === tab.key ? " active" : ""}`}
-            onClick={() =>
-              setSearchParams(tab.key ? { exam_type: tab.key } : {}, { replace: true })
-            }
+            onClick={() => setSearchParams({ exam_type: tab.key }, { replace: true })}
           >
             {tab.label}
           </button>

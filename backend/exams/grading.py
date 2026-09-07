@@ -18,6 +18,46 @@ def area_of(question):
     return match.group(1) if match else question.category
 
 
+def copy_answer_to_history(result, question, answer, is_correct):
+    """模試の解答1件を AnswerHistory(context=mock) に複写する。
+
+    習熟度は付けない（＝未演習のまま）。同じ模試の回で複写済みなら何もしない
+    ので、提出時と採点時の両方から呼んでも二重にならない。
+    """
+    if AnswerHistory.objects.filter(
+        user=result.user,
+        question=question,
+        context=AnswerHistory.Context.MOCK,
+        answered_at__gte=result.mock_exam.start_at,
+    ).exists():
+        return
+    AnswerHistory.objects.create(
+        user=result.user,
+        question=question,
+        mastery_level=AnswerHistory.MasteryLevel.UNSTUDIED,
+        correct=is_correct,
+        response_time_ms=answer.response_time_ms,
+        context=AnswerHistory.Context.MOCK,
+    )
+
+
+def copy_result_to_history(result, correct_questions):
+    """提出済みの解答をまとめて AnswerHistory へ複写する。
+
+    採点（順位・偏差値の集計）を待たずに「模試復習」で解き直せるように、
+    提出した時点で呼ぶ。採点時にも同じ複写が走るが冪等。
+    """
+    for answer in result.answers.all():
+        question = correct_questions.get(answer.question_id)
+        if question is None:
+            continue
+        is_correct = (
+            answer.selected_choice_key == question.correct_choice_key
+            and answer.selected_choice_key != ""
+        )
+        copy_answer_to_history(result, question, answer, is_correct)
+
+
 def grade_single_result(result, correct_questions):
     """1受験者分の素点・分野別正答率を算出し、AnswerHistory(context=mock) に
     複写する（習熟度は付与しない＝未演習のまま）。score/section_scores を
@@ -39,20 +79,7 @@ def grade_single_result(result, correct_questions):
         per_area[area][0] += int(is_correct)
         per_area[area][1] += 1
 
-        if not AnswerHistory.objects.filter(
-            user=result.user,
-            question=question,
-            context=AnswerHistory.Context.MOCK,
-            answered_at__gte=result.mock_exam.start_at,
-        ).exists():
-            AnswerHistory.objects.create(
-                user=result.user,
-                question=question,
-                mastery_level=AnswerHistory.MasteryLevel.UNSTUDIED,
-                correct=is_correct,
-                response_time_ms=answer.response_time_ms,
-                context=AnswerHistory.Context.MOCK,
-            )
+        copy_answer_to_history(result, question, answer, is_correct)
 
     result.score = score
     result.section_scores = {

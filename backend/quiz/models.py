@@ -155,6 +155,11 @@ class Question(models.Model):
     )
     correct_choice_key = models.CharField(max_length=4)
     explanation = models.TextField()
+    choice_explanations = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='選択肢ごとの解説 {"A": "…", "B": "…"}。空の選択肢は解説なし。',
+    )
     creator = models.ForeignKey(
         "accounts.Profile",
         on_delete=models.SET_NULL,

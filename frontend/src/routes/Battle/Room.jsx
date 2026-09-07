@@ -108,10 +108,10 @@ export default function Room() {
       <div className="mypage-card battle-card">
         <p className="battle-room-code-label">ルームコード</p>
         <p className="battle-room-code">{room.room_code}</p>
-        <p className="battle-room-hint">
-          このコード（またはこのページの URL）を友だちに共有してください。
-          {room.question_count}問勝負です。
-        </p>
+        <p className="battle-room-hint">このコードを友達に共有してください。</p>
+        {/* 離脱するとルームごと消える（最後の1人が抜けたら削除される）ので、
+            戻る前に伝えておく。 */}
+        <p className="battle-room-note">※対戦ロビーに戻るとコードはリセットされます</p>
       </div>
 
       <div className="mypage-card battle-card">

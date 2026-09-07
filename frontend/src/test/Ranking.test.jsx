@@ -211,11 +211,11 @@ describe("ランキング画面", () => {
 
     // 演習数タイルをクリックしなくても、詳細（演習数の詳細見出し）が出る。
     expect(await screen.findByText("演習数の詳細")).toBeInTheDocument();
-    expect(api.rankDetail).toHaveBeenCalledWith("national", "solved");
+    expect(api.rankDetail).toHaveBeenCalledWith("national", "solved", null);
 
     // 正答率タイルをクリックすると、詳細の対象がそちらに切り替わる。
     fireEvent.click(screen.getByRole("button", { name: /正答率/ }));
     expect(await screen.findByText("正答率の詳細")).toBeInTheDocument();
-    expect(api.rankDetail).toHaveBeenCalledWith("national", "accuracy");
+    expect(api.rankDetail).toHaveBeenCalledWith("national", "accuracy", null);
   });
 });
