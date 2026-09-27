@@ -28,13 +28,11 @@
 
   /* 5段階の評価色。理解できている側を緑にそろえ、◎は濃い緑・○は黄緑と
      濃淡で差をつける（同じ緑系でも一目で区別できるように）。 */
-  --m-double: #15803d;
-  --m-circle: #65a30d;
-  --m-triangle: #ca8a04;
-  --m-cross: #dc2626;
+  --m-double: #16a34a;
+  --m-circle: #a3e635;
+  --m-triangle: #facc15;
+  --m-cross: #ef4444;
   --m-unstudied: #cbd5e1;
-  /* 未演習は帯では淡い灰、チップの塗りでは白抜きが読める濃さを使う。 */
-  --m-unstudied-fill: #64748b;
 
   /* SS/S/A は光る金・銀・銅。B/C/D はまとめて青（光らせない）。 */
   --tier-ss-bg: linear-gradient(135deg, #fff3b0 0%, #d4af37 55%, #fff3b0 100%);
@@ -76,12 +74,11 @@
     --incorrect-border: #9f3436;
 
     /* 暗い背景では濃い緑が沈むので、明度を上げて濃淡の差だけ残す。 */
-    --m-double: #22c55e;
-    --m-circle: #84cc16;
-    --m-triangle: #eab308;
+    --m-double: #4ade80;
+    --m-circle: #bef264;
+    --m-triangle: #fde047;
     --m-cross: #f87171;
     --m-unstudied: #475569;
-    --m-unstudied-fill: #64748b;
   }
 }
 
