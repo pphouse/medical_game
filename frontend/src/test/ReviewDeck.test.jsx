@@ -185,7 +185,7 @@ describe("総合演習", () => {
     renderDeck();
 
     expect(
-      await screen.findByRole("button", { name: "演習を始める（12問）" }),
+      await screen.findByRole("button", { name: "前回の続きから始める（12問）" }),
     ).toBeInTheDocument();
   });
 
@@ -194,7 +194,7 @@ describe("総合演習", () => {
     renderDeck();
 
     expect(
-      await screen.findByRole("button", { name: "演習を始める（5問）" }),
+      await screen.findByRole("button", { name: "前回の続きから始める（5問）" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "⇄ シャッフルして始める ▶" }),

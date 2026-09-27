@@ -81,7 +81,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-A-3",
-      "category": "腎・泌尿器",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "低カルシウム血症と低リン血症を同時にきたす病態はどれか。",
       "choices": [
@@ -2121,7 +2121,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-B-30",
-      "category": "腎・泌尿器",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "40歳の男性。職場の健康診断で異常を指摘され来院した。持参した健康診断の結果は、BMI31、HbA1c7.0%(基準4.9〜6.0)であった。身長168cm、体重90 kg。問診の際、最近、父親が糖尿病による末期腎不全で血液透析を受けるようになったこともあり減量したいが、仕事が忙しいので運動する時間がなく、外食が多くなってしまうとの話があった。この患者の行動変容ステージで有効な声がけはどれか。",
       "choices": [
@@ -2665,7 +2665,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-C-1",
-      "category": "腎・泌尿器",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "好酸球増加がみられる疾患はどれか。",
       "choices": [
@@ -4671,7 +4671,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-D-7",
-      "category": "腎・泌尿器",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "我が国において、血液透析に比較して腹膜透析で正しいのはどれか。",
       "choices": [
@@ -5147,7 +5147,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-D-39",
-      "category": "腎・泌尿器",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "3歳の男児。テーブルに置かれていた加熱式たばこのスティックを食べたため救急車で搬入された。発見時に母親が口腔内のたばこ葉を吐き出させ、救急車内で2回嘔吐した。泣いているが、意識は清明。体温36.9°C。心拍数110/分、整。血圧100/64 mmHg。呼吸数30/分。適切な対応はどれか。",
       "choices": [
@@ -5181,7 +5181,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-D-40",
-      "category": "腎・泌尿器",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "74歳の女性。蛋白尿を指摘されて来院した。昨年の特定健康診査で蛋白尿を指摘されたが、症状がなかったのでそのままにしていた。今年の特定健康診査でも蛋白尿を指摘されて受診した。既往歴に特記すべきことはない。体調不良はなく就業しており、自宅で時々測定している血圧は120/70 mmHg前後である。体重は増減なく安定しているが、両下腿にごく軽度の圧痕性浮腫を認める。尿所見:比重1.015、pH 6.0、蛋白3+、糖(−)、潜血(−)、随時尿の尿蛋白/クレアチニン比は2.5g/gC(r 基準0.15未満)。尿沈渣に赤血球1〜4/HPF、白血球1〜4/HPF、硝子円柱1〜4/HPF、顆粒円柱と幅広円柱を少数認める。血液生化学所見:クレアチニン0.7mg/dL、eGFR61.6mL/分/1.73m2。腹部超音波検査では腎臓に異常を認めない。最も考えられるのはどれか。",
       "choices": [
@@ -7629,7 +7629,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "118-F-21",
-      "category": "腎・泌尿器",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "高齢者で増大するのはどれか。",
       "choices": [
