@@ -37,6 +37,7 @@ EXPL_DIR = os.path.join(ROOT, "scripts/kokushi_explanations")
 sys.path.insert(0, os.path.join(ROOT, "backend"))
 
 from quiz.categories import KOKUSHI_CATEGORIES, normalize  # noqa: E402
+from quiz.data_checks import DECODE_ARTIFACT, GLYPH_CORRUPTION  # noqa: E402
 
 # 本番にすでに入っている回。ここで設問を除外しても本番の行は消えないので、
 # 除外は受け付けない（非公開にするには SQL で status を変える）。
@@ -89,6 +90,12 @@ def check_text(code, field, text):
         raise SystemExit(f"{code} の {field} に想定外の文字: {sorted(set(found))}")
     if not text.strip():
         raise SystemExit(f"{code} の {field} が空")
+    # 同梱データの検査（tests/test_shipped_data.py）は解説にも字化けの形を
+    # 探すので、「頻度qは」のように漢字に欧字が挟まる書き方はここで止める。
+    for pattern in (GLYPH_CORRUPTION, DECODE_ARTIFACT):
+        m = pattern.search(text)
+        if m:
+            raise SystemExit(f"{code} の {field} が字化けの形に見える: …{m.group()}…（「頻度（q）は」のように書く）")
 
 
 def check_category(code, question, category):
