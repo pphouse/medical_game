@@ -82,7 +82,7 @@ describe("模試一覧", () => {
 
     const available = document.querySelectorAll(".exam-section")[0];
     const past = document.querySelectorAll(".exam-section")[2];
-    expect(available.textContent).toContain("今受験できる模試はありません");
+    expect(available.textContent).toContain("現在受験できる模試はありません");
     expect(past.textContent).toContain("模試1");
   });
 
@@ -91,7 +91,7 @@ describe("模試一覧", () => {
 
     renderList();
 
-    expect(await screen.findByText("今受験できる模試はありません。")).toBeInTheDocument();
+    expect(await screen.findByText("現在受験できる模試はありません。")).toBeInTheDocument();
     expect(screen.getByText("開催予定の模試はありません。")).toBeInTheDocument();
   });
 

@@ -235,20 +235,29 @@ class TestDisplayOrderPriorities:
         return sorted(categories_for(exam), key=lambda c: category_sort_key(c, exam))
 
     def test_cbt_starts_with_the_heavy_organ_subjects(self):
-        assert self.order(CBT)[:3] == ["消化器", "内分泌・代謝", "腎・泌尿器"]
-
-    def test_kokushi_starts_with_the_heavy_organ_subjects(self):
-        assert self.order(KOKUSHI)[:4] == [
-            "消化管", "肝・胆・膵", "代謝・内分泌", "腎・泌尿器",
+        assert self.order(CBT)[:5] == [
+            "循環器", "消化器", "内分泌・代謝", "呼吸器", "腎・泌尿器",
         ]
 
-    def test_public_health_sits_just_before_the_last_block(self):
-        cbt = self.order(CBT)
-        # CBTの公衆衛生は総論とひとまとめ。最後の枠は多選択肢・4連問。
-        assert cbt[-2:] == ["医学総論・公衆衛生・診療の基本", "多選択肢・4連問"]
+    def test_kokushi_starts_with_the_heavy_organ_subjects(self):
+        assert self.order(KOKUSHI)[:5] == [
+            "循環器", "消化管", "肝・胆・膵", "代謝・内分泌", "腎・泌尿器",
+        ]
 
-        kokushi = self.order(KOKUSHI)
-        assert kokushi[-2:] == ["公衆衛生", "必修問題"]
+    def test_the_digestive_subject_is_second(self):
+        """消化器はどちらの試験でも上から2番目。"""
+        assert self.order(CBT)[1] == "消化器"
+        assert self.order(KOKUSHI)[1] == "消化管"
+
+    def test_the_kidney_subject_is_fifth(self):
+        """腎臓はどちらの試験でも上から5番目。"""
+        assert self.order(CBT)[4] == "腎・泌尿器"
+        assert self.order(KOKUSHI)[4] == "腎・泌尿器"
+
+    def test_public_health_is_last(self):
+        # CBTの公衆衛生は医学総論・診療の基本とひとまとめの科目。
+        assert self.order(CBT)[-1] == "医学総論・公衆衛生・診療の基本"
+        assert self.order(KOKUSHI)[-1] == "公衆衛生"
 
 
 @pytest.mark.django_db
