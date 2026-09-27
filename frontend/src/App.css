@@ -282,8 +282,9 @@
 }
 
 .chip-double_circle { background: var(--m-double); }
-.chip-circle { background: var(--m-circle); }
-.chip-triangle { background: var(--m-triangle); }
+/* ○と△は地色が明るいので、記号だけ濃い文字色にする（白抜きだと読めない）。 */
+.chip-circle { background: var(--m-circle); color: #1a2e05; }
+.chip-triangle { background: var(--m-triangle); color: #422006; }
 .chip-cross { background: var(--m-cross); }
 .chip-unstudied { background: var(--m-unstudied); color: var(--text); }
 
@@ -728,8 +729,8 @@
 }
 
 .question-row-mastery.mastery-double_circle { background: var(--m-double); }
-.question-row-mastery.mastery-circle { background: var(--m-circle); }
-.question-row-mastery.mastery-triangle { background: var(--m-triangle); }
+.question-row-mastery.mastery-circle { background: var(--m-circle); color: #1a2e05; }
+.question-row-mastery.mastery-triangle { background: var(--m-triangle); color: #422006; }
 .question-row-mastery.mastery-cross { background: var(--m-cross); }
 .question-row-mastery.mastery-unstudied {
   background: var(--m-unstudied);
