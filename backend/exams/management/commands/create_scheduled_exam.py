@@ -2,7 +2,7 @@
 
     python manage.py create_scheduled_exam --kind monthly   # 来月1日10:00 JST, 15問 x (CBT/国試)
     python manage.py create_scheduled_exam --kind large     # 国試の2ヶ月前10:00 JST, 国試模試
-    python manage.py create_scheduled_exam --kind cbt_once  # 常時受験可・生涯1回のCBT模試（初回のみ作成）
+    python manage.py create_scheduled_exam --kind cbt_once  # 年度ごとに1回のCBT模試（毎年4月1日に更新）
     python manage.py create_scheduled_exam --kind monthly --open-now --count 5   # デモ用
 
 冪等性: 同じ日付（monthly/large）・既存の未終了インスタンス（cbt_once）が
@@ -15,9 +15,10 @@ kind ごとの仕様:
             － 自分の受ける試験の模試だけが一覧に出る。
   large   : 国家試験の2ヶ月前に開催する国試模試（国試のみ、対象学年5年生以上）。
             新出問題を優先し、詳細な分野別・総合の偏差値を採点コマンド側で算出する。
-  cbt_once: いつでも受験できるが「ユーザーごとに生涯1回」の CBT 模試（対象学年
-            4年生のみ、320問・6ブロック構成）。既存の未終了インスタンスが
-            あれば重複作成しない。
+  cbt_once: 年度ごとに1回だけ受験できる CBT 模試。毎年4月1日に新しい回へ
+            更新し、受験できるのは7月1日から翌3月31日まで（対象学年
+            4年生のみ、320問・6ブロック構成）。今年度分を作成済みなら
+            重複作成しない。
 
 問題は published/public から、本番の出題構成比（quiz/blueprint_weights）
 に沿って科目ごとに比例配分して抽選する。バンクの科目ごとの問題数をその
@@ -74,6 +75,37 @@ def months_before(date_str, months):
         except ValueError:
             continue
     raise AssertionError("unreachable")
+
+
+# CBT模試は年度ごとに1回。年度は4月1日に切り替わり（＝その日に新しい回を
+# 用意する）、受験できるのは7月1日から翌3月31日まで。4〜6月は出題を差し替える
+# 準備期間で、実際のCBTの受験時期（4年生の夏〜冬）に合わせている。
+CBT_YEAR_START = (4, 1)
+CBT_OPEN_FROM = (7, 1)
+CBT_OPEN_UNTIL = (3, 31)
+
+
+def academic_year_start(now):
+    """``now`` が属する年度の初日 0:00 JST（4月1日）。"""
+    local = now.astimezone(JST)
+    year = local.year if (local.month, local.day) >= CBT_YEAR_START else local.year - 1
+    return datetime.datetime(year, *CBT_YEAR_START, 0, 0, tzinfo=JST)
+
+
+def next_academic_year_start(now):
+    """``now`` の次の4月1日 0:00 JST。"""
+    start = academic_year_start(now)
+    return start.replace(year=start.year + 1)
+
+
+def cbt_exam_window(now):
+    """CBT模試の受験可能期間 (7月1日 0:00 〜 翌3月31日 23:59:59 JST)。"""
+    year = academic_year_start(now).year
+    opens = datetime.datetime(year, *CBT_OPEN_FROM, 0, 0, tzinfo=JST)
+    closes = datetime.datetime(
+        year + 1, *CBT_OPEN_UNTIL, 23, 59, 59, tzinfo=JST
+    )
+    return opens, closes
 
 
 # 仮設問の目印。question_text の先頭に付ける。
@@ -373,18 +405,27 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def _create_cbt_once(self, now, options):
+        # 年度（4月1日〜翌3月31日）ごとに1回ぶんだけ用意する。今年度の回が
+        # あれば作らない。4月1日を過ぎると次の年度の回が作られ、前年度の回は
+        # 期限切れになる。
+        year_start = academic_year_start(now)
+        year_end = next_academic_year_start(now)
         existing = MockExam.objects.filter(
             kind=MockExam.Kind.CBT_ONCE,
-            status__in=[MockExam.Status.SCHEDULED, MockExam.Status.OPEN],
+            start_at__gte=year_start,
+            start_at__lt=year_end,
         ).first()
         if existing:
             self.stdout.write(
-                self.style.WARNING(f"CBT模試（生涯1回）は既に #{existing.id} が受験可能です。作成をスキップします。")
+                self.style.WARNING(
+                    f"CBT模試は今年度分 #{existing.id} を作成済みのためスキップします。"
+                )
             )
             return existing
 
-        start = now - datetime.timedelta(minutes=1)
-        end = start + datetime.timedelta(days=365 * 100)  # 実質「常時受験可」
+        # 受験できるのは7月1日から翌3月31日まで。4月1日に作ったぶんは
+        # 7月1日まで「開催予定」として一覧に出る。
+        start, end = cbt_exam_window(now)
         count = options["count"] or 320  # 実際のCBTと同じ320問・6ブロック構成
         duration = options["duration"] or 360
 
@@ -418,6 +459,9 @@ class Command(BaseCommand):
             for i, question in enumerate(picked)
         )
         self.stdout.write(
-            self.style.SUCCESS(f"created MockExam #{exam.id} '{exam.title}' (cbt_once) {len(picked)}問（常時受験可）")
+            self.style.SUCCESS(
+                f"created MockExam #{exam.id} '{exam.title}' (cbt_once) {len(picked)}問"
+                f"（{end.date()} まで受験可）"
+            )
         )
         return exam

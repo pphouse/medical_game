@@ -22,6 +22,7 @@ from accounts.ranktier import (
 from config.internal_auth import require_internal_caller
 from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
 from exams.grading import apply_irt_score, copy_result_to_history, grade_single_result
+from exams.management.commands.create_scheduled_exam import academic_year_start
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot
 from exams.ranking_refresh import ensure_fresh
 from exams.ranking_utils import grade_ranked_rows
@@ -350,12 +351,16 @@ class PointsRankingView(APIView):
 
 
 def exam_status_for(exam, result, now=None):
-    """CBT模試（生涯1回）は受験者ごとに完了タイミングが違うため、この模試
-    インスタンス全体の状態ではなく個人の提出有無で見かけ上のステータスを返す。"""
+    """CBT模試は受験者ごとに完了タイミングが違うため、この模試インスタンス
+    全体の状態ではなく個人の提出有無で見かけ上のステータスを返す。
+
+    ただし受験期間（年度の終わり＝翌4月1日）そのものは効くので、期限を
+    過ぎた回は開いたままにしない。"""
     if exam.kind == MockExam.Kind.CBT_ONCE:
         if result and result.submitted_at:
             return MockExam.Status.GRADED
-        return MockExam.Status.OPEN
+        window = exam.effective_status(now)
+        return MockExam.Status.OPEN if window == MockExam.Status.OPEN else window
     return exam.effective_status(now)
 
 
@@ -436,8 +441,9 @@ class ExamListView(APIView):
 class ExamStartView(APIView):
     """POST /api/exams/{id}/start/ — MockResult 作成。二重受験不可 (spec フェーズ5)。
 
-    CBT模試（kind=cbt_once）は「いつでも受験できるが生涯1回だけ」なので、
-    この模試インスタンスに限らず kind=cbt_once の受験歴があれば拒否する。
+    CBT模試（kind=cbt_once）は「年度ごとに1回だけ」なので、この模試
+    インスタンスに限らず、同じ年度（4月1日〜翌3月31日）の cbt_once の
+    受験歴があれば拒否する。年度が替われば新しい回を受けられる。
     """
 
     def post(self, request, exam_id):
@@ -445,11 +451,15 @@ class ExamStartView(APIView):
         if not exam.is_open_for(request.user.grade):
             raise exceptions.ValidationError("この模試は現在受験できません。")
         if exam.kind == MockExam.Kind.CBT_ONCE:
+            year_start = academic_year_start(timezone.now())
             if MockResult.objects.filter(
-                user=request.user, mock_exam__kind=MockExam.Kind.CBT_ONCE
+                user=request.user,
+                mock_exam__kind=MockExam.Kind.CBT_ONCE,
+                mock_exam__start_at__gte=year_start,
             ).exists():
                 raise exceptions.ValidationError(
-                    "CBT模試はすでに受験済みです（1度だけ受験できます）。"
+                    "今年度のCBT模試はすでに受験済みです（1度だけ受験できます）。"
+                    "次の回は4月1日に始まります。"
                 )
         elif MockResult.objects.filter(user=request.user, mock_exam=exam).exists():
             raise exceptions.ValidationError("すでに受験を開始しています（二重受験不可）。")
