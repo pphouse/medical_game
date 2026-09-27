@@ -137,3 +137,25 @@ SQL で入れる。`scripts/build_question_import_sql.py` が `import_questions`
   医学的な確認をして公開するまで、学習者の演習には出ない。
 - 同梱データを直したら作り直す:
   `python scripts/build_question_import_sql.py import_cbt_basic_2026 cbt_batch_basic_2026.json`
+
+## 公開中の国試を直す（kokushi_fix_2026_09*.sql）
+
+国試PDFの字を字形で決めるようにして第114〜119回を取り込み直したところ、
+公開中の設問に化けが見つかった（`scripts/build_kokushi_fix_sql.py` の冒頭に
+内訳）。括弧が別の記号になったもの（「糖:−<」は「糖（−）」）、連問の症例文の
+続きが前の設問の選択肢に付いていたもの、以前の手直しが推測で誤っていたもの。
+
+| ファイル | 中身 |
+|---|---|
+| `kokushi_fix_2026_09.sql` | 公開中の30問の本文・選択肢・解説を直す（UPDATE） |
+| `kokushi_fix_2026_09_add_01.sql` | 取り込み直して増えた147問を入れる（INSERT、pending） |
+
+- SQL Editor に1本ずつ貼る。順番は問わない。何度流しても結果は同じ。
+- UPDATE は、本番の行が直す前の本文・選択肢のときだけ当てる（控えは
+  `scripts/kokushi_fix/2026-09.json`）。審査で手を入れた行は上書きしない。
+  最後の表で全問が「直した」か「すでに直っている」なら完了。「手で確認」が
+  出た設問は、審査画面で本文を見比べて直す。
+- INSERT は、同じ blueprint_code の国試の行がすでにあれば入れない。直した
+  30問は本番にあるので入らず、増えた147問だけが審査待ちで入る。
+- 公開の状態（status）は変えない。
+- 同梱データを直したら作り直す: `python scripts/build_kokushi_fix_sql.py`

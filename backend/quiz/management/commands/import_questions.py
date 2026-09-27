@@ -44,6 +44,35 @@ def build_explanation(item):
     return explanation, {**folded, **per_choice}
 
 
+def already_imported(fields):
+    """取り込み済みの設問か。
+
+    本文と選択肢が同じ行があれば取り込み済み。分野名を鍵に含めていたときは、
+    科目立てを直したあとに取り込み直すと、同じ設問が新しい分野名でもう1つ
+    作られ、古い分野名の行も残っていた（演習画面で同じ科目が2行に分かれる
+    原因になる）。本文だけで見ないのは、国試には「医師の職業倫理に反するのは
+    どれか。」のように本文が同じで選択肢の違う別の設問があるため。
+
+    国試は blueprint_code（回-ブロック-番号）が1問に1つなので、同じコードの
+    行があれば本文が違っても取り込み済みとみなす。本文を直した設問を取り込み
+    直すと、直す前の行と直した行が並んでしまう（直すのは SQL で行う。
+    scripts/build_kokushi_fix_sql.py）。本番に SQL で入れるとき
+    （scripts/build_question_import_sql.py）も同じ判定にしている。
+    """
+    if Question.objects.filter(
+        exam_type=fields["exam_type"],
+        question_text=fields["question_text"],
+        choices=fields["choices"],
+    ).exists():
+        return True
+    code = fields["blueprint_code"]
+    return (
+        fields["exam_type"] == Question.ExamType.KOKUSHI
+        and bool(code)
+        and Question.objects.filter(exam_type=fields["exam_type"], blueprint_code=code).exists()
+    )
+
+
 def question_fields(q):
     """取り込む1問ぶんの列の値。
 
@@ -132,17 +161,7 @@ class Command(BaseCommand):
 
         for q in payload.get("questions", []):
             fields = question_fields(q)
-            # 取り込み済みかどうかは本文と選択肢で見る。分野名を鍵に含めて
-            # いたときは、科目立てを直したあとに取り込み直すと、同じ設問が
-            # 新しい分野名でもう1つ作られ、古い分野名の行も残っていた
-            # （演習画面で同じ科目が2行に分かれる原因になる）。本文だけで
-            # 見ないのは、国試には「医師の職業倫理に反するのはどれか。」の
-            # ように本文が同じで選択肢の違う別の設問があるため。
-            if Question.objects.filter(
-                exam_type=fields["exam_type"],
-                question_text=fields["question_text"],
-                choices=fields["choices"],
-            ).exists():
+            if already_imported(fields):
                 continue
             Question.objects.create(**fields)
             created_questions += 1

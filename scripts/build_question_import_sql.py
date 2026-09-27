@@ -61,6 +61,9 @@ def insert_statement(rows):
     最後に、追加した数とすでにあった数を1つの表で返す（SQL Editor は最後の
     結果だけを表示する）。NOT EXISTS は文の開始時点の表を見るので、両者の和は
     このファイルの問題数に一致する。
+
+    取り込み済みかどうかの判定は import_questions.already_imported と同じ
+    （本文と選択肢が同じ行、国試なら同じ blueprint_code の行があれば入れない）。
     """
     columns = ", ".join(COLUMNS)
     return (
@@ -75,6 +78,10 @@ def insert_statement(rows):
         "        WHERE q.exam_type = v.exam_type\n"
         "          AND q.question_text = v.question_text\n"
         "          AND q.choices = v.choices)\n"
+        "      AND NOT (v.exam_type = 'KOKUSHI' AND v.blueprint_code <> '' AND EXISTS (\n"
+        "        SELECT 1 FROM quiz_question q\n"
+        "        WHERE q.exam_type = v.exam_type\n"
+        "          AND q.blueprint_code = v.blueprint_code))\n"
         "    RETURNING 1\n"
         ")\n"
         'SELECT (SELECT count(*) FROM added) AS "追加した問題",\n'
@@ -83,8 +90,11 @@ def insert_statement(rows):
     )
 
 
-def statements(paths, chunk_bytes=CHUNK_BYTES):
-    """バッチを読み、chunk_bytes 以下に分けた INSERT 文のリストを返す。"""
+def statements(paths, chunk_bytes=CHUNK_BYTES, only=None):
+    """バッチを読み、chunk_bytes 以下に分けた INSERT 文のリストを返す。
+
+    only に blueprint_code の集合を渡すと、その設問だけにする。
+    """
     from quiz.management.commands.import_questions import question_fields
 
     rows = []
@@ -92,7 +102,11 @@ def statements(paths, chunk_bytes=CHUNK_BYTES):
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
         if payload.get("question_sets"):
             raise SystemExit(f"{Path(path).name}: 四連問のセットは SQL での取り込みに対応していない")
-        rows.extend(value_row(question_fields(q)) for q in payload["questions"])
+        rows.extend(
+            value_row(question_fields(q))
+            for q in payload["questions"]
+            if only is None or q.get("blueprint_code") in only
+        )
 
     groups, current, size = [], [], 0
     for row in rows:

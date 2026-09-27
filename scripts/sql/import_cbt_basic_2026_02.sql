@@ -191,6 +191,10 @@ added AS (
         WHERE q.exam_type = v.exam_type
           AND q.question_text = v.question_text
           AND q.choices = v.choices)
+      AND NOT (v.exam_type = 'KOKUSHI' AND v.blueprint_code <> '' AND EXISTS (
+        SELECT 1 FROM quiz_question q
+        WHERE q.exam_type = v.exam_type
+          AND q.blueprint_code = v.blueprint_code))
     RETURNING 1
 )
 SELECT (SELECT count(*) FROM added) AS "追加した問題",
