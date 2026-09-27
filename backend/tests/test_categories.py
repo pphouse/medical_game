@@ -222,3 +222,30 @@ class TestSortKey:
         for exam, majors in MAJOR_CATEGORIES_BY_EXAM.items():
             assert majors <= set(categories_for(exam))
             assert majors, exam
+
+
+class TestDisplayOrderPriorities:
+    """一覧の並びで決めていること。
+
+    出題数の多い消化器系・内分泌代謝・腎を先頭寄りに置き、公衆衛生は最後の
+    枠（CBTは多選択肢・4連問、国試は必修問題）の直前に置く。
+    """
+
+    def order(self, exam):
+        return sorted(categories_for(exam), key=lambda c: category_sort_key(c, exam))
+
+    def test_cbt_starts_with_the_heavy_organ_subjects(self):
+        assert self.order(CBT)[:3] == ["消化器", "内分泌・代謝", "腎・泌尿器"]
+
+    def test_kokushi_starts_with_the_heavy_organ_subjects(self):
+        assert self.order(KOKUSHI)[:4] == [
+            "消化管", "肝・胆・膵", "代謝・内分泌", "腎・泌尿器",
+        ]
+
+    def test_public_health_sits_just_before_the_last_block(self):
+        cbt = self.order(CBT)
+        # CBTの公衆衛生は総論とひとまとめ。最後の枠は多選択肢・4連問。
+        assert cbt[-2:] == ["医学総論・公衆衛生・診療の基本", "多選択肢・4連問"]
+
+        kokushi = self.order(KOKUSHI)
+        assert kokushi[-2:] == ["公衆衛生", "必修問題"]
