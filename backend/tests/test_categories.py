@@ -249,3 +249,44 @@ class TestDisplayOrderPriorities:
 
         kokushi = self.order(KOKUSHI)
         assert kokushi[-2:] == ["公衆衛生", "必修問題"]
+
+
+@pytest.mark.django_db
+class TestLegacyToxicologyIsMerged:
+    """旧分野「中毒・環境異常症」は「救急・中毒・麻酔」に寄せる。
+
+    救急・中毒・麻酔科は1つの科目なので、同じ中身が2つに割れて一覧に並ぶと
+    どちらを開けばいいのか分からない。
+    """
+
+    @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
+    def test_the_legacy_name_normalizes_to_the_merged_subject(self, exam):
+        from quiz.categories import normalize
+
+        assert normalize("中毒・環境異常症", exam_type=exam) == "救急・中毒・麻酔"
+
+    def test_it_is_not_a_subject_of_its_own(self):
+        assert "中毒・環境異常症" not in categories_for(CBT)
+        assert "中毒・環境異常症" not in categories_for(KOKUSHI)
+
+    def test_existing_questions_are_moved(self):
+        """マイグレーションと同じ内容を流し直しても結果が変わらないこと。"""
+        from django.core.management import call_command
+
+        from quiz.models import Question
+
+        Question.objects.create(
+            category="中毒・環境異常症",
+            exam_type="CBT",
+            difficulty=2,
+            question_text="旧分野のままの設問",
+            choices=[{"key": k, "text": k} for k in "ABCDE"],
+            correct_choice_key="A",
+            explanation="",
+            status=Question.Status.PUBLISHED,
+        )
+
+        call_command("reclassify_categories", verbosity=0)
+
+        assert not Question.objects.filter(category="中毒・環境異常症").exists()
+        assert Question.objects.filter(category="救急・中毒・麻酔").count() == 1
