@@ -104,7 +104,9 @@ Xcode でやること:
 
 ```sh
 cd frontend
-npm run ios:assets    # assets/icon-only.svg などから各サイズを生成
+npm run ios:assets    # assets/icon-only.png から各サイズを生成
+#   PWA・ブラウザのタブぶんも含めて作り直すなら:
+#   backend/.venv/bin/python frontend/scripts/generate-icons.py
 ```
 
 Web（ホーム画面に追加）向けの `public/icons/*.png` は同じ SVG から
