@@ -83,12 +83,13 @@ DROPPED_WORD_HEAD = re.compile(r"(?<![倦])怠感|(?<![末])梢血|(?<![大下])
 # 語中に紛れ込んだ列区切り。組合せ問題の左右2列を見分けるため、字間が
 # 広い箇所に "—" を差し込んでいる（scripts/import_kokushi.py）。均等割りで
 # 広がった字間まで列の間隔と誤認され、「急性好酸球性— 肺炎」のように語の
-# 途中に入っていた。正当な列区切りは前後に空白があるので、空白を伴わない
-# "—" だけを拾う。
+# 途中に入っていた。正当な列区切りは前後に空白があるので、前か後ろに空白を
+# 伴わない "—" を拾う（後ろ側は「打 —診」「動脈血ガス分 —析」の形）。
 # コロンの直前の "—" も、区切りが二重に入ったもの（「水分 — : 30mL/kg/日」）。
-STRAY_SEPARATOR = re.compile(r"(?:(?<=[^\s])|^)—|—\s*[:：]")
+STRAY_SEPARATOR = re.compile(r"(?:(?<=[^\s])|^)—|—(?=\S)|—\s*[:：]")
 
 _SEPARATOR_IN_WORD = re.compile(r"(?<=\S)—\s*")
+_SEPARATOR_BEFORE_WORD = re.compile(r"\s+—(?=\S)")
 _SEPARATOR_AT_HEAD = re.compile(r"^—\s*")
 _SEPARATOR_BEFORE_COLON = re.compile(r"—\s*([:：])")
 
@@ -101,8 +102,10 @@ def strip_stray_separators(text, *, keep_as_separator=False):
     """
     if not text or "—" not in text:
         return text
+    replacement = " — " if keep_as_separator else ""
     fixed = _SEPARATOR_BEFORE_COLON.sub(r"\1", text)
-    fixed = _SEPARATOR_IN_WORD.sub(" — " if keep_as_separator else "", fixed)
+    fixed = _SEPARATOR_IN_WORD.sub(replacement, fixed)
+    fixed = _SEPARATOR_BEFORE_WORD.sub(replacement, fixed)
     return _SEPARATOR_AT_HEAD.sub("", fixed)
 
 # 読める字の形をした抽出の化け。どれも国試PDFから実際に取り込まれていた形で、

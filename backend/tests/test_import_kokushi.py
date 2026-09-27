@@ -176,6 +176,24 @@ class TestPageNoise:
         assert ik._clean(["表", "1", "2"]) == ["表", "1", "2"]
 
 
+class TestStraySeparators:
+    """均等割りの字間を列の境目と誤認して入った "—" を取り除く。"""
+
+    def test_separator_before_a_word_is_dropped(self, ik):
+        # 第117回E15の選択肢。後ろに空白の無い "—" もこれまでは見逃していた
+        text = "触診 → 打 —診 → 聴診"
+        assert ik.STRAY_SEPARATOR.search(text)
+        assert ik.strip_stray_separators(text) == "触診 → 打診 → 聴診"
+
+    def test_column_separator_is_kept(self, ik):
+        text = "JCSII-30 — GCS5(E3V1M1)"
+        assert not ik.STRAY_SEPARATOR.search(text)
+        assert ik.strip_stray_separators(text) == text
+
+    def test_combination_choice_gets_a_proper_separator(self, ik):
+        assert ik.strip_stray_separators("喘息 —吸入", keep_as_separator=True) == "喘息 — 吸入"
+
+
 class TestReference:
     def test_table_separators_are_ignored(self, ik):
         reference = ik._for_compare("該当項目数重篤な原因による頭痛の尤度比00.112.1")
