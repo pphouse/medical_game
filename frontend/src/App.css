@@ -1754,6 +1754,15 @@
   opacity: 0.85;
 }
 
+/* 選択肢の正誤の印。色の見分けが付きにくい環境でも分かるように添える。 */
+.choice-mark {
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 14px;
+  line-height: 1;
+  flex: none;
+}
+
 .choice-note-heading {
   margin: 12px 0 2px;
   font-size: 12.5px;
