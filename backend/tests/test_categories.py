@@ -273,8 +273,9 @@ class TestSortKey:
 class TestDisplayOrderPriorities:
     """一覧の並びで決めていること。
 
-    出題数の多い消化器系・内分泌代謝・腎を先頭寄りに置き、公衆衛生は最後の
-    枠（CBTは多選択肢・4連問、国試は必修問題）の直前に置く。
+    出題数の多い消化器系・内分泌代謝・腎を先頭寄りに置き、公衆衛生は最後に
+    置く（国試は最後の枠の必修問題の直前）。CBT の多選択肢・4連問は形式の枠で
+    科目ではないので、一覧に無い。
     """
 
     def order(self, exam):
@@ -290,8 +291,8 @@ class TestDisplayOrderPriorities:
 
     def test_public_health_sits_just_before_the_last_block(self):
         cbt = self.order(CBT)
-        # CBTの公衆衛生は総論とひとまとめ。最後の枠は多選択肢・4連問。
-        assert cbt[-2:] == ["医学総論・公衆衛生・診療の基本", "多選択肢・4連問"]
+        # CBTの公衆衛生は総論とひとまとめで、一覧の最後。
+        assert cbt[-1] == "医学総論・公衆衛生・診療の基本"
 
         kokushi = self.order(KOKUSHI)
         assert kokushi[-2:] == ["公衆衛生", "必修問題"]
