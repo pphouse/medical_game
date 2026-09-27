@@ -26,14 +26,19 @@ UNION ALL SELECT '4. 科目の統合',
             ELSE '反映済み（旧科目名は0問）' END
 
 UNION ALL SELECT '5. 統合後の科目',
-       COALESCE((SELECT count(*) FROM quiz_question
-                 WHERE category = '救急・中毒・麻酔')::text || '問', '0問')
+       'CBT 救急・中毒・麻酔 ' ||
+       (SELECT count(*) FROM quiz_question
+        WHERE exam_type = 'CBT' AND category = '救急・中毒・麻酔')::text || '問 / 国試 救急・中毒 ' ||
+       (SELECT count(*) FROM quiz_question
+        WHERE exam_type = 'KOKUSHI' AND category = '救急・中毒')::text || '問'
 
-UNION ALL SELECT '6. 感染症 / 放射線科',
-       -- 放射線科は問題数が少なく科目として成立しないので医学総論にまとめた（categories.py）。
+UNION ALL SELECT '6. 感染症 / 放射線 / 麻酔',
+       -- 放射線は両試験で、麻酔は国試で独立した科目（どれも10問以上あること）。
        (SELECT count(*) FROM quiz_question WHERE category = '感染症')::text || '問 / ' ||
-       (SELECT count(*) FROM quiz_question WHERE category = '放射線科')::text
-       || '問（放射線科は医学総論に統合したので0であること）'
+       (SELECT count(*) FROM quiz_question WHERE category = '放射線')::text || '問 / ' ||
+       (SELECT count(*) FROM quiz_question WHERE category = '麻酔')::text ||
+       '問（放射線・麻酔は10問以上であること。旧名の「放射線科」は ' ||
+       (SELECT count(*) FROM quiz_question WHERE category = '放射線科')::text || '問で0であること）'
 
 UNION ALL SELECT '7. 本文なしの設問',
        (SELECT count(*) FROM quiz_question
@@ -104,8 +109,8 @@ UNION ALL SELECT '15. 科目名でない分野（CBT / 国試）',
        -- 科目の一覧は quiz/categories.py の CBT_CATEGORIES / KOKUSHI_CATEGORIES と同じにする
        -- （tests/test_sql_scripts.py が突き合わせる）。
        (SELECT count(*) FROM quiz_question WHERE exam_type = 'CBT'
-          AND category NOT IN ('循環器', '消化器', '内分泌・代謝', '呼吸器', '腎臓', '泌尿器', '神経', '血液', '免疫・膠原病', '感染症', '腫瘍', '基礎医学', '皮膚', '運動器', '眼', '耳鼻咽喉', '精神', '小児（成長と発達）', '産婦人科', '救急・中毒・麻酔', '医学総論・公衆衛生・診療の基本'))::text
+          AND category NOT IN ('循環器', '消化器', '内分泌・代謝', '呼吸器', '腎臓', '泌尿器', '神経', '血液', '免疫・膠原病', '感染症', '腫瘍', '基礎医学', '皮膚', '運動器', '眼', '耳鼻咽喉', '精神', '小児（成長と発達）', '産婦人科', '救急・中毒・麻酔', '放射線', '医学総論・公衆衛生・診療の基本'))::text
        || '問 / '
        || (SELECT count(*) FROM quiz_question WHERE exam_type = 'KOKUSHI'
-          AND category NOT IN ('循環器', '消化管', '肝・胆・膵', '代謝・内分泌', '腎臓', '泌尿器', '呼吸器', '神経', '血液', '免疫・膠原病', '感染症', '救急・中毒・麻酔', '医学総論', '小児科', '婦人科・乳腺外科', '産科', '眼科', '耳鼻咽喉科', '整形外科', '精神科', '皮膚科', '公衆衛生'))::text
+          AND category NOT IN ('循環器', '消化管', '肝・胆・膵', '代謝・内分泌', '腎臓', '泌尿器', '呼吸器', '神経', '血液', '免疫・膠原病', '感染症', '救急・中毒', '麻酔', '医学総論', '小児科', '婦人科・乳腺外科', '産科', '眼科', '耳鼻咽喉科', '整形外科', '精神科', '皮膚科', '放射線', '公衆衛生'))::text
        || '問（どちらも0であること）';

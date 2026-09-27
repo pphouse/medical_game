@@ -94,6 +94,11 @@ def main(out=OUT):
             assert cat in CATEGORIES_BY_EXAM[exam], (item.get("id"), cat)
             if exam == KOKUSHI:
                 code = item["blueprint_code"]
+                # 編集部が書き起こした設問には出題基準のコードが無い。国試は
+                # コードで突き合わせるので、鍵が作れないものは飛ばす（本番に
+                # まだ無い設問なので、取り込み時に正しい分野が付く）。
+                if not code:
+                    continue
                 assert code not in kokushi, f"blueprint_code が重複: {code}"
                 kokushi[code] = cat
             else:

@@ -457,3 +457,146 @@ class TestSeedDemoSamples:
         for i, q in enumerate(SAMPLE_QUESTIONS, 1):
             keys = [c["key"] for c in q["choices"]]
             assert q["correct_choice_key"] in keys, f"{i}問目の正答が選択肢に無い"
+
+
+@pytest.mark.django_db
+class TestSeedEditorialQuestions:
+    """同梱のレビュー済みバッチは公開状態で入る（seed_editorial_questions）。
+
+    import_questions は生成したてのバッチを審査待ちで止めるが、本番では
+    migrate しか流れないので、同梱済みのものがそこで止まると永久に
+    出てこない。レビュー済みと決めたファイルだけを公開で入れる。
+    """
+
+    def seed(self):
+        from django.core.management import call_command
+
+        call_command("seed_editorial_questions", verbosity=0)
+
+    def test_bundled_batches_are_published(self):
+        from quiz.models import Question
+
+        self.seed()
+
+        seeded = Question.objects.filter(category__in=["放射線", "麻酔"])
+        assert seeded.count() == 25
+        assert not seeded.exclude(status=Question.Status.PUBLISHED).exists()
+
+    def test_running_it_twice_does_not_duplicate(self):
+        from quiz.models import Question
+
+        self.seed()
+        before = Question.objects.count()
+        self.seed()
+
+        assert Question.objects.count() == before
+
+    def test_it_fills_the_thin_subjects(self):
+        """放射線と麻酔は、既存の設問だけでは演習の単位にならなかった。
+
+        本番のバンクにはこれに加えて、0018 で各科から集め直した設問が
+        入る（CBT放射線2問・国試放射線7問・国試麻酔2問）。ここでは
+        同梱バッチがそれぞれ何問ぶん足すかだけを見る。
+        """
+        from quiz.models import Question
+
+        self.seed()
+
+        assert Question.objects.filter(exam_type="CBT", category="放射線").count() == 10
+        assert Question.objects.filter(exam_type="KOKUSHI", category="放射線").count() == 5
+        assert Question.objects.filter(exam_type="KOKUSHI", category="麻酔").count() == 10
+
+    def test_choice_explanations_come_along(self):
+        from quiz.models import Question
+
+        self.seed()
+
+        for question in Question.objects.filter(category__in=["放射線", "麻酔"]):
+            assert question.explanation
+            # 正解以外の4つに、なぜ誤りかが入っている。
+            assert len(question.choice_explanations) == 4
+
+
+@pytest.mark.django_db
+class TestStripStrayColumnSeparators:
+    """語の途中に紛れ込んだ列区切りを落とす（マイグレーション 0020）。
+
+    国試PDFの取り込みで、組合せ問題の列を見分けるために差し込む "—" が
+    字間の広い箇所へ誤って入り、「Bell麻痺— の症状」になっていた。
+    """
+
+    def question(self, text, choices=None):
+        from quiz.models import Question
+
+        return Question.objects.create(
+            category="医学総論",
+            exam_type="KOKUSHI",
+            difficulty=2,
+            question_text=text,
+            choices=choices or [{"key": k, "text": k} for k in "ABCDE"],
+            correct_choice_key="A",
+            explanation="",
+            status=Question.Status.PUBLISHED,
+        )
+
+    def strip(self):
+        import importlib
+
+        from django.apps import apps as django_apps
+
+        module = importlib.import_module(
+            "quiz.migrations.0020_strip_stray_column_separators"
+        )
+        module.strip_separators(django_apps, None)
+
+    def test_separators_inside_words_are_removed(self):
+        q = self.question("Bell麻痺— の症状で誤って— いるのはどれか。")
+
+        self.strip()
+
+        q.refresh_from_db()
+        assert q.question_text == "Bell麻痺の症状で誤っているのはどれか。"
+
+    def test_a_separator_glued_to_the_next_word_is_removed(self):
+        q = self.question("副腎腺腫による—Cushing症候群で認め—ないのはどれか。")
+
+        self.strip()
+
+        q.refresh_from_db()
+        assert q.question_text == "副腎腺腫によるCushing症候群で認めないのはどれか。"
+
+    def test_combination_choices_keep_the_column_separator(self):
+        q = self.question(
+            "職業性曝露と疾患の組合せとして最も適切なのはどれか。",
+            [
+                {"key": "A", "text": "石綿（アスベスト）— 悪性胸膜中皮腫"},
+                {"key": "B", "text": "有機溶剤 — 珪肺"},
+            ],
+        )
+
+        self.strip()
+
+        q.refresh_from_db()
+        assert [c["text"] for c in q.choices] == [
+            "石綿（アスベスト） — 悪性胸膜中皮腫",
+            "有機溶剤 — 珪肺",
+        ]
+
+    def test_a_doubled_separator_before_a_colon_is_dropped(self):
+        q = self.question(
+            "栄養管理として適切なのはどれか。",
+            [{"key": "A", "text": "水分 — : 30mL/kg/日"}],
+        )
+
+        self.strip()
+
+        q.refresh_from_db()
+        assert q.choices[0]["text"] == "水分 : 30mL/kg/日"
+
+    def test_a_correct_separator_is_left_alone(self):
+        q = self.question("疾患と症状の組合せはどれか。", [{"key": "A", "text": "葉酸 — 巨赤芽球性貧血"}])
+
+        self.strip()
+
+        q.refresh_from_db()
+        assert q.choices[0]["text"] == "葉酸 — 巨赤芽球性貧血"

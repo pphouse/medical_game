@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { getCategoryTheme } from "../categoryTheme";
-import ChoiceNotes from "./ChoiceNotes";
+import { playVerdict } from "../lib/sound";
 import ExplanationText from "./ExplanationText";
 
 // 5段階すべてを手動で選び直せる（○/✕ は正誤で自動設定されるが、あとから
@@ -27,6 +27,10 @@ const DIFFICULTY_LABEL = { 1: "易", 2: "標準", 3: "難" };
 
 export default function QuizScreen({
   title,
+  // 見出しの上に小さく出す種別（「分野別演習」「模試の復習」など）。
+  // タイトルに「種別: 名前」と書き込むと、どの画面も同じ見た目になって
+  // 何を解いているのかが読み取りにくい。
+  kicker,
   questions,
   onBack,
   previewMode = false,
@@ -98,6 +102,7 @@ export default function QuizScreen({
       });
       setMasteryLevel(correct ? "circle" : "cross");
       setScore((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
+      playVerdict(correct);
       return;
     }
     setSubmitting(true);
@@ -115,6 +120,7 @@ export default function QuizScreen({
         correct: s.correct + (res.correct ? 1 : 0),
         total: s.total + 1,
       }));
+      playVerdict(res.correct);
     } catch (e) {
       alert(e.message);
     } finally {
@@ -148,12 +154,29 @@ export default function QuizScreen({
       </button>
 
       <div className="quiz-topbar">
-        <span className="quiz-topbar-title">{title}</span>
+        <span className="quiz-topbar-head">
+          {kicker && <span className="quiz-topbar-kicker">{kicker}</span>}
+          <span className="quiz-topbar-title">{title}</span>
+        </span>
         {/* いま何問目かを常に出す。前回の続きから始めると途中の番号から
             始まるので、全体の中のどこにいるかが分からないと迷う。 */}
-        <span className="progress">
-          {index + 1}/{questions.length}問
+        <span className="quiz-count">
+          <span className="quiz-count-now">{index + 1}</span>
+          <span className="quiz-count-total">/{questions.length}</span>
         </span>
+      </div>
+      {/* 残りがどれくらいかは数字より帯のほうが一目で分かる。 */}
+      <div
+        className="quiz-progress-track"
+        role="progressbar"
+        aria-valuemin={1}
+        aria-valuemax={questions.length}
+        aria-valuenow={index + 1}
+      >
+        <span
+          className="quiz-progress-fill"
+          style={{ width: `${((index + 1) / questions.length) * 100}%` }}
+        />
       </div>
 
       <div className="question-card">
@@ -225,16 +248,13 @@ export default function QuizScreen({
               </p>
               <span className="badge category-badge">分野: {question.category}</span>
             </div>
-            <ExplanationText text={result.explanation} />
-            {/* 選択肢ごとの解説は解説欄の中に並べる。選択肢一覧の下に散らすと
-                本文と行き来しながら読むことになる。 */}
-            <ChoiceNotes
-              choices={question.choices}
+            {/* 選択肢ごとの解説は解説文の中に続けて出す（選択肢一覧を
+                もう一度並べて添えると、同じ選択肢を2回読むことになる）。 */}
+            <ExplanationText
+              text={result.explanation}
               notes={result.choice_explanations}
               correctKey={result.correct_choice_key}
               myKey={selectedKey}
-              heading="選択肢ごとの解説"
-              onlyWhenNoted
             />
             <p className="mastery-prompt">
               現在の評価: <strong>{MASTERY_DISPLAY[masteryLevel]}</strong>

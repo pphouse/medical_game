@@ -414,30 +414,108 @@
 .seg-unstudied { background: var(--m-unstudied); }
 
 /* Quiz */
-.quiz-topbar {
+/* 模試の見出し。こちらは残り時間を常に見せたいので、囲みのある帯のまま。 */
+.exam-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
   border-radius: 14px;
-  background: var(--t-bg, var(--accent-bg));
-  border: 1px solid var(--t-border, var(--card-border));
+  background: var(--accent-bg);
+  border: 1px solid var(--card-border);
   margin-bottom: 4px;
 }
 
-.quiz-topbar-title {
+.exam-topbar-title {
   font-size: 13px;
   font-weight: 700;
-  color: var(--t-text, var(--accent));
+  color: var(--accent);
 }
 
 .progress {
   font-size: 12px;
   font-weight: 800;
-  color: var(--t-text, var(--accent));
+  color: var(--accent);
   background: var(--card-bg);
   padding: 4px 12px;
   border-radius: 999px;
+}
+
+/* 出題中の見出し。何を解いているか（科目名）を主役にし、種別はその上に
+   小さく添える。「分野別演習: 循環器」のように1行に詰め込むと、どの画面も
+   同じ見た目になって科目名が埋もれる。 */
+.quiz-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 2px 10px;
+}
+
+.quiz-topbar-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.quiz-topbar-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  opacity: 0.55;
+}
+
+.quiz-topbar-title {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-h);
+  /* 長い模試名でも折り返さず、はみ出す分だけ省略する。 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 何問目か。いまの番号だけを大きくして、全体数は添え字の大きさにする。 */
+.quiz-count {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.quiz-count-now {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.quiz-count-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0.55;
+}
+
+/* 残りの見当が付くように、見出しの下に細い帯を敷く。 */
+.quiz-progress-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--m-unstudied);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.quiz-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.25s ease;
 }
 
 .question-card {
@@ -1176,6 +1254,16 @@
   font-weight: 800;
 }
 
+/* マイページのキャラクター（白衣のフクロウ）。枠いっぱいに詰めると
+   窮屈なので、少し余白を残して収める。 */
+.profile-avatar-character {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
 .profile-hero-text {
   display: flex;
   flex-direction: column;
@@ -1821,6 +1909,43 @@
   vertical-align: 1px;
 }
 
+/* 選択肢ごとの解説。解説文の続きとして読ませるので、選択肢一覧のような
+   囲みは付けず、記号（A〜E）だけを頭に置く。 */
+.explanation-choices {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.explanation-choices-heading {
+  font-size: 12px;
+  font-weight: 800;
+  margin: 0;
+  opacity: 0.7;
+}
+
+.explanation-choice {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+
+.explanation-choice-key {
+  flex: none;
+  min-width: 1.4em;
+  font-weight: 800;
+}
+
+.explanation-choice.correct {
+  color: var(--correct);
+}
+
+.explanation-choice.incorrect {
+  color: var(--incorrect);
+}
+
 .choice-note-row .choice-note {
   padding-left: 0;
   margin: 2px 0 0;
@@ -1834,19 +1959,13 @@
   margin: 2px 0 12px;
 }
 
+/* キャラクター（白衣のフクロウ）。背景を抜いた画像なので、下に色を
+   敷かず地の色に載せる。縦横比は画像そのままで、高さで大きさを決める。 */
 .brand-mark-icon {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
-  color: #fff;
-  font-size: 19px;
-  font-weight: 800;
-  line-height: 1;
-  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+  width: auto;
+  height: 42px;
+  object-fit: contain;
 }
 
 /* ロゴの文字。青のグラデーションで塗り、字間を広げてロゴらしく見せる。
