@@ -660,22 +660,6 @@
   color: white;
 }
 
-/* 評価のチップ（◎○△✕未演習）。形と大きさは他のチップと同じで、選んで
-   いるときの塗りの色だけ分野一覧のバーとそろえる。5色とも白抜きが読める
-   濃さにしてあるので、色ごとの文字色の出し分けは要らない。 */
-.filter-chip.mastery-chip-double_circle.active { background: var(--m-double); border-color: var(--m-double); }
-.filter-chip.mastery-chip-circle.active { background: var(--m-circle); border-color: var(--m-circle); }
-.filter-chip.mastery-chip-triangle.active { background: var(--m-triangle); border-color: var(--m-triangle); }
-.filter-chip.mastery-chip-cross.active { background: var(--m-cross); border-color: var(--m-cross); }
-.filter-chip.mastery-chip-unstudied.active { background: var(--m-unstudied-fill); border-color: var(--m-unstudied-fill); }
-
-.filter-chip[class*="mastery-chip-"].active { color: #fff; }
-
-/* 塗りの上では件数バッジの青が沈むので、半透明の白地にする。 */
-.filter-chip[class*="mastery-chip-"].active .filter-chip-count {
-  background: rgba(255, 255, 255, 0.9);
-  color: #1f2937;
-}
 
 /* Question list (per-question rows shown after subject selection) */
 .question-list {

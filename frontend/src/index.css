@@ -33,8 +33,6 @@
   --m-triangle: #ca8a04;
   --m-cross: #dc2626;
   --m-unstudied: #cbd5e1;
-  /* 未演習は帯では淡い灰、チップの塗りでは白抜きが読める濃さを使う。 */
-  --m-unstudied-fill: #64748b;
 
   /* SS/S/A は光る金・銀・銅。B/C/D はまとめて青（光らせない）。 */
   --tier-ss-bg: linear-gradient(135deg, #fff3b0 0%, #d4af37 55%, #fff3b0 100%);
@@ -81,7 +79,6 @@
     --m-triangle: #eab308;
     --m-cross: #f87171;
     --m-unstudied: #475569;
-    --m-unstudied-fill: #64748b;
   }
 }
 
