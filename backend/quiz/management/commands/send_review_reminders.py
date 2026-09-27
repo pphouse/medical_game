@@ -9,7 +9,6 @@ Push を許可していない（購読なしの）ユーザーには送らない
 バッジのみ (spec)。dead subscription (404/410) は自動削除する。
 """
 
-import json
 import zoneinfo
 
 from django.conf import settings
@@ -17,24 +16,10 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from accounts.models import NotificationPreference
+from accounts.webpush import send_web_push as default_sender
 from quiz.models import Question, ReviewReminder, ReviewSchedule
 
 DEFAULT_THRESHOLD = 5
-
-
-def default_sender(subscription, payload):
-    """pywebpush で1通送る。テストでは差し替える。"""
-    from pywebpush import webpush
-
-    webpush(
-        subscription_info={
-            "endpoint": subscription.endpoint,
-            "keys": subscription.keys,
-        },
-        data=json.dumps(payload, ensure_ascii=False),
-        vapid_private_key=settings.VAPID_PRIVATE_KEY,
-        vapid_claims={"sub": f"mailto:{settings.VAPID_ADMIN_EMAIL}"},
-    )
 
 
 class Command(BaseCommand):

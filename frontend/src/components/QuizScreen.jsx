@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import { getCategoryTheme } from "../categoryTheme";
 import { playVerdict } from "../lib/sound";
+import { syncReminders } from "../reminders";
 import ExplanationText from "./ExplanationText";
+import GoalAchieved from "./GoalAchieved";
 
 // 5段階すべてを手動で選び直せる（○/✕ は正誤で自動設定されるが、あとから
 // 上書きしてよい）。unstudied は「未演習に戻す」操作を表す。
@@ -46,6 +48,9 @@ export default function QuizScreen({
   const [startedAt, setStartedAt] = useState(performance.now());
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [submitting, setSubmitting] = useState(false);
+  // 今日の目標の進み具合（解答の応答に付いてくる）と、達成したときのお祝い。
+  const [daily, setDaily] = useState(null);
+  const [celebration, setCelebration] = useState(null);
 
   const question = questions[index];
   // Category is intentionally not revealed anywhere before the question is
@@ -116,6 +121,14 @@ export default function QuizScreen({
       });
       setResult(res);
       setMasteryLevel(res.mastery_level);
+      if (res.daily_progress) {
+        setDaily(res.daily_progress);
+        if (res.daily_progress.just_achieved) {
+          setCelebration(res.daily_progress);
+          // 今日の分の通知はもう要らないので、端末の予約を作り直す。
+          syncReminders();
+        }
+      }
       setScore((s) => ({
         correct: s.correct + (res.correct ? 1 : 0),
         total: s.total + 1,
@@ -160,9 +173,16 @@ export default function QuizScreen({
         </span>
         {/* いま何問目かを常に出す。前回の続きから始めると途中の番号から
             始まるので、全体の中のどこにいるかが分からないと迷う。 */}
-        <span className="quiz-count">
-          <span className="quiz-count-now">{index + 1}</span>
-          <span className="quiz-count-total">/{questions.length}</span>
+        <span className="quiz-topbar-right">
+          {daily?.goal != null && (
+            <span className={`quiz-daily${daily.achieved ? " done" : ""}`} aria-label="今日の目標">
+              今日 {daily.count}/{daily.goal}
+            </span>
+          )}
+          <span className="quiz-count">
+            <span className="quiz-count-now">{index + 1}</span>
+            <span className="quiz-count-total">/{questions.length}</span>
+          </span>
         </span>
       </div>
       {/* 残りがどれくらいかは数字より帯のほうが一目で分かる。 */}
@@ -178,6 +198,10 @@ export default function QuizScreen({
           style={{ width: `${((index + 1) / questions.length) * 100}%` }}
         />
       </div>
+
+      {celebration && (
+        <GoalAchieved progress={celebration} onClose={() => setCelebration(null)} />
+      )}
 
       <div className="question-card">
         <div className="badges">

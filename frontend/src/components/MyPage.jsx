@@ -5,6 +5,7 @@ import { api } from "../api";
 import { useProfile } from "../context/ProfileContext";
 import { STUDENT_VERIFICATION_ENABLED } from "../features";
 import { supabase } from "../lib/supabase";
+import HabitSettings from "./HabitSettings";
 import TierBadge from "./TierBadge";
 
 const ICONS = {
@@ -55,6 +56,12 @@ const ICONS = {
     <svg viewBox="0 0 24 24" fill="none">
       <rect x="3.5" y="6" width="17" height="12" rx="2" stroke="currentColor" strokeWidth="1.8" />
       <path d="M3.5 10h17" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  ),
+  bell: (
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 1.5H5l1.5-1.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M10 20.5a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   ),
 };
@@ -385,6 +392,11 @@ export default function MyPage() {
           </p>
           {preferenceError && <p className="error">{preferenceError}</p>}
         </div>
+      </div>
+
+      <div className="mypage-section">
+        <SectionHeading icon="bell" title="目標とリマインド" />
+        <HabitSettings />
       </div>
 
       <div className="mypage-section">

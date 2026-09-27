@@ -20,6 +20,7 @@ from django.urls import include, path
 from accounts.views import InternalAdvanceGradesView
 from config.health import HealthView
 from exams.views import InternalAggregateView, InternalCreateExamsView
+from habits.views import InternalSendRemindersView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,7 +33,10 @@ urlpatterns = [
     path('api/battle/', include('battle.urls')),
     path('api/exams/', include('exams.urls')),
     path('api/ranking/', include('exams.urls_ranking')),
+    # 1日の目標・連続記録・学習リマインド
+    path('api/habits/', include('habits.urls')),
     path('api/internal/aggregate/', InternalAggregateView.as_view(), name='internal-aggregate'),
     path('api/internal/create-exams/', InternalCreateExamsView.as_view(), name='internal-create-exams'),
     path('api/internal/advance-grades/', InternalAdvanceGradesView.as_view(), name='internal-advance-grades'),
+    path('api/internal/send-reminders/', InternalSendRemindersView.as_view(), name='internal-send-reminders'),
 ]

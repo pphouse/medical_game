@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import BrandMark from "../components/BrandMark";
+import DailyGoalCard from "../components/DailyGoalCard";
 import ProgressBar from "../components/ProgressBar";
 import ProgressDonut from "../components/ProgressDonut";
 import { useProfile } from "../context/ProfileContext";
+import { useHabit } from "../hooks/useHabit";
 import { STUDENT_VERIFICATION_ENABLED } from "../features";
 
 /** 試験種別のタブ。CBT と国試は分野の切り方が違ううえ問題数も桁が近いので、
@@ -42,6 +44,8 @@ export default function Solo() {
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
   const [allCounts, setAllCounts] = useState(null); // 円グラフ用：学年フィルタなしの全体集計
+  // 取れないとき（サーバ側の準備前など）は目標カードごと出さない。
+  const { habit, setHabit, unavailable: habitUnavailable } = useHabit();
 
   useEffect(() => {
     api.summary().then(setSummary).catch(() => {});
@@ -83,6 +87,8 @@ export default function Solo() {
   return (
     <div className="screen">
       <BrandMark />
+
+      {!habitUnavailable && <DailyGoalCard habit={habit} onChange={setHabit} />}
 
       {summary && (
         <div className="summary-card">

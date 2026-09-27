@@ -3,10 +3,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 // api.js は起動時に一度だけ宛先を決めるので、宛先ごとにモジュールを読み直す。
 vi.mock("../lib/supabase", () => ({ supabase: null, isSupabaseConfigured: false }));
 
-async function loadApi({ isNative, baseUrl }) {
+async function loadApi({ isNative, baseUrl, isLiveReload = false }) {
   vi.resetModules();
   vi.doMock("../native", () => ({
     isNative,
+    isLiveReload,
     platform: isNative ? "ios" : "web",
     nativeStorage: {},
     authRedirectUrl: () => "https://example.test",
@@ -46,6 +47,18 @@ describe("API の宛先", () => {
     // capacitor://localhost/api を叩きに行くと「なぜか通信できない」で終わる。
     await expect(api.me()).rejects.toThrow(/VITE_API_BASE_URL/);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("iOS アプリのライブリロード中は、開発サーバのプロキシ（相対パス）を使う", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response("{}", { status: 200, headers: { "Content-Type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { api } = await loadApi({ isNative: true, isLiveReload: true, baseUrl: "" });
+    await api.me();
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/auth/me/");
   });
 
   it("iOS アプリでは設定された絶対 URL を使う", async () => {
