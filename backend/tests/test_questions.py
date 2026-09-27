@@ -306,7 +306,7 @@ class TestBundledBasicScienceBatch:
     def test_single_basic_science_questions_only(self):
         _, batch = self._batch()
         questions = batch["questions"]
-        assert len(questions) >= 380
+        assert len(questions) >= 500
         assert not batch.get("question_sets")  # 四連問は作らない
         assert {q["question_type"] for q in questions} == {"M"}
         assert {q["category"] for q in questions} == {"基礎医学"}
