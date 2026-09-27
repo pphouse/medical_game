@@ -109,6 +109,26 @@ describe("模試の結果画面", () => {
     expect(screen.getAllByText("あなたの解答")).toHaveLength(2);
   });
 
+  it("間違えた選択肢に❌、正解に⭕️を出す", async () => {
+    api.examResult.mockResolvedValue({
+      status: "submitted",
+      title: "月次実力テスト（CBT）",
+      score: 1,
+      max_score: 2,
+      review: REVIEW,
+      ranking_available_at: "2026-10-01T00:00:00+09:00",
+    });
+
+    renderResult();
+    await screen.findByText("見直し");
+
+    // REVIEW: 1問目は正解(A)、2問目は正解Bに対してAを選んで外した
+    expect(screen.getAllByLabelText("正解")).toHaveLength(2);
+    const wrong = screen.getAllByLabelText("あなたの誤答");
+    expect(wrong).toHaveLength(1);
+    expect(wrong[0].textContent).toBe("❌");
+  });
+
   it("選択肢ごとの解説は解説文のあとにまとめる", async () => {
     const withNotes = {
       ...REVIEW[1],

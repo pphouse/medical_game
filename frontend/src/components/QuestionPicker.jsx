@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../api";
-import { getCategoryTheme } from "../categoryTheme";
 import { shuffled } from "../shuffle";
 
 // 理解できている側から並べる（◎→未演習）。復習デッキの評価フィルタや
@@ -160,7 +159,6 @@ export default function QuestionPicker() {
   const pickerUrl = `/solo/${encodeURIComponent(category)}${
     examType ? `?exam_type=${encodeURIComponent(examType)}` : ""
   }`;
-  const theme = getCategoryTheme(category);
   const [questions, setQuestions] = useState(null);
   // この分野での自分の正答率（分野一覧と同じ数字を出したいので同じAPIから取る）。
   const [categoryRate, setCategoryRate] = useState(null);
@@ -222,14 +220,13 @@ export default function QuestionPicker() {
       <button className="back-link" onClick={() => navigate(soloUrl)}>
         ← 分野一覧に戻る
       </button>
-      {/* 分野ごとの配色（categoryTheme）で見出しを塗る。演習中の結果画面や
-          分野一覧と同じ色なので、どの分野にいるか一目で分かる。 */}
-      <div className={`picker-heading theme-${theme.key}`}>
-        <span className="picker-heading-letter">{theme.letter}</span>
+      {/* 見出しはどの分野でも青で統一する（分野ごとに色が変わると、画面が
+          切り替わったのか分野が違うのかが読み取りにくい）。 */}
+      <div className="picker-heading">
         <span className="picker-heading-text">
           <span className="picker-heading-category">{category}</span>
           <span className="picker-heading-sub">
-            どの問題を解くか選ぶ ・ あなたの正答率{" "}
+            どの問題を解くか選ぶ ・ 正答率{" "}
             {categoryRate == null ? "－" : `${categoryRate}%`}
           </span>
         </span>

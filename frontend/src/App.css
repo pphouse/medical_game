@@ -1754,6 +1754,15 @@
   opacity: 0.85;
 }
 
+/* 選択肢の正誤の印。色の見分けが付きにくい環境でも分かるように添える。 */
+.choice-mark {
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 14px;
+  line-height: 1;
+  flex: none;
+}
+
 .choice-note-heading {
   margin: 12px 0 2px;
   font-size: 12.5px;
@@ -1842,9 +1851,13 @@
 /* ロゴの文字。青のグラデーションで塗り、字間を広げてロゴらしく見せる。
    背景クリップが効かない環境では下の color がそのまま出る。 */
 .brand-mark-name {
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
+  font-size: 27px;
+  /* 900 まで上げ、さらに同色の細い縁取りを重ねて太く見せる（日本語の
+     ウェイトは端末のフォント次第で 800 と 900 が同じになることがある）。 */
+  font-weight: 900;
+  -webkit-text-stroke: 0.6px currentColor;
+  paint-order: stroke fill;
+  letter-spacing: 0.12em;
   line-height: 1.1;
   color: #1d4ed8;
   background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 55%, #22c55e 100%);
@@ -1864,30 +1877,16 @@
   }
 }
 
-/* 問題一覧の見出し。分野ごとの配色（theme-*）で塗る。 */
+/* 問題一覧の見出し。分野によらず青で統一する。 */
 .picker-heading {
   display: flex;
   align-items: center;
-  gap: 12px;
   margin: 4px 0 14px;
   padding: 12px 14px;
-  border: 1px solid var(--t-border);
-  border-left: 5px solid var(--t-text);
+  border: 1px solid var(--card-border);
+  border-left: 5px solid var(--accent);
   border-radius: 14px;
-  background: var(--t-bg);
-}
-
-.picker-heading-letter {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--t-icon);
-  color: var(--t-text);
-  font-size: 20px;
-  font-weight: 800;
+  background: var(--accent-bg);
 }
 
 .picker-heading-text {
@@ -1897,15 +1896,15 @@
 }
 
 .picker-heading-category {
-  color: var(--t-text);
+  color: var(--accent);
   font-size: 19px;
   font-weight: 800;
   letter-spacing: 0.02em;
 }
 
 .picker-heading-sub {
-  color: var(--t-text);
-  opacity: 0.75;
+  color: var(--accent);
+  opacity: 0.8;
   font-size: 12px;
   font-weight: 600;
 }
