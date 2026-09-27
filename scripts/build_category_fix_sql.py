@@ -27,7 +27,8 @@
 どれにも当たらなかった行は最後の表に出る（0行なら完了）。
 
 使い方:
-    python scripts/build_category_fix_sql.py
+    python scripts/build_category_fix_sql.py            # scripts/sql/fix_categories.sql に書く
+    python scripts/build_category_fix_sql.py out.sql    # 出力先を変える
 """
 
 import glob
@@ -83,7 +84,7 @@ def load_seed_samples():
     return ns["SAMPLE_QUESTIONS"]
 
 
-def main():
+def main(out=OUT):
     kokushi, cbt_fp, cbt_text = {}, {}, {}
     for path in sorted(glob.glob(DATA_GLOB)):
         if ".report." in path:
@@ -280,10 +281,11 @@ ORDER BY k, 試験, r, 分野;
 
 COMMIT;
 """
-    open(OUT, "w", encoding="utf-8").write(sql)
-    print(f"{OUT}: 国試 {len(kokushi)} / CBT 指紋 {len(cbt_fp)} / CBT 本文 {len(cbt_text)} / 見本 {len(seeds)}"
+    open(out, "w", encoding="utf-8").write(sql)
+    print(f"{out}: 国試 {len(kokushi)} / CBT 指紋 {len(cbt_fp)} / CBT 本文 {len(cbt_text)} / 見本 {len(seeds)}"
           f" / {len(sql.encode()) // 1024} KB")
 
 
 if __name__ == "__main__":
-    main()
+    # 出力先を渡すと、そこに書く（テストが同梱の SQL と突き合わせる）。
+    main(*sys.argv[1:2])
