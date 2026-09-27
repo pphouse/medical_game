@@ -238,7 +238,9 @@ export default function QuestionPicker() {
           return (
             <button
               key={f.key}
-              className={`filter-chip${active ? " active" : ""}`}
+              // 評価のチップは分野一覧のバーと同じ色にする（◎緑・○薄緑・
+              // △黄・✕赤）。同じ記号が画面によって違う色だと結び付かない。
+              className={`filter-chip mastery-chip-${f.key}${active ? " active" : ""}`}
               onClick={() => toggleFilter(f.key)}
             >
               {f.label}

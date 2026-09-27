@@ -30,7 +30,7 @@
      濃淡で差をつける（同じ緑系でも一目で区別できるように）。 */
   --m-double: #15803d;
   --m-circle: #84cc16;
-  --m-triangle: #f97316;
+  --m-triangle: #eab308;
   --m-cross: #ef4444;
   --m-unstudied: #cbd5e1;
 
@@ -76,7 +76,7 @@
     /* 暗い背景では濃い緑が沈むので、明度を上げて濃淡の差だけ残す。 */
     --m-double: #22c55e;
     --m-circle: #a3e635;
-    --m-triangle: #f97316;
+    --m-triangle: #facc15;
     --m-cross: #ef4444;
     --m-unstudied: #475569;
   }
