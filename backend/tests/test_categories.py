@@ -299,3 +299,59 @@ class TestLegacyToxicologyIsMerged:
 
         assert not Question.objects.filter(category="中毒・環境異常症").exists()
         assert Question.objects.filter(category="救急・中毒・麻酔").count() == 1
+
+
+@pytest.mark.django_db
+class TestRadiologySubjectQuestions:
+    """放射線そのものを主題にした設問は「放射線科」に入れる。
+
+    症例の中で画像検査や放射線治療が手段として出てくるだけの問題は、
+    各論の科目に残す（肺癌の治療方針は呼吸器、など）。
+    """
+
+    def question(self, category, text):
+        from quiz.models import Question
+
+        return Question.objects.create(
+            category=category,
+            exam_type="KOKUSHI",
+            difficulty=2,
+            question_text=text,
+            choices=[{"key": k, "text": k} for k in "ABCDE"],
+            correct_choice_key="A",
+            explanation="",
+            status=Question.Status.PUBLISHED,
+        )
+
+    def run_migration_logic(self):
+        """マイグレーション 0014 と同じ条件で振り分ける。"""
+        import importlib
+
+        from django.apps import apps as django_apps
+
+        module = importlib.import_module(
+            "quiz.migrations.0014_reclassify_radiology_questions"
+        )
+        module.move_to_radiology(django_apps, None)
+
+    def test_radiation_subject_questions_move(self):
+        from quiz.models import Question
+
+        self.question("産科", "100mGy以上の放射線被曝が原因で胎児奇形が起こる時期はどれか。")
+        self.question("神経", "転移性脳腫瘍の治療で、定位放射線照射が適切なのはどれか。")
+
+        self.run_migration_logic()
+
+        assert Question.objects.filter(category="放射線科").count() == 2
+
+    def test_clinical_cases_that_merely_use_imaging_stay_put(self):
+        from quiz.models import Question
+
+        self.question("呼吸器", "72歳の男性。臨床病期IA期の原発性肺腺癌と診断された。放射線治療を含む方針を検討する。")
+        self.question("消化管", "87歳の男性。造影剤を用いた上部消化管造影で狭窄を認めた。")
+
+        self.run_migration_logic()
+
+        assert not Question.objects.filter(category="放射線科").exists()
+        assert Question.objects.filter(category="呼吸器").count() == 1
+        assert Question.objects.filter(category="消化管").count() == 1
