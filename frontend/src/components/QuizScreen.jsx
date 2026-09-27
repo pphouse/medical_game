@@ -149,8 +149,10 @@ export default function QuizScreen({
 
       <div className="quiz-topbar">
         <span className="quiz-topbar-title">{title}</span>
+        {/* いま何問目かを常に出す。前回の続きから始めると途中の番号から
+            始まるので、全体の中のどこにいるかが分からないと迷う。 */}
         <span className="progress">
-          {index + 1} / {questions.length}
+          {index + 1}/{questions.length}問
         </span>
       </div>
 

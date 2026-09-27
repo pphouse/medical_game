@@ -28,8 +28,8 @@
 
   /* 5段階の評価色。理解できている側を緑にそろえ、◎は濃い緑・○は黄緑と
      濃淡で差をつける（同じ緑系でも一目で区別できるように）。 */
-  --m-double: #16a34a;
-  --m-circle: #a3e635;
+  --m-double: #169244;
+  --m-circle: #93d925;
   --m-triangle: #facc15;
   --m-cross: #ef4444;
   --m-unstudied: #cbd5e1;
@@ -74,8 +74,8 @@
     --incorrect-border: #9f3436;
 
     /* 暗い背景では濃い緑が沈むので、明度を上げて濃淡の差だけ残す。 */
-    --m-double: #4ade80;
-    --m-circle: #bef264;
+    --m-double: #36d16f;
+    --m-circle: #b0ec4c;
     --m-triangle: #fde047;
     --m-cross: #f87171;
     --m-unstudied: #475569;

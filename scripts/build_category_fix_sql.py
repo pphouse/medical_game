@@ -6,9 +6,12 @@
 「麻酔」と「救急・中毒・麻酔」、「中毒・環境異常症」と「救急・中毒・麻酔」）。
 科目立てを作り直す前の分野名が、本番の行にそのまま残っていたのが原因。
 
-**正規名でない行だけ**を直す。正規名の行には触らないので、管理画面で
-意図して付け直した分野は変わらない。移し先は同梱データ（CI で検査済み）の
-科目で、設問は次の鍵で突き合わせる:
+公式の設問は同梱データ（1問ずつ確かめ、CI で検査している）の科目に
+そろえる。マイグレーション 0014〜0017 は設問文の語で分野を決め直すため、
+同梱データと食い違う設問が出る（例: 選択肢の語に引かれて糸球体腎炎が
+泌尿器になる）。0018 と同じ内容なので、どちらを先に当てても結果は同じ。
+同梱データに無い設問（見本・投稿）は、科目名でないときだけ直す。
+設問は次の鍵で突き合わせる:
 
 * 国試 … blueprint_code（"114-A-1"。設問ごとに一意）
 * CBT  … 選択肢の並びの md5（CBT の中で一意）。取り込み後に選択肢を
@@ -146,11 +149,15 @@ def main():
 -- いると同じ科目が2行に分かれて出る。国試で「放射線」と「放射線科」、CBT で
 -- 「麻酔」と「救急・中毒・麻酔」が並んでいたのはこれ。あわせて、CBT の
 -- 「多選択肢・4連問」（4連問ではない小児の症例問題38問が入っていた）を
--- 科目から外し、各科へ振り分ける。
+-- 科目から外して各科へ振り分け、四連問のセットも単問にほどく。
 --
--- **正規名でない行だけ**を直す。正規名の行には触らない。
--- 移し先は同梱データの科目。最後に1つの表を出す（SQL Editor は最後の
--- SELECT しか表示しないため）。その表をそのまま貼ってほしい。
+-- 公式の設問は、同梱データ（1問ずつ確かめた分野）にそろえる。マイグレー
+-- ション 0014〜0017 は設問文の語で分野を決め直すので、同梱データと食い違う
+-- 設問が出る。0018 と同じ内容なので、migrate とどちらを先に当てても結果は
+-- 同じ。同梱データに無い設問（見本・投稿）は、科目名でないときだけ直す。
+--
+-- 最後に1つの表を出す（SQL Editor は最後の SELECT しか表示しないため）。
+-- その表をそのまま貼ってほしい。
 
 BEGIN;
 
@@ -174,42 +181,53 @@ WHERE q.question_set_id = s.id;
 
 -- 直す前の分野名を控えておく（最後の表で「何を何へ移したか」を出すため）。
 CREATE TEMP TABLE _before ON COMMIT DROP AS
-SELECT id, exam_type, category FROM quiz_question
-WHERE (exam_type = 'KOKUSHI' AND category NOT IN ({canon(KOKUSHI)}))
-   OR (exam_type = 'CBT' AND category NOT IN ({canon(CBT)}));
+SELECT id, exam_type, category FROM quiz_question;
+
+-- 同梱データの分野（突き合わせ用）。
+CREATE TEMP TABLE _kokushi (blueprint_code text PRIMARY KEY, category text) ON COMMIT DROP;
+INSERT INTO _kokushi VALUES
+{values(sorted(kokushi.items()))};
+
+CREATE TEMP TABLE _cbt_choices (h text PRIMARY KEY, category text) ON COMMIT DROP;
+INSERT INTO _cbt_choices VALUES
+{values(sorted(cbt_fp.items()))};
+
+CREATE TEMP TABLE _cbt_text (h text PRIMARY KEY, category text) ON COMMIT DROP;
+INSERT INTO _cbt_text VALUES
+{values(sorted(cbt_text.items()))};
 
 -- (1) 国試: blueprint_code で突き合わせる。
 UPDATE quiz_question AS q SET category = v.category
-FROM (VALUES
-{values(sorted(kokushi.items()))}
-) AS v(blueprint_code, category)
+FROM _kokushi AS v
 WHERE q.exam_type = 'KOKUSHI' AND q.blueprint_code = v.blueprint_code
-  AND q.id IN (SELECT id FROM _before);
+  AND q.category IS DISTINCT FROM v.category;
 
 -- (2a) CBT: 選択肢の並びの md5 で突き合わせる。
-UPDATE quiz_question AS q SET category = v.category
-FROM (VALUES
-{values(sorted(cbt_fp.items()))}
-) AS v(h, category)
-WHERE q.exam_type = 'CBT' AND q.id IN (SELECT id FROM _before)
-  AND {choice_fp_sql} = v.h;
+CREATE TEMP TABLE _cbt_fp ON COMMIT DROP AS
+SELECT q.id, {choice_fp_sql} AS h
+FROM quiz_question AS q WHERE q.exam_type = 'CBT';
 
--- (2b) CBT: 取り込み後に選択肢を直した行のために、本文の md5 でも引く。
 UPDATE quiz_question AS q SET category = v.category
-FROM (VALUES
-{values(sorted(cbt_text.items()))}
-) AS v(h, category)
-WHERE q.exam_type = 'CBT' AND q.id IN (SELECT id FROM _before)
-  AND q.category NOT IN ({canon(CBT)})
-  AND md5(q.question_text) = v.h;
+FROM _cbt_fp AS f JOIN _cbt_choices AS v ON v.h = f.h
+WHERE q.id = f.id AND q.category IS DISTINCT FROM v.category;
 
--- (3) seed_demo の見本（本文の md5）。
+-- (2b) CBT: 取り込み後に選択肢を直した行のために、選択肢で当たらなかった
+-- ものは本文の md5 で引く。
+UPDATE quiz_question AS q SET category = v.category
+FROM _cbt_fp AS f, _cbt_text AS v
+WHERE q.id = f.id
+  AND NOT EXISTS (SELECT 1 FROM _cbt_choices AS c WHERE c.h = f.h)
+  AND md5(q.question_text) = v.h
+  AND q.category IS DISTINCT FROM v.category;
+
+-- (3) seed_demo の見本（本文の md5）。科目名でないときだけ直す。
 UPDATE quiz_question AS q SET category = v.category
 FROM (VALUES
 {values(seeds)}
 ) AS v(exam_type, h, category)
-WHERE q.exam_type = v.exam_type AND q.id IN (SELECT id FROM _before)
-  AND md5(q.question_text) = v.h;
+WHERE q.exam_type = v.exam_type AND md5(q.question_text) = v.h
+  AND ((q.exam_type = 'KOKUSHI' AND q.category NOT IN ({canon(KOKUSHI)}))
+    OR (q.exam_type = 'CBT' AND q.category NOT IN ({canon(CBT)})));
 
 -- 結果。4つの区分を1つの表にまとめる。
 --   0.単問にした  … 四連問からほどいた設問の数
