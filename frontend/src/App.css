@@ -1176,6 +1176,16 @@
   font-weight: 800;
 }
 
+/* マイページのキャラクター（白衣のフクロウ）。枠いっぱいに詰めると
+   窮屈なので、少し余白を残して収める。 */
+.profile-avatar-character {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
 .profile-hero-text {
   display: flex;
   flex-direction: column;
@@ -1834,19 +1844,13 @@
   margin: 2px 0 12px;
 }
 
+/* キャラクター（白衣のフクロウ）。背景を抜いた画像なので、下に色を
+   敷かず地の色に載せる。縦横比は画像そのままで、高さで大きさを決める。 */
 .brand-mark-icon {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
-  color: #fff;
-  font-size: 19px;
-  font-weight: 800;
-  line-height: 1;
-  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+  width: auto;
+  height: 42px;
+  object-fit: contain;
 }
 
 /* ロゴの文字。青のグラデーションで塗り、字間を広げてロゴらしく見せる。
