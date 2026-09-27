@@ -26,6 +26,14 @@ MODULES = [
     "cbt_basic_questions.c1_metabolism",
     "cbt_basic_questions.c1_molecular_biology",
     "cbt_basic_questions.c1_cell_genetics",
+    "cbt_basic_questions.c2_histology_development",
+    "cbt_basic_questions.c2_nervous",
+    "cbt_basic_questions.c2_cardiovascular",
+    "cbt_basic_questions.c2_respiratory",
+    "cbt_basic_questions.c2_digestive",
+    "cbt_basic_questions.c2_renal",
+    "cbt_basic_questions.c2_endocrine_reproductive",
+    "cbt_basic_questions.c2_blood_body",
 ]
 
 OUT = os.path.join(ROOT, "backend/quiz/management/commands/data/cbt_batch_basic_2026.json")
