@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api";
-import ChoiceNotes from "../../components/ChoiceNotes";
 import ExplanationText from "../../components/ExplanationText";
 import TierBadge from "../../components/TierBadge";
 
@@ -103,16 +102,13 @@ function ReviewRow({ row, open, onToggle }) {
             })}
           </ul>
           {!row.answered && <p className="battle-review-skipped">時間内に解答できませんでした。</p>}
-          <ExplanationText text={row.explanation} />
-          {/* 選択肢ごとの解説は解説のあとにまとめる（選択肢一覧の中に混ぜると
-              本文と行き来しながら読むことになる）。 */}
-          <ChoiceNotes
-            choices={row.choices}
+          {/* 選択肢ごとの解説は解説文の中に続けて出す（選択肢一覧を
+              もう一度並べて添えると、同じ選択肢を2回読むことになる）。 */}
+          <ExplanationText
+            text={row.explanation}
             notes={row.choice_explanations}
             correctKey={row.correct_choice_key}
             myKey={row.selected_choice_key}
-            heading="選択肢ごとの解説"
-            onlyWhenNoted
           />
         </div>
       )}

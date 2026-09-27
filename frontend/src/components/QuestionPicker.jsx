@@ -260,11 +260,18 @@ export default function QuestionPicker() {
           disabled={filtered.length === 0}
           onClick={() =>
             navigate("/quiz", {
-              state: { title: `分野別演習: ${category}`, questions: filtered, backTo: pickerUrl },
+              state: {
+                kicker: "分野別演習",
+                title: category,
+                questions: filtered,
+                backTo: pickerUrl,
+                // まだ解いていない最初の問題から始める。
+                startIndex: resumeIndex,
+              },
             })
           }
         >
-          演習を始める ▶
+          前回の続きから始める ▶
         </button>
         <button
           className="cta-button cta-button-secondary"
@@ -272,7 +279,8 @@ export default function QuestionPicker() {
           onClick={() =>
             navigate("/quiz", {
               state: {
-                title: `分野別演習: ${category}`,
+                kicker: "分野別演習",
+                title: category,
                 questions: shuffled(filtered),
                 backTo: pickerUrl,
               },
@@ -300,7 +308,8 @@ export default function QuestionPicker() {
               onClick={() =>
                 navigate("/quiz", {
                   state: {
-                    title: `分野別演習: ${category}`,
+                    kicker: "分野別演習",
+                    title: category,
                     questions: filtered,
                     backTo: pickerUrl,
                     startIndex: i,

@@ -17,7 +17,6 @@ from accounts.ranktier import (
     compute_tier,
     progress_for_points,
     rank_state,
-    tier_for_top_fraction,
 )
 from config.internal_auth import require_internal_caller
 from exams.constants import (
@@ -265,8 +264,8 @@ class PointsRankingView(APIView):
     いる範囲も対戦相手の層も違うので、並べても比べにくい。scope=university は
     さらに「同じ大学の同学年」に絞る。
 
-    ランク階層（SS〜D）は順位と違って常に全国母集団での位置。ランクは学年を
-    またいだ通算の実力を表すもので、学年ごとに基準が変わると意味が薄れる。
+    ランク階層（SS〜D）は順位と違って累計ポイントだけで決まる。学年や母集団に
+    よらず同じ基準なので、「あなたのランク」と一覧の各行のバッジは必ず一致する。
 
     対象は ranked_matches>=1 のユーザーのみ（一度もランク付き対戦・模試を
     していないユーザーは母集団にも含めない）。AI対戦相手のプロフィールは除外。
@@ -282,17 +281,8 @@ class PointsRankingView(APIView):
         if scope not in ("national", "university"):
             raise exceptions.ValidationError("scope が不正です")
 
-        # ランク階層の基準は全学年・全国の母集団（下の tier_of で使う）。
+        # ランク対象は一度でもランク付き対戦・模試をしたユーザー。
         national_qs = Profile.objects.filter(is_ai=False, ranked_matches__gte=1)
-        national_total = national_qs.count()
-
-        def tier_of(p):
-            strictly_better = national_qs.filter(points__gt=p.points).count()
-            return (
-                tier_for_top_fraction(strictly_better / national_total)
-                if national_total
-                else None
-            )
 
         def unavailable(reason):
             return Response(
@@ -328,7 +318,10 @@ class PointsRankingView(APIView):
                 "display_name": p.display_name or DISPLAY_NAME_FALLBACK,
                 "university": p.university.name if p.university else None,
                 "points": p.points,
-                "tier": tier_of(p),
+                # ランクは累計ポイントで決まる（母集団の中での順位ではない）。
+                # 「あなたのランク」と同じ求め方にしないと、自分の行のバッジと
+                # 食い違う。
+                "tier": compute_tier(p),
                 "progress": progress_for_points(p.points),
                 "is_me": p.id == request.user.id,
             }

@@ -10,9 +10,6 @@ import { shuffled } from "../shuffle";
 const TABS = [
   { key: "CBT", label: "CBT", examType: "CBT" },
   { key: "KOKUSHI", label: "医師国家試験", examType: "KOKUSHI" },
-  // 試験種別をまたいで解きたいとき用。CBTと国試で分野の切り方は違うが、
-  // ここは分野を自分で選ぶ画面なので混ざっても探せなくならない。
-  { key: "all", label: "すべて", examType: "" },
   { key: "mock", label: "模試復習", source: "mock" },
   { key: "battle", label: "対戦復習", source: "battle" },
 ];
@@ -60,12 +57,15 @@ function toggle(set, key) {
  * （CBT / 国試 / すべて のタブはタブ自体が試験種別なので）。空文字は
  * 「絞り込まない＝すべて」で、未指定の null とは別物。`source` を渡すと、その
  * 文脈（模試・対戦）で自分が解いたことのある問題だけが対象になる。
- * `mockExam` を渡すと、その1回の模試で出題された問題だけが対象になる。 */
+ * `mockExam` を渡すと、その1回の模試で出題された問題だけが対象になる。
+ * `sourceUsed` は「その文脈を一度でも経験しているか」。受験済みなのに
+ * 「まだ模試で解いた問題がありません」と出さないための判断に使う。 */
 function FilteredPractice({
   onStartSession,
   fixedExamType = null,
   source = null,
   mockExam = null,
+  sourceUsed = false,
 }) {
   const { profile } = useProfile();
   // null は「まだ手動で選んでいない」＝マイページの設定（未選択なら学年から
@@ -109,6 +109,11 @@ function FilteredPractice({
 
   const categories = result.available_categories ?? [];
   const count = result.count ?? 0;
+  // 出題画面の見出し。どのタブから始めたのかが分かるようにする。
+  const deckTitle =
+    { mock: "模試の復習", battle: "対戦の復習" }[source] ??
+    { CBT: "CBT", KOKUSHI: "医師国家試験" }[examType] ??
+    "すべての科目";
   // 「前回の続き」＝まだ解いていない最初の問題。全部解き終わっていれば
   // 先頭から（findIndex が -1 を返すので 0 に丸める）。
   const resumeIndex = Math.max(
@@ -118,7 +123,15 @@ function FilteredPractice({
 
   // 模試・対戦の復習は、まだ一度も解いていないと対象が空になる。絞り込みの
   // 結果ゼロなのか、そもそも履歴が無いのかを取り違えないよう文言を分ける。
-  if (source && !mockExam && categories.length === 0 && selectedCategories.size === 0) {
+  // 受験済みなら「まだ解いた問題がありません」は誤りなので出さない
+  // （仮問題だけの回など、対象が0問になることはある）。
+  if (
+    source
+    && !mockExam
+    && !sourceUsed
+    && categories.length === 0
+    && selectedCategories.size === 0
+  ) {
     return <p>{EMPTY_SOURCE_MESSAGE[source]}</p>;
   }
 
@@ -202,7 +215,8 @@ function FilteredPractice({
           disabled={count === 0}
           onClick={() =>
             onStartSession({
-              title: "演習問題",
+              kicker: "総合演習",
+              title: deckTitle,
               questions: result.results,
               context: "review",
               startIndex: resumeIndex,
@@ -218,7 +232,8 @@ function FilteredPractice({
           disabled={count === 0}
           onClick={() =>
             onStartSession({
-              title: "演習問題",
+              kicker: "総合演習",
+              title: deckTitle,
               questions: shuffled(result.results),
               context: "review",
             })
@@ -243,16 +258,11 @@ const KIND_LABEL = {
   cbt_once: "CBT模試",
 };
 
-/** 復習する模試を選ぶ。先頭が「すべての模試」で、以下は1回ずつ。 */
-function MockExamPicker({ selected, onSelect }) {
-  const [rows, setRows] = useState(null);
-
-  useEffect(() => {
-    api.rankingExams().then(setRows).catch(() => setRows([]));
-  }, []);
-
-  const taken = (rows ?? []).filter((r) => r.submitted !== false);
-
+/** 復習する模試を選ぶ。先頭が「すべての模試」で、以下は1回ずつ。
+ *
+ * 受験履歴は親（ReviewDeck）が持つ。「まだ模試で解いた問題がありません」の
+ * 文言を出すかどうかの判断にも同じ履歴が要るため。 */
+function MockExamPicker({ selected, onSelect, rows, taken }) {
   return (
     <div className="filter-group">
       <span className="filter-group-title">復習する模試</span>
@@ -264,7 +274,7 @@ function MockExamPicker({ selected, onSelect }) {
           <div className="course-row-top">
             <span className="course-name">すべての模試を復習</span>
             <span className="course-count">
-              {taken.length ? `${taken.length}回ぶん` : ""}
+              {taken.length ? `${taken.length}回分` : ""}
             </span>
           </div>
         </button>
@@ -303,6 +313,14 @@ export default function ReviewDeck() {
   const [tabKey, setTabKey] = useState(null);
   // null は「すべての模試」。模試を選ぶとその1回だけが対象になる。
   const [mockExam, setMockExam] = useState(null);
+  // 受験した模試の一覧。模試の選択欄と、空のときの文言の両方で使う。
+  const [examRows, setExamRows] = useState(null);
+
+  useEffect(() => {
+    api.rankingExams().then(setExamRows).catch(() => setExamRows([]));
+  }, []);
+
+  const takenExams = (examRows ?? []).filter((r) => r.submitted !== false);
   // 既定はマイページの設定（未選択なら学年から決まる resolved_exam_type）。
   const active = TABS.find((t) => t.key === tabKey)
     ?? TABS.find((t) => t.key === (profile?.resolved_exam_type ?? "CBT"))
@@ -324,7 +342,12 @@ export default function ReviewDeck() {
       </div>
 
       {active.key === "mock" && (
-        <MockExamPicker selected={mockExam} onSelect={setMockExam} />
+        <MockExamPicker
+          selected={mockExam}
+          onSelect={setMockExam}
+          rows={examRows}
+          taken={takenExams}
+        />
       )}
 
       <FilteredPractice
@@ -333,6 +356,7 @@ export default function ReviewDeck() {
         fixedExamType={active.examType === undefined ? null : active.examType}
         source={active.source ?? null}
         mockExam={active.key === "mock" ? mockExam : null}
+        sourceUsed={active.key === "mock" && takenExams.length > 0}
       />
     </div>
   );

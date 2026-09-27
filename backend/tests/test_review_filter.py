@@ -195,9 +195,9 @@ class TestSourceFilter:
 
         body = client.get("/api/quiz/review-filter/?source=mock").json()
         assert body["available_categories"] == ["循環器"]
-        # 絞り込みなしなら全科目
+        # 絞り込みなしなら全科目。並びは分野一覧（ホーム）と同じ。
         whole = client.get("/api/quiz/review-filter/").json()
-        assert whole["available_categories"] == ["呼吸器", "循環器", "消化器"]
+        assert whole["available_categories"] == ["循環器", "消化器", "呼吸器"]
 
     def test_available_categories_ignore_the_category_filter_itself(self):
         """科目を選んでも、選び直せるようチップの並びは変わらないこと。"""
@@ -207,7 +207,7 @@ class TestSourceFilter:
 
         body = client.get("/api/quiz/review-filter/?categories=循環器").json()
         assert body["count"] == 1
-        assert body["available_categories"] == ["呼吸器", "循環器"]
+        assert body["available_categories"] == ["循環器", "呼吸器"]
 
     def test_source_can_be_combined_with_the_other_filters(self):
         client, profile = auth_client()
@@ -310,3 +310,22 @@ class TestMockExamFilter:
     def test_a_bad_id_is_rejected(self):
         client, _ = auth_client(grade=4)
         assert client.get("/api/quiz/review-filter/?mock_exam=abc").status_code == 400
+
+
+@pytest.mark.django_db
+class TestCategoryOrder:
+    """科目チップの並びは分野一覧（ホーム）と同じにする。
+
+    五十音順にすると、同じ科目を画面ごとに違う位置から探すことになる。
+    """
+
+    def test_it_follows_the_home_screen_order(self):
+        client, _ = auth_client()
+        for category in ("公衆衛生", "眼", "循環器", "消化器", "腎臓"):
+            make_question(category, question_text=f"{category}の設問")
+
+        body = client.get("/api/quiz/review-filter/?exam_type=CBT").json()
+
+        # メジャー科（循環器→消化器→腎臓）が先で、そのあとに眼、
+        # 公衆衛生を含む総論は最後。
+        assert body["available_categories"] == ["循環器", "消化器", "腎臓", "眼", "公衆衛生"]

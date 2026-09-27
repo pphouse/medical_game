@@ -95,7 +95,8 @@ export default function Result() {
   function practiceAll() {
     navigate("/quiz", {
       state: {
-        title: `模試の復習: ${data.title}`,
+        kicker: "模試の復習",
+        title: data.title,
         questions: data.review,
         context: "review",
         backTo: `/exams/${examId}/result`,
@@ -258,22 +259,19 @@ export default function Result() {
             <p className="exam-review-answer">
               あなたの解答: {row.my_choice || "未解答"} ／ 正解: {row.correct_choice_key}
             </p>
-            {/* まず選択肢を色分けだけで並べ（正解＝緑／自分が外した＝赤）、
-                解説のあとに選択肢ごとの解説をまとめる。演習画面・対戦の
-                振り返りと同じ順番。 */}
+            {/* 選択肢は色分けだけで並べ（正解＝緑／自分が外した＝赤）、
+                選択肢ごとの解説は解説文の中に入れる。演習画面・対戦の
+                振り返りと同じ。 */}
             <ChoiceNotes
               choices={row.choices}
               correctKey={row.correct_choice_key}
               myKey={row.my_choice}
             />
-            <ExplanationText text={row.explanation} />
-            <ChoiceNotes
-              choices={row.choices}
+            <ExplanationText
+              text={row.explanation}
               notes={row.choice_explanations}
               correctKey={row.correct_choice_key}
               myKey={row.my_choice}
-              heading="選択肢ごとの解説"
-              onlyWhenNoted
             />
           </div>
         );
