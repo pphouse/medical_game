@@ -1877,7 +1877,8 @@
   }
 }
 
-/* 問題一覧の見出し。分野によらず青で統一する。 */
+/* 問題一覧の見出し。分野によらず青で統一する。背景は画面の地色と同化しない
+   ようカードと同じ白（ダークモードではカードの地色）にする。 */
 .picker-heading {
   display: flex;
   align-items: center;
@@ -1886,7 +1887,8 @@
   border: 1px solid var(--card-border);
   border-left: 5px solid var(--accent);
   border-radius: 14px;
-  background: var(--accent-bg);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
 }
 
 .picker-heading-text {

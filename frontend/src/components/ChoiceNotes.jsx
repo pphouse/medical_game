@@ -43,13 +43,10 @@ export default function ChoiceNotes({
                 </span>
                 {note && <span className="choice-note">{note}</span>}
               </span>
-              {/* 色だけに頼らず印でも示す。 */}
-              {(isCorrect || isMyMistake) && (
-                <span
-                  className="choice-mark"
-                  aria-label={isCorrect ? "正解" : "あなたの誤答"}
-                >
-                  {isCorrect ? "⭕️" : "❌"}
+              {/* 間違えた選択肢だけ印を出す（色だけに頼らないため）。 */}
+              {isMyMistake && (
+                <span className="choice-mark" aria-label="あなたの誤答">
+                  ❌
                 </span>
               )}
             </li>

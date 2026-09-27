@@ -109,7 +109,7 @@ describe("模試の結果画面", () => {
     expect(screen.getAllByText("あなたの解答")).toHaveLength(2);
   });
 
-  it("間違えた選択肢に❌、正解に⭕️を出す", async () => {
+  it("間違えた選択肢にだけ❌を出す", async () => {
     api.examResult.mockResolvedValue({
       status: "submitted",
       title: "月次実力テスト（CBT）",
@@ -123,10 +123,12 @@ describe("模試の結果画面", () => {
     await screen.findByText("見直し");
 
     // REVIEW: 1問目は正解(A)、2問目は正解Bに対してAを選んで外した
-    expect(screen.getAllByLabelText("正解")).toHaveLength(2);
     const wrong = screen.getAllByLabelText("あなたの誤答");
     expect(wrong).toHaveLength(1);
     expect(wrong[0].textContent).toBe("❌");
+    // 正解側には印を付けない（色と「正解」の文字で分かる）
+    expect(screen.queryByLabelText("正解")).not.toBeInTheDocument();
+    expect(screen.getAllByText("正解")).toHaveLength(2);
   });
 
   it("選択肢ごとの解説は解説文のあとにまとめる", async () => {
