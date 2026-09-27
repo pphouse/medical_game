@@ -79,18 +79,25 @@ def test_sql_creates_the_same_rows_as_import_questions(batch):
     assert _rows() == via_sql
 
 
-def test_shipped_import_sql_is_up_to_date():
-    """scripts/sql/import_cbt_basic_2026_*.sql が同梱データから作り直した結果と一致する。"""
-    shipped = sorted((ROOT / "scripts" / "sql").glob("import_cbt_basic_2026_*.sql"))
-    assert shipped, "scripts/sql/import_cbt_basic_2026_*.sql が無い"
+# 本番に貼るために同梱している取り込み SQL と、その元のデータ
+SHIPPED = {
+    "import_cbt_basic_2026": ["cbt_batch_basic_2026.json"],
+    "import_kokushi_106_113": [f"kokushi_{r}.json" for r in range(106, 114)],
+}
+
+
+@pytest.mark.parametrize("name", sorted(SHIPPED))
+def test_shipped_import_sql_is_up_to_date(name):
+    """scripts/sql/<name>_*.sql が同梱データから作り直した結果と一致する。"""
+    batches = SHIPPED[name]
+    shipped = sorted((ROOT / "scripts" / "sql").glob(f"{name}_*.sql"))
+    assert shipped, f"scripts/sql/{name}_*.sql が無い"
     builder = _builder()
-    chunks = builder.statements([DATA / "cbt_batch_basic_2026.json"])
+    chunks = builder.statements([DATA / b for b in batches])
     assert len(chunks) == len(shipped)
     for i, ((count, sql), path) in enumerate(zip(chunks, shipped, strict=True), start=1):
-        expected = builder.header(
-            "import_cbt_basic_2026", i, len(chunks), count, ["cbt_batch_basic_2026.json"]
-        ) + sql
+        expected = builder.header(name, i, len(chunks), count, batches) + sql
         assert path.read_text(encoding="utf-8") == expected, (
             f"{path.name} が古い。python scripts/build_question_import_sql.py "
-            "import_cbt_basic_2026 cbt_batch_basic_2026.json で作り直す"
+            f"{name} {' '.join(batches)} で作り直す"
         )
