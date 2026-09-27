@@ -116,12 +116,15 @@ def strip_stray_separators(text, *, keep_as_separator=False):
 #   - 同じフォントの ± が "!" になったもの: "潜血(!)"
 #   - 符号の直後の括弧が別の記号になったもの: "糖:−<"（糖（−））、"蛋白8−:"
 #   - 欧文の語間が落ちたもの: "Thepatientfeltfaintwhilewalkingonthebeach"
+#   - 括弧が数字の最後の桁と入れ替わったもの: "白血球10,20(0 桿状核"（第109回G64、
+#     "10,200(" の括弧の字形が0とほぼ同じ位置にあり、左端の順に並べて前に出た）
 DECODE_ARTIFACT = re.compile(
     r"TP\d+doc-|\.indd\b"
     r"|(?<![A-Za-z])[a-c]-GTP|(?<![A-Za-z])[ab]遮断|(?<![A-Za-z])nU/mL"
     r"|[（(]![）)]"
     r"|[−±+][:;<>=]"
     r"|[a-z]{25,}"
+    r"|\d,\d{1,2}[（(]\d\s"
 )
 
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
