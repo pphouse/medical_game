@@ -308,8 +308,10 @@ export default function QuizScreen({
         )}
 
         {/* 問題に間違いや不備があったら、その場から報告できるようにする。
+            出すのは解いたあと（解説の下）。解く前に置くと、選択肢を選ぶ前に
+            目に入って「この問題は間違っているのでは」と気が散る。
             届いた報告は管理画面の通報一覧から確認できる。 */}
-        {!previewMode && <ReportQuestionForm questionId={question.id} />}
+        {result && !previewMode && <ReportQuestionForm questionId={question.id} />}
       </div>
 
       <div className="bottom-toolbar">
