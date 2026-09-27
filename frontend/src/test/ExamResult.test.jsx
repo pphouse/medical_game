@@ -109,6 +109,49 @@ describe("模試の結果画面", () => {
     expect(screen.getAllByText("あなたの解答")).toHaveLength(2);
   });
 
+  it("選択肢ごとの解説は解説文のあとにまとめる", async () => {
+    const withNotes = {
+      ...REVIEW[1],
+      choice_explanations: { A: "Aが誤りの理由", B: "Bが正解の理由" },
+    };
+    api.examResult.mockResolvedValue({
+      status: "submitted",
+      title: "月次実力テスト（CBT）",
+      score: 0,
+      max_score: 1,
+      review: [withNotes],
+      ranking_available_at: "2026-10-01T00:00:00+09:00",
+    });
+
+    renderResult();
+    await screen.findByText("見直し");
+
+    expect(screen.getByText("選択肢ごとの解説")).toBeInTheDocument();
+    expect(screen.getByText("Aが誤りの理由")).toBeInTheDocument();
+    // 解説本文より後ろに置く（本文と行き来せずに読めるように）
+    const card = document.querySelector(".exam-review-card");
+    const text = card.textContent;
+    expect(text.indexOf("2問目の解説")).toBeLessThan(text.indexOf("選択肢ごとの解説"));
+  });
+
+  it("選択肢ごとの解説が無い問題では見出しを出さない", async () => {
+    api.examResult.mockResolvedValue({
+      status: "submitted",
+      title: "月次実力テスト（CBT）",
+      score: 1,
+      max_score: 1,
+      review: [{ ...REVIEW[0], choice_explanations: {} }],
+      ranking_available_at: "2026-10-01T00:00:00+09:00",
+    });
+
+    renderResult();
+    await screen.findByText("見直し");
+
+    expect(screen.queryByText("選択肢ごとの解説")).not.toBeInTheDocument();
+    // 選択肢の色分け一覧は残る
+    expect(document.querySelectorAll(".choice-note-row")).toHaveLength(2);
+  });
+
   it("解説の無い選択肢も一覧に並べる", async () => {
     api.examResult.mockResolvedValue({
       status: "submitted",

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api";
+import ChoiceNotes from "../../components/ChoiceNotes";
 import ExplanationText from "../../components/ExplanationText";
 import TierBadge from "../../components/TierBadge";
 
@@ -82,7 +83,6 @@ function ReviewRow({ row, open, onToggle }) {
             {row.choices.map((c) => {
               const isCorrect = c.key === row.correct_choice_key;
               const isMine = c.key === row.selected_choice_key;
-              const note = row.choice_explanations?.[c.key];
               return (
                 <li
                   key={c.key}
@@ -90,18 +90,25 @@ function ReviewRow({ row, open, onToggle }) {
                     isMine && !isCorrect ? " incorrect" : ""
                   }`}
                 >
-                  <span className="battle-review-choice-head">
-                    <span className="choice-key">{c.key}</span>
-                    <span>{c.text}</span>
-                    {isMine && <span className="battle-review-yours">あなたの解答</span>}
-                  </span>
-                  {note && <span className="choice-note">{note}</span>}
+                  <span className="choice-key">{c.key}</span>
+                  <span>{c.text}</span>
+                  {isMine && <span className="battle-review-yours">あなたの解答</span>}
                 </li>
               );
             })}
           </ul>
           {!row.answered && <p className="battle-review-skipped">時間内に解答できませんでした。</p>}
           <ExplanationText text={row.explanation} />
+          {/* 選択肢ごとの解説は解説のあとにまとめる（選択肢一覧の中に混ぜると
+              本文と行き来しながら読むことになる）。 */}
+          <ChoiceNotes
+            choices={row.choices}
+            notes={row.choice_explanations}
+            correctKey={row.correct_choice_key}
+            myKey={row.selected_choice_key}
+            heading="選択肢ごとの解説"
+            onlyWhenNoted
+          />
         </div>
       )}
     </li>
