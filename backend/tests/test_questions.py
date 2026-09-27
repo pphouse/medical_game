@@ -433,3 +433,88 @@ class TestSeedEditorialQuestions:
             assert question.explanation
             # 正解以外の4つに、なぜ誤りかが入っている。
             assert len(question.choice_explanations) == 4
+
+
+@pytest.mark.django_db
+class TestStripStrayColumnSeparators:
+    """語の途中に紛れ込んだ列区切りを落とす（マイグレーション 0019）。
+
+    国試PDFの取り込みで、組合せ問題の列を見分けるために差し込む "—" が
+    字間の広い箇所へ誤って入り、「Bell麻痺— の症状」になっていた。
+    """
+
+    def question(self, text, choices=None):
+        from quiz.models import Question
+
+        return Question.objects.create(
+            category="医学総論",
+            exam_type="KOKUSHI",
+            difficulty=2,
+            question_text=text,
+            choices=choices or [{"key": k, "text": k} for k in "ABCDE"],
+            correct_choice_key="A",
+            explanation="",
+            status=Question.Status.PUBLISHED,
+        )
+
+    def strip(self):
+        import importlib
+
+        from django.apps import apps as django_apps
+
+        module = importlib.import_module(
+            "quiz.migrations.0019_strip_stray_column_separators"
+        )
+        module.strip_separators(django_apps, None)
+
+    def test_separators_inside_words_are_removed(self):
+        q = self.question("Bell麻痺— の症状で誤って— いるのはどれか。")
+
+        self.strip()
+
+        q.refresh_from_db()
+        assert q.question_text == "Bell麻痺の症状で誤っているのはどれか。"
+
+    def test_a_separator_glued_to_the_next_word_is_removed(self):
+        q = self.question("副腎腺腫による—Cushing症候群で認め—ないのはどれか。")
+
+        self.strip()
+
+        q.refresh_from_db()
+        assert q.question_text == "副腎腺腫によるCushing症候群で認めないのはどれか。"
+
+    def test_combination_choices_keep_the_column_separator(self):
+        q = self.question(
+            "職業性曝露と疾患の組合せとして最も適切なのはどれか。",
+            [
+                {"key": "A", "text": "石綿（アスベスト）— 悪性胸膜中皮腫"},
+                {"key": "B", "text": "有機溶剤 — 珪肺"},
+            ],
+        )
+
+        self.strip()
+
+        q.refresh_from_db()
+        assert [c["text"] for c in q.choices] == [
+            "石綿（アスベスト） — 悪性胸膜中皮腫",
+            "有機溶剤 — 珪肺",
+        ]
+
+    def test_a_doubled_separator_before_a_colon_is_dropped(self):
+        q = self.question(
+            "栄養管理として適切なのはどれか。",
+            [{"key": "A", "text": "水分 — : 30mL/kg/日"}],
+        )
+
+        self.strip()
+
+        q.refresh_from_db()
+        assert q.choices[0]["text"] == "水分 : 30mL/kg/日"
+
+    def test_a_correct_separator_is_left_alone(self):
+        q = self.question("疾患と症状の組合せはどれか。", [{"key": "A", "text": "葉酸 — 巨赤芽球性貧血"}])
+
+        self.strip()
+
+        q.refresh_from_db()
+        assert q.choices[0]["text"] == "葉酸 — 巨赤芽球性貧血"
