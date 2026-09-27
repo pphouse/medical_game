@@ -366,6 +366,16 @@
   white-space: nowrap;
 }
 
+/* 分野ごとの自分の正答率。演習数の隣に添える。 */
+.course-accuracy {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .progress-bar {
   display: flex;
   height: 8px;

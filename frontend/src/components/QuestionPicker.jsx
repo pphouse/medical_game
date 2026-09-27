@@ -162,6 +162,8 @@ export default function QuestionPicker() {
   }`;
   const theme = getCategoryTheme(category);
   const [questions, setQuestions] = useState(null);
+  // この分野での自分の正答率（分野一覧と同じ数字を出したいので同じAPIから取る）。
+  const [categoryRate, setCategoryRate] = useState(null);
   const [error, setError] = useState(null);
   // 初期状態は5段階すべてが選択済み。チップを押すとその段階だけを外せる
   // （複数選択可）。「すべて」は全選択⇔全解除のトグル。
@@ -172,6 +174,22 @@ export default function QuestionPicker() {
       .questions(category, examType ? { exam_type: examType } : {})
       .then(setQuestions)
       .catch((e) => setError(e.message));
+  }, [category, examType]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setCategoryRate(null);
+    api
+      .progress(examType || undefined)
+      .then((rows) => {
+        if (cancelled) return;
+        setCategoryRate(rows.find((r) => r.category === category)?.correct_rate ?? null);
+      })
+      // 正答率は添え物なので、取れなくても問題一覧自体は出す。
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [category, examType]);
 
   if (error) return <p className="error">{error}</p>;
@@ -210,7 +228,10 @@ export default function QuestionPicker() {
         <span className="picker-heading-letter">{theme.letter}</span>
         <span className="picker-heading-text">
           <span className="picker-heading-category">{category}</span>
-          <span className="picker-heading-sub">どの問題を解くか選ぶ</span>
+          <span className="picker-heading-sub">
+            どの問題を解くか選ぶ ・ あなたの正答率{" "}
+            {categoryRate == null ? "－" : `${categoryRate}%`}
+          </span>
         </span>
       </div>
 

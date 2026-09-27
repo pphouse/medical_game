@@ -134,6 +134,8 @@ class CategoryProgressSerializer(serializers.Serializer):
     total = serializers.IntegerField()
     remaining = serializers.IntegerField()
     counts = MasteryCountsSerializer()
+    # 自分の正答率(%)。一度も解いていない分野は null（0% と区別する）。
+    correct_rate = serializers.FloatField(allow_null=True)
 
 
 class RankSerializer(serializers.Serializer):

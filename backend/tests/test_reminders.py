@@ -63,7 +63,9 @@ class TestReviewSummary:
         assert body["due_now"] == 3
         assert body["today"] == 3
         assert body["tomorrow"] == 1
-        assert body["this_week"] >= 4
+        # this_week は暦の週ではなく今日から7日先まで（曜日によらず
+        # 「今日 + 明日」を必ず含む）。
+        assert body["this_week"] == 4
 
 
 class TestSendReminders:
@@ -128,3 +130,37 @@ class TestSendReminders:
         assert sent == []
         assert PushSubscription.objects.count() == 0  # 410 は掃除される
         assert ReviewReminder.objects.count() == 0  # 配信0なら記録しない
+
+
+@pytest.mark.django_db
+class TestReviewSummaryWeekIsRolling:
+    """「今週」を暦で切ると日曜に今日だけになってしまうので、今日から7日先まで
+    を数える。曜日によって数字の意味が変わらないようにするため。"""
+
+    def schedule(self, profile, days_ahead, label):
+        q = make_question(question_text=f"{label}の分")
+        ReviewSchedule.objects.create(
+            user=profile,
+            question=q,
+            next_review_at=timezone.localtime() + datetime.timedelta(days=days_ahead),
+        )
+
+    def test_it_covers_a_full_week_whatever_the_weekday(self):
+        client, profile = auth_client()
+        for days in range(7):
+            self.schedule(profile, days, f"{days}日後")
+        # 7日目は入らない
+        self.schedule(profile, 7, "7日後")
+
+        body = client.get("/api/quiz/review-deck/summary/").json()
+
+        assert body["this_week"] == 7
+
+    def test_tomorrow_is_always_inside_the_week(self):
+        client, profile = auth_client()
+        self.schedule(profile, 1, "明日")
+
+        body = client.get("/api/quiz/review-deck/summary/").json()
+
+        assert body["tomorrow"] == 1
+        assert body["this_week"] == 1

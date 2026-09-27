@@ -156,6 +156,10 @@ export default function Solo() {
               <span className="course-remaining">
                 {p.total - p.remaining}/{p.total}問
               </span>
+              {/* 一度も解いていない分野は null なので「－」にする（0% と区別）。 */}
+              <span className="course-accuracy">
+                正答率 {p.correct_rate == null ? "－" : `${p.correct_rate}%`}
+              </span>
             </div>
             <ProgressBar counts={p.counts} total={p.total} />
           </button>

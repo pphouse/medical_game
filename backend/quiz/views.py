@@ -210,6 +210,17 @@ class CategoryProgressView(APIView):
             counts_by_category.setdefault(category, empty_counts())[mastery_level] += 1
             answered_by_category[category] = answered_by_category.get(category, 0) + 1
 
+        # 分野ごとの自分の正答率。ホーム画面の全体正答率と同じく、解いた
+        # 回数ぶんすべてを母数にする（同じ問題を2回解けば2回とも数える）。
+        accuracy_by_category = {
+            row["question__category"]: round((row["acc"] or 0) * 100, 1)
+            for row in AnswerHistory.objects.filter(
+                user=request.user, question__in=visible
+            )
+            .values("question__category")
+            .annotate(acc=Avg(Case(When(correct=True, then=1.0), default=0.0)))
+        }
+
         results = []
         for row in categories:
             category, total = row["category"], row["total"]
@@ -222,6 +233,8 @@ class CategoryProgressView(APIView):
                     "total": total,
                     "remaining": max(total - answered, 0),
                     "counts": counts,
+                    # 一度も解いていない分野は null（0% と区別する）。
+                    "correct_rate": accuracy_by_category.get(category),
                 }
             )
 
@@ -321,15 +334,23 @@ class ReviewDeckView(APIView):
 
 
 class ReviewDeckSummaryView(APIView):
-    """GET /api/quiz/review-deck/summary/ — 今日/明日/今週の復習件数
-    (spec フェーズ6)。アプリ内バッジにも使う。"""
+    """GET /api/quiz/review-deck/summary/ — 今日/明日/1週間ぶんの復習件数
+    (spec フェーズ6)。アプリ内バッジにも使う。
+
+    ``this_week`` は暦の「今週」（月曜はじまり）ではなく今日から7日先まで。
+    暦で切ると日曜には「今週」が今日だけになり、翌日が期限の問題が数から
+    消えて「今週は0件」と出てしまう（週の終わりほど当てにならない数字に
+    なる）。
+    """
+
+    WEEK_AHEAD_DAYS = 6
 
     def get(self, request):
         now = timezone.now()
         local = timezone.localtime(now)
         end_of_today = local.replace(hour=23, minute=59, second=59, microsecond=999999)
         end_of_tomorrow = end_of_today + timezone.timedelta(days=1)
-        end_of_week = end_of_today + timezone.timedelta(days=6 - local.weekday())
+        end_of_week = end_of_today + timezone.timedelta(days=self.WEEK_AHEAD_DAYS)
 
         qs = ReviewSchedule.objects.filter(
             user=request.user,
