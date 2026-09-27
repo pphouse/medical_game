@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../api";
 import TierBadge from "../../components/TierBadge";
-import { playVerdict } from "../../lib/sound";
+import { playVerdict, startBattleBgm, stopBattleBgm } from "../../lib/sound";
 
 /** 上部に常時出るVSヘッダー。自分と相手の名前・大学・ランク・HPを見せる。 */
 function VersusHeader({ me, opponent, damageFor }) {
@@ -80,6 +80,13 @@ export default function Match({ state, refresh, onLeave }) {
   useEffect(() => {
     const t = setTimeout(() => setIntro(false), 2200);
     return () => clearTimeout(t);
+  }, []);
+
+  // 対戦中はBGMを流し続ける。この画面を離れたら（決着・退出・再読み込み）
+  // 止める。
+  useEffect(() => {
+    startBattleBgm();
+    return stopBattleBgm;
   }, []);
 
   // ラウンドが変わったら選択と直前の正誤表示をリセット

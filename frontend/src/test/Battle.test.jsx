@@ -300,13 +300,18 @@ describe("対戦ラウンド内の状態 (Match)", () => {
     expect(refresh).toHaveBeenCalled();
   });
 
-  it("回答すると正誤に応じた効果音が鳴る", async () => {
-    // jsdom は play を実装していないので、setup.js の無音スタブを差し替える。
+  /** jsdom は play を実装していないので、setup.js の無音スタブを差し替える。 */
+  function capturePlayback() {
     const played = [];
     HTMLMediaElement.prototype.play = vi.fn(function play() {
-      played.push(this.src);
+      played.push(this);
       return Promise.resolve();
     });
+    return played;
+  }
+
+  it("回答すると正誤に応じた効果音が鳴る", async () => {
+    const played = capturePlayback();
     api.battleAnswer.mockResolvedValue({ correct: false, correct_choice_key: "B" });
     renderMatch(inProgress(), vi.fn().mockResolvedValue());
 
@@ -314,8 +319,22 @@ describe("対戦ラウンド内の状態 (Match)", () => {
     fireEvent.click(screen.getByRole("button", { name: "A で回答する" }));
     await act(async () => {});
 
-    expect(played).toHaveLength(1);
-    expect(played[0]).toMatch(/incorrect/);
+    expect(played.some((el) => /incorrect/.test(el.src))).toBe(true);
+  });
+
+  it("対戦中はBGMが繰り返し流れ、画面を離れると止まる", async () => {
+    const played = capturePlayback();
+    const { unmount } = renderMatch(inProgress(), vi.fn().mockResolvedValue());
+
+    const bgm = played.find((el) => /battle-bgm/.test(el.src));
+    expect(bgm).toBeTruthy();
+    expect(bgm.loop).toBe(true);
+    // 正誤の音がかき消されないよう、BGMは控えめな音量にする
+    expect(bgm.volume).toBeLessThan(1);
+
+    const pause = vi.spyOn(bgm, "pause");
+    unmount();
+    expect(pause).toHaveBeenCalled();
   });
 
   it("回答すると相手を待たずにすぐ自分の正誤が分かる", async () => {
