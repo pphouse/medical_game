@@ -7,7 +7,7 @@ import statistics
 
 from accounts.ranktier import apply_points_delta, exam_points_delta, speed_bonus
 from exams import irt
-from exams.models import ItemParameter
+from exams.models import ItemParameter, MockResult
 from quiz.models import AnswerHistory
 
 AREA_RE = re.compile(r"^([A-F]-\d+)")
@@ -86,6 +86,34 @@ def grade_single_result(result, correct_questions):
         area: round(c / n, 2) for area, (c, n) in sorted(per_area.items()) if n
     }
     return score, per_area
+
+
+def cbt_cohort_stats(result):
+    """CBT模試の成績を、いま提出済みの受験者だけで計算して返す。
+
+    締切を共有しない模試なので、採点バッチで一斉に確定させられない。読み出す
+    たびに計算し直すことで、受験者が増えるたびに順位・偏差値が更新される。
+
+    返り値は (受験者数, 順位, パーセンタイル, 偏差値)。受験者が1人だけだと
+    標準偏差が0になるので、偏差値は50.0とする。
+    """
+    scores = list(
+        MockResult.objects.filter(
+            mock_exam_id=result.mock_exam_id, submitted_at__isnull=False
+        ).values_list("score", flat=True)
+    )
+    n = len(scores)
+    if not n:
+        return 0, None, None, None
+
+    rank = sum(1 for s in scores if s > result.score) + 1
+    percentile = round(sum(1 for s in scores if s < result.score) / n * 100, 1)
+    stdev = statistics.pstdev(scores) if n > 1 else 0
+    mean = statistics.fmean(scores)
+    deviation = (
+        round(50 + 10 * (result.score - mean) / stdev, 1) if stdev else 50.0
+    )
+    return n, rank, percentile, deviation
 
 
 def apply_rank_stats(results):

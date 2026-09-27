@@ -139,10 +139,53 @@ describe("模試の結果画面", () => {
 
     expect(await screen.findByText("成績は集計中です")).toBeInTheDocument();
     expect(screen.getByText(/2026年10月1日.*「ランキング」タブ/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "ランキングを見る" })).toHaveAttribute(
+    // 解禁前は灰色で押せないボタン（リンクにはしない）。
+    const button = screen.getByRole("button", { name: /成績を見る/ });
+    expect(button).toBeDisabled();
+    expect(button.textContent).toContain("2026年10月1日から");
+    expect(screen.queryByRole("link", { name: "成績を見る" })).not.toBeInTheDocument();
+  });
+
+  it("成績が見られるようになったら押せるリンクにする", async () => {
+    api.examResult.mockResolvedValue({
+      status: "graded",
+      title: "月次実力テスト（CBT）",
+      score: 1,
+      max_score: 2,
+      rank: 3,
+      out_of: 10,
+      percentile: 70,
+      university_rank: 1,
+      deviation_score: 58.2,
+      section_scores: { "D-5": 1.0 },
+      section_deviation_scores: {},
+      review: REVIEW,
+      ranking_available_at: "2026-10-01T00:00:00+09:00",
+    });
+
+    renderResult();
+
+    expect(await screen.findByText("成績を確認できます")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "成績を見る" })).toHaveAttribute(
       "href",
       "/ranking?category=exams",
     );
+    expect(screen.queryByRole("button", { name: /成績を見る/ })).not.toBeInTheDocument();
+  });
+
+  it("左上の戻るで一つ前の画面に戻れる", async () => {
+    api.examResult.mockResolvedValue({
+      status: "submitted",
+      title: "月次実力テスト（CBT）",
+      score: 1,
+      max_score: 2,
+      review: REVIEW,
+      ranking_available_at: "2026-10-01T00:00:00+09:00",
+    });
+
+    renderResult();
+
+    expect(await screen.findByRole("button", { name: "← 戻る" })).toBeInTheDocument();
   });
 
   it("集計前は順位や偏差値の枠を出さない", async () => {

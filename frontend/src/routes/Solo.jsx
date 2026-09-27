@@ -156,12 +156,14 @@ export default function Solo() {
               <span className="course-name">
                 {p.category} <span className="course-count">({p.total})</span>
               </span>
+              {/* 正答率は問題数の左。桁数（0%〜100%）で問題数の位置が動かない
+                  よう、幅を固定して右揃えにする。未演習の分野は null なので
+                  「－」にする（0% と区別）。 */}
+              <span className="course-accuracy">
+                {p.correct_rate == null ? "－" : `${p.correct_rate}%`}
+              </span>
               <span className="course-remaining">
                 {p.total - p.remaining}/{p.total}問
-              </span>
-              {/* 一度も解いていない分野は null なので「－」にする（0% と区別）。 */}
-              <span className="course-accuracy">
-                正答率 {p.correct_rate == null ? "－" : `${p.correct_rate}%`}
               </span>
             </div>
             <ProgressBar counts={p.counts} total={p.total} />

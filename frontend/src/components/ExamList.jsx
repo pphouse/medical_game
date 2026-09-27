@@ -31,18 +31,39 @@ const KIND_EMPTY = {
   monthly: "いまは開催中の回がありません。毎月1日に次の回が開きます。",
 };
 
-function groupByKind(exams) {
-  const groups = {};
-  for (const exam of exams) {
-    (groups[exam.kind] ??= []).push(exam);
-  }
-  // 該当する回が無い種別も含めて全種別を並べる（何があるかの概要を出すため）。
-  return KIND_ORDER.map((k) => ({
-    kind: k,
-    title: KIND_TITLE[k] ?? k,
-    summary: KIND_SUMMARY[k],
-    empty: KIND_EMPTY[k],
-    exams: groups[k] ?? [],
+// 受験できるかどうかで3つに分ける。まず受けられるものを出し、そのあとに
+// これから開くもの・終わったものを続ける。
+const SECTIONS = [
+  {
+    key: "available",
+    title: "受験できる模試",
+    empty: "いま受験できる模試はありません。",
+    match: (e, submitted) => e.status === "open" && !submitted,
+  },
+  {
+    key: "upcoming",
+    title: "開催予定",
+    empty: "開催予定の模試はありません。",
+    match: (e) => e.status === "scheduled",
+  },
+  {
+    key: "past",
+    title: "開催済み",
+    empty: "受験・開催が終わった模試はまだありません。",
+    match: (e, submitted) => e.status !== "scheduled" && (submitted || e.status !== "open"),
+  },
+];
+
+function groupByAvailability(exams) {
+  // 種別（国試模試 → CBT模試 → 月次）の順は保ったまま、受験状況で振り分ける。
+  const byKind = [...exams].sort(
+    (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind),
+  );
+  return SECTIONS.map((section) => ({
+    ...section,
+    exams: byKind.filter((e) =>
+      section.match(e, Boolean(e.my_result?.submitted_at)),
+    ),
   }));
 }
 
@@ -69,18 +90,21 @@ export default function ExamList() {
     }
   }
 
-  const groups = groupByKind(exams);
+  const sections = groupByAvailability(exams);
 
   return (
     <>
-      {groups.map((group) => (
-        <div key={group.kind}>
-          <h3 className="exam-section-heading">{group.title}</h3>
-          <p className="exam-section-summary">{group.summary}</p>
-          {group.exams.length === 0 && (
-            <div className="empty-card exam-empty">{group.empty}</div>
+      {sections.map((section, i) => (
+        <div
+          key={section.key}
+          // 受験できるものと、そうでないものを点線で区切る。
+          className={`exam-section${i > 0 ? " exam-section-divided" : ""}`}
+        >
+          <h3 className="exam-section-heading">{section.title}</h3>
+          {section.exams.length === 0 && (
+            <div className="empty-card exam-empty">{section.empty}</div>
           )}
-          {group.exams.map((exam) => {
+          {section.exams.map((exam) => {
             const started = Boolean(exam.my_result?.started_at);
             const submitted = Boolean(exam.my_result?.submitted_at);
             return (
@@ -91,6 +115,7 @@ export default function ExamList() {
                     {STATUS_LABEL[exam.status]}
                   </span>
                 </div>
+                <p className="exam-card-kind">{KIND_TITLE[exam.kind] ?? exam.kind}</p>
                 <p className="exam-meta">
                   {EXAM_TYPE_LABEL[exam.exam_type]} ・ {exam.question_count}問 ・{" "}
                   {exam.duration_minutes}分
@@ -132,6 +157,21 @@ export default function ExamList() {
           })}
         </div>
       ))}
+
+      {/* 受験状況で並べ替えたので、どんな模試があるかの概要はここにまとめる。
+          その学年で受けられない種別も、理由が分かるように残す。 */}
+      <div className="exam-section exam-section-divided">
+        <h3 className="exam-section-heading">模試の種類</h3>
+        {KIND_ORDER.map((kind) => (
+          <div key={kind} className="exam-kind-note">
+            <p className="exam-kind-note-title">{KIND_TITLE[kind]}</p>
+            <p className="exam-section-summary">{KIND_SUMMARY[kind]}</p>
+            {!exams.some((e) => e.kind === kind) && (
+              <p className="exam-meta">{KIND_EMPTY[kind]}</p>
+            )}
+          </div>
+        ))}
+      </div>
     </>
   );
 }

@@ -8,10 +8,7 @@ export default function BrandMark() {
       <span className="brand-mark-icon" aria-hidden="true">
         医
       </span>
-      <span className="brand-mark-text">
-        <span className="brand-mark-name">医トレ</span>
-        <span className="brand-mark-tagline">CBT・医師国家試験トレーニング</span>
-      </span>
+      <span className="brand-mark-name">医トレ</span>
     </div>
   );
 }
