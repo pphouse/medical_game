@@ -49,7 +49,7 @@
 
 使い方
 ------
-    for e in 119 118 117 116 115 114; do
+    for e in 119 118 117 116 115 114 113 112 111 110 109 108 107 106; do
         python scripts/import_kokushi.py --exam $e \
             --out backend/quiz/management/commands/data/kokushi_$e.json
     done
@@ -65,6 +65,22 @@ import unicodedata
 import urllib.request
 from pathlib import Path
 
+# 同梱データの検査（backend/tests/test_shipped_data.py）と同じ正規表現を使い、
+# 検査で落ちる設問は取り込みの時点で落とす。quiz.data_checks は正規表現だけで
+# Django に依存しない。
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
+from quiz.data_checks import (  # noqa: E402
+    BODY_KANJI_AFTER_DIGIT,
+    BRACKET_LOOKALIKE,
+    DROPPED_NUMBER,
+    DROPPED_WORD_HEAD,
+    GLYPH_CORRUPTION,
+    KANJI_DIGIT_KANJI,
+    POSITION_KANJI_THEN_LATIN,
+    STRAY_SEPARATOR,
+    strip_stray_separators,
+)
+
 try:
     import pdfplumber
 except ImportError:  # pragma: no cover - 実行環境の案内
@@ -73,21 +89,62 @@ except ImportError:  # pragma: no cover - 実行環境の案内
         "（pypdf は本PDFのフォント埋め込みを解決できず文字化けするため使わないこと）"
     )
 
-# 回ごとの公開ページとPDFの命名規則。厚労省は回ごとにURLが変わるため表で持つ。
-# 注意: PDF の接頭辞はページ名と一致しないことがある。第117回はページが
-# tp230502-01.html なのに PDF は tp220502-01*.pdf である。回を追加するときは
-# 必ず公開ページの href を確認すること（推測すると404になる）。
+# 回ごとの公開ページとPDF。厚労省は回ごとにURLも命名も変わるため表で持つ。
+# 回を足すときは、公開ページの href と各PDFの表紙（「指示があるまで開かない
+# こと。」の下の「107 Ｅ」など）で、どれがどのブロックの問題冊子かを確かめる
+# こと。推測すると404になるか、別冊（画像）や別のブロックを読んでしまう。
+#  - 第117回はページが tp230502-01.html なのに PDF は tp220502-01*.pdf。
+#  - 第107・108回は a〜s の連番で、問題冊子（a,c,e,…,q）と別冊（b,d,…,r）が
+#    交互に並び、s が正答値表。
+#  - 第106回は tp_siken_106_ishi_{a〜i}1.pdf が問題冊子、無印が正答値表。
+#  - 第111回までは500問（A〜I の9ブロック）、第112回からは400問（A〜F）。
+#  - 第105回以前のPDFは紙をスキャンした画像で文字が入っていない。読み取り
+#    （OCR）は字を取り違えるので扱わない。
 _BASE = "https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics"
-EXAMS = {
-    119: {"page": f"{_BASE}/tp250428-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp250428-01"},
-    118: {"page": f"{_BASE}/tp240424-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp240424-01"},
-    117: {"page": f"{_BASE}/tp230502-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp220502-01"},
-    116: {"page": f"{_BASE}/tp220421-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp220421-01"},
-    115: {"page": f"{_BASE}/tp210416-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp210416-01"},
-    114: {"page": f"{_BASE}/tp200421-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp200421-01"},
-}
+_DL = f"{_BASE}/dl"
 
-BLOCKS = "abcdef"  # 甲乙丙丁戊己 → 正答表の A〜F に対応
+
+def _standard(page: str, prefix: str, letters: str) -> dict:
+    """第109回以降の命名。問題冊子が {prefix}{a}_01.pdf、正答値表が {prefix}seitou.pdf。"""
+    return {
+        "page": f"{_BASE}/{page}",
+        "answers": f"{_DL}/{prefix}seitou.pdf",
+        "blocks": {c.upper(): f"{_DL}/{prefix}{c}_01.pdf" for c in letters},
+    }
+
+
+def _alternating(page: str, prefix: str) -> dict:
+    """第107・108回。問題冊子と別冊が交互に並び、最後の s が正答値表。"""
+    return {
+        "page": f"{_BASE}/{page}",
+        "answers": f"{_DL}/{prefix}s.pdf",
+        "blocks": {b: f"{_DL}/{prefix}{c}.pdf" for b, c in zip("ABCDEFGHI", "acegikmoq")},
+    }
+
+
+_TOPICS_2012 = "https://www.mhlw.go.jp/topics/2012/04"
+
+EXAMS = {
+    119: _standard("tp250428-01.html", "tp250428-01", "abcdef"),
+    118: _standard("tp240424-01.html", "tp240424-01", "abcdef"),
+    117: _standard("tp230502-01.html", "tp220502-01", "abcdef"),
+    116: _standard("tp220421-01.html", "tp220421-01", "abcdef"),
+    115: _standard("tp210416-01.html", "tp210416-01", "abcdef"),
+    114: _standard("tp200421-01.html", "tp200421-01", "abcdef"),
+    113: _standard("tp190415-01.html", "tp190415-01", "abcdef"),
+    112: _standard("tp180511-01.html", "tp180511-01", "abcdef"),
+    111: _standard("tp170425-01.html", "tp170425-01", "abcdefghi"),
+    110: _standard("tp160411-01.html", "tp160411-01", "abcdefghi"),
+    109: _standard("tp150511-01.html", "tp150511-01", "abcdefghi"),
+    108: _alternating("tp140512-01.html", "tp140512-01"),
+    107: _alternating("tp130723-01.html", "tp130723-01"),
+    106: {
+        "page": f"{_TOPICS_2012}/tp0420-01.html",
+        "answers": f"{_TOPICS_2012}/dl/tp_siken_106_ishi.pdf",
+        "blocks": {c.upper(): f"{_TOPICS_2012}/dl/tp_siken_106_ishi_{c}1.pdf"
+                   for c in "abcdefghi"},
+    },
+}
 
 CHOICE_MARKS = "ａｂｃｄｅ"
 CHOICE_KEYS = ["A", "B", "C", "D", "E"]
@@ -442,7 +499,14 @@ def _crossref_table(path: Path) -> dict[tuple[str, int], str]:
 
     doc = pymupdf.open(path)
     for page in doc:
-        page.set_cropbox(page.mediabox)
+        try:
+            page.set_cropbox(page.mediabox)
+        except ValueError:
+            # 第106・107回の正答値表は MediaBox の原点が (0,0) でなく
+            # （[-14.2 14.17 711.8 1040.9]）、PyMuPDF はこれを CropBox に
+            # 設定できない。CropBox は元から MediaBox と同じなのでそのまま使う。
+            # 座標がずれていれば突き合わせが減って設問が落ちるだけで、誤読は増えない。
+            pass
 
     learned: dict[tuple[str, int], str] = {}
     conflicts: set[tuple[str, int]] = set()
@@ -705,7 +769,7 @@ def parse_answers(text: str) -> dict[str, list[str]]:
     answers: dict[str, list[str]] = {}
     current: str | None = None
     for token in text.split():
-        if re.fullmatch(r"[A-F]\d{3}", token):
+        if re.fullmatch(r"[A-I]\d{3}", token):  # 第111回までは I ブロックまで
             current = token
             answers[current] = []
         elif current is not None and re.fullmatch(r"[A-E]+|\d+", token):
@@ -937,6 +1001,37 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
     return out
 
 
+def text_defect(stem: str, texts: list[str]) -> str | None:
+    """同梱データの検査で落ちる字の化け・欠けがあれば、その種類を返す。
+
+    どれもグリフの解決に失敗した痕跡で、文としては読めてしまうため目視では
+    気づけない（「生後4週未満」が「生後週未満」、「〈」が「~」など）。直せる
+    かどうかは1問ずつ違うので、取り込みでは落とす。
+    """
+    for text in [stem, *texts]:
+        for name, pattern in (
+            ("glyph", GLYPH_CORRUPTION),
+            ("kanji_digit", KANJI_DIGIT_KANJI),
+            ("kanji_digit", BODY_KANJI_AFTER_DIGIT),
+            ("kanji_digit", POSITION_KANJI_THEN_LATIN),
+            ("bracket_lookalike", BRACKET_LOOKALIKE),
+            ("word_head", DROPPED_WORD_HEAD),
+            ("dropped_number", DROPPED_NUMBER),
+            ("separator", STRAY_SEPARATOR),
+        ):
+            if pattern.search(text):
+                return name
+        for opener, closer in (("(", ")"), ("〈", "〉"), ("「", "」")):
+            if text.count(opener) != text.count(closer):
+                return "brackets"
+        if any("。" in inner for inner in re.findall(r"\(([^()]*)\)", text)):
+            return "brackets"
+    if "組合せ" in stem and not any("—" in t for t in texts):
+        # 左右2列の区切りが入らず、2列が続けて読めてしまう。
+        return "combination"
+    return None
+
+
 def build_explanation(exam: int, block: str, num: int, answer_key: str,
                       choice_text: str, page_url: str) -> str:
     """解説欄。正答と出典表記を必ず含める（PDL1.0 の出典明示要件）。
@@ -982,19 +1077,18 @@ def main() -> int:
     cfg = EXAMS[args.exam]
     cache = Path(args.cache) / str(args.exam)
 
-    seitou = fetch(f"{cfg['pdf_base']}/{cfg['prefix']}seitou.pdf", cache / "seitou.pdf")
+    seitou = fetch(cfg["answers"], cache / "seitou.pdf")
     answers = parse_answers(pdf_text(seitou))
     print(f"正答値表: {len(answers)} 問")
 
     questions: list[dict] = []
     seen: dict[str, int] = {}
     stats = {"total": 0, "series": 0, "image": 0, "multi": 0, "cid": 0,
-             "bad_stem": 0, "duplicate": 0, "bad_choices": 0, "no_answer": 0, "ok": 0}
+             "bad_stem": 0, "duplicate": 0, "bad_choices": 0, "no_answer": 0,
+             "defect": 0, "ok": 0}
 
-    for i, block in enumerate(BLOCKS):
-        letter = chr(ord("A") + i)
-        pdf = fetch(f"{cfg['pdf_base']}/{cfg['prefix']}{block}_01.pdf",
-                    cache / f"{block}.pdf")
+    for letter, url in cfg["blocks"].items():
+        pdf = fetch(url, cache / f"{letter.lower()}.pdf")
         lines = pdf_lines(pdf)
         groups = series_groups(lines)
         reference = flat_pymupdf_text(pdf)
@@ -1047,6 +1141,14 @@ def main() -> int:
             texts = [normalize(t) for t in texts]
             if len(set(texts)) != len(texts) or any(not t for t in texts):
                 stats["bad_choices"] += 1
+                continue
+
+            # 列区切りの "—" が語の途中に入ったものを直してから検査する。
+            stem = strip_stray_separators(stem)
+            combination = "組合せ" in stem
+            texts = [strip_stray_separators(t, keep_as_separator=combination) for t in texts]
+            if text_defect(stem, texts):
+                stats["defect"] += 1
                 continue
 
             correct_text = texts[CHOICE_KEYS.index(key)]
@@ -1106,6 +1208,7 @@ def main() -> int:
     print(f"  設問文不備で除外: {stats['bad_stem']}")
     print(f"  番号重複で除外 : {stats['duplicate']}")
     print(f"  選択肢不備で除外: {stats['bad_choices']}")
+    print(f"  表記の検査で除外: {stats['defect']}")
     print(f"取り込み        : {stats['ok']}")
     print(f"written -> {out}")
     return 0

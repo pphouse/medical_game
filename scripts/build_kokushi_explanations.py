@@ -50,7 +50,12 @@ def load_questions():
             continue
         payload = json.load(open(path, encoding="utf-8"))
         for q in payload["questions"]:
-            index[q["blueprint_code"]] = (path, q)
+            code = q["blueprint_code"]
+            # 解説は blueprint_code で設問に当てるので、同じ番号が2問あると
+            # 片方に黙って当たる（番号の無い作成問題は解説の対象外）。
+            if code and code in index:
+                raise SystemExit(f"blueprint_code が重複している: {code}")
+            index[code] = (path, q)
     return index
 
 

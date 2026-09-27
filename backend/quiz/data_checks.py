@@ -88,6 +88,23 @@ DROPPED_WORD_HEAD = re.compile(r"(?<![倦])怠感|(?<![末])梢血|(?<![大下])
 # コロンの直前の "—" も、区切りが二重に入ったもの（「水分 — : 30mL/kg/日」）。
 STRAY_SEPARATOR = re.compile(r"(?:(?<=[^\s])|^)—|—\s*[:：]")
 
+_SEPARATOR_IN_WORD = re.compile(r"(?<=\S)—\s*")
+_SEPARATOR_AT_HEAD = re.compile(r"^—\s*")
+_SEPARATOR_BEFORE_COLON = re.compile(r"—\s*([:：])")
+
+
+def strip_stray_separators(text, *, keep_as_separator=False):
+    """語の途中に紛れ込んだ "—" を取り除く（quiz/0020 と同じ直し方）。
+
+    組合せ問題の選択肢（keep_as_separator=True）は、"—" が左右2列の境目
+    そのものなので、前後に空白のある正しい区切り " — " に直す。
+    """
+    if not text or "—" not in text:
+        return text
+    fixed = _SEPARATOR_BEFORE_COLON.sub(r"\1", text)
+    fixed = _SEPARATOR_IN_WORD.sub(" — " if keep_as_separator else "", fixed)
+    return _SEPARATOR_AT_HEAD.sub("", fixed)
+
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
 FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")
 FIGURE_REF_MIN_BODY = 120
