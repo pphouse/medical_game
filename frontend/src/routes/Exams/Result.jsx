@@ -21,6 +21,9 @@ const JST_DATE = new Intl.DateTimeFormat("ja-JP", {
   day: "numeric",
 });
 
+const READY_NOTE =
+  "全国順位・学内順位・偏差値は「ランキング」タブの「模試」から確認できます。";
+
 function formatDate(iso) {
   if (!iso) return null;
   return JST_DATE.format(new Date(iso));
@@ -71,6 +74,22 @@ export default function Result() {
   const hasDistribution = Boolean(data.score_distribution?.buckets?.length);
   const hasSectionDeviation = Object.keys(data.section_deviation_scores || {}).length > 0;
   const rankingDate = formatDate(data.ranking_available_at);
+  // CBT模試は締切を共有しないので、日付ではなく受験者数で解禁する。
+  const byExaminees = data.ranking_min_examinees != null;
+  const remaining = byExaminees
+    ? Math.max(0, data.ranking_min_examinees - (data.examinees ?? 0))
+    : 0;
+  const pendingNote = byExaminees
+    ? `受験者が${data.ranking_min_examinees}人に達すると、全国順位・偏差値を「ランキング」タブの「模試」から確認できます` +
+      `（現在 ${data.examinees ?? 0}人／あと${remaining}人）。受験者が増えるたびに成績は更新されます。` +
+      "下の見直しでは、いまのうちに正誤と解説を確認できます。"
+    : `全国順位・学内順位・偏差値は${rankingDate ?? "翌月1日"}に「ランキング」タブの` +
+      "「模試」から確認できます。下の見直しでは、いまのうちに正誤と解説を確認できます。";
+  const pendingLabel = byExaminees
+    ? `成績を見る（あと${remaining}人の受験で公開）`
+    : rankingDate
+      ? `成績を見る（${rankingDate}から）`
+      : "成績を見る";
 
   // 見直しの設問をそのまま問題演習へ渡す（解説つきで解き直せる）。
   function practiceAll() {
@@ -128,19 +147,14 @@ export default function Result() {
         <p className="exam-pending-title">
           {graded ? "成績を確認できます" : "成績は集計中です"}
         </p>
-        <p className="exam-meta">
-          {graded
-            ? "全国順位・学内順位・偏差値は「ランキング」タブの「模試」から確認できます。"
-            : `全国順位・学内順位・偏差値は${rankingDate ?? "翌月1日"}に「ランキング」タブの` +
-              "「模試」から確認できます。下の見直しでは、いまのうちに正誤と解説を確認できます。"}
-        </p>
+        <p className="exam-meta">{graded ? READY_NOTE : pendingNote}</p>
         {graded ? (
           <Link to="/ranking?category=exams" className="cta-button exam-grade-link">
             成績を見る
           </Link>
         ) : (
           <button type="button" className="cta-button" disabled>
-            {rankingDate ? `成績を見る（${rankingDate}から）` : "成績を見る"}
+            {pendingLabel}
           </button>
         )}
       </div>

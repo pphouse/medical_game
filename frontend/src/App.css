@@ -358,6 +358,9 @@
 }
 
 .course-remaining {
+  flex: none;
+  min-width: 72px;
+  text-align: right;
   font-size: 13.5px;
   font-weight: 800;
   color: var(--accent);
@@ -367,8 +370,12 @@
   white-space: nowrap;
 }
 
-/* 分野ごとの自分の正答率。演習数の隣に添える。 */
+/* 分野ごとの自分の正答率。問題数の左に置く。「100%」でも「－」でも
+   同じ幅を取り、右揃えにするので、問題数の開始位置が行ごとに動かない。 */
 .course-accuracy {
+  flex: none;
+  width: 44px;
+  text-align: right;
   font-size: 12px;
   font-weight: 700;
   color: var(--text);
@@ -1831,25 +1838,29 @@
   box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
 }
 
-.brand-mark-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
+/* ロゴの文字。青のグラデーションで塗り、字間を広げてロゴらしく見せる。
+   背景クリップが効かない環境では下の color がそのまま出る。 */
 .brand-mark-name {
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--text-h);
+  letter-spacing: 0.14em;
+  line-height: 1.1;
+  color: #1d4ed8;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 55%, #22c55e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* 字間を空けたぶん、右端に余白が残るのを詰める。 */
+  padding-right: 0.14em;
 }
 
-.brand-mark-tagline {
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--text);
-  opacity: 0.7;
+@media (prefers-color-scheme: dark) {
+  .brand-mark-name {
+    color: #7cd2ff;
+    background: linear-gradient(135deg, #60a5fa 0%, #38bdf8 55%, #4ade80 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
 }
 
 /* 問題一覧の見出し。分野ごとの配色（theme-*）で塗る。 */
@@ -2064,6 +2075,32 @@
 }
 
 .exam-section-heading { color: var(--text-h); font-size: 15px; margin: 12px 0 4px; }
+
+/* 模試一覧の区切り。受験できるものと、そうでないものを点線で分ける。 */
+.exam-section + .exam-section-divided {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 2px dashed var(--card-border);
+}
+
+/* カードの種別名（種別ごとの見出しをやめたぶんをここで補う）。 */
+.exam-card-kind {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.exam-kind-note {
+  margin-bottom: 10px;
+}
+
+.exam-kind-note-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-h);
+}
 
 /* 模試の種別ごとの概要。開催中の回が無くても「何があるか」は常に見せる。 */
 .exam-section-summary {

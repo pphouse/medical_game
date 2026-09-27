@@ -20,8 +20,16 @@ from accounts.ranktier import (
     tier_for_top_fraction,
 )
 from config.internal_auth import require_internal_caller
-from exams.constants import MIN_QUESTIONS_FOR_ACCURACY_RANKING
-from exams.grading import apply_irt_score, copy_result_to_history, grade_single_result
+from exams.constants import (
+    CBT_RANKING_MIN_EXAMINEES,
+    MIN_QUESTIONS_FOR_ACCURACY_RANKING,
+)
+from exams.grading import (
+    apply_irt_score,
+    cbt_cohort_stats,
+    copy_result_to_history,
+    grade_single_result,
+)
 from exams.management.commands.create_scheduled_exam import academic_year_start
 from exams.models import MockAnswer, MockExam, MockResult, RankingSnapshot
 from exams.ranking_refresh import ensure_fresh
@@ -567,31 +575,15 @@ class ExamSubmitView(APIView):
         grade_single_result(result, correct_questions)
         apply_irt_score(result, correct_questions)
 
-        # 参考値としての順位/偏差値: これまでにこの模試を終えた受験者との
-        # 比較（全体の締切を待たず、この受験者1件だけを確定させる簡易版）。
-        prior = list(
-            MockResult.objects.filter(
-                mock_exam__kind=MockExam.Kind.CBT_ONCE, submitted_at__isnull=False
-            ).exclude(pk=result.pk)
-        )
-        cohort = prior + [result]
-        scores = [r.score for r in cohort]
-        n = len(scores)
-        below = sum(1 for s in scores if s < result.score)
-        result.percentile = round(below / n * 100, 1) if n else None
-        result.rank = sum(1 for s in scores if s > result.score) + 1
-        import statistics as _stats
-
-        stdev = _stats.pstdev(scores) if n > 1 else 0
-        mean = _stats.fmean(scores) if n else result.score
-        result.deviation_score = round(50 + 10 * (result.score - mean) / stdev, 1) if stdev else 50.0
-
+        # 得点だけ先に保存する。順位・偏差値は受験者が増えるたびに変わるので、
+        # 提出時に固定せず結果を読むたびに計算し直す（cbt_cohort_stats）。
         result.save(
-            update_fields=[
-                "score", "section_scores", "irt_theta", "irt_scaled_score",
-                "percentile", "rank", "deviation_score",
-            ]
+            update_fields=["score", "section_scores", "irt_theta", "irt_scaled_score"]
         )
+        _, result.rank, result.percentile, result.deviation_score = cbt_cohort_stats(
+            result
+        )
+        result.save(update_fields=["rank", "percentile", "deviation_score"])
 
 
 def next_month_first_local(after):
@@ -660,19 +652,32 @@ class ExamResultView(APIView):
             return Response({"status": "grading", "message": "採点中です。しばらくお待ちください。"})
 
         review = build_review(exam, result)
+        is_cbt = exam.kind == MockExam.Kind.CBT_ONCE
+
         # 定期開催の模試（月次・国試模試）の成績は、受験した月の翌月1日から
         # 見せる。集計が終わった順に出すと、同じ回でも人によって見える
         # タイミングが変わってしまう。
         #
-        # CBT模試は「いつでも受験できて1度だけ」で、締切を共有しないため
-        # end_at が遠い未来に置かれている（翌月1日を出すと何十年も先になる）。
-        # 提出と同時に個別採点しているので、こちらは待たせない。
+        # CBT模試は締切を共有しないので日付では区切れない（end_at が年度末で、
+        # 受験は年度内のいつでもできる）。代わりに受験者数で区切り、
+        # CBT_RANKING_MIN_EXAMINEES 人に届いたら出す。母集団が小さいと偏差値が
+        # 意味を持たず、順位も1人増えるたびに大きく動くため。
         ranking_available_at = (
-            None
-            if exam.kind == MockExam.Kind.CBT_ONCE
-            else next_month_first_local(exam.end_at)
+            None if is_cbt else next_month_first_local(exam.end_at)
         )
-        if graded and ranking_available_at and timezone.now() < ranking_available_at:
+        examinees = None
+        if is_cbt:
+            # 受験者が増えるたびに順位・偏差値が変わるので、読むたびに計算し直す。
+            examinees, live_rank, live_percentile, live_deviation = cbt_cohort_stats(
+                result
+            )
+            if examinees < CBT_RANKING_MIN_EXAMINEES:
+                graded = False
+            else:
+                result.rank = live_rank
+                result.percentile = live_percentile
+                result.deviation_score = live_deviation
+        elif graded and ranking_available_at and timezone.now() < ranking_available_at:
             graded = False
         # 得点・正誤・解説は提出した時点で本人に返す。順位や偏差値と違って
         # 他の受験者の結果を待つ必要がなく、待たせるほど復習から遠ざかる。
@@ -688,6 +693,9 @@ class ExamResultView(APIView):
             "review": review,
             # 全国順位・偏差値は翌月1日からランキングタブへ出る。
             "ranking_available_at": ranking_available_at,
+            # CBT模試だけは日付ではなく受験者数で解禁する。
+            "examinees": examinees,
+            "ranking_min_examinees": CBT_RANKING_MIN_EXAMINEES if is_cbt else None,
         }
         if not graded:
             return Response({**common, "status": "submitted"})

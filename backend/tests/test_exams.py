@@ -1,12 +1,14 @@
 import datetime
+import uuid
 from io import StringIO
 
 import pytest
 from django.core.management import call_command
 from django.utils import timezone
 
-from accounts.models import University
+from accounts.models import Profile, University
 from accounts.ranktier import STARTING_POINTS
+from exams.constants import CBT_RANKING_MIN_EXAMINEES
 from exams.models import MockAnswer, MockExam, MockQuestion, MockResult
 from exams.views import exam_status_for
 from quiz.models import AnswerHistory
@@ -416,7 +418,7 @@ class TestCbtOnceDefaults:
 
 
 class TestCbtOnceExam:
-    """CBT模試（生涯1回）: 提出と同時に個別採点され、二度目は受験できない。"""
+    """CBT模試: 提出と同時に個別採点され、同じ年度の二度目は受験できない。"""
 
     def test_immediate_grading_and_single_attempt(self):
         client, profile = auth_client(grade=3)
@@ -429,10 +431,11 @@ class TestCbtOnceExam:
         assert result.irt_scaled_score is not None
         assert result.points_delta is None  # CBT模試はポイント対象外
 
-        res = client.get(f"/api/exams/{exam.id}/result/")
-        assert res.status_code == 200
-        assert res.json()["status"] == "graded"
-        assert res.json()["irt_scaled_score"] == result.irt_scaled_score
+        # 得点と予想IRTは提出直後から見られる（成績＝順位・偏差値は受験者が
+        # CBT_RANKING_MIN_EXAMINEES 人に届いてから）。
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+        assert body["status"] == "submitted"
+        assert body["score"] == 4
 
         other_exam = make_exam(n_questions=2, kind=MockExam.Kind.CBT_ONCE, exam_type="CBT")
         blocked = client.post(f"/api/exams/{other_exam.id}/start/")
@@ -886,11 +889,11 @@ class TestGradesAreRevealedOnTheFirstOfNextMonth:
         assert body["status"] == "graded"
         assert body["rank"] == 1
 
-    def test_the_cbt_exam_is_not_made_to_wait(self):
-        """CBT模試は締切を共有せず提出時に個別採点するので、すぐ成績を出す。
+    def test_the_cbt_exam_is_not_gated_by_the_calendar(self):
+        """CBT模試は締切を共有しないので、日付では区切らない。
 
-        end_at が遠い未来に置かれているため、翌月1日の規則をあてると
-        何十年も先になってしまう。
+        年度末まで受験できるため、翌月1日の規則をあてると年度によって
+        何ヶ月も待たされる。代わりに受験者数で区切る（別クラスで検証）。
         """
         for i in range(400):
             make_question(question_text=f"CBTプール{i}", correct_choice_key="A")
@@ -903,8 +906,8 @@ class TestGradesAreRevealedOnTheFirstOfNextMonth:
 
         body = client.get(f"/api/exams/{exam.id}/result/").json()
 
-        assert body["status"] == "graded"
         assert body["ranking_available_at"] is None
+        assert body["ranking_min_examinees"] == CBT_RANKING_MIN_EXAMINEES
 
 
 class TestCbtExamIsYearly:
@@ -1008,3 +1011,114 @@ class TestCbtExamIsYearly:
 
         assert res.status_code == 400
         assert "今年度" in res.content.decode()
+
+
+class TestCbtGradeNeedsEnoughExaminees:
+    """CBT模試の成績は受験者が100人に届いてから。届いたあとは随時更新する。
+
+    締切を共有しないので日付では区切れない。母集団が小さいと偏差値が意味を
+    持たず、順位も1人増えるたびに大きく動くため、人数で区切る。
+    """
+
+    def exam_with(self, examinees, my_score=4):
+        """自分＋(examinees-1)人ぶんの提出済み結果を作る。"""
+        exam = make_exam(n_questions=4, kind=MockExam.Kind.CBT_ONCE, exam_type="CBT")
+        client, _ = auth_client(grade=4)
+        start_and_answer_all(client, exam, key="A" if my_score == 4 else "B")
+        now = timezone.now()
+        MockResult.objects.bulk_create(
+            MockResult(
+                user=Profile.objects.create(id=uuid.uuid4(), grade=4),
+                mock_exam=exam,
+                started_at=now,
+                submitted_at=now,
+                score=i % 5,
+            )
+            for i in range(examinees - 1)
+        )
+        return client, exam
+
+    def test_it_is_withheld_below_the_threshold(self):
+        client, exam = self.exam_with(CBT_RANKING_MIN_EXAMINEES - 1)
+
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        assert body["status"] == "submitted"
+        assert body["examinees"] == CBT_RANKING_MIN_EXAMINEES - 1
+        assert body["ranking_min_examinees"] == CBT_RANKING_MIN_EXAMINEES
+        assert "rank" not in body
+        assert "deviation_score" not in body
+        # 得点と解説は待たせない
+        assert body["score"] == 4
+        assert len(body["review"]) == 4
+
+    def test_it_appears_once_the_threshold_is_reached(self):
+        client, exam = self.exam_with(CBT_RANKING_MIN_EXAMINEES)
+
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        assert body["status"] == "graded"
+        assert body["examinees"] == CBT_RANKING_MIN_EXAMINEES
+        assert body["rank"] == 1  # 満点なので1位
+        assert body["deviation_score"] is not None
+
+    def test_the_grade_keeps_up_with_new_examinees(self):
+        """あとから高得点の受験者が増えたら順位が下がること（随時更新）。"""
+        client, exam = self.exam_with(CBT_RANKING_MIN_EXAMINEES)
+        assert client.get(f"/api/exams/{exam.id}/result/").json()["rank"] == 1
+
+        now = timezone.now()
+        MockResult.objects.bulk_create(
+            MockResult(
+                user=Profile.objects.create(id=uuid.uuid4(), grade=4),
+                mock_exam=exam,
+                started_at=now,
+                submitted_at=now,
+                score=10,  # 自分より高得点
+            )
+            for _ in range(3)
+        )
+
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        assert body["examinees"] == CBT_RANKING_MIN_EXAMINEES + 3
+        assert body["rank"] == 4  # 上に3人入った
+
+    def test_other_rounds_are_not_mixed_into_the_cohort(self):
+        """母集団は同じ回の受験者だけ（年度が替われば別の母集団）。"""
+        client, exam = self.exam_with(CBT_RANKING_MIN_EXAMINEES - 1)
+        other = make_exam(n_questions=4, kind=MockExam.Kind.CBT_ONCE, exam_type="CBT")
+        now = timezone.now()
+        MockResult.objects.bulk_create(
+            MockResult(
+                user=Profile.objects.create(id=uuid.uuid4(), grade=4),
+                mock_exam=other,
+                started_at=now,
+                submitted_at=now,
+                score=1,
+            )
+            for _ in range(50)
+        )
+
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        assert body["examinees"] == CBT_RANKING_MIN_EXAMINEES - 1
+        assert body["status"] == "submitted"
+
+    def test_unsubmitted_results_do_not_count(self):
+        client, exam = self.exam_with(CBT_RANKING_MIN_EXAMINEES - 1)
+        now = timezone.now()
+        MockResult.objects.bulk_create(
+            MockResult(
+                user=Profile.objects.create(id=uuid.uuid4(), grade=4),
+                mock_exam=exam,
+                started_at=now,
+                submitted_at=None,
+                score=0,
+            )
+            for _ in range(10)
+        )
+
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        assert body["examinees"] == CBT_RANKING_MIN_EXAMINEES - 1
