@@ -1768,6 +1768,18 @@
   font-weight: 700;
 }
 
+/* 「正解」「あなたの解答」の小さな見出し。色は行の色を継ぐ。 */
+.choice-note-tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+
 .choice-note-row .choice-note {
   padding-left: 0;
   margin: 2px 0 0;
@@ -1782,6 +1794,50 @@
 .battle-review-choice {
   flex-direction: column;
   align-items: stretch;
+}
+
+/* アプリのロゴマーク（医トレ）。ホーム画面の先頭。 */
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 12px;
+}
+
+.brand-mark-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+  color: #fff;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+}
+
+.brand-mark-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-mark-name {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--text-h);
+}
+
+.brand-mark-tagline {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  opacity: 0.7;
 }
 
 /* 問題一覧の見出し。分野ごとの配色（theme-*）で塗る。 */

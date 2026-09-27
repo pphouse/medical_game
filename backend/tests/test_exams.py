@@ -196,6 +196,12 @@ class TestGrading:
         assert copied.count() == 4
         assert set(copied.values_list("mastery_level", flat=True)) == {"unstudied"}
 
+        # 成績は受験した月の翌月1日から見える。開催を先月にずらして解禁する。
+        MockExam.objects.filter(pk=exam.pk).update(
+            start_at=exam.start_at - datetime.timedelta(days=45),
+            end_at=exam.end_at - datetime.timedelta(days=45),
+        )
+
         body = c1.get(f"/api/exams/{exam.id}/result/").json()
         assert body["status"] == "graded"
         assert body["rank"] == 1
@@ -471,8 +477,8 @@ class TestLargeExamDetail:
 
 class TestPointsRanking:
     def test_only_ranked_users_are_listed(self):
-        client, profile = auth_client()
-        unranked_client, _ = auth_client()  # ranked_matches=0 のまま
+        client, profile = auth_client(grade=4)
+        unranked_client, _ = auth_client(grade=4)  # ranked_matches=0 のまま
         profile.points = 1200
         profile.ranked_matches = 3
         profile.save(update_fields=["points", "ranked_matches"])
@@ -490,12 +496,12 @@ class TestPointsRankingScope:
         from accounts.models import University
 
         uni = University.objects.create(name="ランキング大学")
-        client, profile = auth_client(university=uni)
+        client, profile = auth_client(university=uni, grade=4)
         profile.points = 1100
         profile.ranked_matches = 2
         profile.save(update_fields=["points", "ranked_matches"])
 
-        other_client, other = auth_client()  # 別大学（未設定）、こちらもランク対象
+        other_client, other = auth_client(grade=4)  # 別大学（未設定）、こちらもランク対象
         other.points = 1300
         other.ranked_matches = 1
         other.save(update_fields=["points", "ranked_matches"])
@@ -506,9 +512,87 @@ class TestPointsRankingScope:
         assert len(body["entries"]) == 1  # 他大学のユーザーは含まれない
         assert body["entries"][0]["display_name"] != ""
 
-        no_uni_client, _ = auth_client()
+        no_uni_client, _ = auth_client(grade=4)
         res2 = no_uni_client.get("/api/ranking/points/?scope=university")
         assert res2.json()["me"]["eligible"] is False
+
+
+class TestPointsRankingIsScopedToTheSameGrade:
+    """対戦ポイントの順位も、演習ランキングと同じく同学年の中で付ける。
+
+    ランク階層（SS〜D）だけは学年をまたいだ全国基準のまま。
+    """
+
+    def ranked(self, grade, points, name):
+        client, profile = auth_client(grade=grade, display_name=name)
+        profile.points = points
+        profile.ranked_matches = 2
+        profile.save(update_fields=["points", "ranked_matches"])
+        return client, profile
+
+    def test_other_grades_are_not_listed(self):
+        client, _ = self.ranked(4, 1000, "同学年の自分")
+        self.ranked(4, 1200, "同学年の相手")
+        self.ranked(6, 3000, "上の学年")
+
+        body = client.get("/api/ranking/points/").json()
+
+        names = [e["display_name"] for e in body["entries"]]
+        assert names == ["同学年の相手", "同学年の自分"]
+        assert body["total_ranked"] == 2
+
+    def test_the_rank_numbers_are_within_the_grade(self):
+        client, _ = self.ranked(4, 1000, "自分")
+        self.ranked(6, 9000, "上の学年")
+
+        body = client.get("/api/ranking/points/").json()
+
+        me = next(e for e in body["entries"] if e["is_me"])
+        assert me["rank"] == 1  # 上の学年の9000ptには抜かれない
+
+    def test_the_tier_stays_national(self):
+        """ランクは通算の実力を表すので、学年で基準を変えない。"""
+        client, _ = self.ranked(4, 100, "自分")
+        for i in range(9):
+            self.ranked(6, 5000 + i, f"上の学年{i}")
+
+        body = client.get("/api/ranking/points/").json()
+
+        me = next(e for e in body["entries"] if e["is_me"])
+        # 同学年では1位だが、全国10人中では最下位なのでSSにはならない
+        assert me["rank"] == 1
+        assert me["tier"] != "SS"
+
+    def test_a_user_without_a_grade_is_told_to_set_it(self):
+        client, profile = auth_client()
+        profile.points = 1000
+        profile.ranked_matches = 2
+        profile.save(update_fields=["points", "ranked_matches"])
+
+        body = client.get("/api/ranking/points/").json()
+
+        assert body["entries"] == []
+        assert body["me"]["eligible"] is False
+        assert "学年" in body["me"]["reason"]
+
+    def test_university_scope_is_the_same_grade_of_the_same_university(self):
+        from accounts.models import University
+
+        uni = University.objects.create(name="同じ大学")
+        client, profile = auth_client(university=uni, grade=4, display_name="自分")
+        profile.points = 1000
+        profile.ranked_matches = 2
+        profile.save(update_fields=["points", "ranked_matches"])
+        for grade, name in ((4, "同学年の学内"), (6, "別学年の学内")):
+            _, other = auth_client(university=uni, grade=grade, display_name=name)
+            other.points = 1500
+            other.ranked_matches = 2
+            other.save(update_fields=["points", "ranked_matches"])
+
+        body = client.get("/api/ranking/points/?scope=university").json()
+
+        names = [e["display_name"] for e in body["entries"]]
+        assert names == ["同学年の学内", "自分"]
 
 
 class TestExamGradeGating:
@@ -757,3 +841,65 @@ class TestMockAnswersFeedTheReviewDeck:
         start_and_answer_all(client, second, key="A")
 
         assert client.get("/api/quiz/review-filter/?source=mock").json()["count"] == 7
+
+
+class TestGradesAreRevealedOnTheFirstOfNextMonth:
+    """成績（順位・偏差値）は受験した月の翌月1日から見せること。
+
+    採点が終わった順に出すと、同じ回でも人によって見えるタイミングが
+    変わってしまう。得点・正誤・解説は提出直後から見せるので、待つのは
+    成績だけ。
+    """
+
+    def graded_exam(self, client, *, days_ago=0):
+        exam = make_exam(n_questions=4)
+        start_and_answer_all(client, exam, key="A")
+        if days_ago:
+            MockExam.objects.filter(pk=exam.pk).update(
+                start_at=exam.start_at - datetime.timedelta(days=days_ago),
+                end_at=exam.end_at - datetime.timedelta(days=days_ago),
+            )
+        call_command("grade_mock_exam", "--exam-id", exam.id, "--force")
+        return exam
+
+    def test_the_grade_is_withheld_until_then(self):
+        client, _ = auth_client(grade=4)
+        exam = self.graded_exam(client)
+
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        assert body["status"] == "submitted"
+        assert "rank" not in body
+        assert "deviation_score" not in body
+        # 得点と解説は待たせない
+        assert body["score"] == 4
+        assert len(body["review"]) == 4
+
+    def test_it_shows_up_once_the_first_has_passed(self):
+        client, _ = auth_client(grade=4)
+        exam = self.graded_exam(client, days_ago=45)
+
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        assert body["status"] == "graded"
+        assert body["rank"] == 1
+
+    def test_the_cbt_exam_is_not_made_to_wait(self):
+        """CBT模試は締切を共有せず提出時に個別採点するので、すぐ成績を出す。
+
+        end_at が遠い未来に置かれているため、翌月1日の規則をあてると
+        何十年も先になってしまう。
+        """
+        for i in range(400):
+            make_question(question_text=f"CBTプール{i}", correct_choice_key="A")
+        call_command("create_scheduled_exam", "--kind", "cbt_once")
+        exam = MockExam.objects.get(kind=MockExam.Kind.CBT_ONCE)
+
+        client, _ = auth_client(grade=4)
+        client.post(f"/api/exams/{exam.id}/start/")
+        client.post(f"/api/exams/{exam.id}/submit/")
+
+        body = client.get(f"/api/exams/{exam.id}/result/").json()
+
+        assert body["status"] == "graded"
+        assert body["ranking_available_at"] is None

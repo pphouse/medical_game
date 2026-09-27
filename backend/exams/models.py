@@ -19,7 +19,7 @@ class MockExam(models.Model):
     class Kind(models.TextChoices):
         MONTHLY = "monthly", "月次実力テスト"
         LARGE = "large", "国試模試（国試2ヶ月前）"
-        CBT_ONCE = "cbt_once", "CBT模試（生涯1回）"
+        CBT_ONCE = "cbt_once", "CBT模試（1度だけ）"
 
     title = models.CharField(max_length=255)
     kind = models.CharField(

@@ -81,6 +81,50 @@ describe("模試の結果画面", () => {
     expect(screen.getByText(/あなたの解答: A ／ 正解: B/)).toBeInTheDocument();
   });
 
+  it("選択肢を色分けし、正解と自分の解答を示す", async () => {
+    api.examResult.mockResolvedValue({
+      status: "submitted",
+      title: "月次実力テスト（CBT）",
+      score: 1,
+      max_score: 2,
+      review: REVIEW,
+      ranking_available_at: "2026-10-01T00:00:00+09:00",
+    });
+
+    renderResult();
+    await screen.findByText("見直し");
+
+    // 2問目: 正解はB、自分はAを選んで外した
+    const rows = document.querySelectorAll(".choice-note-row");
+    const correct = [...rows].filter((r) => r.classList.contains("correct"));
+    const incorrect = [...rows].filter((r) => r.classList.contains("incorrect"));
+    // 1問目の正解A（＝自分の解答）と2問目の正解Bが緑
+    expect(correct).toHaveLength(2);
+    // 赤は「自分が選んで外した」2問目のAだけ（1問目は正解なので赤にしない）
+    expect(incorrect).toHaveLength(1);
+    // 正解と自分の解答が一致した1問目のAは緑のまま（赤にはならない）
+    expect(correct[0].classList.contains("incorrect")).toBe(false);
+
+    expect(screen.getAllByText("正解")).toHaveLength(2);
+    expect(screen.getAllByText("あなたの解答")).toHaveLength(2);
+  });
+
+  it("解説の無い選択肢も一覧に並べる", async () => {
+    api.examResult.mockResolvedValue({
+      status: "submitted",
+      title: "月次実力テスト（CBT）",
+      score: 1,
+      max_score: 2,
+      review: [{ ...REVIEW[0], choice_explanations: {} }],
+      ranking_available_at: "2026-10-01T00:00:00+09:00",
+    });
+
+    renderResult();
+    await screen.findByText("見直し");
+
+    expect(document.querySelectorAll(".choice-note-row")).toHaveLength(2);
+  });
+
   it("成績はランキングタブで見られると案内する", async () => {
     api.examResult.mockResolvedValue({
       status: "submitted",

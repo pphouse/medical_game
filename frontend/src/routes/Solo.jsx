@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
+import BrandMark from "../components/BrandMark";
 import ProgressBar from "../components/ProgressBar";
 import ProgressDonut from "../components/ProgressDonut";
 import { useProfile } from "../context/ProfileContext";
@@ -81,6 +82,8 @@ export default function Solo() {
 
   return (
     <div className="screen">
+      <BrandMark />
+
       {summary && (
         <div className="summary-card">
           <ProgressDonut
