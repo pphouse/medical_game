@@ -250,7 +250,8 @@ class TestShippedData:
         「疾患と症状の組合せ」型の設問は左右2列で組まれており、区切りが
         入らないと「葉酸小球性貧血」のように2列が続けて読めてしまう。
         字間から列の境目を判定しているため、間隔が狭い回では区切りが
-        入らないことがあった（第117回で9問）。
+        入らないことがあった（第117回で9問）。一部の選択肢だけ区切りが
+        落ちたものもあった（第109回で5問、「収縮期駆出性雑音大動脈弁狭窄症」）。
 
         2列組みは国試PDFの組版に由来するので、この検査は国試データだけに
         かける。CBTの設問は自作で、選択肢が文になっており2列ではない。
@@ -266,9 +267,9 @@ class TestShippedData:
             for q in payload.get("questions", [])
             if "組合せ" in q["question_text"]
             and q.get("blueprint_code") not in NOT_TWO_COLUMN
-            and not any("—" in c["text"] for c in q["choices"])
+            and not all("—" in c["text"] for c in q["choices"])
         ]
-        assert not bad, "組合せ問題に列の区切りが無い:\n" + "\n".join(bad)
+        assert not bad, "組合せ問題に列の区切りが無い選択肢がある:\n" + "\n".join(bad)
 
     def test_categories_belong_to_their_exam(self, path):
         """分野名はその試験種別の正規の科目名で、取り込み直しても変わらない。
