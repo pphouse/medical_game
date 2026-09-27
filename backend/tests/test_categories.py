@@ -54,7 +54,7 @@ class TestTaxonomy:
                 assert target in GENERIC_BY_EXAM[CBT]
 
     def test_kokushi_follows_the_qb_chapters(self):
-        for chapter in ("消化管", "肝・胆・膵", "免疫・膠原病", "必修問題"):
+        for chapter in ("消化管", "肝・胆・膵", "免疫・膠原病", "公衆衛生"):
             assert chapter in KOKUSHI_CATEGORIES
 
     def test_emergency_toxicology_anesthesia_are_one_subject(self):
@@ -87,7 +87,7 @@ class TestBlueprintCode:
             ("D-5-4)-(2)-③", "循環器", "循環器"),
             ("D-1", "血液", "血液"),
             ("D-4", "運動器", "整形外科"),
-            ("D-8-1)", "腎・泌尿器", "腎・泌尿器"),
+            ("D-8-1)", "腎臓", "腎臓"),
             ("D-9", "産婦人科", "婦人科・乳腺外科"),
             ("D-10", "産婦人科", "産科"),
             ("D-12", "内分泌・代謝", "代謝・内分泌"),
@@ -115,7 +115,7 @@ class TestBlueprintCode:
         assert category_for_blueprint_code("B", KOKUSHI) == "公衆衛生"
 
     def test_blueprint_code_beats_the_stored_category(self):
-        assert normalize("循環器", "心電図所見", "D-8-1)", CBT) == "腎・泌尿器"
+        assert normalize("循環器", "心電図所見", "D-8-1)", CBT) == "腎臓"
 
     def test_blueprint_code_beats_keywords(self):
         text = "疫学調査で罹患率とオッズ比を求めた。"
@@ -131,7 +131,7 @@ class TestNormalize:
         ("old", "cbt", "kokushi"),
         [
             ("循環器系", "循環器", "循環器"),
-            ("腎・尿路系", "腎・泌尿器", "腎・泌尿器"),
+            ("腎・尿路系", "腎臓", "腎臓"),
             ("運動器系", "運動器", "整形外科"),
             ("血液・造血器・リンパ系", "血液", "血液"),
             ("免疫・アレルギー・膠原病", "免疫・膠原病", "免疫・膠原病"),
@@ -235,13 +235,13 @@ class TestDisplayOrderPriorities:
         return sorted(categories_for(exam), key=lambda c: category_sort_key(c, exam))
 
     def test_cbt_starts_with_the_heavy_organ_subjects(self):
-        assert self.order(CBT)[:5] == [
-            "循環器", "消化器", "内分泌・代謝", "呼吸器", "腎・泌尿器",
+        assert self.order(CBT)[:6] == [
+            "循環器", "消化器", "内分泌・代謝", "呼吸器", "腎臓", "泌尿器",
         ]
 
     def test_kokushi_starts_with_the_heavy_organ_subjects(self):
-        assert self.order(KOKUSHI)[:5] == [
-            "循環器", "消化管", "肝・胆・膵", "代謝・内分泌", "腎・泌尿器",
+        assert self.order(KOKUSHI)[:6] == [
+            "循環器", "消化管", "肝・胆・膵", "代謝・内分泌", "腎臓", "泌尿器",
         ]
 
     def test_the_digestive_subject_is_second(self):
@@ -250,9 +250,9 @@ class TestDisplayOrderPriorities:
         assert self.order(KOKUSHI)[1] == "消化管"
 
     def test_the_kidney_subject_is_fifth(self):
-        """腎臓はどちらの試験でも上から5番目。"""
-        assert self.order(CBT)[4] == "腎・泌尿器"
-        assert self.order(KOKUSHI)[4] == "腎・泌尿器"
+        """腎臓はどちらの試験でも上から5番目、泌尿器がその次。"""
+        assert self.order(CBT)[4:6] == ["腎臓", "泌尿器"]
+        assert self.order(KOKUSHI)[4:6] == ["腎臓", "泌尿器"]
 
     def test_public_health_is_last(self):
         # CBTの公衆衛生は医学総論・診療の基本とひとまとめの科目。
@@ -358,49 +358,153 @@ class TestRadiologySubjectQuestions:
 
 
 @pytest.mark.django_db
-class TestUrologyIsMergedIntoKidney:
-    """「泌尿器科」は「腎・泌尿器」に統合する。
+class TestKidneyAndUrologyAreSeparate:
+    """腎臓（内科）と泌尿器（外科）は別の科目にする。
 
-    国試の章立てに両方あり中身が被っていた。同じ臓器の問題が2つの科目に
-    分かれて並ぶと、どちらを開けばいいのか分からない。
+    診る科が違うのでまとめてあると目的の分野を探しにくい。出題基準の
+    D-8 は腎・尿路ひとまとめなので、本文の語で振り分ける。
     """
 
-    def test_it_is_not_a_subject_of_its_own(self):
-        assert "泌尿器科" not in categories_for(KOKUSHI)
-        assert "泌尿器科" not in categories_for(CBT)
+    def test_both_are_subjects(self):
+        for exam in (CBT, KOKUSHI):
+            assert "腎臓" in categories_for(exam)
+            assert "泌尿器" in categories_for(exam)
+            assert "腎・泌尿器" not in categories_for(exam)
 
-    @pytest.mark.parametrize("name", ["泌尿器科", "泌尿器", "泌尿器系", "腎臓"])
     @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
-    def test_the_legacy_names_normalize_to_the_kidney_subject(self, exam, name):
+    @pytest.mark.parametrize(
+        ("text", "expected"),
+        [
+            ("70歳の男性。前立腺癌の疑いで紹介された。", "泌尿器"),
+            ("尿管結石の治療で正しいのはどれか。", "泌尿器"),
+            ("膀胱尿管逆流症で正しいのはどれか。", "泌尿器"),
+            ("ネフローゼ症候群で浮腫をきたす機序はどれか。", "腎臓"),
+            ("慢性糸球体腎炎の組織所見はどれか。", "腎臓"),
+        ],
+    )
+    def test_the_blueprint_code_is_split_by_the_text(self, exam, text, expected):
         from quiz.categories import normalize
 
-        assert normalize(name, exam_type=exam) == "腎・泌尿器"
+        assert normalize(None, text, "D-8", exam) == expected
 
-    def test_existing_questions_are_moved(self):
-        from django.core.management import call_command
+    def test_a_named_kidney_category_is_left_alone(self):
+        """分野名で腎臓だと分かっているものは本文を見ずにそのまま通す。"""
+        from quiz.categories import normalize
+
+        assert normalize("腎臓", "前立腺の記述を含む文章", exam_type=KOKUSHI) == "腎臓"
+
+    @pytest.mark.parametrize("name", ["泌尿器科", "泌尿器", "泌尿器系"])
+    @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
+    def test_urology_legacy_names_resolve_to_urology(self, exam, name):
+        from quiz.categories import normalize
+
+        assert normalize(name, exam_type=exam) == "泌尿器"
+
+    def test_existing_questions_are_split(self):
+        import importlib
+
+        from django.apps import apps as django_apps
 
         from quiz.models import Question
 
-        Question.objects.create(
-            category="泌尿器科",
-            exam_type="KOKUSHI",
+        for text in ("前立腺肥大症の治療はどれか。", "急性糸球体腎炎の所見はどれか。"):
+            Question.objects.create(
+                category="腎・泌尿器",
+                exam_type="KOKUSHI",
+                difficulty=2,
+                question_text=text,
+                choices=[{"key": k, "text": k} for k in "ABCDE"],
+                correct_choice_key="A",
+                explanation="",
+                status=Question.Status.PUBLISHED,
+            )
+
+        module = importlib.import_module("quiz.migrations.0017_split_kidney_and_urology")
+        module.split(django_apps, None)
+
+        assert Question.objects.filter(category="泌尿器").count() == 1
+        assert Question.objects.filter(category="腎臓").count() == 1
+        assert not Question.objects.filter(category="腎・泌尿器").exists()
+
+    def test_the_blueprint_weights_cover_both(self):
+        from quiz.blueprint_weights import CBT_WEIGHTS, KOKUSHI_WEIGHTS
+
+        for weights in (CBT_WEIGHTS, KOKUSHI_WEIGHTS):
+            assert "腎・泌尿器" not in weights
+            assert weights["腎臓"] > weights["泌尿器"] > 0
+
+
+@pytest.mark.django_db
+class TestEverySubjectHasEnoughQuestions:
+    """演習の単位として成立するよう、問題数が少なすぎる科目は残さない。
+
+    国試の免疫・膠原病(7)・放射線科(7)・必修問題(0)が10問に届いていなかった。
+    膠原病は他の科に散っていた設問を集め、残り2つは医学総論へ統合した。
+    """
+
+    def question(self, category, text, exam="KOKUSHI"):
+        from quiz.models import Question
+
+        return Question.objects.create(
+            category=category,
+            exam_type=exam,
             difficulty=2,
-            question_text="旧章立てのままの設問",
+            question_text=text,
             choices=[{"key": k, "text": k} for k in "ABCDE"],
             correct_choice_key="A",
             explanation="",
             status=Question.Status.PUBLISHED,
         )
 
-        call_command("reclassify_categories", verbosity=0)
+    def consolidate(self):
+        import importlib
 
-        assert not Question.objects.filter(category="泌尿器科").exists()
-        assert Question.objects.filter(category="腎・泌尿器").count() == 1
+        from django.apps import apps as django_apps
 
-    def test_the_blueprint_weight_is_carried_over(self):
-        """統合した科目の重みも足し込む（配分から抜け落ちないように）。"""
-        from quiz.blueprint_weights import KOKUSHI_WEIGHTS
+        module = importlib.import_module("quiz.migrations.0016_consolidate_small_subjects")
+        module.consolidate(django_apps, None)
 
-        assert "泌尿器科" not in KOKUSHI_WEIGHTS
-        # 腎・泌尿器(14) + 泌尿器科(8)
-        assert KOKUSHI_WEIGHTS["腎・泌尿器"] == 22
+    def test_small_subjects_are_gone_from_the_taxonomy(self):
+        for dropped in ("放射線科", "必修問題"):
+            assert dropped not in categories_for(KOKUSHI)
+
+    @pytest.mark.parametrize("name", ["放射線科", "必修問題"])
+    def test_their_names_still_resolve_somewhere_sensible(self, name):
+        from quiz.categories import normalize
+
+        assert normalize(name, exam_type=KOKUSHI) == "医学総論"
+        assert normalize(name, exam_type=CBT) == "医学総論・公衆衛生・診療の基本"
+
+    def test_radiology_and_essentials_move_to_general_medicine(self):
+        from quiz.models import Question
+
+        self.question("放射線科", "被曝線量が最も多い検査はどれか。")
+        self.question("必修問題", "必修のままだった設問。")
+
+        self.consolidate()
+
+        assert Question.objects.filter(category="医学総論").count() == 2
+        assert not Question.objects.filter(category__in=["放射線科", "必修問題"]).exists()
+
+    def test_immunology_questions_are_gathered(self):
+        from quiz.models import Question
+
+        self.question("呼吸器", "関節リウマチの関節外症状としてみられないのはどれか。")
+        self.question("産科", "抗リン脂質抗体症候群で正しいのはどれか。")
+
+        self.consolidate()
+
+        assert Question.objects.filter(category="免疫・膠原病").count() == 2
+
+    def test_clinical_cases_stay_in_their_organ_subject(self):
+        """合併症として膠原病が出てくる症例は各論に残す。"""
+        from quiz.models import Question
+
+        self.question("産科", "34歳の初産婦。抗リン脂質抗体症候群の既往があり妊娠13週で受診した。")
+        self.question("整形外科", "68歳の女性。関節リウマチのため通院中で、腰背部痛を主訴に来院した。")
+
+        self.consolidate()
+
+        assert not Question.objects.filter(category="免疫・膠原病").exists()
+        assert Question.objects.filter(category="産科").count() == 1
+        assert Question.objects.filter(category="整形外科").count() == 1

@@ -109,6 +109,12 @@ function FilteredPractice({
 
   const categories = result.available_categories ?? [];
   const count = result.count ?? 0;
+  // 「前回の続き」＝まだ解いていない最初の問題。全部解き終わっていれば
+  // 先頭から（findIndex が -1 を返すので 0 に丸める）。
+  const resumeIndex = Math.max(
+    0,
+    (result.results ?? []).findIndex((q) => q.mastery_level === "unstudied"),
+  );
 
   // 模試・対戦の復習は、まだ一度も解いていないと対象が空になる。絞り込みの
   // 結果ゼロなのか、そもそも履歴が無いのかを取り違えないよう文言を分ける。
@@ -199,10 +205,13 @@ function FilteredPractice({
               title: "演習問題",
               questions: result.results,
               context: "review",
+              startIndex: resumeIndex,
             })
           }
         >
-          {count === 0 ? "条件に合う問題がありません" : `演習を始める（${count}問）`}
+          {count === 0
+            ? "条件に合う問題がありません"
+            : `前回の続きから始める（${count}問）`}
         </button>
         <button
           className="cta-button cta-button-secondary"

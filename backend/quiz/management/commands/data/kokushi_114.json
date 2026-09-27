@@ -1169,7 +1169,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-B-16",
-      "category": "腎・泌尿器",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "成人において慢性腎臓病の発症のリスクファクターとならないのはどれか。",
       "choices": [
@@ -2563,7 +2563,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-C-39",
-      "category": "腎・泌尿器",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "82歳の男性。歩行困難を主訴に来院した。IgA腎症による慢性腎不全で14年前から1回4時間、週3回の血液透析を受けている。2年前から歩行速度が低下し、最近は横断歩道を渡りきれないことがある。階段昇降も両手で手すりにつかまらないと困難で、通院以外の外出を控えるようになったという。体重は1年前から5 kg減少し、このまま歩けなくなることを心配して受診した。身長167cm、体重47 kg(透析直後体重46kg)。脈拍72/分、整。血圧138/72mmHg。心音と呼吸音とに異常を認めない。浮腫はない。徒手筋力テストで両下肢とも4である。その他、神経診察に異常を認めない。両足背動脈は左右差なく触知する。血液所見:赤血球338万、Hb11.0g/dL、Ht33%、白血球5,200、血小板14万。血液生化学所見:総蛋白6.8g/dL、アルブミン3.6g/dL、AST22U/L、ALT18U/L、LD178U/L (基準120〜245)、CK38U/L(基準30〜140)、尿素窒素72mg/dL、クレアチニン7.8mg/dL、尿酸7.4mg/dL、Na138mEq/L、K4.2mEq/L、Cl101mEq/L、Ca 9.2mg/dL、P5.6mg/dL。CRP0.1mg/dL。歩行困難の原因として考えられるのはどれか。",
       "choices": [
@@ -4331,7 +4331,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-E-22",
-      "category": "腎・泌尿器",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "糖尿病腎症による腎機能予後を観察研究で調査することにした。アウトカムとして臨床的に最も重要なのはどれか。",
       "choices": [
