@@ -82,9 +82,9 @@ export default function Result() {
   const pendingNote = byExaminees
     ? `受験者が${data.ranking_min_examinees}人に達すると、全国順位・偏差値を「ランキング」タブの「模試」から確認できます` +
       `（現在 ${data.examinees ?? 0}人／あと${remaining}人）。受験者が増えるたびに成績は更新されます。` +
-      "下の見直しでは、いまのうちに正誤と解説を確認できます。"
+      "下の見直しでは、今のうちに正誤と解説を確認できます。"
     : `全国順位・学内順位・偏差値は${rankingDate ?? "翌月1日"}に「ランキング」タブの` +
-      "「模試」から確認できます。下の見直しでは、いまのうちに正誤と解説を確認できます。";
+      "「模試」から確認できます。下の見直しでは、今のうちに正誤と解説を確認できます。";
   const pendingLabel = byExaminees
     ? `成績を見る（あと${remaining}人の受験で公開）`
     : rankingDate
