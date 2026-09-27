@@ -1,4 +1,5 @@
 import datetime
+from io import StringIO
 
 import pytest
 from django.core.management import call_command
@@ -7,6 +8,7 @@ from django.utils import timezone
 from accounts.models import University
 from accounts.ranktier import STARTING_POINTS
 from exams.models import MockAnswer, MockExam, MockQuestion, MockResult
+from exams.views import exam_status_for
 from quiz.models import AnswerHistory
 
 from .helpers import auth_client, make_question
@@ -903,3 +905,106 @@ class TestGradesAreRevealedOnTheFirstOfNextMonth:
 
         assert body["status"] == "graded"
         assert body["ranking_available_at"] is None
+
+
+class TestCbtExamIsYearly:
+    """CBT模試は年度ごとに1回。毎年4月1日に新しい回へ更新し、受験できるのは
+    7月1日から翌3月31日まで。"""
+
+    def pool(self, n=400):
+        for i in range(n):
+            make_question(question_text=f"CBT年度プール{i}", correct_choice_key="A")
+
+    def create_at(self, when):
+        """``when`` を「今」として cbt_once を作る。"""
+        from exams.management.commands.create_scheduled_exam import Command
+
+        command = Command()
+        command.stdout = StringIO()
+        return command._create_cbt_once(
+            when,
+            {"count": 10, "duration": None, "title": None, "open_now": False, "start": None},
+        )
+
+    def test_the_window_is_july_to_march(self):
+        self.pool(20)
+        exam = self.create_at(datetime.datetime(2026, 4, 1, 0, 0, tzinfo=datetime.UTC))
+
+        opens = timezone.localtime(exam.start_at)
+        closes = timezone.localtime(exam.end_at)
+        assert (opens.year, opens.month, opens.day) == (2026, 7, 1)
+        assert (closes.year, closes.month, closes.day) == (2027, 3, 31)
+
+    def test_a_new_round_is_made_for_the_next_academic_year(self):
+        self.pool(20)
+        first = self.create_at(datetime.datetime(2026, 7, 1, 3, 0, tzinfo=datetime.UTC))
+        # 同じ年度のうちは作り直さない
+        assert self.create_at(
+            datetime.datetime(2026, 12, 1, 3, 0, tzinfo=datetime.UTC)
+        ).id == first.id
+        # 4月1日を過ぎたら次の年度ぶんを作る
+        second = self.create_at(datetime.datetime(2027, 4, 2, 3, 0, tzinfo=datetime.UTC))
+        assert second.id != first.id
+        assert timezone.localtime(second.start_at).year == 2027
+
+    def test_it_is_scheduled_before_july_and_open_after(self):
+        self.pool(20)
+        exam = self.create_at(datetime.datetime(2026, 4, 1, 0, 0, tzinfo=datetime.UTC))
+        client, _ = auth_client(grade=4)
+
+        # 4月〜6月は開催予定（受験できない）
+        april = timezone.localtime(exam.start_at) - datetime.timedelta(days=30)
+        assert exam_status_for(exam, None, april) == MockExam.Status.SCHEDULED
+        # 7月以降は受験可
+        july = timezone.localtime(exam.start_at) + datetime.timedelta(days=1)
+        assert exam_status_for(exam, None, july) == MockExam.Status.OPEN
+        # 4月1日を過ぎたら締切
+        after = timezone.localtime(exam.end_at) + datetime.timedelta(days=1)
+        assert exam_status_for(exam, None, after) == MockExam.Status.CLOSED
+        assert client is not None
+
+    def test_last_years_round_does_not_block_this_years(self):
+        """年度が替われば、前年度に受けた人もまた受験できる。"""
+        from exams.management.commands.create_scheduled_exam import academic_year_start
+
+        self.pool(20)
+        client, _ = auth_client(grade=4)
+
+        # 去年の回を受験済みにする（受験してから start_at を前年度へ動かす）。
+        last_year = self.create_at(timezone.now())
+        MockExam.objects.filter(pk=last_year.pk).update(
+            start_at=timezone.now() - datetime.timedelta(days=1),
+            end_at=timezone.now() + datetime.timedelta(days=30),
+        )
+        client.post(f"/api/exams/{last_year.id}/start/")
+        client.post(f"/api/exams/{last_year.id}/submit/")
+        previous_year = academic_year_start(timezone.now()) - datetime.timedelta(days=200)
+        MockExam.objects.filter(pk=last_year.pk).update(
+            start_at=previous_year, end_at=previous_year + datetime.timedelta(days=270)
+        )
+
+        # 今年度分が新しく作られ、そちらは受験できる。
+        this_year = self.create_at(timezone.now())
+        assert this_year.id != last_year.id
+        MockExam.objects.filter(pk=this_year.pk).update(
+            start_at=timezone.now() - datetime.timedelta(days=1),
+            end_at=timezone.now() + datetime.timedelta(days=30),
+        )
+
+        assert client.post(f"/api/exams/{this_year.id}/start/").status_code == 201
+
+    def test_the_same_year_cannot_be_taken_twice(self):
+        self.pool(20)
+        client, _ = auth_client(grade=4)
+        exam = self.create_at(timezone.now())
+        MockExam.objects.filter(pk=exam.pk).update(
+            start_at=timezone.now() - datetime.timedelta(days=1),
+            end_at=timezone.now() + datetime.timedelta(days=30),
+        )
+        client.post(f"/api/exams/{exam.id}/start/")
+        client.post(f"/api/exams/{exam.id}/submit/")
+
+        res = client.post(f"/api/exams/{exam.id}/start/")
+
+        assert res.status_code == 400
+        assert "今年度" in res.content.decode()
