@@ -44,6 +44,47 @@ def build_explanation(item):
     return explanation, {**folded, **per_choice}
 
 
+def question_fields(q):
+    """取り込む1問ぶんの列の値。
+
+    本番に SQL で入れるとき（scripts/build_question_import_sql.py）もこれを使う。
+    変換を二重に持つと、SQL で入れた行と import_questions で入れた行がずれる。
+    """
+    # バッチ JSON の分野名は作られた時期によってまちまちなので、
+    # 取り込み時に正規の科目立てへ寄せる（quiz/categories.py）。
+    # 科目立ては CBT と国試で違うので exam_type も渡す。
+    category = normalize_category(
+        q["category"],
+        "\n".join(
+            [q["question_text"], q.get("disease", q.get("topic", ""))]
+            + [str(c.get("text", "")) for c in q["choices"] if isinstance(c, dict)]
+        ),
+        blueprint_code=q.get("blueprint_code", ""),
+        exam_type=q["exam_type"],
+    )
+    explanation, choice_explanations = build_explanation(q)
+    return {
+        "category": category,
+        "question_text": q["question_text"],
+        "topic": q.get("disease", q.get("topic", "")),
+        "exam_type": q["exam_type"],
+        "difficulty": DIFFICULTY_MAP.get(
+            q.get("difficulty", "standard"), Question.Difficulty.NORMAL
+        ),
+        "question_type": q.get("question_type", Question.QuestionType.MULTIPLE_CHOICE),
+        "blueprint_code": q.get("blueprint_code", ""),
+        "class_group": q.get("class_group", ""),
+        "choices": convert_choices(q["choices"]),
+        "correct_choice_key": q["correct_choice_id"],
+        "explanation": explanation,
+        "choice_explanations": choice_explanations,
+        "visibility": Question.Visibility.PUBLIC,
+        # 強制 (spec 2-1): imported batches enter the review queue.
+        "status": Question.Status.PENDING,
+        "source": Question.Source.LLM,
+    }
+
+
 class Command(BaseCommand):
     help = (
         "Import questions from a JSON batch file. LLM-generated batches are "
@@ -90,20 +131,7 @@ class Command(BaseCommand):
         created_sets = 0
 
         for q in payload.get("questions", []):
-            # バッチ JSON の分野名は作られた時期によってまちまちなので、
-            # 取り込み時に正規の科目立てへ寄せる（quiz/categories.py）。
-            # 科目立ては CBT と国試で違うので exam_type も渡す。
-            category = normalize_category(
-                q["category"],
-                "\n".join(
-                    [q["question_text"], q.get("disease", q.get("topic", ""))]
-                    + [str(c.get("text", "")) for c in q["choices"] if isinstance(c, dict)]
-                ),
-                blueprint_code=q.get("blueprint_code", ""),
-                exam_type=q["exam_type"],
-            )
-            explanation, choice_explanations = build_explanation(q)
-            choices = convert_choices(q["choices"])
+            fields = question_fields(q)
             # 取り込み済みかどうかは本文と選択肢で見る。分野名を鍵に含めて
             # いたときは、科目立てを直したあとに取り込み直すと、同じ設問が
             # 新しい分野名でもう1つ作られ、古い分野名の行も残っていた
@@ -111,29 +139,12 @@ class Command(BaseCommand):
             # 見ないのは、国試には「医師の職業倫理に反するのはどれか。」の
             # ように本文が同じで選択肢の違う別の設問があるため。
             if Question.objects.filter(
-                exam_type=q["exam_type"], question_text=q["question_text"], choices=choices
+                exam_type=fields["exam_type"],
+                question_text=fields["question_text"],
+                choices=fields["choices"],
             ).exists():
                 continue
-            Question.objects.create(
-                category=category,
-                question_text=q["question_text"],
-                topic=q.get("disease", q.get("topic", "")),
-                exam_type=q["exam_type"],
-                difficulty=DIFFICULTY_MAP.get(
-                    q.get("difficulty", "standard"), Question.Difficulty.NORMAL
-                ),
-                question_type=q.get("question_type", Question.QuestionType.MULTIPLE_CHOICE),
-                blueprint_code=q.get("blueprint_code", ""),
-                class_group=q.get("class_group", ""),
-                choices=choices,
-                correct_choice_key=q["correct_choice_id"],
-                explanation=explanation,
-                choice_explanations=choice_explanations,
-                visibility=Question.Visibility.PUBLIC,
-                # 強制 (spec 2-1): imported batches enter the review queue.
-                status=Question.Status.PENDING,
-                source=Question.Source.LLM,
-            )
+            Question.objects.create(**fields)
             created_questions += 1
 
         for s in payload.get("question_sets", []):
