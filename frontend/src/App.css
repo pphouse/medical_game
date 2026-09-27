@@ -370,18 +370,29 @@
   white-space: nowrap;
 }
 
-/* 分野ごとの自分の正答率。問題数の左に置く。「100%」でも「－」でも
-   同じ幅を取り、右揃えにするので、問題数の開始位置が行ごとに動かない。 */
+/* 分野ごとの自分の正答率。問題数の左に置く。見出しは固定位置、数値は
+   幅を決めて右揃えにするので、「100%」でも「－」でも位置が動かない。 */
 .course-accuracy {
   flex: none;
-  width: 44px;
-  text-align: right;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
   font-size: 12px;
   font-weight: 700;
   color: var(--text);
   opacity: 0.8;
-  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.course-accuracy-label {
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.course-accuracy-value {
+  width: 38px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .progress-bar {

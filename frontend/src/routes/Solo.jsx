@@ -156,11 +156,14 @@ export default function Solo() {
               <span className="course-name">
                 {p.category} <span className="course-count">({p.total})</span>
               </span>
-              {/* 正答率は問題数の左。桁数（0%〜100%）で問題数の位置が動かない
-                  よう、幅を固定して右揃えにする。未演習の分野は null なので
-                  「－」にする（0% と区別）。 */}
+              {/* 正答率は問題数の左。「正答率」の位置と数値の右端が行ごとに
+                  動かないよう、見出しと数値を別に持って数値側の幅を固定する。
+                  未演習の分野は null なので「－」にする（0% と区別）。 */}
               <span className="course-accuracy">
-                {p.correct_rate == null ? "－" : `${p.correct_rate}%`}
+                <span className="course-accuracy-label">正答率</span>
+                <span className="course-accuracy-value">
+                  {p.correct_rate == null ? "－" : `${p.correct_rate}%`}
+                </span>
               </span>
               <span className="course-remaining">
                 {p.total - p.remaining}/{p.total}問
