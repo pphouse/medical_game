@@ -282,9 +282,8 @@
 }
 
 .chip-double_circle { background: var(--m-double); }
-/* ○ の黄緑は明るいので、白抜きだと読めない。文字だけ濃くする。 */
-.chip-circle { background: var(--m-circle); color: #1a2e05; }
-.chip-triangle { background: var(--m-triangle); color: #3a2a04; }
+.chip-circle { background: var(--m-circle); }
+.chip-triangle { background: var(--m-triangle); }
 .chip-cross { background: var(--m-cross); }
 .chip-unstudied { background: var(--m-unstudied); color: var(--text); }
 
@@ -661,31 +660,20 @@
   color: white;
 }
 
-/* 評価のチップ（◎○△✕未演習）は分野一覧のバーと同じ色にする。選んでいる
-   ときだけ塗り、未選択のうちは枠と文字色だけで示す。 */
-.mastery-chip-double_circle.active { border-color: var(--m-double); background: var(--m-double); color: #fff; }
-.mastery-chip-circle.active { border-color: var(--m-circle); background: var(--m-circle); color: #1a2e05; }
-.mastery-chip-triangle.active { border-color: var(--m-triangle); background: var(--m-triangle); color: #3a2a04; }
-.mastery-chip-cross.active { border-color: var(--m-cross); background: var(--m-cross); color: #fff; }
-.mastery-chip-unstudied.active { border-color: var(--m-unstudied); background: var(--m-unstudied); color: var(--text); }
+/* 評価のチップ（◎○△✕未演習）。形と大きさは他のチップと同じで、選んで
+   いるときの塗りの色だけ分野一覧のバーとそろえる。5色とも白抜きが読める
+   濃さにしてあるので、色ごとの文字色の出し分けは要らない。 */
+.filter-chip.mastery-chip-double_circle.active { background: var(--m-double); border-color: var(--m-double); }
+.filter-chip.mastery-chip-circle.active { background: var(--m-circle); border-color: var(--m-circle); }
+.filter-chip.mastery-chip-triangle.active { background: var(--m-triangle); border-color: var(--m-triangle); }
+.filter-chip.mastery-chip-cross.active { background: var(--m-cross); border-color: var(--m-cross); }
+.filter-chip.mastery-chip-unstudied.active { background: var(--m-unstudied-fill); border-color: var(--m-unstudied-fill); }
 
-.mastery-chip-double_circle:not(.active) { color: var(--m-double); }
-.mastery-chip-circle:not(.active) { color: var(--m-circle); }
-.mastery-chip-triangle:not(.active) { color: var(--m-triangle); }
-.mastery-chip-cross:not(.active) { color: var(--m-cross); }
+.filter-chip[class*="mastery-chip-"].active { color: #fff; }
 
-.mastery-chip-double_circle:hover { border-color: var(--m-double); }
-.mastery-chip-circle:hover { border-color: var(--m-circle); }
-.mastery-chip-triangle:hover { border-color: var(--m-triangle); }
-.mastery-chip-cross:hover { border-color: var(--m-cross); }
-
-/* 選択中のチップの件数バッジは、地色に沈まないよう白地に戻す。 */
-.mastery-chip-double_circle.active .filter-chip-count,
-.mastery-chip-circle.active .filter-chip-count,
-.mastery-chip-triangle.active .filter-chip-count,
-.mastery-chip-cross.active .filter-chip-count,
-.mastery-chip-unstudied.active .filter-chip-count {
-  background: rgba(255, 255, 255, 0.85);
+/* 塗りの上では件数バッジの青が沈むので、半透明の白地にする。 */
+.filter-chip[class*="mastery-chip-"].active .filter-chip-count {
+  background: rgba(255, 255, 255, 0.9);
   color: #1f2937;
 }
 
@@ -756,8 +744,8 @@
 }
 
 .question-row-mastery.mastery-double_circle { background: var(--m-double); }
-.question-row-mastery.mastery-circle { background: var(--m-circle); color: #1a2e05; }
-.question-row-mastery.mastery-triangle { background: var(--m-triangle); color: #3a2a04; }
+.question-row-mastery.mastery-circle { background: var(--m-circle); }
+.question-row-mastery.mastery-triangle { background: var(--m-triangle); }
 .question-row-mastery.mastery-cross { background: var(--m-cross); }
 .question-row-mastery.mastery-unstudied {
   background: var(--m-unstudied);

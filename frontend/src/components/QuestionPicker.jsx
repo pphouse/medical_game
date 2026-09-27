@@ -201,6 +201,12 @@ export default function QuestionPicker() {
 
   const allSelected = selected.size === MASTERY_KEYS.length;
   const filtered = questions.filter((q) => selected.has(q.mastery_level));
+  // 「前回の続き」＝まだ解いていない最初の問題。全部解き終わっていれば
+  // 先頭から（findIndex が -1 を返すので 0 に丸める）。
+  const resumeIndex = Math.max(
+    0,
+    filtered.findIndex((q) => q.mastery_level === "unstudied"),
+  );
 
   function toggleFilter(key) {
     if (key === "all") {
