@@ -265,8 +265,10 @@ class TestBundledCoreBatch:
         # すべて審査待ちで入る（人手レビュー前に出題されない, spec 2-1）
         assert imported.count() >= 300
         assert not imported.exclude(status=Question.Status.PENDING).exists()
-        # 四連問が2セット取り込まれている
-        assert QuestionSet.objects.count() == 2
+        # 同梱データに四連問は無い（2セットあったが単問にほどいた。
+        # test_shipped_data.py の test_no_series_questions を参照）
+        assert QuestionSet.objects.count() == 0
+        assert not imported.filter(question_type=Question.QuestionType.SEQUENTIAL).exists()
 
 
 class TestBundledKokushiBatches:

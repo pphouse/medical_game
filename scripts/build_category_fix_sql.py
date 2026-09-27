@@ -15,6 +15,12 @@
           直した行のために、本文の md5 でも引く
 * seed_demo の見本15問 … 本文の md5
 
+その前に、四連問（question_set に属するタイプQの設問）を単問にほどく。
+演習画面は設問を科目の一覧に1問ずつ並べ、どれからでも開ける作りなので、
+4問を順に解かせることができず、「四連問 2/4」の印だけが付いた単問に
+なっていた。症例文を設問の頭に付け（国試の連問をほどいたときと同じ
+「症例文＋改行＋設問」）、セットから外す。同梱データも同じ形にしてある。
+
 どれにも当たらなかった行は最後の表に出る（0行なら完了）。
 
 使い方:
@@ -148,6 +154,24 @@ def main():
 
 BEGIN;
 
+-- (0) 四連問を単問にほどく。演習画面では4問を順に解かせられず、印だけの
+-- 四連問になっていた。症例文を設問の頭に付けてセットから外す。すでに
+-- 症例文で始まっている設問には付け足さない（二重にしない）。
+CREATE TEMP TABLE _series ON COMMIT DROP AS
+SELECT id, exam_type FROM quiz_question WHERE question_set_id IS NOT NULL;
+
+UPDATE quiz_question AS q SET
+    question_text = CASE
+        WHEN left(q.question_text, char_length(s.case_stem)) = s.case_stem
+            THEN q.question_text
+        ELSE s.case_stem || E'\\n' || q.question_text
+    END,
+    question_type = 'M',
+    question_set_id = NULL,
+    set_order = NULL
+FROM quiz_questionset AS s
+WHERE q.question_set_id = s.id;
+
 -- 直す前の分野名を控えておく（最後の表で「何を何へ移したか」を出すため）。
 CREATE TEMP TABLE _before ON COMMIT DROP AS
 SELECT id, exam_type, category FROM quiz_question
@@ -187,7 +211,8 @@ FROM (VALUES
 WHERE q.exam_type = v.exam_type AND q.id IN (SELECT id FROM _before)
   AND md5(q.question_text) = v.h;
 
--- 結果。3つの区分を1つの表にまとめる。
+-- 結果。4つの区分を1つの表にまとめる。
+--   0.単問にした  … 四連問からほどいた設問の数
 --   1.移した      … 何を何へ移したか（件数）
 --   2.残った      … 正規名でないまま残った分野。0行なら完了
 --   3.演習の一覧  … 演習画面に出る並び（公開中の設問）。記号は画面と同じ
@@ -217,9 +242,11 @@ listing AS (
     GROUP BY 1, 2, 4, 5
 )
 SELECT 区分, 試験, 記号, 分野, 問題数 FROM (
-    SELECT '1.移した' AS 区分, exam_type AS 試験, '' AS 記号,
-           before || ' → ' || after AS 分野, n AS 問題数,
-           1 AS k, 0 AS r
+    SELECT '0.単問にした' AS 区分, exam_type AS 試験, '' AS 記号,
+           '四連問の設問' AS 分野, count(*) AS 問題数, 0 AS k, 0 AS r
+    FROM _series GROUP BY exam_type
+    UNION ALL
+    SELECT '1.移した', exam_type, '', before || ' → ' || after, n, 1, 0
     FROM moved
     UNION ALL
     SELECT '2.残った', exam_type, '', category, n, 2, 0 FROM leftover

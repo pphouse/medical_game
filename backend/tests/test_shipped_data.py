@@ -284,6 +284,26 @@ class TestShippedData:
                 bad.append(f"{code}: 取り込むと「{q['category']}」→「{got}」")
         assert not bad, "分野名の食い違い:\n" + "\n".join(bad)
 
+    def test_no_series_questions(self, path):
+        """四連問（question_sets / タイプQ）を同梱データに入れない。
+
+        四連問は、同じ症例で1問答えるたびに所見が明かされて臨床推論が進む、
+        4問でひとつのストーリーになった出題のこと。いまの演習画面は各設問を
+        科目の一覧に1問ずつ並べ、どれからでも開ける作りなので、4問を順に
+        解かせることができない（「四連問 2/4」の印だけが付いた単問になる）。
+        そのため同梱の2セットは症例文を各設問の頭に付けて単問にほどき、
+        内容の科目（循環器・消化器）に入れた。順に解かせる画面ができるまでは
+        入れない。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        assert not payload.get("question_sets"), "四連問のセットが入っている"
+        series = [
+            q.get("id") or q.get("blueprint_code")
+            for q in payload.get("questions", [])
+            if q.get("question_type") == "Q"
+        ]
+        assert not series, f"タイプQの設問が入っている: {series}"
+
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))
         bad = [

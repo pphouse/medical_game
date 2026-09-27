@@ -87,6 +87,12 @@ python scripts/generate_questions.py \
 - 出題基準の各学修目標（code）ごとに 1〜4問を生成。プロンプトは
   `scripts/prompts/question_m.md`（単問）/ `question_q.md`（四連問）。
 - `--type Q` は症例文 + 4連問（`question_sets`）を出力する。
+  **ただし、いまは使わないこと。** 演習画面は設問を科目の一覧に1問ずつ並べ、
+  どれからでも開ける作りなので、4問を順に解かせることができない（1問答えて
+  所見が明かされ、臨床推論が進むというストーリーにならず、「四連問 2/4」の
+  印が付いた単問になる）。同梱データにあった2セットも単問にほどいた。
+  順に解かせる画面ができるまでは `--type M` で作る
+  （`tests/test_shipped_data.py` の `test_no_series_questions` が止める）。
 - 出力は `schemas/question_batch.schema.json` に従う JSON バッチ。
 - 生成物はコミットしない（`data/generated/` は .gitignore 済み）。
 

@@ -13,6 +13,24 @@
 
 BEGIN;
 
+-- (0) 四連問を単問にほどく。演習画面では4問を順に解かせられず、印だけの
+-- 四連問になっていた。症例文を設問の頭に付けてセットから外す。すでに
+-- 症例文で始まっている設問には付け足さない（二重にしない）。
+CREATE TEMP TABLE _series ON COMMIT DROP AS
+SELECT id, exam_type FROM quiz_question WHERE question_set_id IS NOT NULL;
+
+UPDATE quiz_question AS q SET
+    question_text = CASE
+        WHEN left(q.question_text, char_length(s.case_stem)) = s.case_stem
+            THEN q.question_text
+        ELSE s.case_stem || E'\n' || q.question_text
+    END,
+    question_type = 'M',
+    question_set_id = NULL,
+    set_order = NULL
+FROM quiz_questionset AS s
+WHERE q.question_set_id = s.id;
+
 -- 直す前の分野名を控えておく（最後の表で「何を何へ移したか」を出すため）。
 CREATE TEMP TABLE _before ON COMMIT DROP AS
 SELECT id, exam_type, category FROM quiz_question
@@ -2565,6 +2583,7 @@ FROM (VALUES
     ('0045e222679cb88315d23a0d1c4f9f77', '循環器'),
     ('00468260a99fc183006f19eb7f79c018', '循環器'),
     ('013188e43652382499c1b5050de063e5', '呼吸器'),
+    ('01987d00f167a5a7591bfdd96f5551a6', '消化器'),
     ('020887e1a8b51d6ebd276365cfe8e22f', '呼吸器'),
     ('0269141ebf4e93636e780302ce428cac', '運動器'),
     ('028f8a8a8543d1b26e54fc641badfadf', '血液'),
@@ -2601,6 +2620,7 @@ FROM (VALUES
     ('0764f85e69588ca87abca3075a1a8ff1', '産婦人科'),
     ('077e71e24a9ed17e5c6e2b2ac8f2a13d', '産婦人科'),
     ('08046c59c48b325d6b3ef954b7695763', '内分泌・代謝'),
+    ('08171dea1b6ad6841a3962b50e0670a7', '循環器'),
     ('08766efbcdc4bde2957375bb63fce41f', '基礎医学'),
     ('09235c04978ee7d06b9417b878ccd607', '医学総論・公衆衛生・診療の基本'),
     ('09ae2ce339c110d3cb16ba852abd878e', '医学総論・公衆衛生・診療の基本'),
@@ -2635,7 +2655,6 @@ FROM (VALUES
     ('0ff781dbd87a747f05bd0811fee7b40e', '産婦人科'),
     ('112fd26da6d054eb0caec5b509136844', '産婦人科'),
     ('114e9fe69c2b1c26cd40cea282b35d12', '救急・中毒・麻酔'),
-    ('11cac3b6b07ea53c19a70f9700b39514', '消化器'),
     ('11de50dfd852832de3e4769fbb87e78e', '医学総論・公衆衛生・診療の基本'),
     ('126dd276c947a4ed0ca5be435bce69b4', '耳鼻咽喉'),
     ('12d97016be71ad88773df48a4b028118', '医学総論・公衆衛生・診療の基本'),
@@ -2763,7 +2782,6 @@ FROM (VALUES
     ('2a64b5e7d12fb8d9b9aea0dc02e20a6c', '消化器'),
     ('2a7be4219eea74bb2b9b341a6542cf40', '皮膚'),
     ('2a814aac56012f7764a8da24bbe0a5e9', '小児（成長と発達）'),
-    ('2a91e14b2cc77177d9ba381c6ca2a1e3', '消化器'),
     ('2aaddd23dbd3e26f8b8cc16190fa3cf3', '消化器'),
     ('2aefc2f6999a0f3aaa2e1426b87f7bf7', '消化器'),
     ('2b106f1d678584080660b5d978f92e2a', '運動器'),
@@ -2873,7 +2891,6 @@ FROM (VALUES
     ('407fbd2786594a755941c7e39a7f6b50', '基礎医学'),
     ('40c052eb40ddf6da5f48700e82bf41b5', '感染症'),
     ('40f2c11f4e7e64d90319115c57c7cefe', '医学総論・公衆衛生・診療の基本'),
-    ('4108587d9188f8365389ff4f5ee7441a', '循環器'),
     ('4212eeabff994e78cd0d2a622cd577bd', '神経'),
     ('42679f572224061e0fa2b9f6e5d388c4', '皮膚'),
     ('429d01b94503839677290cb6e1006186', '医学総論・公衆衛生・診療の基本'),
@@ -2924,7 +2941,6 @@ FROM (VALUES
     ('49db5633311a088baf1c057e8f105bfb', '内分泌・代謝'),
     ('4a389a5a5c9bcf9697623f4fd883a7d7', '眼'),
     ('4afb97e8e4132b8bbcb652275e3534c6', '基礎医学'),
-    ('4b0087cc40c4b20908c2bc34a1493dc3', '消化器'),
     ('4b2e7da0072607a6158ed39a56f43f4d', '呼吸器'),
     ('4b4f58f2b476b96ad65d061afa727fb7', '小児（成長と発達）'),
     ('4b526d2a9aeee5a84578da86bcd2ed94', '産婦人科'),
@@ -3051,9 +3067,11 @@ FROM (VALUES
     ('61bc15ca8b2a487b2f365febaa20764b', '循環器'),
     ('61e98fefd13f7eb348f3a0b4e4a16acd', '産婦人科'),
     ('622d662686968cb1090153afb25a2a28', '神経'),
+    ('6231bf05267ce6a4b4f85f1b09aefd2e', '消化器'),
     ('6254798fe628a59e30f72f1bb33a8590', '医学総論・公衆衛生・診療の基本'),
     ('62c624bf8630ef6121a8a68fc5cdcc51', '神経'),
     ('63315fe95a058b50465ccf30b0ee416d', '呼吸器'),
+    ('63b03eb425f19245d229150693d1c67e', '消化器'),
     ('63d07c97d0b68542c3ed153a9be996f3', '腎・泌尿器'),
     ('63f057def5d9a664425278d67034cf9f', '消化器'),
     ('642c28da3c0abc3f300b1d4a115d79ca', '神経'),
@@ -3129,6 +3147,7 @@ FROM (VALUES
     ('74e61e9a390046a7e0eb3eda127b148b', '腫瘍'),
     ('74fb79668440a873d9b6a6cf293ce236', '免疫・膠原病'),
     ('7525209e6e6bce4b184b6dd83578d387', '運動器'),
+    ('755a1d81825670ea7b4d5a409744147a', '循環器'),
     ('756e21cb64cfafda3ff31b5657f7eec0', '神経'),
     ('7576d71ea926c1aee6cfb9521ae87e41', '基礎医学'),
     ('76643fdaee88a5536acd1677af6b5d87', '医学総論・公衆衛生・診療の基本'),
@@ -3227,6 +3246,7 @@ FROM (VALUES
     ('87d438a4a29a7ee73217683f9e9357a7', '医学総論・公衆衛生・診療の基本'),
     ('87eda022df89b66a925d7b352d03a040', '産婦人科'),
     ('881369b8f5e11860511eaa6a055867fd', '免疫・膠原病'),
+    ('8835d101cef9aab21a52f573aae41f01', '消化器'),
     ('88592cfb7e346584b39724ec87ee7d41', '産婦人科'),
     ('885f6303fdfe867de3bdf787fa3ec67a', '内分泌・代謝'),
     ('8881309c1186a6fa5085a4873c65b46f', '感染症'),
@@ -3467,7 +3487,6 @@ FROM (VALUES
     ('b5b59af9f77164441a76270af72b236c', '基礎医学'),
     ('b64351e5a966e8d2bcb9d909ae635740', '耳鼻咽喉'),
     ('b67c73a9fa12c938235af320679e943e', '運動器'),
-    ('b67df84a3a23f6b9314acdcae2137ee9', '循環器'),
     ('b699b036b9c7fc4a8c48de661dfdb21e', '医学総論・公衆衛生・診療の基本'),
     ('b6d27c205aa1b1a86c07a71ce68b0eb3', '眼'),
     ('b711ca62e8720b743a2d9507ec14644f', '循環器'),
@@ -3530,7 +3549,6 @@ FROM (VALUES
     ('c15dfb01bc107d3724e63a1b45a14527', '医学総論・公衆衛生・診療の基本'),
     ('c1bf76f3a6746b4b9187066fbb146e81', '基礎医学'),
     ('c1d414d0bff7113f310c14a5c0e48dce', '基礎医学'),
-    ('c1e465083e7a2f7c77738874525a5b08', '循環器'),
     ('c206b65864ec25a9a1dd15f314c315bb', '医学総論・公衆衛生・診療の基本'),
     ('c220b7baf53fa8d88351f9ac68d583af', '血液'),
     ('c22353dd2039718ac1606458f8f895b9', '医学総論・公衆衛生・診療の基本'),
@@ -3573,6 +3591,7 @@ FROM (VALUES
     ('cb177d44a71050b30fbd5ec051f0099d', '産婦人科'),
     ('cb1e816a9a6d5ae121a31e39674b5ad3', '基礎医学'),
     ('cb5da23a59eb5e283c58d12e23a657d4', '腎・泌尿器'),
+    ('cbd9610bf980ea73d690fd028a5bf577', '循環器'),
     ('cc19539cd613acd69da5a2ba13bbfce0', '循環器'),
     ('cc25bf232358ecab5487e4980c328545', '循環器'),
     ('cc442a05060b68ff861f242f9ee85448', '救急・中毒・麻酔'),
@@ -3609,6 +3628,7 @@ FROM (VALUES
     ('d400fbec47455111ca66c556d7a772dd', '循環器'),
     ('d44825ba92b5ff820f2f1b19998ce0af', '消化器'),
     ('d4b0d5c75715a95f7a372c0f90c432bc', '腫瘍'),
+    ('d4bd28bb315cd935a1f6a5cc0d16f635', '循環器'),
     ('d4ffdce72d28f3b069234e2bdbce1eee', '医学総論・公衆衛生・診療の基本'),
     ('d564887cf615eb0ad9aafe07f6b7ff59', '神経'),
     ('d58e8a5b29be23b2a9b7688e6034b7d0', '耳鼻咽喉'),
@@ -3713,7 +3733,6 @@ FROM (VALUES
     ('e9351bf85feef53f8150e0c9c791ff70', '免疫・膠原病'),
     ('e9a296e24e93a3ae5997ad8e2307814b', '産婦人科'),
     ('ea26cfa622ae85552b42f175d0b6f146', '内分泌・代謝'),
-    ('ea6a2b39ed2c15a32afab20cfa9dd8bf', '循環器'),
     ('ea9b5d0dea4237242a32ea97dd674b45', '循環器'),
     ('eaa023eebc4752fd5c2c0a5a8c059c0d', '感染症'),
     ('eaa0ae10c4b114efdcf26ecb825b91ce', '小児（成長と発達）'),
@@ -3728,7 +3747,6 @@ FROM (VALUES
     ('ec96c129a10a0eed773c0db47b7b7da9', '眼'),
     ('ecaf25ae822ef347d2292ed2fdcb6d33', '皮膚'),
     ('ecd175e883b5870e82063869ac8a4b6f', '精神'),
-    ('ecfbcd8328053c05eecc398065d21f66', '消化器'),
     ('ed53e6c4518fcf6c6a5412876235c1c4', '基礎医学'),
     ('ed7116b27b7cee5ca55d0569c96679f7', '呼吸器'),
     ('ed9062f03a30aed762d92001942ede3d', '腫瘍'),
@@ -3851,7 +3869,8 @@ FROM (VALUES
 WHERE q.exam_type = v.exam_type AND q.id IN (SELECT id FROM _before)
   AND md5(q.question_text) = v.h;
 
--- 結果。3つの区分を1つの表にまとめる。
+-- 結果。4つの区分を1つの表にまとめる。
+--   0.単問にした  … 四連問からほどいた設問の数
 --   1.移した      … 何を何へ移したか（件数）
 --   2.残った      … 正規名でないまま残った分野。0行なら完了
 --   3.演習の一覧  … 演習画面に出る並び（公開中の設問）。記号は画面と同じ
@@ -3924,9 +3943,11 @@ listing AS (
     GROUP BY 1, 2, 4, 5
 )
 SELECT 区分, 試験, 記号, 分野, 問題数 FROM (
-    SELECT '1.移した' AS 区分, exam_type AS 試験, '' AS 記号,
-           before || ' → ' || after AS 分野, n AS 問題数,
-           1 AS k, 0 AS r
+    SELECT '0.単問にした' AS 区分, exam_type AS 試験, '' AS 記号,
+           '四連問の設問' AS 分野, count(*) AS 問題数, 0 AS k, 0 AS r
+    FROM _series GROUP BY exam_type
+    UNION ALL
+    SELECT '1.移した', exam_type, '', before || ' → ' || after, n, 1, 0
     FROM moved
     UNION ALL
     SELECT '2.残った', exam_type, '', category, n, 2, 0 FROM leftover
