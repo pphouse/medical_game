@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 .vercel
 .env*.local
+# 環境ファイルは .env.example だけコミットする（iOS ビルド用の
+# .env.production には接続先が入る）。
+.env
+.env.*
+!.env.example

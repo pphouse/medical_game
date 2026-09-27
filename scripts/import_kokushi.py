@@ -99,6 +99,19 @@ NOISE_LINE = re.compile(r"DKIX|DDKKIIXX|^\s*$")
 # 別冊（画像）を参照している設問。これらは取り込まない。
 IMAGE_REF = re.compile(r"別冊|を別に示す|別に示す")
 
+# 図表を参照する設問。「家系図を示す」「以下に示す」と書いてあるのに参照先が
+# 本文に入っていないものは、図が無いと解けない。会話文や表を本文に取り込めて
+# いる設問は必ず長くなるので、本文の長さで見分ける。実際に「家系図を示す。
+# この疾患の遺伝形式はどれか。」(41字) のような解きようのない設問が公開まで
+# 通り抜けていた。
+FIGURE_REF = re.compile(
+    r"(家系図|図|表|写真|画像|グラフ|シェーマ|電気泳動|カレンダー|推移)を(以下に|別に)?示す"
+    # 「模式図に示す」のように助詞が「に」の形。表は本文に取り込めるので
+    # 「表に示す」は含めない（実際に取り込めている設問がある）。
+    r"|(模式図|図|写真|画像|グラフ|シェーマ)に示す"
+)
+FIGURE_REF_MIN_BODY = 120
+
 # 複数選択・計算問題。現行スキーマに入らない。
 MULTI_SELECT = re.compile(r"[２2３3４4]\s*つ選べ")
 
@@ -183,6 +196,13 @@ def has_broken_glyph(text: str) -> bool:
 
 # 設問の通し番号で始まる行（例: "13 Brugada症候群における…"）
 Q_START = re.compile(r"^(\d{1,3})[ 　]+(\S.*)$", re.MULTILINE)
+
+# 1ブロックの設問数の上限（A/C/D/F が75問、B/E が50問）。これを超える
+# 数字はページ端の数字なので設問番号として扱わない。
+MAX_Q_NO = 75
+# 除外された設問があると番号が飛ぶので、直前の番号のすぐ次だけでなく
+# 少し先まで候補にする。
+LOOKAHEAD = 5
 
 # 設問文は必ず問いかけで終わる。終わっていないものは切り出しに失敗している
 # （表の断片や、受験上の注意ページの文面を拾ってしまったもの）。
@@ -304,6 +324,14 @@ def _fix_symbol_font(fontname: str, text: str) -> str:
 # フォント（第117〜119回の学名表記など）はCIDがそのまま出るので、この並びで戻す。
 # PyMuPDF の解決結果と座標で突き合わせて確認した（CID 9479→'C' から始まる
 # "Chlamydia pneumoniae" がそのまま復元できる）。
+# 1つのグリフが複数文字に対応するもの。座標で PyMuPDF の結果を借りる経路は
+# 1文字しか受け取れず、「第XIII因子」が「第X因子」になってしまう（第117回
+# D41・F21 で実際に起きた。第X因子はビタミンK依存性なので、設問の正答が
+# 成立しなくなる）。CIDから直に引いて xref より優先する。
+_AJ1_MULTI: dict[int, str] = {
+    0x2067: "XIII",
+}
+
 _AJ1_LATIN: dict[int, str] = {
     9444: " ",
     **{9477 + i: chr(ord("A") + i) for i in range(26)},
@@ -521,7 +549,9 @@ def _pdfplumber_lines(path: Path) -> list[str]:
                     # /Differences を持たないフォント（Identity-H）では、
                     # ここに出る番号は符号ではなく Adobe-Japan1 のCIDそのもの。
                     latin = _AJ1_LATIN.get(code) if not table else None
+                    multi = _AJ1_MULTI.get(code) if not table else None
                     fixed = (table.get(code)
+                             or multi
                              or xref.get((ch["fontname"], code))
                              or latin
                              or UNRESOLVED)
@@ -600,6 +630,49 @@ def _usable_count(lines: list[str]) -> int:
     return n
 
 
+# pdfplumber が語の途中に挟むダッシュ。「自己免疫— 性膵炎」「誤って— いる」の
+# ように、和文の途中へ EM DASH と空白が入る。PyMuPDF の描画には出てこない
+# ので抽出側の産物で、和文の組版として現れる形でもない（日本語のダッシュは
+# 「——」と重ねるか前後を空ける）。第119回の全6ブロックで38件見つかり、
+# 38件とも取り除いた形が PyMuPDF の描画に一致した。
+#
+# 欧文や数字に挟まる形（「50Torr—、」「第— 3次」）も残るが、そちらは
+# 字種の条件を広げると正当なダッシュまで巻き込む。連問の抽出では
+# verify_against_pymupdf() で本文ごと照合するので、そこで弾く。
+_STRAY_DASH = re.compile(r"(?<=[ぁ-んァ-ヶ一-龥])[—–―][ 　]?(?=[ぁ-んァ-ヶ一-龥])")
+
+
+def _drop_stray_dash(line: str) -> str:
+    return _STRAY_DASH.sub("", line)
+
+
+def flat_pymupdf_text(path: Path) -> str:
+    """照合用に PyMuPDF の描画を空白抜きで1本にしたもの。
+
+    pdfplumber の抽出には字の入れ替わり（「25,000(」が「25,00(0 」になる等）
+    が混じることがある。取り出した本文がこちらに含まれるかを見れば、
+    そうした壊れ方をまとめて弾ける。
+    """
+    try:
+        import pymupdf
+    except ImportError:  # pragma: no cover - 実行環境の案内
+        return ""
+    try:
+        with pymupdf.open(path) as doc:
+            raw = "".join(pg.get_text() for pg in doc)
+    except Exception:  # pragma: no cover - 壊れたPDFでも取り込みは続ける
+        return ""
+    # 第114〜116回は PyMuPDF 側が ToUnicode を持たないフォントを読めず、
+    # 制御文字を出す（"\x02か月の乳児" の形）。そういう回は基準に使えない
+    # ので、照合そのものを行わない。
+    if is_unusable(raw):
+        return ""
+    try:
+        return _for_compare(raw)
+    except Exception:  # pragma: no cover - 壊れたPDFでも取り込みは続ける
+        return ""
+
+
 def pdf_lines(path: Path) -> list[str]:
     """本文を行のリストで返す。抽出器は回ごとに向き不向きがあるため実測で選ぶ。
 
@@ -612,7 +685,7 @@ def pdf_lines(path: Path) -> list[str]:
     取り出せた問数が多いほうを採用する。グリフ解決を入れた後は全回で pdfplumber が
     上回る（第114回 141→402問など）が、判定は残しておく。
     """
-    plumber = _pdfplumber_lines(path)
+    plumber = [_drop_stray_dash(ln) for ln in _pdfplumber_lines(path)]
     if not any(UNRESOLVED in ln for ln in plumber):
         return plumber
     mupdf = _pymupdf_lines(path)
@@ -641,6 +714,89 @@ def parse_answers(text: str) -> dict[str, list[str]]:
 
 
 CHOICE_LINE = re.compile(rf"^([{CHOICE_MARKS}])[ 　]+(\S.*)$")
+
+
+# 照合でぶつかる字形の揺れ。NFKC では寄らないものだけをここで潰す。
+# 波ダッシュ U+301C は NFKC の対象外だが、PyMuPDF 側は全角チルダ U+FF5E を
+# 出し、そちらは NFKC で "~" になるため食い違う（「基準124〜222」で実際に
+# ぶつかった）。マイナス記号も同様に複数の字が混ざる。
+_COMPARE_MAP = str.maketrans({
+    "〜": "~", "～": "~", "∼": "~",
+    "−": "-", "–": "-", "—": "-", "‐": "-", "―": "-",
+})
+
+
+def _for_compare(text: str) -> str:
+    """照合用の形。空白を落とし、字形の揺れを NFKC で寄せる。
+
+    pdfplumber と PyMuPDF で「〜」(波ダッシュ) と「～」(全角チルダ)、全角と
+    半角の括弧などが食い違う。実際に「（基準124〜222）」でぶつかり、
+    連問50組のうち35組がここで落ちていた。ここで作るのは比べるための形
+    だけで、保存する本文は元のまま。
+    """
+    flat = unicodedata.normalize("NFKC", re.sub(r"\s+", "", text))
+    return flat.translate(_COMPARE_MAP)
+
+
+def text_in_reference(text: str, reference: str) -> bool:
+    """取り出した本文が PyMuPDF の描画にも在るか。
+
+    pdfplumber の抽出には字の入れ替わり（「25,000(」が「25,00(0 」になる等）
+    が混じることがある。空白を除いて突き合わせれば、そうした壊れ方を
+    まとめて弾ける。参照が取れなかったときは判定しない（True）。
+    """
+    if not reference:
+        return True
+    return _for_compare(text) in reference
+
+
+def series_groups(lines: list[str]) -> dict[int, str]:
+    """連問の設問番号 -> 共有する症例文。
+
+    PDFでは
+        次の文を読み、47、48の問いに答えよ。
+        <症例文>
+        47 <設問文>
+        ａ …
+    の順に並ぶ。症例文は導入行の次から、組の最初の設問番号行の手前まで。
+
+    国試の連問は2問組か3問組で、CBTの四連問（question_sets）とは形が違う。
+    症例文を各設問の本文の頭に付けて、1問ずつ解ける独立した設問にする。
+    そのままだと設問文だけでは成立せず、これまで丸ごと落としていた
+    （第119回で50問、6回ぶんで約300問）。
+    """
+    groups: dict[int, str] = {}
+    for i, line in enumerate(lines):
+        m = SERIES_HEAD.search(line)
+        if not m:
+            continue
+        spec = unicodedata.normalize("NFKC", m.group(1))
+        nums: set[int] = set()
+        for part in re.split(r"[、,]", spec):
+            part = part.strip()
+            rng = re.fullmatch(r"(\d+)\s*[〜～\-]\s*(\d+)", part)
+            if rng:
+                nums.update(range(int(rng.group(1)), int(rng.group(2)) + 1))
+            elif part.isdigit():
+                nums.add(int(part))
+        if not nums:
+            continue
+
+        first = min(nums)
+        body: list[str] = []
+        for cont in lines[i + 1 :]:
+            mm = Q_START.match(cont)
+            if mm and int(mm.group(1)) == first:
+                break
+            if SERIES_HEAD.search(cont):
+                break
+            body.append(cont)
+        stem = _join_wrapped(body).strip()
+        if not stem:
+            continue
+        for n in nums:
+            groups[n] = stem
+    return groups
 
 
 def series_numbers(lines: list[str]) -> set[int]:
@@ -731,6 +887,7 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
 
     out = []
     prev_end = 0
+    last_num = 0
     for r_i, run in enumerate(runs):
         next_start = runs[r_i + 1][0] if r_i + 1 < len(runs) else len(lines)
 
@@ -751,20 +908,30 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
 
         # 設問文＝直前の設問の選択肢が終わってから ａ 行の手前まで
         stem_lines = lines[prev_end : run[0]]
-        # 最後の番号行から始める（前問の選択肢の折り返しを巻き込まないため）
-        start = 0
-        for k, line in enumerate(stem_lines):
-            if Q_START.match(line):
-                start = k
-        stem_lines = stem_lines[start:]
         prev_end = run[-1] + 1
 
-        if not stem_lines:
+        # 最後の番号行から始める（前問の選択肢の折り返しを巻き込まないため）。
+        # ただし番号行に見える行は本物とは限らない。折り返した症例文の
+        # 「2 日前から下腹部痛も…」（第119回C44）や、ページ端の「119」
+        # 「102」のような数字も同じ形に見える。
+        #
+        # 設問番号はブロック内で1から順に増え、1ブロックは最大75問なので、
+        # 「直前の番号のすぐ次」だけを本物として扱う。単に「直前より大きい」
+        # だけにすると、ページ端の 119 のような大きい数字を一度拾った時点で
+        # 以降が全部弾かれる（実測で B〜F ブロックが各1〜2問まで落ちた）。
+        # 数問続けて落とされることがあるので、少し先まで許す。
+        start = None
+        for k, line in enumerate(stem_lines):
+            m = Q_START.match(line)
+            if m and last_num < int(m.group(1)) <= min(last_num + LOOKAHEAD, MAX_Q_NO):
+                start = k
+        if start is None:
             continue
+        stem_lines = stem_lines[start:]
+
         m = Q_START.match(stem_lines[0])
-        if not m:
-            continue
         num = int(m.group(1))
+        last_num = num
         stem = _join_wrapped([m.group(2)] + stem_lines[1:])
         out.append((num, stem, texts))
     return out
@@ -788,9 +955,19 @@ def build_explanation(exam: int, block: str, num: int, answer_key: str,
     )
 
 
+# NFKC は丸数字を裸の数字に変えてしまう（①→1）。第118回F27の選択肢
+# 「①2　②5　③3」が「12 25 33」になり、設問が成立しなくなっていた。
+# 変換の前後で私用領域に退避させて守る。ローマ数字は逆に半角へ寄せたい
+# （「第Ⅷ因子」→「第VIII因子」）ので対象にしない。
+_ENCLOSED = {chr(c): chr(0xE000 + c - 0x2460) for c in range(0x2460, 0x2500)}
+_ENCLOSED_BACK = {v: k for k, v in _ENCLOSED.items()}
+
+
 def normalize(text: str) -> str:
     """全角英数字を半角に寄せる。医学用語の全角カナはそのまま残す。"""
-    return unicodedata.normalize("NFKC", text)
+    text = "".join(_ENCLOSED.get(ch, ch) for ch in text)
+    text = unicodedata.normalize("NFKC", text)
+    return "".join(_ENCLOSED_BACK.get(ch, ch) for ch in text)
 
 
 def main() -> int:
@@ -819,17 +996,29 @@ def main() -> int:
         pdf = fetch(f"{cfg['pdf_base']}/{cfg['prefix']}{block}_01.pdf",
                     cache / f"{block}.pdf")
         lines = pdf_lines(pdf)
-        series = series_numbers(lines)
+        groups = series_groups(lines)
+        reference = flat_pymupdf_text(pdf)
         for num, stem, texts in parse_block(lines):
             stats["total"] += 1
             qid = f"{letter}{num:03d}"
-            body = stem + "".join(texts)
 
-            if num in series:
-                # 症例文を共有する連問。設問文だけでは成立しないため取り込まない。
-                stats["series"] += 1
-                continue
+            if num in groups:
+                # 症例文を共有する連問。設問文だけでは成立しないので、
+                # 症例文を頭に付けて1問ずつ解ける形にする。
+                case = groups[num]
+                if not text_in_reference(case, reference):
+                    # pdfplumber の抽出に字の入れ替わりなどが混じっている。
+                    # 症例文は長く誤りが目立つので、照合できないものは落とす。
+                    stats["series"] += 1
+                    continue
+                stem = case + "\n" + stem
+
+            body = stem + "".join(texts)
             if IMAGE_REF.search(body):
+                stats["image"] += 1
+                continue
+            if FIGURE_REF.search(body) and len(body) < FIGURE_REF_MIN_BODY:
+                # 参照先の図表が本文に入っておらず、設問だけでは解けない。
                 stats["image"] += 1
                 continue
             if MULTI_SELECT.search(body):

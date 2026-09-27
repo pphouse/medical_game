@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <!-- maskable は内側 80% の円だけが必ず見える。中身を 0.62 倍にして収める。 -->
+  <g transform="translate(512 512) scale(0.62) translate(-512 -512)">
+    <g fill="#ffffff">
+      <rect x="232" y="370" width="560" height="200" rx="44"/>
+      <rect x="412" y="190" width="200" height="560" rx="44"/>
+      <circle cx="790" cy="790" r="145"/>
+    </g>
+    <path d="M722 792 L772 842 L862 730" fill="none" stroke="#0f766e" stroke-width="48"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

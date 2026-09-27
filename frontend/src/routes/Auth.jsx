@@ -1,22 +1,59 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
+import { useSession } from "../hooks/useSession";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { authRedirectUrl } from "../native";
 
 export default function Auth() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const session = useSession();
   const [mode, setMode] = useState("login"); // "login" | "signup"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [notice, setNotice] = useState(
-    params.get("reason") === "expired"
-      ? "ログインの有効期限が切れました。もう一度ログインしてください。"
-      : null
-  );
-  const [error, setError] = useState(null);
+  const [notice, setNotice] = useState(() => {
+    if (params.get("deleted") === "1") {
+      return "アカウントを削除しました。ご利用ありがとうございました。";
+    }
+    if (params.get("reason") === "expired") {
+      return "ログインの有効期限が切れました。もう一度ログインしてください。";
+    }
+    return null;
+  });
+  // iOS アプリではメールのリンクがアプリを開き直す形で戻ってくる。その処理に
+  // 失敗したとき、nativeBootstrap.js がここに理由を渡してくる。
+  const [error, setError] = useState(params.get("authError"));
   const [busy, setBusy] = useState(false);
+  // ログイン完了処理（Profile 作成 → ホームへ）を二重に走らせない見張り。
+  const completing = useRef(false);
+
+  // ログインが成立したあとの共通処理。completing ref で一度きりに固定して
+  // あるので、画面からの操作とセッション監視の両方から呼んでも二重に走らない。
+  const completeSignIn = useCallback(
+    async (name) => {
+      if (completing.current) return;
+      completing.current = true;
+      try {
+        // Ensure the API-side Profile exists, seeding display_name on signup.
+        await api.bootstrap(name ? { display_name: name } : {});
+        navigate("/", { replace: true });
+      } catch (err) {
+        completing.current = false;
+        throw err;
+      }
+    },
+    [navigate],
+  );
+
+  // セッションは画面の操作以外からも生える: iOS アプリでメールのリンクを
+  // 踏んだとき（deepLink.js）と、ログイン済みで /auth を開き直したとき。
+  // どちらもここで拾ってホームへ送る。
+  useEffect(() => {
+    if (!session) return;
+    completeSignIn("").catch((err) => setError(err.message ?? String(err)));
+  }, [session, completeSignIn]);
 
   if (!isSupabaseConfigured) {
     return (
@@ -31,12 +68,6 @@ export default function Auth() {
     );
   }
 
-  async function afterSignIn() {
-    // Ensure the API-side Profile exists, seeding display_name on signup.
-    await api.bootstrap(displayName ? { display_name: displayName } : {});
-    navigate("/", { replace: true });
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
     setBusy(true);
@@ -47,11 +78,14 @@ export default function Auth() {
         const { data, error: err } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { display_name: displayName } },
+          options: {
+            data: { display_name: displayName },
+            emailRedirectTo: authRedirectUrl(),
+          },
         });
         if (err) throw err;
         if (data.session) {
-          await afterSignIn();
+          await completeSignIn(displayName);
         } else {
           setNotice("確認メールを送信しました。メール内のリンクを開いてから、ログインしてください。");
           setMode("login");
@@ -59,7 +93,7 @@ export default function Auth() {
       } else {
         const { error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) throw err;
-        await afterSignIn();
+        await completeSignIn(displayName);
       }
     } catch (err) {
       setError(err.message ?? String(err));
@@ -78,7 +112,7 @@ export default function Auth() {
     try {
       const { error: err } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: window.location.origin },
+        options: { emailRedirectTo: authRedirectUrl() },
       });
       if (err) throw err;
       setNotice("ログイン用リンクをメールで送信しました。");
@@ -162,6 +196,10 @@ export default function Auth() {
           パスワードなしでログイン（Magic Link をメールで受け取る）
         </button>
       </div>
+
+      <Link className="mypage-legal-link" to="/privacy">
+        プライバシーポリシー
+      </Link>
     </div>
   );
 }

@@ -20,6 +20,7 @@ import ExamList from "./routes/Exams/List";
 import ExamResult from "./routes/Exams/Result";
 import ExamSession from "./routes/Exams/Session";
 import QuizSession from "./routes/QuizSession";
+import Privacy from "./routes/Privacy";
 import Ranking from "./routes/Ranking";
 import Solo from "./routes/Solo";
 import Verify from "./routes/Verify";
@@ -68,6 +69,9 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/auth" element={<Auth />} />
+        {/* ログイン前でも読めるようにしておく。App Store Connect に
+            登録する URL であり、審査担当者も未ログインで開く。 */}
+        <Route path="/privacy" element={<Privacy />} />
         <Route element={<Protected />}>
           <Route element={<TabShell />}>
             <Route path="/" element={<Solo />} />

@@ -124,6 +124,35 @@ class TestAdminQuestionWrite:
         ]}
         assert client.post("/api/admin/questions/", bad, format="json").status_code == 400
 
+    def test_create_rejects_blank_question_text(self):
+        """管理画面からも本文の無い設問は作らせない。"""
+        client, _ = admin_client()
+        for bad_text in ["", "   "]:
+            bad = {**self.payload, "question_text": bad_text}
+            assert (
+                client.post("/api/admin/questions/", bad, format="json").status_code == 400
+            ), f"{bad_text!r} が通ってしまった"
+        missing = {k: v for k, v in self.payload.items() if k != "question_text"}
+        assert client.post("/api/admin/questions/", missing, format="json").status_code == 400
+
+    def test_patch_cannot_blank_out_question_text(self):
+        """既存の設問の本文を空にする更新も弾く。
+
+        本番に「（本文なし）」が並んだ経路がここ。PATCH は partial=True なので
+        本文を含まない部分更新は今まで通り通る（下で確認している）。
+        """
+        client, _ = admin_client()
+        qid = client.post("/api/admin/questions/", self.payload, format="json").json()["id"]
+
+        res = client.patch(f"/api/admin/questions/{qid}/", {"question_text": ""}, format="json")
+        assert res.status_code == 400
+        assert "question_text" in res.json()
+
+        # 本文に触らない部分更新は通る。
+        res = client.patch(f"/api/admin/questions/{qid}/", {"topic": "心不全"}, format="json")
+        assert res.status_code == 200
+        assert Question.objects.get(pk=qid).question_text == self.payload["question_text"]
+
     def test_admin_can_edit_a_question_with_answer_history(self):
         # 学習者向けAPIは履歴のある問題の本文編集を禁止するが、
         # 管理側は誤りの訂正が目的なので通す。

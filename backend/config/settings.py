@@ -85,10 +85,19 @@ MIDDLEWARE = [
 # auth.users UUID; every app-level FK points at Profile, not User.
 AUTH_USER_MODEL = 'accounts.User'
 
+# Capacitor でパッケージした iOS/Android アプリは、ブラウザの origin の代わりに
+# これを名乗る。Web と違って「デプロイ先のドメイン」が無いので環境変数では
+# 足せず、常に許可しておく必要がある。
+#
+# 許可しても危険が増えないのは、この API が Cookie を一切使わず（
+# CORS_ALLOW_CREDENTIALS は既定の False）、Supabase の JWT を Authorization
+# ヘッダで受けているため。トークンが無ければ 401 で、CORS は関係ない。
+NATIVE_APP_ORIGINS = ['capacitor://localhost', 'ionic://localhost']
+
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
     default=['http://localhost:5173', 'http://127.0.0.1:5173'],
-)
+) + NATIVE_APP_ORIGINS
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -176,6 +185,11 @@ INTERNAL_API_TOKEN = env("INTERNAL_API_TOKEN", default="")
 # Vercel Cron が送る "Authorization: Bearer <CRON_SECRET>" 用。
 # Vercel 側で CRON_SECRET を設定すると、この値が自動で環境変数に入る。
 CRON_SECRET = env("CRON_SECRET", default="")
+
+# ランキングスナップショットの鮮度 (exams/ranking_refresh.py)。この秒数より
+# 古ければ、ランキング/ホームを開いた時にその場で再集計する。外部スケジューラ
+# で aggregate_rankings を回す運用にするなら負値にして遅延再集計を止める。
+RANKING_SNAPSHOT_TTL_SECONDS = env.int("RANKING_SNAPSHOT_TTL_SECONDS", default=300)
 
 # Web Push (VAPID) keys for review reminders (spec 4.フェーズ6).
 VAPID_PRIVATE_KEY = env("VAPID_PRIVATE_KEY", default="")

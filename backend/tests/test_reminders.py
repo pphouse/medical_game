@@ -63,8 +63,9 @@ class TestReviewSummary:
         assert body["due_now"] == 3
         assert body["today"] == 3
         assert body["tomorrow"] == 1
-        # this_week は暦の週ではなく今日から7日先まで（曜日によらず
-        # 「今日 + 明日」を必ず含む）。
+        # this_week は暦の週ではなく今日から7日先まで。暦（月曜起点）で切ると
+        # 日曜には「今週」が今日だけになり明日の分が消えるので、曜日によらず
+        # 「今日 + 明日」を含む数え方に変えてある。
         assert body["this_week"] == 4
 
 

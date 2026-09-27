@@ -145,6 +145,29 @@ class Profile(models.Model):
         )
 
 
+class DeletedAccount(models.Model):
+    """削除済みアカウントの墓標。個人情報は持たない（UUID と削除時刻だけ）。
+
+    JWT は Supabase の auth.users を消しても有効期限（既定1時間）までは
+    検証を通ってしまう。SupabaseJWTAuthentication は初アクセスで Profile を
+    作るので、削除直後に別タブのリクエストが1本飛んだだけで空のアカウントが
+    生き返ってしまう。この行があるかどうかで作り直しを止める。
+
+    同じメールアドレスで登録し直した場合は Supabase が別の UUID を発行する
+    ので、ここに残っていても新規登録の妨げにはならない。
+    """
+
+    id = models.UUIDField(primary_key=True, editable=False)
+    deleted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "削除済みアカウント"
+        verbose_name_plural = "削除済みアカウント"
+
+    def __str__(self):
+        return str(self.id)
+
+
 class StudentVerification(models.Model):
     """学生証審査 (spec 2.2 / フェーズ7).
 

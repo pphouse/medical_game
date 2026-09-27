@@ -30,6 +30,21 @@ FOLDED = (
 )
 
 
+# 国試の書き方。どの選択肢かを読んで分かるよう文言が添えてあり、末尾に
+# 出典表記が続く（Public Data License 1.0 の条件）。
+KOKUSHI_FOLDED = (
+    "正答は B「妊娠反応検査」。\n"
+    "\n"
+    "生殖年齢の女性の不正性器出血では、まず妊娠の有無を確かめる。\n"
+    "\n"
+    f"{BLOCK_HEADING}\n"
+    "A「腹部単純CT」: 被曝を伴い、妊娠の可能性を否定する前に行うべきではない。\n"
+    "C「経腟超音波検査」: 妊娠反応の結果があってこそ所見を解釈できる。\n"
+    "\n"
+    "出典：厚生労働省ホームページ 第119回医師国家試験 C044"
+)
+
+
 class TestSplit:
     def test_it_pulls_the_block_out_of_the_body(self):
         body, per_choice = split_choice_explanations(FOLDED)
@@ -59,6 +74,46 @@ class TestSplit:
         body, per_choice = split_choice_explanations(FOLDED)
         again, per_again = split_choice_explanations(merge_into_text(body, per_choice))
         assert (again, per_again) == (body, per_choice)
+
+    def test_it_reads_the_kokushi_style_with_the_choice_text_attached(self):
+        body, per_choice = split_choice_explanations(KOKUSHI_FOLDED)
+
+        # 選択肢の文言は横に並べる時点で重複するので、理由だけを取る。
+        assert per_choice == {
+            "A": "被曝を伴い、妊娠の可能性を否定する前に行うべきではない。",
+            "C": "妊娠反応の結果があってこそ所見を解釈できる。",
+        }
+
+    def test_it_keeps_the_attribution_in_the_body(self):
+        """出典は Public Data License 1.0 の条件なので落とせない。"""
+        body, _ = split_choice_explanations(KOKUSHI_FOLDED)
+
+        assert "出典：厚生労働省ホームページ 第119回医師国家試験 C044" in body
+
+    def test_the_attribution_does_not_get_glued_onto_the_last_choice(self):
+        _, per_choice = split_choice_explanations(KOKUSHI_FOLDED)
+
+        assert "出典" not in per_choice["C"]
+
+    def test_it_reads_a_choice_whose_text_is_itself_quoted(self):
+        """会話文の選択肢は「「…」」と入れ子になる。"""
+        folded = (
+            f"本文。\n\n{BLOCK_HEADING}\n"
+            "A「「受動喫煙は肺癌と無関係です」」: 受動喫煙は肺癌のリスクを高める。"
+        )
+
+        _, per_choice = split_choice_explanations(folded)
+
+        assert per_choice == {"A": "受動喫煙は肺癌のリスクを高める。"}
+
+    def test_it_reads_the_sixth_choice(self):
+        """組合せ問題は選択肢が F まである。"""
+        folded = f"本文。\n\n{BLOCK_HEADING}\nF「早産 — 死産届必要」: 早産ではない。"
+
+        _, per_choice = split_choice_explanations(folded)
+
+        assert per_choice == {"F": "早産ではない。"}
+
 
 
 class TestImportKeepsThemStructured:

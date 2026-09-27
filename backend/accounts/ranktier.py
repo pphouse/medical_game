@@ -14,8 +14,6 @@
 D から SS まで概ね120戦前後かかる設計。
 """
 
-from accounts.models import Profile
-
 # ランクの並び（下から上へ）と、1ランクぶんのポイント幅
 RANK_TIERS = ["D", "C", "B", "A", "S", "SS"]
 POINTS_PER_TIER = 100

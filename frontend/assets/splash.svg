@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
+  <defs>
+    <linearGradient id="mark" x1="232" y1="190" x2="792" y2="750"
+                    gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="2732" height="2732" fill="#eaf3ff"/>
+  <!-- 元データは logo.svg。ロゴのインクの中心 (583.5, 562.5) を画面中央に置き、
+       高さ 745 のインクが 480px になるように 0.644 倍している。 -->
+  <g transform="translate(1366 1366) scale(0.644) translate(-583.5 -562.5)">
+    <g fill="url(#mark)">
+      <rect x="232" y="370" width="560" height="200" rx="44"/>
+      <rect x="412" y="190" width="200" height="560" rx="44"/>
+      <circle cx="790" cy="790" r="145"/>
+    </g>
+    <path d="M722 792 L772 842 L862 730" fill="none" stroke="#ffffff" stroke-width="48"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

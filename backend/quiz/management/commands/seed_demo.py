@@ -7,6 +7,7 @@ from quiz.models import Question
 # CBT/国試 exam content) covering a handful of major clinical categories.
 SAMPLE_QUESTIONS = [
     dict(
+        question_text="心拍数を低下させる作用をもつ神経伝達物質はどれか。",
         category="循環器",
         exam_type="CBT",
         difficulty=2,
@@ -21,6 +22,7 @@ SAMPLE_QUESTIONS = [
         explanation="心臓の洞房結節・房室結節に対して陰性変時作用を持つ主な神経伝達物質は迷走神経終末から放出されるアセチルコリンである。ムスカリン受容体を介して心拍数を低下させる。",
     ),
     dict(
+        question_text="左心房と左心室の間にある弁はどれか。",
         category="循環器",
         exam_type="CBT",
         difficulty=1,
@@ -34,6 +36,7 @@ SAMPLE_QUESTIONS = [
         explanation="左房と左室の間に位置する房室弁は僧帽弁（二尖弁）である。三尖弁は右房と右室の間に位置する。",
     ),
     dict(
+        question_text="急性心筋梗塞の急性期にみられる特徴的な心電図所見はどれか。",
         category="循環器",
         exam_type="KOKUSHI",
         difficulty=3,
@@ -48,6 +51,7 @@ SAMPLE_QUESTIONS = [
         explanation="急性心筋梗塞の急性期には、閉塞冠動脈の灌流域に一致した心電図誘導でST上昇（貫壁性虚血を反映）がみられるのが特徴的所見である。",
     ),
     dict(
+        question_text="拘束性換気障害を呈する疾患はどれか。",
         category="呼吸器",
         exam_type="CBT",
         difficulty=2,
@@ -61,6 +65,7 @@ SAMPLE_QUESTIONS = [
         explanation="肺線維症は肺コンプライアンスが低下する拘束性換気障害の代表であり、%VCの低下とFEV1.0%の維持〜上昇を特徴とする。",
     ),
     dict(
+        question_text="肺葉の構成で正しいのはどれか。",
         category="呼吸器",
         exam_type="CBT",
         difficulty=1,
@@ -74,6 +79,7 @@ SAMPLE_QUESTIONS = [
         explanation="右肺は上葉・中葉・下葉の3葉、左肺は心臓のスペースを確保するため上葉・下葉の2葉からなる。",
     ),
     dict(
+        question_text="COPDで肺の弾性収縮力が低下したことを直接示す所見はどれか。",
         category="呼吸器",
         exam_type="KOKUSHI",
         difficulty=3,
@@ -88,6 +94,7 @@ SAMPLE_QUESTIONS = [
         explanation="COPDでは肺胞破壊により肺の弾性収縮力が低下し、肺コンプライアンスは上昇する。これに伴い残気量増加・1秒率低下がみられる。",
     ),
     dict(
+        question_text="尿素回路〈オルニチン回路〉が行われる臓器はどれか。",
         category="消化器",
         exam_type="CBT",
         difficulty=2,
@@ -101,6 +108,7 @@ SAMPLE_QUESTIONS = [
         explanation="アンモニアを尿素に変換する尿素回路（オルニチン回路）の主座は肝臓である。",
     ),
     dict(
+        question_text="胃前庭部のG細胞から分泌され、胃酸分泌を促進する消化管ホルモンはどれか。",
         category="消化器",
         exam_type="CBT",
         difficulty=1,
@@ -114,6 +122,7 @@ SAMPLE_QUESTIONS = [
         explanation="胃前庭部のG細胞から分泌されるガストリンは胃酸分泌を促進する代表的な消化管ホルモンである。",
     ),
     dict(
+        question_text="総胆管結石による閉塞性黄疸でみられる検査所見はどれか。",
         category="消化器",
         exam_type="KOKUSHI",
         difficulty=3,
@@ -128,6 +137,7 @@ SAMPLE_QUESTIONS = [
         explanation="閉塞性黄疸（総胆管結石など）では胆汁うっ滞により抱合型（直接型）ビリルビンが優位に上昇する。",
     ),
     dict(
+        question_text="抗利尿ホルモン〈ADH〉が血中に放出される部位はどれか。",
         category="内分泌代謝",
         exam_type="CBT",
         difficulty=2,
@@ -141,6 +151,7 @@ SAMPLE_QUESTIONS = [
         explanation="抗利尿ホルモン（ADH/バソプレシン）は視床下部で産生され、下垂体後葉から血中に放出される。",
     ),
     dict(
+        question_text="1型糖尿病でインスリンが絶対的に欠乏したときにみられるのはどれか。",
         category="内分泌代謝",
         exam_type="CBT",
         difficulty=2,
@@ -154,6 +165,7 @@ SAMPLE_QUESTIONS = [
         explanation="1型糖尿病はインスリン絶対的欠乏によりグルコースの細胞内取り込みが障害され、高血糖・ケトアシドーシスをきたしうる。",
     ),
     dict(
+        question_text="バセドウ病でみられるTSHと遊離サイロキシン〈FT4〉の組合せはどれか。",
         category="内分泌代謝",
         exam_type="KOKUSHI",
         difficulty=3,
@@ -168,6 +180,7 @@ SAMPLE_QUESTIONS = [
         explanation="バセドウ病に代表される原発性甲状腺機能亢進症では、甲状腺ホルモン過剰によるネガティブフィードバックでTSHが低下し、FT4は上昇する。",
     ),
     dict(
+        question_text="短期記憶から長期記憶への固定化に中心的な役割を果たす部位はどれか。",
         category="神経",
         exam_type="CBT",
         difficulty=2,
@@ -181,6 +194,7 @@ SAMPLE_QUESTIONS = [
         explanation="海馬は短期記憶から長期記憶への固定化（記憶の符号化）に中心的な役割を果たす辺縁系の構造である。",
     ),
     dict(
+        question_text="表情筋の運動を支配する脳神経はどれか。",
         category="神経",
         exam_type="CBT",
         difficulty=1,
@@ -195,6 +209,7 @@ SAMPLE_QUESTIONS = [
         explanation="表情筋の運動支配を担うのは顔面神経（第VII脳神経）である。末梢性障害ではベル麻痺のように前額のしわ寄せも障害される。",
     ),
     dict(
+        question_text="パーキンソン病の中核症状はどれか。",
         category="神経",
         exam_type="KOKUSHI",
         difficulty=3,
@@ -209,6 +224,14 @@ SAMPLE_QUESTIONS = [
         explanation="パーキンソン病の中核症状は安静時振戦・筋強剛（固縮）・寡動（無動）・姿勢反射障害であり、黒質緻密部のドパミン作動性ニューロン変性による。",
     ),
 ]
+
+# 設問文の書き忘れを import 時点で止める。本文が空でもモデルは保存でき
+# （blank=True）、アプリ側は「（本文なし）」と出すだけなので、実際に本番へ
+# 15問が本文なしで入っていた。
+for _i, _q in enumerate(SAMPLE_QUESTIONS, 1):
+    if not _q.get("question_text", "").strip():
+        raise ValueError(f"SAMPLE_QUESTIONS[{_i}] に question_text が無い")
+
 
 
 class Command(BaseCommand):
@@ -239,6 +262,9 @@ class Command(BaseCommand):
                 exam_type=q["exam_type"],
                 explanation=q["explanation"],
                 defaults=dict(
+                    # 設問文を defaults に入れ忘れていて、本番に本文の無い行が
+                    # 15件できていた。モデルが blank=True なので保存できてしまう。
+                    question_text=q["question_text"],
                     difficulty=q["difficulty"],
                     choices=q["choices"],
                     correct_choice_key=q["correct_choice_key"],

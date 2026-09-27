@@ -131,6 +131,20 @@ select status, count(*) from quiz_question group by status;
    **Django で新テーブルを作るたびに `20260723000100_rls_lockdown.sql` を再適用**。
 4. （任意）デモ問題を投入: `python manage.py seed_demo --with-batch`（308問を公開）。
 
+### 稼働中の本番に新しいマイグレーションを当てる
+
+`migrate` は自動では走らない。**新しいコードをデプロイする前に**当てること。
+当て忘れたまま新しいコードが動くと、そのテーブルを触るリクエストが全部 500 になる。
+
+直結接続が使えるなら手順2と同じ `manage.py migrate`。Supabase の SQL Editor
+しか使えない場合のために、当てる SQL を `scripts/sql/` に置いてある。
+`django_migrations` への記録と RLS の有効化まで含めてあるので、あとから
+`manage.py migrate` を通しても二重には当たらない。
+
+| マイグレーション | SQL | 内容 |
+|---|---|---|
+| `accounts.0010_deletedaccount` | `scripts/sql/migrate_0010_deleted_account.sql` | 退会済みアカウントの墓標。**これが無いとログイン中の全リクエストが 500 になる**（`SupabaseJWTAuthentication` が参照するため） |
+
 ## 1. バックエンド（Django）を Vercel にデプロイ
 
 `backend/` を Vercel プロジェクトの **Root Directory** に設定してデプロイします。
@@ -143,7 +157,7 @@ select status, count(*) from quiz_question group by status;
 | `DJANGO_SECRET_KEY` | ランダム生成した値（必須） |
 | `DJANGO_DEBUG` | `false` |
 | `DJANGO_ALLOWED_HOSTS` | `<backend>.vercel.app`（カスタムドメインも追加） |
-| `CORS_ALLOWED_ORIGINS` | フロントの URL 例 `https://<frontend>.vercel.app` |
+| `CORS_ALLOWED_ORIGINS` | フロントの URL 例 `https://<frontend>.vercel.app`（iOS アプリの `capacitor://localhost` は settings.py 側で常に許可済み） |
 | `DATABASE_URL` | Supabase **transaction pooler (6543)** の接続文字列 |
 | `SUPABASE_URL` | `https://<ref>.supabase.co`（JWKS 自動解決に使用） |
 | `SUPABASE_ANON_KEY` | anon（publishable）key |
