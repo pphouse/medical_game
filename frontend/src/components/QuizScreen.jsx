@@ -179,13 +179,13 @@ export default function QuizScreen({
             } else if (choice.key === selectedKey) {
               cls += " selected";
             }
-            // 解答後は選択肢の右端に印を出す。色（緑／赤）だけだと、色の
-            // 見分けが付きにくい環境でどれを間違えたのか分からない。
-            let mark = null;
-            if (result) {
-              if (choice.key === result.correct_choice_key) mark = "⭕️";
-              else if (choice.key === selectedKey) mark = "❌";
-            }
+            // 間違えた選択肢だけ印を出す。赤緑の見分けが付きにくい環境でも
+            // 「自分がどれを外したか」は分かるようにするため（正解側は色と
+            // 解説で分かるので印は付けない）。
+            const wrong =
+              result &&
+              choice.key === selectedKey &&
+              choice.key !== result.correct_choice_key;
             return (
               <button
                 key={choice.key}
@@ -195,9 +195,9 @@ export default function QuizScreen({
               >
                 <span className="choice-key">{choice.key}</span>
                 <span>{choice.text}</span>
-                {mark && (
-                  <span className="choice-mark" aria-label={mark === "⭕️" ? "正解" : "あなたの誤答"}>
-                    {mark}
+                {wrong && (
+                  <span className="choice-mark" aria-label="あなたの誤答">
+                    ❌
                   </span>
                 )}
               </button>
