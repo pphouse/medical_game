@@ -147,7 +147,7 @@ SQL で入れる。`scripts/build_question_import_sql.py` が `import_questions`
 
 | ファイル | 中身 |
 |---|---|
-| `kokushi_fix_2026_09.sql` | 公開中の30問の本文・選択肢・解説を直す（UPDATE） |
+| `kokushi_fix_2026_09.sql` | 公開中の33問の本文・選択肢・解説を直す（UPDATE） |
 | `kokushi_fix_2026_09_add_01.sql` | 取り込み直して増えた147問を入れる（INSERT、pending） |
 
 - SQL Editor に1本ずつ貼る。順番は問わない。何度流しても結果は同じ。
@@ -156,6 +156,6 @@ SQL で入れる。`scripts/build_question_import_sql.py` が `import_questions`
   最後の表で全問が「直した」か「すでに直っている」なら完了。「手で確認」が
   出た設問は、審査画面で本文を見比べて直す。
 - INSERT は、同じ blueprint_code の国試の行がすでにあれば入れない。直した
-  30問は本番にあるので入らず、増えた147問だけが審査待ちで入る。
+  33問は本番にあるので入らず、増えた147問だけが審査待ちで入る。
 - 公開の状態（status）は変えない。
 - 同梱データを直したら作り直す: `python scripts/build_kokushi_fix_sql.py`

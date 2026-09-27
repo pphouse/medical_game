@@ -422,6 +422,21 @@ class TestBundledKokushiBatches:
                     bad.append(f"{q['id']} {c['id']}: {text[:40]}…（{len(text)}字）")
         assert not bad, "選択肢に症例文が付いている:\n" + "\n".join(bad)
 
+    # 和文どうしの間の空白は、均等割りや字間調整の抜け殻（"総コレステロ ー ル"）。
+    # 本文の和文に空白を置くことはない（出典表記の「ホームページ 第114回」の
+    # ような空白は解説側にあり、ここでは見ない）。
+    JAPANESE_GAP = re.compile(r"(?<=[ぁ-んァ-ヶー一-龥々]) (?=[ぁ-んァ-ヶー一-龥々])")
+
+    @pytest.mark.parametrize("exam", EXAMS)
+    def test_no_space_between_japanese_characters(self, exam):
+        bad = [
+            f"{q['id']}: …{body[max(0, m.start() - 8):m.end() + 8]}…"
+            for q, body in self._bodies(exam)
+            for m in [self.JAPANESE_GAP.search(q["question_text"] + "\n" + "\n".join(c["text"] for c in q["choices"]))]
+            if m
+        ]
+        assert not bad, "和文の間に空白が残っている:\n" + "\n".join(bad)
+
     def test_corpus_size(self):
         # 縮小したら気づけるように下限を固定する
         total = sum(len(list(self._bodies(e))) for e in self.EXAMS)

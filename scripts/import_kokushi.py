@@ -945,7 +945,9 @@ LINE_Y_TOLERANCE = 6.0
 
 # 均等割りで開いた字間（"疥 癬"）。列の区切りは上で COLUMN_SEPARATOR に
 # 置き換えたあとなので、ここに残る和文どうしの1個の空白は字間調整でしかない。
-KINSOKU_SPACE = re.compile(r"(?<=[ぁ-んァ-ヶ一-龥々]) (?=[ぁ-んァ-ヶ一-龥々])")
+# 長音符 ー（U+30FC）はカタカナの範囲 ァ-ヶ の外にあるので別に入れる。入れて
+# いなかったときは "総コレステロ ー ル" "アミラ ー ゼ" が残っていた。
+KINSOKU_SPACE = re.compile(r"(?<=[ぁ-んァ-ヶー一-龥々]) (?=[ぁ-んァ-ヶー一-龥々])")
 
 
 # 欧文の語間。国試PDFの英文は空白の字を持たず、語と語の間を 0.3em ほど
@@ -1132,7 +1134,7 @@ def _pymupdf_lines(path: Path) -> list[str]:
             joined = "".join(buf)
             # 均等割りで開いた字間（"肥 満"）を詰める。和文どうしの間の空白だけを
             # 落とすので、"FDG-PET での…" のような欧文と和文の間は保つ。
-            joined = re.sub(r"(?<=[ぁ-んァ-ヶ一-龥])\s+(?=[ぁ-んァ-ヶ一-龥])", "", joined)
+            joined = re.sub(r"(?<=[ぁ-んァ-ヶー一-龥々])\s+(?=[ぁ-んァ-ヶー一-龥々])", "", joined)
             out.append(joined)
     doc.close()
     return _clean(out)
