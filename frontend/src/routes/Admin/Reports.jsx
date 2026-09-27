@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { api } from "../../api";
 
 const REASON_LABEL = {
-  wrong_answer: "正解が誤っている",
+  wrong_question: "問題文が間違っている",
+  wrong_answer: "解答が間違っている",
   ambiguous: "設問が曖昧",
   typo: "誤字脱字",
   inappropriate: "不適切な内容",
@@ -36,9 +37,13 @@ export default function AdminReports() {
         <div key={r.id} className="admin-row">
           <div className="admin-row-body">
             <div className="admin-row-meta">
-              <span className="badge admin-danger-badge">
-                {REASON_LABEL[r.reason] ?? r.reason}
-              </span>
+              {/* 報告の画面はチェックボックスなので理由は複数つく。古い行は
+                  reasons が空なので、単一の reason から作る。 */}
+              {(r.reasons?.length ? r.reasons : [r.reason]).map((key) => (
+                <span key={key} className="badge admin-danger-badge">
+                  {REASON_LABEL[key] ?? key}
+                </span>
+              ))}
               <span className={`badge create-status-${r.question_status}`}>
                 {STATUS_LABEL[r.question_status] ?? r.question_status}
               </span>

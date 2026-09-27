@@ -147,6 +147,8 @@ class AdminReportSerializer(serializers.ModelSerializer):
     question_id = serializers.IntegerField(source="question.id", read_only=True)
     question_text = serializers.CharField(source="question.question_text", read_only=True)
     question_status = serializers.CharField(source="question.status", read_only=True)
+    # 選ばれた理由の表示名。管理画面はこれをそのまま並べる。
+    reason_labels = serializers.SerializerMethodField()
 
     class Meta:
         model = QuestionReport
@@ -156,6 +158,14 @@ class AdminReportSerializer(serializers.ModelSerializer):
             "question_text",
             "question_status",
             "reason",
+            "reasons",
+            "reason_labels",
             "detail",
             "created_at",
         ]
+
+    def get_reason_labels(self, obj):
+        labels = dict(QuestionReport.Reason.choices)
+        # 古い行は reasons が空なので、単一の reason から作る。
+        keys = obj.reasons or ([obj.reason] if obj.reason else [])
+        return [labels.get(key, key) for key in keys]

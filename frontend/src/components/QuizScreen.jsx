@@ -3,6 +3,7 @@ import { api } from "../api";
 import { getCategoryTheme } from "../categoryTheme";
 import { playVerdict } from "../lib/sound";
 import ExplanationText from "./ExplanationText";
+import ReportQuestionForm from "./ReportQuestionForm";
 
 // 5段階すべてを手動で選び直せる（○/✕ は正誤で自動設定されるが、あとから
 // 上書きしてよい）。unstudied は「未演習に戻す」操作を表す。
@@ -275,6 +276,10 @@ export default function QuizScreen({
             </div>
           </div>
         )}
+
+        {/* 問題に間違いや不備があったら、その場から報告できるようにする。
+            届いた報告は管理画面の通報一覧から確認できる。 */}
+        {!previewMode && <ReportQuestionForm questionId={question.id} />}
       </div>
 
       <div className="bottom-toolbar">
