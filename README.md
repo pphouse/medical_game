@@ -104,6 +104,13 @@ MIGRATION_DATABASE_URL='...' python manage.py migrate --settings=config.settings
 MIGRATION_DATABASE_URL='...' python manage.py seed_editorial_questions --settings=config.settings_migration
 ```
 
+DBへ直接つなげないときは、Supabase の SQL Editor に
+`backend/scripts/sql/apply_pending_migrations.sql` を貼って実行する。
+`manage.py migrate` + `seed_editorial_questions` と同じ結果になり、何度
+流しても同じ結果になる（どこまで当たっているか分からなくても流せる）。
+中身は `backend/scripts/gen_supabase_migration_sql.py` が生成するので、
+データマイグレーションを足したら生成し直す。
+
 ## DB を作り直す（開発）
 
 SQLite 時代のデータは存在しない前提（指示書 §9-1 で確認済み）なので、
