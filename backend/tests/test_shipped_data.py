@@ -108,6 +108,8 @@ class TestShippedData:
 
         第106〜116回は括弧や符号がほかの記号に（「糖:−<」）、第109回は
         ギリシャ文字が素の欧字に（「c-GTP」）なって公開まで残っていた。
+        第118・119回は欧字の最後の字が括弧の後ろへ出たまま（「Epstein-Bar〈r EB〉」）
+        公開されていた。
         """
         payload = json.loads(path.read_text(encoding="utf-8"))
         bad = [
