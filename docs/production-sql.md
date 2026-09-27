@@ -148,7 +148,7 @@ SQL で入れる。`scripts/build_question_import_sql.py` が `import_questions`
 | ファイル | 中身 |
 |---|---|
 | `kokushi_fix_2026_09.sql` | 公開中の33問の本文・選択肢・解説を直す（UPDATE） |
-| `kokushi_fix_2026_09_add_01.sql` | 取り込み直して増えた147問を入れる（INSERT、pending） |
+| `kokushi_fix_2026_09_add_01.sql` | 取り込み直して増えた147問を解説付きで入れる（INSERT、pending） |
 
 - SQL Editor に1本ずつ貼る。順番は問わない。何度流しても結果は同じ。
 - UPDATE は、本番の行が直す前の本文・選択肢のときだけ当てる（控えは
