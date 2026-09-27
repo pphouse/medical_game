@@ -355,3 +355,52 @@ class TestRadiologySubjectQuestions:
         assert not Question.objects.filter(category="放射線科").exists()
         assert Question.objects.filter(category="呼吸器").count() == 1
         assert Question.objects.filter(category="消化管").count() == 1
+
+
+@pytest.mark.django_db
+class TestUrologyIsMergedIntoKidney:
+    """「泌尿器科」は「腎・泌尿器」に統合する。
+
+    国試の章立てに両方あり中身が被っていた。同じ臓器の問題が2つの科目に
+    分かれて並ぶと、どちらを開けばいいのか分からない。
+    """
+
+    def test_it_is_not_a_subject_of_its_own(self):
+        assert "泌尿器科" not in categories_for(KOKUSHI)
+        assert "泌尿器科" not in categories_for(CBT)
+
+    @pytest.mark.parametrize("name", ["泌尿器科", "泌尿器", "泌尿器系", "腎臓"])
+    @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
+    def test_the_legacy_names_normalize_to_the_kidney_subject(self, exam, name):
+        from quiz.categories import normalize
+
+        assert normalize(name, exam_type=exam) == "腎・泌尿器"
+
+    def test_existing_questions_are_moved(self):
+        from django.core.management import call_command
+
+        from quiz.models import Question
+
+        Question.objects.create(
+            category="泌尿器科",
+            exam_type="KOKUSHI",
+            difficulty=2,
+            question_text="旧章立てのままの設問",
+            choices=[{"key": k, "text": k} for k in "ABCDE"],
+            correct_choice_key="A",
+            explanation="",
+            status=Question.Status.PUBLISHED,
+        )
+
+        call_command("reclassify_categories", verbosity=0)
+
+        assert not Question.objects.filter(category="泌尿器科").exists()
+        assert Question.objects.filter(category="腎・泌尿器").count() == 1
+
+    def test_the_blueprint_weight_is_carried_over(self):
+        """統合した科目の重みも足し込む（配分から抜け落ちないように）。"""
+        from quiz.blueprint_weights import KOKUSHI_WEIGHTS
+
+        assert "泌尿器科" not in KOKUSHI_WEIGHTS
+        # 腎・泌尿器(14) + 泌尿器科(8)
+        assert KOKUSHI_WEIGHTS["腎・泌尿器"] == 22
