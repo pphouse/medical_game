@@ -1,0 +1,67 @@
+# 本番データベースにマイグレーションを当てる。
+#
+# Vercel のデプロイは静的ファイルと関数を置き換えるだけで、データベースの
+# 構造や中身は触らない。そのため科目の統合のような「マイグレーションで
+# 動かすデータ」は、これを流すまで画面に反映されない。
+#
+# 使い方:
+#   1. リポジトリの Settings > Secrets and variables > Actions で
+#      MIGRATION_DATABASE_URL を登録する。Supabase の **直接接続**
+#      （5432番）の URL を入れる。プーラー（6543番）はプリペアド
+#      ステートメントを扱えず migrate が途中で落ちる。
+#   2. main への push で自動的に流れる。手で流すときは Actions タブから
+#      "Migrate production database" を選んで Run workflow。
+name: Migrate production database
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "backend/**/migrations/**"
+      - "backend/config/settings*.py"
+      - ".github/workflows/migrate.yml"
+  workflow_dispatch:
+
+# 同時に2つ流すと同じマイグレーションを二重に当てようとする。後から来た
+# ほうを待たせる（キャンセルはしない。途中で止めると中途半端に当たる）。
+concurrency:
+  group: migrate-production
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: manage.py migrate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DJANGO_SECRET_KEY: migration-only-secret-key
+      MIGRATION_DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      # 秘密が未登録のまま走ると、DATABASE_URL の既定（ローカル）に当たって
+      # しまう。何も起きなかったように見えるのがいちばん困るので止める。
+      - name: Check the secret is set
+        run: |
+          if [ -z "$MIGRATION_DATABASE_URL" ]; then
+            echo "::error::MIGRATION_DATABASE_URL secret is not set." \
+              "Settings > Secrets and variables > Actions に Supabase の" \
+              "直接接続（5432番）の URL を登録してください。"
+            exit 1
+          fi
+      - name: Show the plan
+        run: python manage.py showmigrations --settings=config.settings_migration
+      - name: Migrate
+        run: python manage.py migrate --noinput --settings=config.settings_migration
+      # 同梱のレビュー済みバッチ（放射線・麻酔など）を公開状態で入れる。
+      # 何度流しても重複しない。
+      - name: Seed reviewed question batches
+        run: python manage.py seed_editorial_questions --settings=config.settings_migration

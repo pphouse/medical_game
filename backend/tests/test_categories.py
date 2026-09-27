@@ -57,23 +57,45 @@ class TestTaxonomy:
         for chapter in ("消化管", "肝・胆・膵", "免疫・膠原病", "公衆衛生"):
             assert chapter in KOKUSHI_CATEGORIES
 
-    def test_emergency_toxicology_anesthesia_are_one_subject(self):
-        """救急・中毒・麻酔は1科目にまとめてある。
+    def test_emergency_and_toxicology_are_one_subject(self):
+        """救急と中毒は1科目にまとめてある。
 
-        単独では国試4問（麻酔科）・0問（中毒）しかなく、科目として選んでも
-        演習にならなかった。旧科目名が本番DBに残っているので、そちらからの
-        読み替えも保つ。
+        中毒は単独では0問で、科目として選んでも演習にならなかった。
+        旧科目名が本番DBに残っているので、そちらからの読み替えも保つ。
         """
         for names in (KOKUSHI_CATEGORIES, CBT_CATEGORIES):
-            assert "救急・中毒・麻酔" in names
             for gone in ("救急", "中毒", "麻酔科", "中毒・環境"):
                 assert gone not in names, f"{gone} が残っている"
-        for exam in (CBT, KOKUSHI):
-            for generic in ("救急", "麻酔", "中毒・環境異常症"):
-                assert GENERIC_BY_EXAM[exam][generic] == "救急・中毒・麻酔"
+        assert "救急・中毒" in KOKUSHI_CATEGORIES
+        # CBTには麻酔の設問が無いので、3科目まとめたままにしてある。
+        assert "救急・中毒・麻酔" in CBT_CATEGORIES
+        for generic in ("救急", "中毒・環境異常症"):
+            assert GENERIC_BY_EXAM[CBT][generic] == "救急・中毒・麻酔"
+            assert GENERIC_BY_EXAM[KOKUSHI][generic] == "救急・中毒"
         # 本番DBに残る旧科目名からも辿り着けること。
-        for old_name in ("中毒", "中毒・環境", "麻酔科", "救急・集中治療"):
-            assert normalize(old_name, "", None, KOKUSHI) == "救急・中毒・麻酔"
+        for old_name in ("中毒", "中毒・環境", "救急・集中治療"):
+            assert normalize(old_name, "", None, KOKUSHI) == "救急・中毒"
+
+    def test_anesthesia_is_a_subject_of_its_own_in_kokushi(self):
+        """麻酔は国試だけ独立した科目。
+
+        設問を足して10問を超えたので救急・中毒から分けた。CBTには麻酔の
+        設問が無いので、そちらは救急・中毒・麻酔のままにしてある。
+        """
+        assert "麻酔" in KOKUSHI_CATEGORIES
+        assert "麻酔" not in CBT_CATEGORIES
+        assert GENERIC_BY_EXAM[KOKUSHI]["麻酔"] == "麻酔"
+        assert GENERIC_BY_EXAM[CBT]["麻酔"] == "救急・中毒・麻酔"
+        assert normalize("麻酔科", "", None, KOKUSHI) == "麻酔"
+        assert normalize("麻酔科", "", None, CBT) == "救急・中毒・麻酔"
+
+    def test_radiology_is_a_subject_in_both_exams(self):
+        """放射線は両方の試験で科目にしてある（設問を足して10問を超えた）。"""
+        for names in (KOKUSHI_CATEGORIES, CBT_CATEGORIES):
+            assert "放射線" in names
+        for exam in (CBT, KOKUSHI):
+            assert GENERIC_BY_EXAM[exam]["放射線"] == "放射線"
+            assert normalize("放射線科", "", None, exam) == "放射線"
 
     def test_cbt_follows_the_core_curriculum_volumes(self):
         for name in ("基礎医学", "医学総論・公衆衛生・診療の基本", "多選択肢・4連問"):
@@ -93,7 +115,7 @@ class TestBlueprintCode:
             ("D-12", "内分泌・代謝", "代謝・内分泌"),
             ("D-15", "精神", "精神科"),
             ("E-2", "感染症", "感染症"),
-            ("E-6", "救急・中毒・麻酔", "救急・中毒・麻酔"),
+            ("E-6", "救急・中毒・麻酔", "救急・中毒"),
             ("E-7", "小児（成長と発達）", "小児科"),
             ("B-1", "医学総論・公衆衛生・診療の基本", "公衆衛生"),
             ("C-2", "基礎医学", "医学総論"),
@@ -272,7 +294,8 @@ class TestLegacyToxicologyIsMerged:
     def test_the_legacy_name_normalizes_to_the_merged_subject(self, exam):
         from quiz.categories import normalize
 
-        assert normalize("中毒・環境異常症", exam_type=exam) == "救急・中毒・麻酔"
+        expected = "救急・中毒・麻酔" if exam == CBT else "救急・中毒"
+        assert normalize("中毒・環境異常症", exam_type=exam) == expected
 
     def test_it_is_not_a_subject_of_its_own(self):
         assert "中毒・環境異常症" not in categories_for(CBT)
@@ -468,12 +491,12 @@ class TestEverySubjectHasEnoughQuestions:
         for dropped in ("放射線科", "必修問題"):
             assert dropped not in categories_for(KOKUSHI)
 
-    @pytest.mark.parametrize("name", ["放射線科", "必修問題"])
-    def test_their_names_still_resolve_somewhere_sensible(self, name):
+    def test_the_name_for_essentials_still_resolves_somewhere_sensible(self):
+        """「必修問題」は分野ではなく出題形式の呼び名なので総論に落とす。"""
         from quiz.categories import normalize
 
-        assert normalize(name, exam_type=KOKUSHI) == "医学総論"
-        assert normalize(name, exam_type=CBT) == "医学総論・公衆衛生・診療の基本"
+        assert normalize("必修問題", exam_type=KOKUSHI) == "医学総論"
+        assert normalize("必修問題", exam_type=CBT) == "医学総論・公衆衛生・診療の基本"
 
     def test_radiology_and_essentials_move_to_general_medicine(self):
         from quiz.models import Question
@@ -508,3 +531,95 @@ class TestEverySubjectHasEnoughQuestions:
         assert not Question.objects.filter(category="免疫・膠原病").exists()
         assert Question.objects.filter(category="産科").count() == 1
         assert Question.objects.filter(category="整形外科").count() == 1
+
+
+@pytest.mark.django_db
+class TestRadiologyAndAnesthesiaSplit:
+    """放射線と麻酔を独立した科目に切り出す（マイグレーション 0018）。
+
+    画像や全身麻酔は各科の臨床問題にも普通に出てくるので、本文に語が在る
+    だけでは移さない。「何を問うているか」＝設問の最後の一文で判断する。
+    """
+
+    def question(self, category, text, exam="KOKUSHI"):
+        from quiz.models import Question
+
+        return Question.objects.create(
+            category=category,
+            exam_type=exam,
+            difficulty=2,
+            question_text=text,
+            choices=[{"key": k, "text": k} for k in "ABCDE"],
+            correct_choice_key="A",
+            explanation="",
+            status=Question.Status.PUBLISHED,
+        )
+
+    def split(self):
+        import importlib
+
+        from django.apps import apps as django_apps
+
+        module = importlib.import_module(
+            "quiz.migrations.0018_split_radiology_and_anesthesia"
+        )
+        module.split(django_apps, None)
+
+    def test_the_merged_kokushi_subject_is_renamed(self):
+        from quiz.models import Question
+
+        self.question("救急・中毒・麻酔", "熱中症の初期対応はどれか。")
+
+        self.split()
+
+        assert Question.objects.filter(category="救急・中毒").count() == 1
+        assert not Question.objects.filter(category="救急・中毒・麻酔").exists()
+
+    def test_anesthesia_questions_move_out_of_emergency(self):
+        from quiz.models import Question
+
+        self.question("救急・中毒・麻酔", "全身麻酔の導入で正しいのはどれか。")
+
+        self.split()
+
+        assert Question.objects.filter(category="麻酔").count() == 1
+
+    def test_cbt_keeps_the_merged_subject(self):
+        """CBTには麻酔の設問が無いので、3科目まとめたままにする。"""
+        from quiz.models import Question
+
+        self.question("救急・中毒・麻酔", "熱傷の重症度はどれか。", exam="CBT")
+
+        self.split()
+
+        assert Question.objects.filter(category="救急・中毒・麻酔").count() == 1
+
+    def test_radiation_subject_questions_move_in_both_exams(self):
+        from quiz.models import Question
+
+        self.question("医学総論", "被曝線量が最も多い検査はどれか。")
+        self.question("腫瘍", "放射線治療の特徴はどれか。", exam="CBT")
+
+        self.split()
+
+        assert Question.objects.filter(category="放射線").count() == 2
+
+    def test_clinical_cases_that_merely_use_imaging_or_anesthesia_stay_put(self):
+        from quiz.models import Question
+
+        self.question("呼吸器", "72歳の男性。肺腺癌に放射線治療を行った。合併症はどれか。")
+        self.question("整形外科", "65歳の女性。全身麻酔で人工膝関節置換術を受けた。原因はどれか。")
+
+        self.split()
+
+        assert not Question.objects.filter(category__in=["放射線", "麻酔"]).exists()
+        assert Question.objects.filter(category="呼吸器").count() == 1
+        assert Question.objects.filter(category="整形外科").count() == 1
+
+    def test_the_blueprint_weights_cover_the_new_subjects(self):
+        from quiz.blueprint_weights import CBT_WEIGHTS, KOKUSHI_WEIGHTS
+
+        assert CBT_WEIGHTS["放射線"] > 0
+        assert KOKUSHI_WEIGHTS["放射線"] > 0
+        assert KOKUSHI_WEIGHTS["麻酔"] > 0
+        assert "救急・中毒・麻酔" not in KOKUSHI_WEIGHTS
