@@ -100,6 +100,7 @@ const post = (path, payload) =>
   request(path, { method: "POST", body: payload === undefined ? undefined : JSON.stringify(payload) });
 const patch = (path, payload) =>
   request(path, { method: "PATCH", body: JSON.stringify(payload) });
+const put = (path, payload) => request(path, { method: "PUT", body: JSON.stringify(payload) });
 
 export const api = {
   // auth / profile
@@ -111,6 +112,17 @@ export const api = {
   deleteAccount: () =>
     request("/auth/me/", { method: "DELETE", body: JSON.stringify({ confirm: true }) }),
   universities: () => get("/auth/universities/"),
+
+  // 1日の目標・連続記録（とアプリが端末に予約する通知の予定）
+  habitToday: () => get("/habits/today/"),
+  setDailyGoal: (questionsPerDay) =>
+    put("/habits/goal/", { questions_per_day: questionsPerDay }),
+  // 学習リマインドの設定（Web Push の購読は別。VAPID 公開鍵もここから受け取る）
+  notificationPrefs: () => get("/auth/notifications/"),
+  updateNotificationPrefs: (payload) => patch("/auth/notifications/", payload),
+  registerPush: (subscription) => post("/auth/push-subscriptions/", subscription),
+  unregisterPush: (endpoint) =>
+    request("/auth/push-subscriptions/", { method: "DELETE", body: JSON.stringify({ endpoint }) }),
 
   // solo quiz
   categories: () => get("/quiz/categories/"),

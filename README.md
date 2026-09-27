@@ -80,7 +80,7 @@ oxlint / vitest / vite build に加えて、**ビルド成果物に SERVICE_ROLE
 | `SUPABASE_URL` / `SUPABASE_ANON_KEY` | backend | GoTrue Admin / Storage REST の呼び出し |
 | `SUPABASE_SERVICE_ROLE_KEY` | **backend のみ** | Storage 署名 URL 等。frontend 配下に置いたら CI が落ちます |
 | `INTERNAL_API_TOKEN` | backend | pg_cron → Edge Function → `/api/internal/*` の共有シークレット |
-| `VAPID_PRIVATE_KEY` / `VAPID_PUBLIC_KEY` / `VAPID_ADMIN_EMAIL` | backend | 復習リマインドの Web Push |
+| `VAPID_PRIVATE_KEY` / `VAPID_PUBLIC_KEY` / `VAPID_ADMIN_EMAIL` | backend | 学習リマインドの Web Push（`docs/deploy-vercel.md`） |
 | `ANTHROPIC_API_KEY` | scripts | LLM 問題生成 CLI |
 | `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` | frontend | supabase-js（公開値のみ） |
 
@@ -125,5 +125,6 @@ python manage.py aggregate_rankings         # スナップショット集計
 | `manage.py create_scheduled_exam` | 月次実力テスト・国試模試・CBT模試を出題基準の分野比率で自動編成（Vercel Cronが毎日 `/api/internal/create-exams/` を叩いて実行） |
 | `manage.py grade_mock_exam <id>` | 締切後の一括採点（偏差値・順位・分野別成績） |
 | `manage.py send_review_reminders` | 復習期限5問以上のユーザーへ Web Push（1日1回） |
+| `manage.py send_habit_reminders` | 学習リマインドの Web Push を今の時刻の分だけ送る（本番は Vercel Cron が毎時 `/api/internal/send-reminders/`） |
 | `manage.py cleanup_student_id_images` | 承認後90日を過ぎた学生証画像の削除 |
 | `manage.py import_questions <json>` | 生成バッチの取り込み（**強制的に status=pending**） |

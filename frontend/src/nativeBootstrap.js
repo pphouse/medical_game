@@ -1,4 +1,5 @@
 import { isNative } from "./native";
+import { syncRemindersIfSignedIn } from "./reminders";
 
 /** 起動画面を消す。ここで失敗するとアプリが起動画面のまま固まって見える。 */
 async function hideSplash() {
@@ -12,11 +13,18 @@ async function hideSplash() {
 }
 
 async function setUp() {
-  const [{ App }, { Browser }, { Style, StatusBar }, { completeAuthFromUrl }] = await Promise.all([
+  const [
+    { App },
+    { Browser },
+    { Style, StatusBar },
+    { completeAuthFromUrl },
+    { LocalNotifications },
+  ] = await Promise.all([
     import("@capacitor/app"),
     import("@capacitor/browser"),
     import("@capacitor/status-bar"),
     import("./lib/deepLink"),
+    import("@capacitor/local-notifications"),
   ]);
 
   // Style.Default = 端末のライト/ダーク設定に追従する。アプリの配色も
@@ -42,6 +50,18 @@ async function setUp() {
   await App.getLaunchUrl()
     .then((launch) => handleUrl(launch?.url))
     .catch(() => {});
+
+  // 学習リマインドをタップしたら、その通知の行き先（問題演習・復習）を開く。
+  LocalNotifications.addListener("localNotificationActionPerformed", ({ notification }) => {
+    const url = notification?.extra?.url;
+    if (url && url !== window.location.pathname) window.location.assign(url);
+  }).catch(() => {});
+
+  // 前面に戻ったら通知の予約を作り直す。日付が変わった・別の端末で目標に
+  // 届いた、などで予定が変わっているため。
+  App.addListener("appStateChange", ({ isActive }) => {
+    if (isActive) syncRemindersIfSignedIn();
+  });
 
   // 外部サイト（出典の公表ページなど）をアプリの WebView で開くと、戻る手段が
   // なくなって詰む。閉じるボタンのある in-app ブラウザに逃がす。
