@@ -300,6 +300,24 @@ describe("対戦ラウンド内の状態 (Match)", () => {
     expect(refresh).toHaveBeenCalled();
   });
 
+  it("回答すると正誤に応じた効果音が鳴る", async () => {
+    // jsdom は play を実装していないので、setup.js の無音スタブを差し替える。
+    const played = [];
+    HTMLMediaElement.prototype.play = vi.fn(function play() {
+      played.push(this.src);
+      return Promise.resolve();
+    });
+    api.battleAnswer.mockResolvedValue({ correct: false, correct_choice_key: "B" });
+    renderMatch(inProgress(), vi.fn().mockResolvedValue());
+
+    fireEvent.click(screen.getByRole("button", { name: /利尿薬/ }));
+    fireEvent.click(screen.getByRole("button", { name: "A で回答する" }));
+    await act(async () => {});
+
+    expect(played).toHaveLength(1);
+    expect(played[0]).toMatch(/incorrect/);
+  });
+
   it("回答すると相手を待たずにすぐ自分の正誤が分かる", async () => {
     api.battleAnswer.mockResolvedValue({ correct: true, correct_choice_key: "A" });
     const refresh = vi.fn().mockResolvedValue();

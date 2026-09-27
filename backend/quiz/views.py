@@ -550,17 +550,28 @@ class QuestionReportView(APIView):
         question = get_object_or_404(
             Question.objects.visible_to(request.user), pk=question_id
         )
-        reason = request.data.get("reason")
-        if reason not in QuestionReport.Reason.values:
+        # 画面はチェックボックスなので複数来る。1つだけの古い形（reason）も
+        # 受ける。代表の理由は先頭のものにして、3件で出題から外す判定と
+        # 管理画面の一覧はこれまでどおり動かす。
+        reasons = request.data.get("reasons")
+        if reasons is None:
+            reasons = [request.data.get("reason")] if request.data.get("reason") else []
+        if not isinstance(reasons, list):
+            raise exceptions.ValidationError("reasons は配列で指定してください")
+        # 指定の順ではなく選択肢の並び順にそろえる（管理画面で読みやすい）。
+        chosen = [r for r in QuestionReport.Reason.values if r in reasons]
+        unknown = [r for r in reasons if r not in QuestionReport.Reason.values]
+        if unknown or not chosen:
             raise exceptions.ValidationError(
-                f"reason は {', '.join(QuestionReport.Reason.values)} のいずれか"
+                f"reasons は {', '.join(QuestionReport.Reason.values)} から選んでください"
             )
         if QuestionReport.objects.filter(question=question, reporter=request.user).exists():
             raise exceptions.ValidationError("この問題はすでに通報済みです。")
         QuestionReport.objects.create(
             question=question,
             reporter=request.user,
-            reason=reason,
+            reason=chosen[0],
+            reasons=chosen,
             detail=request.data.get("detail", ""),
         )
         report_count = question.reports.count()

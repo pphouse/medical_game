@@ -69,7 +69,9 @@ class CBTBlueprintAdmin(admin.ModelAdmin):
 
 @admin.register(QuestionReport)
 class QuestionReportAdmin(admin.ModelAdmin):
-    list_display = ("id", "question", "reporter", "reason", "created_at", "resolved_at")
+    list_display = (
+        "id", "question", "reporter", "reason", "reasons", "created_at", "resolved_at",
+    )
     list_filter = ("reason",)
 
 

@@ -441,6 +441,95 @@
   border-radius: 999px;
 }
 
+/* 問題の下に置く「間違い・不具合を報告」。演習の邪魔にならないよう、
+   ふだんは小さな文字のリンクにして、押したときだけ開く。 */
+.report-open {
+  display: block;
+  margin: 16px auto 0;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0.6;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.report-open:hover {
+  opacity: 0.9;
+}
+
+.report-done {
+  margin: 16px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--correct);
+}
+
+.report-form {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.report-form-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.report-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.report-reason {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.report-reason input {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  accent-color: var(--accent);
+}
+
+.report-detail {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.report-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.report-actions .cta-button {
+  flex: 1;
+  margin: 0;
+}
+
 /* 出題中の見出し。何を解いているか（科目名）を主役にし、種別はその上に
    小さく添える。「分野別演習: 循環器」のように1行に詰め込むと、どの画面も
    同じ見た目になって科目名が埋もれる。 */
@@ -918,6 +1007,14 @@
   margin-top: 20px;
   padding-top: 18px;
   border-top: 1px dashed var(--border);
+}
+
+/* 採点後に出す分野と正答率。狭い画面では折り返す。 */
+.result-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .result-top-row {

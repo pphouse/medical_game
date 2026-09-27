@@ -338,3 +338,89 @@ class TestStudentVerificationFlow:
     def test_student_cannot_use_moderator_endpoints(self):
         client, _ = auth_client()
         assert client.get("/api/auth/student-verification/pending/").status_code == 403
+
+
+@pytest.mark.django_db
+class TestReportWithSeveralReasons:
+    """報告の画面はチェックボックスなので、理由は複数つく。
+
+    代表の理由（reason）は選択肢の並び順で先頭のものにする。3件で出題から
+    外す判定と管理画面の一覧はこれまでどおりこの値を使う。
+    """
+
+    def question(self):
+        from quiz.models import Question
+
+        return Question.objects.create(
+            category="循環器",
+            exam_type="CBT",
+            difficulty=2,
+            question_text="報告される設問",
+            choices=[{"key": k, "text": k} for k in "ABCDE"],
+            correct_choice_key="A",
+            explanation="",
+            status=Question.Status.PUBLISHED,
+        )
+
+    def test_several_reasons_are_all_kept(self):
+        from quiz.models import QuestionReport
+
+        client, _ = auth_client()
+        q = self.question()
+
+        res = client.post(
+            f"/api/quiz/questions/{q.id}/report/",
+            {"reasons": ["other", "wrong_question"], "detail": "選択肢Bも正解では"},
+            format="json",
+        )
+
+        assert res.status_code == 201
+        report = QuestionReport.objects.get(question=q)
+        # 指定の順ではなく選択肢の並び順にそろえる
+        assert report.reasons == ["wrong_question", "other"]
+        assert report.reason == "wrong_question"
+        assert report.detail == "選択肢Bも正解では"
+
+    def test_a_single_reason_still_works(self):
+        from quiz.models import QuestionReport
+
+        client, _ = auth_client()
+        q = self.question()
+
+        res = client.post(
+            f"/api/quiz/questions/{q.id}/report/", {"reason": "wrong_answer"}, format="json"
+        )
+
+        assert res.status_code == 201
+        assert QuestionReport.objects.get(question=q).reasons == ["wrong_answer"]
+
+    def test_no_reason_is_rejected(self):
+        client, _ = auth_client()
+        q = self.question()
+
+        assert client.post(
+            f"/api/quiz/questions/{q.id}/report/", {"reasons": []}, format="json"
+        ).status_code == 400
+        assert client.post(
+            f"/api/quiz/questions/{q.id}/report/", {"reasons": ["nope"]}, format="json"
+        ).status_code == 400
+
+    def test_the_admin_list_shows_every_reason(self):
+        from tests.helpers import auth_client as make_client
+
+        client, _ = auth_client()
+        q = self.question()
+        client.post(
+            f"/api/quiz/questions/{q.id}/report/",
+            {"reasons": ["wrong_question", "wrong_answer"]},
+            format="json",
+        )
+
+        admin, profile = make_client()
+        profile.role = "admin"
+        profile.save(update_fields=["role"])
+
+        body = admin.get("/api/admin/reports/").json()
+        row = body["results"][0]
+        assert row["reasons"] == ["wrong_question", "wrong_answer"]
+        assert row["reason_labels"] == ["問題文が間違っている", "解答が間違っている"]

@@ -5,6 +5,7 @@ import { playVerdict } from "../lib/sound";
 import { syncReminders } from "../reminders";
 import ExplanationText from "./ExplanationText";
 import GoalAchieved from "./GoalAchieved";
+import ReportQuestionForm from "./ReportQuestionForm";
 
 // 5段階すべてを手動で選び直せる（○/✕ は正誤で自動設定されるが、あとから
 // 上書きしてよい）。unstudied は「未演習に戻す」操作を表す。
@@ -204,12 +205,11 @@ export default function QuizScreen({
       )}
 
       <div className="question-card">
+        {/* 正答率は解く前には出さない。「みんなが解けている問題だ」と
+            分かると、自分で考える前に答えの当たりを付けてしまう。 */}
         <div className="badges">
           <span className="badge">{EXAM_TYPE_LABEL[question.exam_type]}</span>
           <span className="badge">難易度: {DIFFICULTY_LABEL[question.difficulty]}</span>
-          <span className="badge">
-            {question.correct_rate == null ? "正答率: 集計中" : `正答率: ${question.correct_rate}%`}
-          </span>
           {question.question_type === "Q" && (
             <span className="badge">四連問 {question.set_order}/4</span>
           )}
@@ -270,7 +270,14 @@ export default function QuizScreen({
               <p className={result.correct ? "verdict correct" : "verdict incorrect"}>
                 {result.correct ? "○ 正解！" : "✕ 不正解"}
               </p>
-              <span className="badge category-badge">分野: {question.category}</span>
+              <span className="result-badges">
+                <span className="badge category-badge">分野: {question.category}</span>
+                <span className="badge">
+                  {question.correct_rate == null
+                    ? "正答率: 集計中"
+                    : `正答率: ${question.correct_rate}%`}
+                </span>
+              </span>
             </div>
             {/* 選択肢ごとの解説は解説文の中に続けて出す（選択肢一覧を
                 もう一度並べて添えると、同じ選択肢を2回読むことになる）。 */}
@@ -299,6 +306,12 @@ export default function QuizScreen({
             </div>
           </div>
         )}
+
+        {/* 問題に間違いや不備があったら、その場から報告できるようにする。
+            出すのは解いたあと（解説の下）。解く前に置くと、選択肢を選ぶ前に
+            目に入って「この問題は間違っているのでは」と気が散る。
+            届いた報告は管理画面の通報一覧から確認できる。 */}
+        {result && !previewMode && <ReportQuestionForm questionId={question.id} />}
       </div>
 
       <div className="bottom-toolbar">

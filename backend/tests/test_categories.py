@@ -326,8 +326,8 @@ class TestDisplayOrderPriorities:
         ]
 
     def test_kokushi_starts_with_the_heavy_organ_subjects(self):
-        assert self.order(KOKUSHI)[:6] == [
-            "循環器", "消化管", "肝・胆・膵", "代謝・内分泌", "腎臓", "泌尿器",
+        assert self.order(KOKUSHI)[:7] == [
+            "循環器", "消化管", "肝・胆・膵", "代謝・内分泌", "呼吸器", "腎臓", "泌尿器",
         ]
 
     def test_the_digestive_subject_is_second(self):
@@ -335,10 +335,50 @@ class TestDisplayOrderPriorities:
         assert self.order(CBT)[1] == "消化器"
         assert self.order(KOKUSHI)[1] == "消化管"
 
-    def test_the_kidney_subject_is_fifth(self):
-        """腎臓はどちらの試験でも上から5番目、泌尿器がその次。"""
-        assert self.order(CBT)[4:6] == ["腎臓", "泌尿器"]
-        assert self.order(KOKUSHI)[4:6] == ["腎臓", "泌尿器"]
+    def test_the_kidney_subject_comes_right_after_the_respiratory_one(self):
+        """腎臓・泌尿器は呼吸器の次。
+
+        CBTでは5番目、国試では6番目になる（国試は消化器が消化管と
+        肝・胆・膵に分かれているぶん1つずれる）。
+        """
+        assert self.order(CBT)[3:6] == ["呼吸器", "腎臓", "泌尿器"]
+        assert self.order(KOKUSHI)[4:7] == ["呼吸器", "腎臓", "泌尿器"]
+
+    def test_both_exams_follow_the_same_order(self):
+        """科目名は違っても、並びはCBTと国試で同じにする。
+
+        探す位置が試験ごとに変わると、同じ科目を毎回探し直すことになる。
+        国試で2つに分かれる科目（消化器→消化管/肝・胆・膵、産婦人科→
+        婦人科・乳腺外科/産科）はCBTの位置に並べて置き、CBTにしかない
+        腫瘍・基礎医学は国試では医学総論に含まれる。
+        """
+        # CBTの科目 -> 国試で対応する科目（複数に分かれるものは並びの順）
+        same = [
+            ("循環器", ["循環器"]),
+            ("消化器", ["消化管", "肝・胆・膵"]),
+            ("内分泌・代謝", ["代謝・内分泌"]),
+            ("呼吸器", ["呼吸器"]),
+            ("腎臓", ["腎臓"]),
+            ("泌尿器", ["泌尿器"]),
+            ("神経", ["神経"]),
+            ("血液", ["血液"]),
+            ("免疫・膠原病", ["免疫・膠原病"]),
+            ("感染症", ["感染症"]),
+            ("腫瘍", []),
+            ("基礎医学", []),
+            ("皮膚", ["皮膚科"]),
+            ("運動器", ["整形外科"]),
+            ("眼", ["眼科"]),
+            ("耳鼻咽喉", ["耳鼻咽喉科"]),
+            ("精神", ["精神科"]),
+            ("小児（成長と発達）", ["小児科"]),
+            ("産婦人科", ["婦人科・乳腺外科", "産科"]),
+            ("救急・中毒・麻酔", ["救急・中毒", "麻酔"]),
+            ("放射線", ["放射線"]),
+            ("医学総論・公衆衛生・診療の基本", ["医学総論", "公衆衛生"]),
+        ]
+        assert self.order(CBT) == [cbt for cbt, _ in same]
+        assert self.order(KOKUSHI) == [k for _, ks in same for k in ks]
 
     def test_public_health_is_last(self):
         # CBTの公衆衛生は医学総論・診療の基本とひとまとめの科目。

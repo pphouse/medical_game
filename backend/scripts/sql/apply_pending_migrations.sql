@@ -25,6 +25,17 @@ ALTER TABLE quiz_question
     ADD COLUMN IF NOT EXISTS choice_explanations jsonb NOT NULL DEFAULT '{}'::jsonb;
 
 -- ===========================================================================
+-- quiz/0021  問題の報告に、選んだ理由をすべて持たせる列
+-- ===========================================================================
+ALTER TABLE quiz_questionreport
+    ADD COLUMN IF NOT EXISTS reasons jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+-- すでにある報告は、単一の reason をそのまま一覧にする。
+UPDATE quiz_questionreport
+   SET reasons = jsonb_build_array(reason)
+ WHERE reasons = '[]'::jsonb AND reason <> '';
+
+-- ===========================================================================
 -- quiz/0008  解説から定型文（出典URL・整形の注記・編集部の注記）を落とす
 -- ===========================================================================
 DO $strip$
@@ -623,6 +634,7 @@ SELECT v.app, v.name, now()
            ('quiz', '0018_unpack_series_and_align_categories'),
            ('quiz', '0019_split_radiology_and_anesthesia'),
            ('quiz', '0020_strip_stray_column_separators'),
+           ('quiz', '0021_question_report_reasons'),
            ('exams', '0007_monthly_kokushi_is_for_fifth_year_and_up'),
            ('exams', '0008_rename_cbt_once_title'),
            ('exams', '0009_alter_mockexam_kind_label'),

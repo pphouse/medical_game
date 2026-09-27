@@ -275,7 +275,8 @@ class QuestionReport(models.Model):
     AUTO_UNPUBLISH_THRESHOLD = 3
 
     class Reason(models.TextChoices):
-        WRONG_ANSWER = "wrong_answer", "正解が誤っている"
+        WRONG_QUESTION = "wrong_question", "問題文が間違っている"
+        WRONG_ANSWER = "wrong_answer", "解答が間違っている"
         AMBIGUOUS = "ambiguous", "設問が曖昧"
         TYPO = "typo", "誤字脱字"
         INAPPROPRIATE = "inappropriate", "不適切な内容"
@@ -287,7 +288,11 @@ class QuestionReport(models.Model):
     reporter = models.ForeignKey(
         "accounts.Profile", on_delete=models.CASCADE, related_name="question_reports"
     )
+    # 代表の理由。3件で自動的に出題から外す判定と、管理画面の一覧に使う。
     reason = models.CharField(max_length=20, choices=Reason.choices)
+    # 選ばれた理由すべて。報告の画面はチェックボックスで、問題文と解答の
+    # 両方が間違っていることもあるため1つに絞らない。
+    reasons = models.JSONField(default=list, blank=True)
     detail = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
