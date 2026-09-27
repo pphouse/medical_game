@@ -1009,6 +1009,14 @@
   border-top: 1px dashed var(--border);
 }
 
+/* 採点後に出す分野と正答率。狭い画面では折り返す。 */
+.result-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
 .result-top-row {
   display: flex;
   align-items: center;

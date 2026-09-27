@@ -181,12 +181,11 @@ export default function QuizScreen({
       </div>
 
       <div className="question-card">
+        {/* 正答率は解く前には出さない。「みんなが解けている問題だ」と
+            分かると、自分で考える前に答えの当たりを付けてしまう。 */}
         <div className="badges">
           <span className="badge">{EXAM_TYPE_LABEL[question.exam_type]}</span>
           <span className="badge">難易度: {DIFFICULTY_LABEL[question.difficulty]}</span>
-          <span className="badge">
-            {question.correct_rate == null ? "正答率: 集計中" : `正答率: ${question.correct_rate}%`}
-          </span>
           {question.question_type === "Q" && (
             <span className="badge">四連問 {question.set_order}/4</span>
           )}
@@ -247,7 +246,14 @@ export default function QuizScreen({
               <p className={result.correct ? "verdict correct" : "verdict incorrect"}>
                 {result.correct ? "○ 正解！" : "✕ 不正解"}
               </p>
-              <span className="badge category-badge">分野: {question.category}</span>
+              <span className="result-badges">
+                <span className="badge category-badge">分野: {question.category}</span>
+                <span className="badge">
+                  {question.correct_rate == null
+                    ? "正答率: 集計中"
+                    : `正答率: ${question.correct_rate}%`}
+                </span>
+              </span>
             </div>
             {/* 選択肢ごとの解説は解説文の中に続けて出す（選択肢一覧を
                 もう一度並べて添えると、同じ選択肢を2回読むことになる）。 */}
