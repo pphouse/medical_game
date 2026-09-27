@@ -1,4 +1,5 @@
 import json
+import re
 
 import pytest
 from django.core.management import call_command
@@ -406,10 +407,25 @@ class TestBundledKokushiBatches:
             assert len(set(texts)) == len(texts), q["id"]  # 選択肢の重複なし
             assert all(texts), q["id"]
 
+    # 連問の症例文の続き（「その後の経過 ： …」「現症 ： …」）は、PDFでは前の
+    # 設問の ｅ の直後に組まれる。取り込みで ｅ の続きとして読むと、選択肢が
+    # 数百字になり、続きを要る次の設問からは症例が欠ける（第114回B43・B44）。
+    CASE_SECTION = re.compile(r"現病歴\s*[:：]|その後の経過|検査所見\s*[:：]|現\s*症\s*[:：]|既往歴\s*[:：]")
+
+    @pytest.mark.parametrize("exam", EXAMS)
+    def test_choices_do_not_carry_case_text(self, exam):
+        bad = []
+        for q, _ in self._bodies(exam):
+            for c in q["choices"]:
+                text = c["text"]
+                if len(text) > 150 or (len(text) > 60 and self.CASE_SECTION.search(text)):
+                    bad.append(f"{q['id']} {c['id']}: {text[:40]}…（{len(text)}字）")
+        assert not bad, "選択肢に症例文が付いている:\n" + "\n".join(bad)
+
     def test_corpus_size(self):
         # 縮小したら気づけるように下限を固定する
         total = sum(len(list(self._bodies(e))) for e in self.EXAMS)
-        assert total >= 2700, total
+        assert total >= 3300, total
 
 
 class TestExamTypeFilter:

@@ -43,6 +43,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A001（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-A002",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-A-2",
+      "category": "感染症",
+      "difficulty": "standard",
+      "question_text": "非結核性肺抗酸菌症では頻度が低く、肺結核症で頻度が高い所見はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "血痰"
+        },
+        {
+          "id": "B",
+          "text": "CRP上昇"
+        },
+        {
+          "id": "C",
+          "text": "空洞性肺結節"
+        },
+        {
+          "id": "D",
+          "text": "喀痰塗抹Ziehl-Neelsen染色陽性"
+        },
+        {
+          "id": "E",
+          "text": "全血インターフェロンγ遊離測定法〈IGRA〉陽性"
+        }
+      ],
+      "correct_choice_id": "E",
+      "explanation": "正答は E「全血インターフェロンγ遊離測定法〈IGRA〉陽性」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A002\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A002（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-A003",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -315,6 +349,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A012（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-A013",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-A-13",
+      "category": "腎臓",
+      "difficulty": "standard",
+      "question_text": "疾病と原因物質の組合せで誤っているのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Fanconi症候群 — カドミウム"
+        },
+        {
+          "id": "B",
+          "text": "急性間質性腎炎 — 甘草"
+        },
+        {
+          "id": "C",
+          "text": "急性尿細管壊死 — アミノグリコシド系抗菌薬"
+        },
+        {
+          "id": "D",
+          "text": "腎性尿崩症 — リチウム"
+        },
+        {
+          "id": "E",
+          "text": "慢性間質性腎炎 — 非ステロイド性抗炎症薬〈NSAIDs〉"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "正答は B「急性間質性腎炎 — 甘草」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A013\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A013（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-A014",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -347,6 +415,40 @@
       "correct_choice_id": "E",
       "explanation": "正答は E「骨髄巨核球数正常または増加」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A014\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A014（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-A021",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-A-21",
+      "category": "神経",
+      "difficulty": "standard",
+      "question_text": "65歳の女性。健忘を主訴に家族に連れられて来院した。3か月前から家に引きこもりがちになり、倦怠感と不安とを訴えて外出しようとしなくなった。2週前からぼんやりして物忘れが目立つようになり、動作も緩慢になった。昨夜、誰もいないのに誰かを激しく叱っているところを家族が目撃した。意識レベルはJCSI-1。活動性の低下を認める。身長154cm、体重67kg。体温35.4°C。脈拍52/分、整。血圧94/48mmHg。呼吸数12/分。顔面と両側の下腿とに浮腫を認める。心音と呼吸音とに異常を認めない。改訂長谷川式簡易知能評価スケールは18点(30点満点)、Mini-Mental State Examination〈MMSE〉は20点(30点満点)である。四肢の近位部に徒手筋力テストで4の筋力低下を認め、大腿四頭筋を叩打すると筋腹の膨隆が生じる。腱反射は打腱後の筋弛緩遅延を認め、Babinski徴候は陰性である。原因として最も考えられるのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "甲状腺機能低下症"
+        },
+        {
+          "id": "B",
+          "text": "前頭側頭型認知症"
+        },
+        {
+          "id": "C",
+          "text": "ビタミンB12欠乏症"
+        },
+        {
+          "id": "D",
+          "text": "進行性多巣性白質脳症"
+        },
+        {
+          "id": "E",
+          "text": "筋強直性ジストロフィー"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「甲状腺機能低下症」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A021\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A021（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-A023",
@@ -417,6 +519,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A024（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-A025",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-A-25",
+      "category": "代謝・内分泌",
+      "difficulty": "standard",
+      "question_text": "47歳の女性。右趾の難治性潰瘍と高血糖のため紹介されて来院した。10年前から糖尿病の診断を受けていたが、1年ほど通院していなかった。2か月前に右趾に湯たんぽで熱傷を負い、自宅近くの診療所で処置を受けていた。難治性のため血糖を測定したところ、550mg/dLと高く、紹介されて受診した。身長155cm、体重62kg。血圧156/94mmHg。顔面と下腿とに高度の浮腫を認める。腹部に血管雑音を聴取しない。尿所見:蛋白3+、潜血(−)、沈渣に上皮円柱1個/数視野、脂肪円柱5〜9個/各視野、尿蛋白3.8g/日。血液所見:赤血球380万、Hb11.8 g/dL、Ht37%、白血球5,900、血小板36万。血液生化学所見:総蛋白5.8g/dL、アルブミン2.6g/dL、IgG 1,166mg/dL(基準960〜1,960)、IgA160mg/dL(基準110〜410)、IgM69mg/dL(基準65〜350)、尿素窒素8mg/dL、クレアチニン0.7mg/dL、HbA1c13.5%(基準4.6〜6.2)、総コレステロール380mg/dL。免疫血清学所見:ASO200単位(基準250以下)。抗核抗体陰性、CH5038.4U/mL(基準30〜40)。この患者の治療に有効でないのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "インスリン"
+        },
+        {
+          "id": "B",
+          "text": "カルシウム拮抗薬"
+        },
+        {
+          "id": "C",
+          "text": "副腎皮質ステロイド"
+        },
+        {
+          "id": "D",
+          "text": "HMG-CoA還元酵素阻害薬"
+        },
+        {
+          "id": "E",
+          "text": "アンジオテンシンII受容体拮抗薬"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「副腎皮質ステロイド」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A025\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A025（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-A026",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -449,6 +585,40 @@
       "correct_choice_id": "D",
       "explanation": "正答は D「「胎児奇形のリスクが一般の方より高い状況ではありません」」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A026\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A026（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-A029",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-A-29",
+      "category": "代謝・内分泌",
+      "difficulty": "standard",
+      "question_text": "41歳の女性。喘鳴と呼吸困難とを主訴に来院した。1年前から感冒に罹患すると咳が長引くことが多く、一度、市販の解熱薬を服用した際に呼吸困難で、自宅近くの診療所を受診したことがあった。2日前から咽頭痛、鼻汁および発熱が出現し、その後、咳嗽、呼吸困難および喘鳴も出現した。本日の午前1時ころから呼吸困難が著明となったため、午前2時に救急外来を受診した。25歳からアレルギー性鼻炎を指摘されている。喫煙歴と飲酒歴はない。喘鳴と呼吸困難とを認めるが会話はかろうじて可能である。体温38.2°C。SpO288%(room air)。両側の胸部で呼気時のwheezesを聴取する。胸部エックス線写真で異常を認めない。酸素投与を開始した。次に行うべき治療はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "人工呼吸"
+        },
+        {
+          "id": "B",
+          "text": "非ステロイド性抗炎症薬〈NSAIDs〉投与"
+        },
+        {
+          "id": "C",
+          "text": "利尿薬投与"
+        },
+        {
+          "id": "D",
+          "text": "抗菌薬投与"
+        },
+        {
+          "id": "E",
+          "text": "副腎皮質ステロイド全身投与"
+        }
+      ],
+      "correct_choice_id": "E",
+      "explanation": "正答は E「副腎皮質ステロイド全身投与」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A029\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A029（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-A031",
@@ -491,7 +661,7 @@
       "blueprint_code": "110-A-32",
       "category": "代謝・内分泌",
       "difficulty": "standard",
-      "question_text": "38歳の女性。頭痛、微熱、吐き気および羞明を主訴に来院した。3日前から頭痛と微熱があり、今朝から吐き気も出現して食事がとれなくなったため受診した。来院時、羞明を訴える。意識は清明。体温38.4°C。脈拍92/分、整。血圧142/82 mmHg。脳神経と運動系とに異常を認めない。腱反射は正常でBabinski徴候は認めない。Kernig徴候を認める。血液所見:赤血球410万、Hb13.0g/dL、Ht 39%、白血球8,600、血小板21万。血液生化学所見に異常を認めない。脳脊髄液所見:初圧180mmH2O(基準70〜170)、水様透明、細胞数230/mm3(基準0〜2) (単核球55%、多形核球45%)、蛋白82mg/dL(基準15〜45)、糖68mg/dL(同時血糖86mg/dL)、トリプトファン反応陰性、Gram染色で細菌を認めない。頭部MRIで異常を認めない。直ちに、照明を落とした個室への入院となった。入院後の対応として適切なのはどれか。",
+      "question_text": "38歳の女性。頭痛、微熱、吐き気および羞明を主訴に来院した。3日前から頭痛と微熱があり、今朝から吐き気も出現して食事がとれなくなったため受診した。来院時、羞明を訴える。意識は清明。体温38.4°C。脈拍92/分、整。血圧142/82 mmHg。脳神経と運動系とに異常を認めない。腱反射は正常でBabinski徴候は認めない。Kernig徴候を認める。血液所見:赤血球410万、Hb13.0g/dL、Ht 39%、白血球8,600、血小板21万。血液生化学所見に異常を認めない。脳脊髄液所見:初圧180mmH2O(基準70〜170)、水様透明、細胞数230/mm3(基準0〜2)(単核球55%、多形核球45%)、蛋白82mg/dL(基準15〜45)、糖68mg/dL(同時血糖86mg/dL)、トリプトファン反応陰性、Gram染色で細菌を認めない。頭部MRIで異常を認めない。直ちに、照明を落とした個室への入院となった。入院後の対応として適切なのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -517,6 +687,40 @@
       "correct_choice_id": "A",
       "explanation": "正答は A「補液のみ」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A032\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A032（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-A036",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-A-36",
+      "category": "消化管",
+      "difficulty": "standard",
+      "question_text": "62歳の男性。胃切除術後の定期受診のため来院した。3か月前にIb期の胃癌にて幽門側胃切除術、BillrothI法再建術を受け、1か月ごとに定期受診していた。経口摂取量は徐々に増加している。最近週に3、4回、食後数時間後に全身倦怠感、冷汗および手の震えを感じるようになった。身長173cm、体重63kg。体温36.7°C。脈拍80/分、整。血圧132/82mmHg。腹部は平坦、軟で、腫瘤を触知しない。原因として考えられるのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "貧血"
+        },
+        {
+          "id": "B",
+          "text": "脱水"
+        },
+        {
+          "id": "C",
+          "text": "低栄養"
+        },
+        {
+          "id": "D",
+          "text": "低血糖"
+        },
+        {
+          "id": "E",
+          "text": "低Na血症"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "正答は D「低血糖」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A036\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A036（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-A042",
@@ -551,6 +755,74 @@
       "correct_choice_id": "E",
       "explanation": "正答は E「自分の意思を伝達することに障害がある。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A042\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A042（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-A043",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-A-43",
+      "category": "泌尿器",
+      "difficulty": "standard",
+      "question_text": "45歳の女性。急激な体重増加を主訴に来院した。生来健康で、健康維持のために週2回スポーツジムに通っている。1か月前から突然、顔面と下腿とに浮腫が出現し、現在までに12kgの急激な体重増加を認め受診した。身長162cm、体重66 kg。脈拍72/分、整。血圧100/78mmHg。顔面と下腿とに浮腫を認める。尿所見:蛋白4+、糖(−)、潜血(−)、沈渣に卵円形脂肪体1〜4/1視野、尿蛋白9.8g/日。血液生化学所見:総蛋白4.6g/dL、アルブミン1.0g/dL、CK148 IU/L(基準30〜140)、尿素窒素38mg/dL、クレアチニン1.3mg/dL、尿酸7.3 mg/dL、総コレステロール334mg/dL。CRP0.1mg/dL。超音波検査で腎の萎縮と水腎症とを認めない。この患者の血清クレアチニン高値の原因として最も可能性が高いのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "低血圧"
+        },
+        {
+          "id": "B",
+          "text": "高尿酸血症"
+        },
+        {
+          "id": "C",
+          "text": "低蛋白血症"
+        },
+        {
+          "id": "D",
+          "text": "横紋筋融解症"
+        },
+        {
+          "id": "E",
+          "text": "高コレステロール血症"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「低蛋白血症」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A043\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A043（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-A044",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-A-44",
+      "category": "産科",
+      "difficulty": "standard",
+      "question_text": "32歳の初妊婦。甲状腺機能の検査を希望して来院した。妊娠10週ころから動悸を感じ、妊娠12週で甲状腺機能異常を認めたため紹介されて受診した。甲状腺はびまん性に軽度腫大し、TSH0.02μU/mL(基準0.2〜4.0)、FT43.2ng/dL(基準0.8〜2.2)であった。またヒト絨毛性ゴナドトロピン〈hCG〉は200,000mIU/mL(基準16,000〜160,000)であった。次に測定すべき検査項目はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "TRAb"
+        },
+        {
+          "id": "B",
+          "text": "サイログロブリン"
+        },
+        {
+          "id": "C",
+          "text": "尿中ヨウ素排泄量"
+        },
+        {
+          "id": "D",
+          "text": "抗甲状腺ペルオキシダーゼ抗体"
+        },
+        {
+          "id": "E",
+          "text": "放射性ヨード(123I)の甲状腺摂取率"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「TRAb」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A044\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A044（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-A046",
@@ -619,6 +891,40 @@
       "correct_choice_id": "C",
       "explanation": "正答は C「情報提供を行い禁煙の意志を確認する。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 A051\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 A051（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-B001",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-1",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "決められた10枚の図版を順番に提示して施行する心理・精神機能検査はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Rorschachテスト"
+        },
+        {
+          "id": "B",
+          "text": "Minnesota多面人格検査〈MMPI〉"
+        },
+        {
+          "id": "C",
+          "text": "Wechsler成人知能検査〈WAIS-III〉"
+        },
+        {
+          "id": "D",
+          "text": "Mini-Mental State Examination〈MMSE〉"
+        },
+        {
+          "id": "E",
+          "text": "ウィスコンシンカードソーティングテスト〈WCST〉"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「Rorschachテスト」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B001\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B001（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-B002",
@@ -721,6 +1027,40 @@
       "correct_choice_id": "B",
       "explanation": "正答は B「富栄養化」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B004\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B004（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-B007",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-7",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "建築物における衛生的環境の確保に関する法律〈建築物衛生法〉に基づいて基準が定められ、建築物内で測定されるのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "トルエン"
+        },
+        {
+          "id": "B",
+          "text": "エチルベンゼン"
+        },
+        {
+          "id": "C",
+          "text": "アセトアルデヒド"
+        },
+        {
+          "id": "D",
+          "text": "ホルムアルデヒド"
+        },
+        {
+          "id": "E",
+          "text": "パラジクロロベンゼン"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "正答は D「ホルムアルデヒド」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B007\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B007（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-B008",
@@ -859,6 +1199,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B012（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-B014",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-14",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "自然免疫に関与するのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "NK細胞"
+        },
+        {
+          "id": "B",
+          "text": "形質細胞"
+        },
+        {
+          "id": "C",
+          "text": "ヘルパーT細胞"
+        },
+        {
+          "id": "D",
+          "text": "細胞傷害性T細胞"
+        },
+        {
+          "id": "E",
+          "text": "Bリンパ球〈B細胞〉"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「NK細胞」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B014\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B014（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-B015",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -961,6 +1335,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B017（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-B019",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-19",
+      "category": "公衆衛生",
+      "difficulty": "standard",
+      "question_text": "災害時における医療について誤っているのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "医師の役割は応急手当である。"
+        },
+        {
+          "id": "B",
+          "text": "都道府県の医療計画に示されている。"
+        },
+        {
+          "id": "C",
+          "text": "災害拠点病院は被災患者を24時間体制で受け入れる。"
+        },
+        {
+          "id": "D",
+          "text": "災害派遣医療チーム〈DMAT〉は自己完結型の医療救護を基本とする。"
+        },
+        {
+          "id": "E",
+          "text": "大規模災害では長期間にわたってこころのケアを提供する必要がある。"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「医師の役割は応急手当である。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B019\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B019（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-B021",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -993,6 +1401,40 @@
       "correct_choice_id": "E",
       "explanation": "正答は E「地域における健康危機管理の拠点である。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B021\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B021（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-B022",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-22",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "ランダム化比較試験〈無作為比較対照試験〉においてランダム割付を実施する目的はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "治療中断の防止"
+        },
+        {
+          "id": "B",
+          "text": "偶然誤差の制御"
+        },
+        {
+          "id": "C",
+          "text": "治療内容の盲検化"
+        },
+        {
+          "id": "D",
+          "text": "比較群間の均質性の向上"
+        },
+        {
+          "id": "E",
+          "text": "患者の試験への参加率の上昇"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "正答は D「比較群間の均質性の向上」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B022\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B022（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-B023",
@@ -1301,6 +1743,346 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B042（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-B043",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-43",
+      "category": "循環器",
+      "difficulty": "standard",
+      "question_text": "63歳の男性。安静時の左前胸部の絞扼感を主訴に来院した。3週前から階段を上るときに左前胸部の絞扼感が出現するようになった。症状は左前胸部の広い範囲で咽頭部や左肩にも放散する。背部痛は伴わず食事との関係もない。これまでは、3分程度の安静で改善するので様子をみていたが、昨日からは歩行時や安静時にも生じるようになった。本日も午前9時にテレビを見ていたときに20分程度の同様な発作が生じたため心配した家族とともに午前11時に受診した。来院時に症状はない。家族歴と既往歴とに特記すべきことはない。喫煙は40本/日を41年間。意識は清明。身長170cm、体重83kg。脈拍72/分、整。血圧168/90mmHg。SpO2 98%(room air)。心音と呼吸音とに異常を認めない。胸部に圧痛を認めない。腹部は平坦、軟で、肝・脾を触知しない。尿所見:蛋白(−)、糖(−)。便所見:潜血(−)。血液所見:赤血球480万、Hb14.2g/dL、Ht48%、白血球8,800、血小板18万。血液生化学所見:総蛋白6.2g/dL、AST38IU/L、ALT37IU/L、LD205 IU/L(基準176〜353)、CK110IU/L(基準30〜140)、尿素窒素25mg/dL、クレアチニン0.9mg/dL、トリグリセリド190mg/dL、HDLコレステロール27mg/dL、LDLコレステロール148mg/dL、Na136mEq/L、K4.0mEq/L、Cl100mEq/L。トロポニンT陰性。受診時の心電図は、心拍数72/分、洞調律で胸部誘導V1からV4で陰性T波を認めるが有意なST上昇や低下を認めない。胸部エックス線写真で異常を認めない。心エコーでは前壁から心尖部にかけて壁運動の軽度低下を認めた。この患者への対応として適切でないのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "入院を勧める。"
+        },
+        {
+          "id": "B",
+          "text": "硝酸薬を投与する。"
+        },
+        {
+          "id": "C",
+          "text": "負荷心電図を行う。"
+        },
+        {
+          "id": "D",
+          "text": "抗血小板薬を投与する。"
+        },
+        {
+          "id": "E",
+          "text": "冠動脈の精査を考慮する。"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「負荷心電図を行う。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B043\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B043（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-B045",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-45",
+      "category": "産科",
+      "difficulty": "standard",
+      "question_text": "28歳の初妊婦。妊娠28週。前期破水のため入院中である。妊娠24週に水様帯下を自覚して受診し、前期破水の診断で入院となった。入院後安静を続けて経過観察したが、水様帯下は持続している。本日の血液検査の結果は白血球8,900、CRP0.1mg/dLであった。入院後週1回実施している腹部超音波検査での胎児推定体重は、正常範囲内で増加している。羊水指数〈AFI〉は1.0〜3.0cm(基準5〜25)の間で推移している。胎児の臓器で発育に注意すべきなのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "脳"
+        },
+        {
+          "id": "B",
+          "text": "肺"
+        },
+        {
+          "id": "C",
+          "text": "肝臓"
+        },
+        {
+          "id": "D",
+          "text": "小腸"
+        },
+        {
+          "id": "E",
+          "text": "心臓"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "正答は B「肺」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B045\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B045（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-B050",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-50",
+      "category": "救急・中毒",
+      "difficulty": "standard",
+      "question_text": "16歳の女子。胸部刺創のため同級生らに抱きかかえられて来院した。現病歴 : 突然見ず知らずの男性に左前胸部をサバイバルナイフにて刺された。受傷後すぐに近くにいた同級生らに助け出され、一般救急外来に運ばれてきた。同級生らの話では、病院の近くの公園で、青年男性の無差別な暴力行為が発生しており、他にも数人が負傷しているとのことである。既往歴 : 特記すべきことはない。生活歴 : 高校生。家族歴 : 両親、兄弟とも健康。現症 : 意識は清明。身長150cm(推定)、体重40kg(推定)。体温35.5°C。脈拍120/分、整。血圧80mmHg(触診)。呼吸数28/分。SpO296%(room air)。ショック状態と判断し、直ちに医療従事者を集めた。蘇生処置室に搬入し、酸素投与を開始の上、静脈路を確保して輸液を開始した。左第5肋間鎖骨中線よりやや内側に長さ3cm程度の刺創を認めるが、体表への出血は止まっており、衣服には径数cm程度の血液が付着している。\nこの患者のショックの原因を鑑別するのに有用な身体所見はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "皮膚湿潤"
+        },
+        {
+          "id": "B",
+          "text": "瞳孔散大"
+        },
+        {
+          "id": "C",
+          "text": "意識レベル"
+        },
+        {
+          "id": "D",
+          "text": "口腔内乾燥"
+        },
+        {
+          "id": "E",
+          "text": "頸静脈怒張"
+        }
+      ],
+      "correct_choice_id": "E",
+      "explanation": "正答は E「頸静脈怒張」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B050\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B050（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-B051",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-51",
+      "category": "循環器",
+      "difficulty": "standard",
+      "question_text": "16歳の女子。胸部刺創のため同級生らに抱きかかえられて来院した。現病歴 : 突然見ず知らずの男性に左前胸部をサバイバルナイフにて刺された。受傷後すぐに近くにいた同級生らに助け出され、一般救急外来に運ばれてきた。同級生らの話では、病院の近くの公園で、青年男性の無差別な暴力行為が発生しており、他にも数人が負傷しているとのことである。既往歴 : 特記すべきことはない。生活歴 : 高校生。家族歴 : 両親、兄弟とも健康。現症 : 意識は清明。身長150cm(推定)、体重40kg(推定)。体温35.5°C。脈拍120/分、整。血圧80mmHg(触診)。呼吸数28/分。SpO296%(room air)。ショック状態と判断し、直ちに医療従事者を集めた。蘇生処置室に搬入し、酸素投与を開始の上、静脈路を確保して輸液を開始した。左第5肋間鎖骨中線よりやや内側に長さ3cm程度の刺創を認めるが、体表への出血は止まっており、衣服には径数cm程度の血液が付着している。\n吸気時に大腿動脈の拍動が減弱し、胸部の聴診で心音が減弱している。創部より呼吸に伴う空気の流入出が疑われ、呼吸音は左側でわずかに減弱している。触診で皮下気腫は認めない。最も優先すべきなのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "超音波検査"
+        },
+        {
+          "id": "B",
+          "text": "胸部造影CT"
+        },
+        {
+          "id": "C",
+          "text": "12誘導心電図"
+        },
+        {
+          "id": "D",
+          "text": "創部直視下検索"
+        },
+        {
+          "id": "E",
+          "text": "血液生化学検査"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「超音波検査」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B051\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B051（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-B052",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-52",
+      "category": "呼吸器",
+      "difficulty": "standard",
+      "question_text": "16歳の女子。胸部刺創のため同級生らに抱きかかえられて来院した。現病歴 : 突然見ず知らずの男性に左前胸部をサバイバルナイフにて刺された。受傷後すぐに近くにいた同級生らに助け出され、一般救急外来に運ばれてきた。同級生らの話では、病院の近くの公園で、青年男性の無差別な暴力行為が発生しており、他にも数人が負傷しているとのことである。既往歴 : 特記すべきことはない。生活歴 : 高校生。家族歴 : 両親、兄弟とも健康。現症 : 意識は清明。身長150cm(推定)、体重40kg(推定)。体温35.5°C。脈拍120/分、整。血圧80mmHg(触診)。呼吸数28/分。SpO296%(room air)。ショック状態と判断し、直ちに医療従事者を集めた。蘇生処置室に搬入し、酸素投与を開始の上、静脈路を確保して輸液を開始した。左第5肋間鎖骨中線よりやや内側に長さ3cm程度の刺創を認めるが、体表への出血は止まっており、衣服には径数cm程度の血液が付着している。\nこの患者を救命救急センターに転送することにした。搬送時間として少なくとも30分は見込まれる。左側の呼吸音はさらに減弱し、ポータブル撮影による胸部エックス線写真でも明らかな気胸を認める。転送前に行う処置として必要性が低いのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "創閉鎖"
+        },
+        {
+          "id": "B",
+          "text": "心囊穿刺"
+        },
+        {
+          "id": "C",
+          "text": "中心静脈路確保"
+        },
+        {
+          "id": "D",
+          "text": "胸腔ドレナージ"
+        },
+        {
+          "id": "E",
+          "text": "尿道カテーテル留置"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「中心静脈路確保」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B052\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B052（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-B059",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-59",
+      "category": "精神科",
+      "difficulty": "standard",
+      "question_text": "46歳の男性。意識障害のため救急車で搬入された。現病歴 : 部屋で倒れているのを母親が発見し、救急車を要請した。既往歴 : 20歳ころ、うつ病の治療歴あり。生活歴 : 無職。喫煙歴および飲酒歴は長いようだが詳細は不明。家族歴 : 独身。母親は健康で農業を営んでいる。父親は高校生の時に死亡したが詳細は不明。現症 : 体温36.8°C。脈拍108/分、整。血圧140/90mmHg。呼吸数8/分。SpO288%(リザーバー付マスク10L/分酸素投与下)。閉眼しており痛み刺激で開眼しない。発語はない。痛み刺激を何回か繰り返すとわずかに四肢を動かす。瞳孔は両側とも径1mmに縮瞳し、対光反射は確認できない。呼気に有機溶媒臭があり、鼻汁、流涎および発汗がみられる。両側の胸部全体にwheezesを聴取する。心雑音を聴取しない。筋線維束攣縮を認める。腱反射の異常を認めない。\nこの患者において除染後直ちに行うべき処置はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "催吐"
+        },
+        {
+          "id": "B",
+          "text": "胃洗浄"
+        },
+        {
+          "id": "C",
+          "text": "気管挿管"
+        },
+        {
+          "id": "D",
+          "text": "強制利尿"
+        },
+        {
+          "id": "E",
+          "text": "活性炭投与"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「気管挿管」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B059\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B059（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-B060",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-60",
+      "category": "精神科",
+      "difficulty": "standard",
+      "question_text": "46歳の男性。意識障害のため救急車で搬入された。現病歴 : 部屋で倒れているのを母親が発見し、救急車を要請した。既往歴 : 20歳ころ、うつ病の治療歴あり。生活歴 : 無職。喫煙歴および飲酒歴は長いようだが詳細は不明。家族歴 : 独身。母親は健康で農業を営んでいる。父親は高校生の時に死亡したが詳細は不明。現症 : 体温36.8°C。脈拍108/分、整。血圧140/90mmHg。呼吸数8/分。SpO288%(リザーバー付マスク10L/分酸素投与下)。閉眼しており痛み刺激で開眼しない。発語はない。痛み刺激を何回か繰り返すとわずかに四肢を動かす。瞳孔は両側とも径1mmに縮瞳し、対光反射は確認できない。呼気に有機溶媒臭があり、鼻汁、流涎および発汗がみられる。両側の胸部全体にwheezesを聴取する。心雑音を聴取しない。筋線維束攣縮を認める。腱反射の異常を認めない。\nこの患者の鑑別診断において有用な血液生化学検査の項目はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "カリウム"
+        },
+        {
+          "id": "B",
+          "text": "アミラーゼ"
+        },
+        {
+          "id": "C",
+          "text": "マグネシウム"
+        },
+        {
+          "id": "D",
+          "text": "ヘモグロビン"
+        },
+        {
+          "id": "E",
+          "text": "コリンエステラーゼ"
+        }
+      ],
+      "correct_choice_id": "E",
+      "explanation": "正答は E「コリンエステラーゼ」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B060\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B060（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-B061",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-B-61",
+      "category": "精神科",
+      "difficulty": "standard",
+      "question_text": "46歳の男性。意識障害のため救急車で搬入された。現病歴 : 部屋で倒れているのを母親が発見し、救急車を要請した。既往歴 : 20歳ころ、うつ病の治療歴あり。生活歴 : 無職。喫煙歴および飲酒歴は長いようだが詳細は不明。家族歴 : 独身。母親は健康で農業を営んでいる。父親は高校生の時に死亡したが詳細は不明。現症 : 体温36.8°C。脈拍108/分、整。血圧140/90mmHg。呼吸数8/分。SpO288%(リザーバー付マスク10L/分酸素投与下)。閉眼しており痛み刺激で開眼しない。発語はない。痛み刺激を何回か繰り返すとわずかに四肢を動かす。瞳孔は両側とも径1mmに縮瞳し、対光反射は確認できない。呼気に有機溶媒臭があり、鼻汁、流涎および発汗がみられる。両側の胸部全体にwheezesを聴取する。心雑音を聴取しない。筋線維束攣縮を認める。腱反射の異常を認めない。\nこの患者に投与すべき薬剤はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "ナロキソン"
+        },
+        {
+          "id": "B",
+          "text": "アトロピン"
+        },
+        {
+          "id": "C",
+          "text": "フルマゼニル"
+        },
+        {
+          "id": "D",
+          "text": "亜硝酸ナトリウム"
+        },
+        {
+          "id": "E",
+          "text": "チオ硫酸ナトリウム"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "正答は B「アトロピン」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 B061\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 B061（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-C001",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-C-1",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "検査前確率〈事前確率〉について正しいのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "感度と特異度から算出する。"
+        },
+        {
+          "id": "B",
+          "text": "病歴聴取の情報量により変化する。"
+        },
+        {
+          "id": "C",
+          "text": "検査後確率〈事後確率〉の影響を受ける。"
+        },
+        {
+          "id": "D",
+          "text": "主訴が同一なら診療所と病院で変化しない。"
+        },
+        {
+          "id": "E",
+          "text": "疾患を有する人の中で検査が陽性となる確率のことである。"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "正答は B「病歴聴取の情報量により変化する。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 C001\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 C001（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-C004",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-C-4",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "病院の臨床機能評価指標〈クリニカルインディケーター〉に含まれないのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "患者満足度"
+        },
+        {
+          "id": "B",
+          "text": "転倒発生率"
+        },
+        {
+          "id": "C",
+          "text": "診療の利益率"
+        },
+        {
+          "id": "D",
+          "text": "外来待ち時間"
+        },
+        {
+          "id": "E",
+          "text": "平均在院日数"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「診療の利益率」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 C004\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 C004（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-C005",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -1511,7 +2293,7 @@
       "blueprint_code": "110-C-11",
       "category": "感染症",
       "difficulty": "standard",
-      "question_text": "院内感染対策チームvICTxで正しいのはどれか。",
+      "question_text": "院内感染対策チーム〈ICT〉で正しいのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -1579,7 +2361,7 @@
       "blueprint_code": "110-C-13",
       "category": "公衆衛生",
       "difficulty": "standard",
-      "question_text": "健康日本218第二次:で摂取量の目標値が設定されているのはどれか。",
+      "question_text": "健康日本21(第二次)で摂取量の目標値が設定されているのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -1681,7 +2463,7 @@
       "blueprint_code": "110-C-16",
       "category": "整形外科",
       "difficulty": "standard",
-      "question_text": "52歳の男性。墜落外傷で尿道からの出血が止まらないため救急車で搬入された。自宅の庭木の手入れ中に誤ってはしごから墜落した。殿部の痛みのため歩けず、尿道からの出血が止まらないため救急車を要請した。意識は清明。体温36.0°C。脈拍110/分、整。血圧90/58mmHg。呼吸数20/分、整。SpO2100%8リザーバー付マスク10L/分酸素投与下:。頭頸部と胸腹部とに変形、外傷、皮下血腫および圧痛を認めない。四肢に擦過創を認める。殿部の腫脹と疼痛とを認める。外尿道口から持続的な出血を認める。ポータブルエックス線写真で骨盤骨折を認める。呼吸と循環の補助を開始するとともに、尿量測定のため尿道カテーテル留置を検討することとなった。挿入する前に行うべきなのはどれか。",
+      "question_text": "52歳の男性。墜落外傷で尿道からの出血が止まらないため救急車で搬入された。自宅の庭木の手入れ中に誤ってはしごから墜落した。殿部の痛みのため歩けず、尿道からの出血が止まらないため救急車を要請した。意識は清明。体温36.0°C。脈拍110/分、整。血圧90/58mmHg。呼吸数20/分、整。SpO2100%(リザーバー付マスク10L/分酸素投与下)。頭頸部と胸腹部とに変形、外傷、皮下血腫および圧痛を認めない。四肢に擦過創を認める。殿部の腫脹と疼痛とを認める。外尿道口から持続的な出血を認める。ポータブルエックス線写真で骨盤骨折を認める。呼吸と循環の補助を開始するとともに、尿量測定のため尿道カテーテル留置を検討することとなった。挿入する前に行うべきなのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -1811,13 +2593,47 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 C019（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-C020",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-C-20",
+      "category": "循環器",
+      "difficulty": "standard",
+      "question_text": "61歳の男性。自営業。旅客機内で耐え難い全身倦怠感を訴えた。2週間の仕事を終えて東アジアのある国から帰国するところである。たまたま同乗していた医師が機内アナウンスに呼応した。男性が現地の医療機関を昨日受診した際に渡された紹介状の一部を示す。The patient is a 61-year-old man with a complaint of general malaise. Distended abdomen has been developed in these two days. He has a long history of drinking. However, he has never been treated on alcoholic problems. On physical examination, his consciousness was clear. He had no fever. Icterus on his conjunctiva, several vascular spiders in his anterior chest and bilateral pretibial edema were observed. Moderate amount of ascites was detected by ultrasonography. Therefore, I strongly recommended him to consult a physician in his home country as soon as possible.機内での現症 : 体温36.5°C。脈拍88/分、整。呼吸数12/分。腹部に圧痛を認めない。この情報から最も疑うべき疾患はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "肝硬変"
+        },
+        {
+          "id": "B",
+          "text": "心不全"
+        },
+        {
+          "id": "C",
+          "text": "深部静脈血栓症"
+        },
+        {
+          "id": "D",
+          "text": "甲状腺機能低下症"
+        },
+        {
+          "id": "E",
+          "text": "ネフローゼ症候群"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「肝硬変」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 C020\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 C020（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-C021",
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "110-C-21",
       "category": "呼吸器",
       "difficulty": "standard",
-      "question_text": "62歳の男性。呼吸困難を主訴に来院した。1か月前に労作時呼吸困難が出現し増強してきたため受診した。喫煙は30本/日を40年間。体温36.4°C。脈拍104/分、整。血圧132/86mmHg。呼吸数24/分。SpO294%8room air:。呼吸時に胸郭の動きに左右差を認める。心音に異常を認めず、呼吸音は左肺で減弱している。左胸部の打診は濁音を呈している。考えられるのはどれか。",
+      "question_text": "62歳の男性。呼吸困難を主訴に来院した。1か月前に労作時呼吸困難が出現し増強してきたため受診した。喫煙は30本/日を40年間。体温36.4°C。脈拍104/分、整。血圧132/86mmHg。呼吸数24/分。SpO294%(room air)。呼吸時に胸郭の動きに左右差を認める。心音に異常を認めず、呼吸音は左肺で減弱している。左胸部の打診は濁音を呈している。考えられるのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -1913,72 +2729,72 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 C025（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
-      "id": "k110-C028",
+      "id": "k110-C026",
       "exam_type": "KOKUSHI",
       "question_type": "M",
-      "blueprint_code": "110-C-28",
-      "category": "呼吸器",
+      "blueprint_code": "110-C-26",
+      "category": "肝・胆・膵",
       "difficulty": "standard",
-      "question_text": "67歳の女性。息苦しさを主訴に来院した。現病歴 : 5年前から労作時に呼吸困難を自覚していた。風邪をひくと回復が遅く、自宅近くの診療所で去痰薬の処方を受けていた。2か月前から安静時にも呼吸困難を自覚するようになり、数日前から症状が悪化したため受診した。既往歴 : 60歳から高血圧症にて内服治療中である。生活歴 : 喫煙は20本/日を45年間。飲酒は機会飲酒。朝の散歩を日課としていたが2か月前から息苦しいためやめている。家族歴 : 父親が肺癌で死亡。現症 : 意識は清明。身長162cm、体重42kg。体温36.4°C。脈拍64/分、整。血圧130/72mmHg。呼吸数20/分。SpO290%8room air:。眼瞼結膜と眼球結膜とに異常を認めない。胸部の聴診で、心音はI音とII音の減弱を認める。呼吸音は減弱している。検査所見 : 血液所見:赤血球434万、Hb13.5/dL、Ht40%、白血球7,400、血小板23万。血液生化学所見:総蛋白6.7g/dL、アルブミン3.7g/dL、総ビリルビン0.5mg/dL、AST25IU/L、ALT30IU/L、LD195IU/L 8基準 176〜353:、ALP189IU/L8基準115〜359:、クレアチニン0.9mg/dL。CRP0.2mg/dL。動脈血ガス分析 8room air::pH7.41、PaCO255Torr、PaO262Torr、HCO3−34 mEq/L。呼吸機能検査:%VC80%、FEV1%38%。胸部エックス線写真では両側で肺野の透過性亢進と横隔膜の平低化とを認める。\nこの患者にみられる可能性が高いのはどれか。",
+      "question_text": "78歳の女性。食欲不振と軽度の全身倦怠感とを主訴に紹介されて来院した。現病歴 : 4週前に自宅で転倒して尻もちをつき腰痛が出現したため自宅近くの診療所を受診した。腰椎エックス線写真で第1腰椎の圧迫骨折を認め、腰椎骨塩定量検査で骨密度が著明に低下しており、骨粗鬆症と診断された。非ステロイド性抗炎症薬、ビスホスホネート製剤、カルシウム製剤および活性型ビタミンD製剤による治療が開始された。2週後の再診時には腰痛は軽減し、非ステロイド性抗炎症薬は終了となったが、他の薬剤はその後も投与が継続されていた。1週前から食欲不振と軽度の全身倦怠感とを自覚し持続するため紹介されて受診した。尿検査と血液検査の結果を持参している。既往歴 : 70歳時に胆石で胆囊摘出術。75歳時に大腸憩室炎。生活歴 : 娘夫婦と孫2人との5人暮らし。腰痛が軽減した後は日課にしていた朝30分の散歩を再開している。検査所見(持参したもの) : 尿所見:蛋白(−)、糖(−)。血液所見:赤血球468万、Hb14.6g/dL、Ht42%、白血球4,600、血小板36万。血液生化学所見:総蛋白7.6g/dL、アルブミン4.6g/dL、総ビリルビン0.8mg/dL、直接ビリルビン0.4mg/dL、AST24IU/L、ALT10IU/L、LD226IU/L(基準176〜353)、尿素窒素32mg/dL、クレアチニン1.1mg/dL、尿酸8.6mg/dL、血糖120mg/dL、Na 146mEq/L、K3.8mEq/L、Cl104mEq/L。CRP0.3mg/dL未満。現症 : 意識レベルはJCSI-2。身長150cm、体重45kg。体温36.0°C。脈拍84/分、整。血圧132/92mmHg。呼吸数16/分。SpO296%(room air)。眼瞼結膜と眼球結膜とに異常を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。四肢の筋力に異常を認めない。\nこの患者にみられる可能性が高いのはどれか。",
       "choices": [
         {
           "id": "A",
-          "text": "Cheyne-Stokes呼吸"
+          "text": "下痢"
         },
         {
           "id": "B",
-          "text": "Kussmaul呼吸"
+          "text": "耳鳴"
         },
         {
           "id": "C",
-          "text": "口すぼめ呼吸"
+          "text": "視力低下"
         },
         {
           "id": "D",
-          "text": "Biot呼吸"
+          "text": "皮膚瘙痒"
         },
         {
           "id": "E",
-          "text": "下顎呼吸"
+          "text": "多飲・多尿"
+        }
+      ],
+      "correct_choice_id": "E",
+      "explanation": "正答は E「多飲・多尿」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 C026\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 C026（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-C027",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-C-27",
+      "category": "肝・胆・膵",
+      "difficulty": "standard",
+      "question_text": "78歳の女性。食欲不振と軽度の全身倦怠感とを主訴に紹介されて来院した。現病歴 : 4週前に自宅で転倒して尻もちをつき腰痛が出現したため自宅近くの診療所を受診した。腰椎エックス線写真で第1腰椎の圧迫骨折を認め、腰椎骨塩定量検査で骨密度が著明に低下しており、骨粗鬆症と診断された。非ステロイド性抗炎症薬、ビスホスホネート製剤、カルシウム製剤および活性型ビタミンD製剤による治療が開始された。2週後の再診時には腰痛は軽減し、非ステロイド性抗炎症薬は終了となったが、他の薬剤はその後も投与が継続されていた。1週前から食欲不振と軽度の全身倦怠感とを自覚し持続するため紹介されて受診した。尿検査と血液検査の結果を持参している。既往歴 : 70歳時に胆石で胆囊摘出術。75歳時に大腸憩室炎。生活歴 : 娘夫婦と孫2人との5人暮らし。腰痛が軽減した後は日課にしていた朝30分の散歩を再開している。検査所見(持参したもの) : 尿所見:蛋白(−)、糖(−)。血液所見:赤血球468万、Hb14.6g/dL、Ht42%、白血球4,600、血小板36万。血液生化学所見:総蛋白7.6g/dL、アルブミン4.6g/dL、総ビリルビン0.8mg/dL、直接ビリルビン0.4mg/dL、AST24IU/L、ALT10IU/L、LD226IU/L(基準176〜353)、尿素窒素32mg/dL、クレアチニン1.1mg/dL、尿酸8.6mg/dL、血糖120mg/dL、Na 146mEq/L、K3.8mEq/L、Cl104mEq/L。CRP0.3mg/dL未満。現症 : 意識レベルはJCSI-2。身長150cm、体重45kg。体温36.0°C。脈拍84/分、整。血圧132/92mmHg。呼吸数16/分。SpO296%(room air)。眼瞼結膜と眼球結膜とに異常を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。四肢の筋力に異常を認めない。\n診断に有用な検査はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "便培養"
+        },
+        {
+          "id": "B",
+          "text": "聴力検査"
+        },
+        {
+          "id": "C",
+          "text": "血中Ca測定"
+        },
+        {
+          "id": "D",
+          "text": "頭部単純CT"
+        },
+        {
+          "id": "E",
+          "text": "胸部エックス線撮影"
         }
       ],
       "correct_choice_id": "C",
-      "explanation": "正答は C「口すぼめ呼吸」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 C028\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 C028（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
-    },
-    {
-      "id": "k110-C029",
-      "exam_type": "KOKUSHI",
-      "question_type": "M",
-      "blueprint_code": "110-C-29",
-      "category": "呼吸器",
-      "difficulty": "standard",
-      "question_text": "67歳の女性。息苦しさを主訴に来院した。現病歴 : 5年前から労作時に呼吸困難を自覚していた。風邪をひくと回復が遅く、自宅近くの診療所で去痰薬の処方を受けていた。2か月前から安静時にも呼吸困難を自覚するようになり、数日前から症状が悪化したため受診した。既往歴 : 60歳から高血圧症にて内服治療中である。生活歴 : 喫煙は20本/日を45年間。飲酒は機会飲酒。朝の散歩を日課としていたが2か月前から息苦しいためやめている。家族歴 : 父親が肺癌で死亡。現症 : 意識は清明。身長162cm、体重42kg。体温36.4°C。脈拍64/分、整。血圧130/72mmHg。呼吸数20/分。SpO290%8room air:。眼瞼結膜と眼球結膜とに異常を認めない。胸部の聴診で、心音はI音とII音の減弱を認める。呼吸音は減弱している。検査所見 : 血液所見:赤血球434万、Hb13.5/dL、Ht40%、白血球7,400、血小板23万。血液生化学所見:総蛋白6.7g/dL、アルブミン3.7g/dL、総ビリルビン0.5mg/dL、AST25IU/L、ALT30IU/L、LD195IU/L 8基準 176〜353:、ALP189IU/L8基準115〜359:、クレアチニン0.9mg/dL。CRP0.2mg/dL。動脈血ガス分析 8room air::pH7.41、PaCO255Torr、PaO262Torr、HCO3−34 mEq/L。呼吸機能検査:%VC80%、FEV1%38%。胸部エックス線写真では両側で肺野の透過性亢進と横隔膜の平低化とを認める。\nこの患者の病状悪化とともに増加または上昇するのはどれか。",
-      "choices": [
-        {
-          "id": "A",
-          "text": "一秒量"
-        },
-        {
-          "id": "B",
-          "text": "残気量"
-        },
-        {
-          "id": "C",
-          "text": "肺拡散能"
-        },
-        {
-          "id": "D",
-          "text": "努力肺活量"
-        },
-        {
-          "id": "E",
-          "text": "動脈血酸素分圧"
-        }
-      ],
-      "correct_choice_id": "B",
-      "explanation": "正答は B「残気量」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 C029\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 C029（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+      "explanation": "正答は C「血中Ca測定」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 C027\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 C027（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-C030",
@@ -1987,7 +2803,7 @@
       "blueprint_code": "110-C-30",
       "category": "代謝・内分泌",
       "difficulty": "standard",
-      "question_text": "23歳の女性。発熱を主訴に紹介されて来院した。現病歴 : 3日前の朝、38.2°Cの発熱を認めた。市販の解熱鎮痛薬を内服すると、一時的に体温は37°C台前半まで解熱したが、数時間して再び38.5〜40°Cに上昇した。今朝からは、悪寒、戦慄を伴う40°C台の発熱が続いたため自宅近くの診療所を受診した。腰部が重苦しいが、頭痛、咽頭痛、鼻汁、咳嗽、胸痛、腹痛および下痢の症状はない。インフルエンザウイルス迅速抗原検査と胸部エックス線撮影で異常を認めなかった。発熱の原因精査のため同時に施行した尿検査と血液検査の結果を持参し、紹介されて受診した。既往歴 : 小児期にアトピー性皮膚炎。8歳時に中耳炎。生活歴 : 営業担当事務職員。両親と弟の4人暮らし。家族歴 : 10日前に弟が胃腸炎で3日間療養した。検査所見H持参したものN : 尿所見:蛋白1+、糖8−:、潜血1+、白血球2+。赤沈65mm/1時間。血液所見:赤血球430万、Hb13.5g/dL、Ht40%、白血球12,0008桿状核好中球15%、分葉核好中球60%、好酸球1%、単球6%、リンパ球18%:、血小板38万。血液生化学所見:総蛋白7.0g/dL、アルブミン4.2g/dL、AST28IU/L、ALT35IU/L、LD210IU/L8基準176〜353:、クレアチニン0.7 mg/dL、尿素窒素14mg/dL、Na138mEq/L、K4.0mEq/L、Cl105mEq/L。CRP 6.5mg/dL。現症 : 意識は清明。身長165cm、体重46kg。体温39.1°C。脈拍96/分、整。血圧106/60mmHg。呼吸数16/分。SpO298%8room air:。眼瞼結膜と眼球結膜とに異常を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。\nこの患者でみられる可能性が高い身体所見はどれか。",
+      "question_text": "23歳の女性。発熱を主訴に紹介されて来院した。現病歴 : 3日前の朝、38.2°Cの発熱を認めた。市販の解熱鎮痛薬を内服すると、一時的に体温は37°C台前半まで解熱したが、数時間して再び38.5〜40°Cに上昇した。今朝からは、悪寒、戦慄を伴う40°C台の発熱が続いたため自宅近くの診療所を受診した。腰部が重苦しいが、頭痛、咽頭痛、鼻汁、咳嗽、胸痛、腹痛および下痢の症状はない。インフルエンザウイルス迅速抗原検査と胸部エックス線撮影で異常を認めなかった。発熱の原因精査のため同時に施行した尿検査と血液検査の結果を持参し、紹介されて受診した。既往歴 : 小児期にアトピー性皮膚炎。8歳時に中耳炎。生活歴 : 営業担当事務職員。両親と弟の4人暮らし。家族歴 : 10日前に弟が胃腸炎で3日間療養した。検査所見(持参したもの) : 尿所見:蛋白1+、糖(−)、潜血1+、白血球2+。赤沈65mm/1時間。血液所見:赤血球430万、Hb13.5g/dL、Ht40%、白血球12,000(桿状核好中球15%、分葉核好中球60%、好酸球1%、単球6%、リンパ球18%)、血小板38万。血液生化学所見:総蛋白7.0g/dL、アルブミン4.2g/dL、AST28IU/L、ALT35IU/L、LD210IU/L(基準176〜353)、クレアチニン0.7 mg/dL、尿素窒素14mg/dL、Na138mEq/L、K4.0mEq/L、Cl105mEq/L。CRP 6.5mg/dL。現症 : 意識は清明。身長165cm、体重46kg。体温39.1°C。脈拍96/分、整。血圧106/60mmHg。呼吸数16/分。SpO298%(room air)。眼瞼結膜と眼球結膜とに異常を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。\nこの患者でみられる可能性が高い身体所見はどれか。",
       "choices": [
         {
           "id": "A",
@@ -2021,7 +2837,7 @@
       "blueprint_code": "110-C-31",
       "category": "代謝・内分泌",
       "difficulty": "standard",
-      "question_text": "23歳の女性。発熱を主訴に紹介されて来院した。現病歴 : 3日前の朝、38.2°Cの発熱を認めた。市販の解熱鎮痛薬を内服すると、一時的に体温は37°C台前半まで解熱したが、数時間して再び38.5〜40°Cに上昇した。今朝からは、悪寒、戦慄を伴う40°C台の発熱が続いたため自宅近くの診療所を受診した。腰部が重苦しいが、頭痛、咽頭痛、鼻汁、咳嗽、胸痛、腹痛および下痢の症状はない。インフルエンザウイルス迅速抗原検査と胸部エックス線撮影で異常を認めなかった。発熱の原因精査のため同時に施行した尿検査と血液検査の結果を持参し、紹介されて受診した。既往歴 : 小児期にアトピー性皮膚炎。8歳時に中耳炎。生活歴 : 営業担当事務職員。両親と弟の4人暮らし。家族歴 : 10日前に弟が胃腸炎で3日間療養した。検査所見H持参したものN : 尿所見:蛋白1+、糖8−:、潜血1+、白血球2+。赤沈65mm/1時間。血液所見:赤血球430万、Hb13.5g/dL、Ht40%、白血球12,0008桿状核好中球15%、分葉核好中球60%、好酸球1%、単球6%、リンパ球18%:、血小板38万。血液生化学所見:総蛋白7.0g/dL、アルブミン4.2g/dL、AST28IU/L、ALT35IU/L、LD210IU/L8基準176〜353:、クレアチニン0.7 mg/dL、尿素窒素14mg/dL、Na138mEq/L、K4.0mEq/L、Cl105mEq/L。CRP 6.5mg/dL。現症 : 意識は清明。身長165cm、体重46kg。体温39.1°C。脈拍96/分、整。血圧106/60mmHg。呼吸数16/分。SpO298%8room air:。眼瞼結膜と眼球結膜とに異常を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。\n次に実施すべき検査はどれか。",
+      "question_text": "23歳の女性。発熱を主訴に紹介されて来院した。現病歴 : 3日前の朝、38.2°Cの発熱を認めた。市販の解熱鎮痛薬を内服すると、一時的に体温は37°C台前半まで解熱したが、数時間して再び38.5〜40°Cに上昇した。今朝からは、悪寒、戦慄を伴う40°C台の発熱が続いたため自宅近くの診療所を受診した。腰部が重苦しいが、頭痛、咽頭痛、鼻汁、咳嗽、胸痛、腹痛および下痢の症状はない。インフルエンザウイルス迅速抗原検査と胸部エックス線撮影で異常を認めなかった。発熱の原因精査のため同時に施行した尿検査と血液検査の結果を持参し、紹介されて受診した。既往歴 : 小児期にアトピー性皮膚炎。8歳時に中耳炎。生活歴 : 営業担当事務職員。両親と弟の4人暮らし。家族歴 : 10日前に弟が胃腸炎で3日間療養した。検査所見(持参したもの) : 尿所見:蛋白1+、糖(−)、潜血1+、白血球2+。赤沈65mm/1時間。血液所見:赤血球430万、Hb13.5g/dL、Ht40%、白血球12,000(桿状核好中球15%、分葉核好中球60%、好酸球1%、単球6%、リンパ球18%)、血小板38万。血液生化学所見:総蛋白7.0g/dL、アルブミン4.2g/dL、AST28IU/L、ALT35IU/L、LD210IU/L(基準176〜353)、クレアチニン0.7 mg/dL、尿素窒素14mg/dL、Na138mEq/L、K4.0mEq/L、Cl105mEq/L。CRP 6.5mg/dL。現症 : 意識は清明。身長165cm、体重46kg。体温39.1°C。脈拍96/分、整。血圧106/60mmHg。呼吸数16/分。SpO298%(room air)。眼瞼結膜と眼球結膜とに異常を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。\n次に実施すべき検査はどれか。",
       "choices": [
         {
           "id": "A",
@@ -2729,6 +3545,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 D044（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-D045",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-D-45",
+      "category": "消化管",
+      "difficulty": "standard",
+      "question_text": "70歳の男性。傾眠状態と見当識障害のために、かかりつけの診療所から紹介されて来院した。4か月前から食道癌に対して抗癌化学療法を行っており、1か月前からはバソプレシン拮抗薬も併用していた。この数日は全身倦怠感と食欲不振があるため、かかりつけの診療所で点滴を受けていたが、傾眠状態と見当識障害が出てきたため紹介されて受診した。問いかけに応答はできるが反応は遅く内容は必ずしも適切でない。身体所見に異常を認めない。尿所見:比重1.012、蛋白(−)、糖(−)。血液生化学所見:アルブミン3.9g/dL、尿素窒素11mg/dL、クレアチニン0.7mg/dL、尿酸1.3mg/dL、血糖90mg/dL、Na119mEq/L、K4.0mEq/L、Cl87mEq/L、Ca9.6mg/dL。この患者にまず行うべき対応はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "水制限"
+        },
+        {
+          "id": "B",
+          "text": "食塩負荷"
+        },
+        {
+          "id": "C",
+          "text": "生理食塩液の投与"
+        },
+        {
+          "id": "D",
+          "text": "ループ利尿薬の投与"
+        },
+        {
+          "id": "E",
+          "text": "5%ブドウ糖液の投与"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「水制限」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 D045\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 D045（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-D053",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -3001,6 +3851,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E009（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-E011",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-E-11",
+      "category": "放射線",
+      "difficulty": "standard",
+      "question_text": "悪性腫瘍に対する放射線治療について誤っているのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "粒子線は深部でブラッグピークを形成する。"
+        },
+        {
+          "id": "B",
+          "text": "ガンマナイフで治療できる脳転移の数には上限がある。"
+        },
+        {
+          "id": "C",
+          "text": "治療後の二次発がんのリスクは小児より高齢者で高い。"
+        },
+        {
+          "id": "D",
+          "text": "外科手術の適応がある肺癌に対しても根治的治療が行われる。"
+        },
+        {
+          "id": "E",
+          "text": "頭頸部癌の強度変調放射線治療〈IMRT〉は耳下腺の防護に有効である。"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「治療後の二次発がんのリスクは小児より高齢者で高い。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E011\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E011（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-E013",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -3169,6 +4053,40 @@
       "correct_choice_id": "B",
       "explanation": "正答は B「ケトン体」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E018\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E018（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-E019",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-E-19",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "手段的日常生活動作〈IADL〉に含まれるのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "更衣"
+        },
+        {
+          "id": "B",
+          "text": "排泄"
+        },
+        {
+          "id": "C",
+          "text": "移動"
+        },
+        {
+          "id": "D",
+          "text": "服薬管理"
+        },
+        {
+          "id": "E",
+          "text": "認知機能"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "正答は D「服薬管理」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E019\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E019（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-E020",
@@ -3375,6 +4293,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E025（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-E026",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-E-26",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "肺腺癌において上皮成長因子受容体〈EGFR〉の遺伝子変異と強く関連する因子はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "男性"
+        },
+        {
+          "id": "B",
+          "text": "日本人"
+        },
+        {
+          "id": "C",
+          "text": "喫煙者"
+        },
+        {
+          "id": "D",
+          "text": "飲酒歴"
+        },
+        {
+          "id": "E",
+          "text": "家族歴"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "正答は B「日本人」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E026\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E026（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-E027",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -3475,6 +4427,40 @@
       "correct_choice_id": "D",
       "explanation": "正答は D「妊娠32週に比べ正期産期には胎脂の量が減少する。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E029\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E029（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-E030",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-E-30",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "心音のII音について正しいのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "高血圧症では亢進する。"
+        },
+        {
+          "id": "B",
+          "text": "心囊液貯留では亢進する。"
+        },
+        {
+          "id": "C",
+          "text": "完全左脚ブロックでは生理的分裂を認める。"
+        },
+        {
+          "id": "D",
+          "text": "肺動弁狭窄症〈PS〉では奇異性分裂を認める。"
+        },
+        {
+          "id": "E",
+          "text": "心房中隔欠損症〈ASD〉では病的分裂を認める。"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「高血圧症では亢進する。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E030\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E030（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-E031",
@@ -3579,6 +4565,74 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E041（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-E042",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-E-42",
+      "category": "代謝・内分泌",
+      "difficulty": "standard",
+      "question_text": "41歳の女性。尿路感染症の治療のため入院中である。5日前に38.3°Cの発熱で外来を受診した。左の肋骨脊柱角に叩打痛があり、尿検査で白血球が増加しGram陰性桿菌を認めた。即日入院となり、セフェム系抗菌薬の静脈内投与を開始した。入院3日目に一旦解熱したが、入院4日目から再び38.5°Cの発熱が出現した。このときは肋骨脊柱角に叩打痛を認めなかった。尿沈渣に白血球を認めず、血液検査にも異常を認めなかった。入院5日目に38.2°C、入院6日目の本日も38.6°Cの発熱を認めている。体温は一旦37°C前後に下がるが抗菌薬投与後に38°C以上に上昇することを繰り返している。比較的元気な様子で食欲も良好である。意識は清明。体温38.5°C。脈拍72/分、整。血圧122/76mmHg。呼吸数16/分。SpO298%(room air)。皮疹を認めない。眼瞼結膜と眼球結膜とに異常を認めない。咽頭に発赤や滲出液を認めない。項部硬直を認めない。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、圧痛を認めない。左右の肋骨脊柱角に叩打痛を認めない。血液所見:赤血球460万、Hb13.8g/dL、Ht39%、白血球8,600(桿状核好中球21%、分葉核好中球45%、好酸球12%、好塩基球1%、単球5%、リンパ球16%)、血小板20万。血液培養は陰性。胸部エックス線写真で異常を認めない。腹部超音波検査で肝膿瘍などの異常を認めない。現時点の対応として最も適切なのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "抗菌薬を中止する。"
+        },
+        {
+          "id": "B",
+          "text": "抗真菌薬を追加する。"
+        },
+        {
+          "id": "C",
+          "text": "副腎皮質ステロイドを追加する。"
+        },
+        {
+          "id": "D",
+          "text": "抗菌薬をカルバペネム系に変更する。"
+        },
+        {
+          "id": "E",
+          "text": "非ステロイド性抗炎症薬〈NSAIDs〉を追加する。"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「抗菌薬を中止する。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E042\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E042（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-E043",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-E-43",
+      "category": "神経",
+      "difficulty": "standard",
+      "question_text": "20歳の女性。声が出なくなったことを主訴に友人とともに来院した。今朝、いつもどおりに大学に行ったが、1限目の講義が終了したころから声がかすれるようになり、1時間後には全く声が出なくなった。友人とともに保健管理室で相談したところ、医療機関へ行くことを勧められたため受診した。1年前から部活動での人間関係のトラブルを契機として、不安感や情動の不安定性が出現し治療を受けていた。受診時、筆談は可能で理解力は保たれ、意識は清明と考えられた。発声できないこと以外に神経学的所見に異常を認めない。血液生化学所見、脳波および頭部CTで異常を認めない。この患者にみられるのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "解離"
+        },
+        {
+          "id": "B",
+          "text": "転換"
+        },
+        {
+          "id": "C",
+          "text": "離人症"
+        },
+        {
+          "id": "D",
+          "text": "被影響体験"
+        },
+        {
+          "id": "E",
+          "text": "させられ〈作為〉体験"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "正答は B「転換」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E043\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E043（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-E045",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -3679,6 +4733,40 @@
       "correct_choice_id": "D",
       "explanation": "正答は D「鼻汁中に好酸球が増加する。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E048\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E048（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-E049",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-E-49",
+      "category": "泌尿器",
+      "difficulty": "standard",
+      "question_text": "61歳の女性。尿失禁を主訴に来院した。3年前から遺伝性脊髄小脳変性症で治療を受けている。2か月前から突然の尿意を伴わない尿失禁が出現したため受診した。くしゃみでは尿は漏れない。意識は清明。構音障害、協調運動障害および失調性歩行がある。腹部は平坦、軟で、圧痛を認めない。尿所見:蛋白(−)、糖(−)、沈渣に赤血球1〜4個/1視野、白血球1〜4個/1視野。腹部超音波検査で残尿を認めない。考えられる尿失禁の種類はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "溢流性"
+        },
+        {
+          "id": "B",
+          "text": "機能性"
+        },
+        {
+          "id": "C",
+          "text": "切迫性"
+        },
+        {
+          "id": "D",
+          "text": "反射性"
+        },
+        {
+          "id": "E",
+          "text": "腹圧性"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "正答は D「反射性」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E049\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E049（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-E051",
@@ -3885,72 +4973,38 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E056（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
-      "id": "k110-E068",
+      "id": "k110-E067",
       "exam_type": "KOKUSHI",
       "question_type": "M",
-      "blueprint_code": "110-E-68",
-      "category": "神経",
-      "difficulty": "standard",
-      "question_text": "28歳の男性。墜落事故のため工事現場から救急車で搬入された。現病歴 : 建築作業中に誤って約3mの高さから墜落し、頭部を強打した。意識障害がみられ、救急搬送された。既往歴 : 生来健康で特記すべきことはない。生活歴 : 高校卒業後から建築作業員。独身。大酒家で喫煙歴は不明。家族歴 : 特記すべきことはない。現症 : 来院時、閉眼。身長170cm(推定)。体重70kg(推定)。体温36.4°C。脈拍48/分、整。血圧192/104mmHg。呼吸数12/分。SpO292%(リザーバー付マスク10L/分酸素投与下)。左側頭部に皮下血腫を認める。瞳孔径両側3mmで対光反射は正常である。口腔、鼻孔および耳孔からの出血を認めない。他部位の創傷からの外出血はない。心音と呼吸音とに異常を認めない。痛み刺激で開眼し、発語は「あ〜」「う〜」の発声のみを認める。痛み刺激で手足の逃避的な屈曲を認める。\nこの患者に行うべきなのはどれか。",
-      "choices": [
-        {
-          "id": "A",
-          "text": "人工換気"
-        },
-        {
-          "id": "B",
-          "text": "抗菌薬投与"
-        },
-        {
-          "id": "C",
-          "text": "脳室ドレナージ"
-        },
-        {
-          "id": "D",
-          "text": "抗てんかん薬投与"
-        },
-        {
-          "id": "E",
-          "text": "副腎皮質ステロイド投与その後の経過 : 翌日に撮影された頭部MRIのFLAIR像で脳梁を中心とした白質に小さな高信号領域の散在を認めた。受傷後4日目に開眼し、受傷後5日目には意識レベルはJCSI-1となった。リハビリテーションを進め自宅退院を目指すことになった。"
-        }
-      ],
-      "correct_choice_id": "A",
-      "explanation": "正答は A「人工換気」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E068\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E068（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
-    },
-    {
-      "id": "k110-E069",
-      "exam_type": "KOKUSHI",
-      "question_type": "M",
-      "blueprint_code": "110-E-69",
+      "blueprint_code": "110-E-67",
       "category": "医学総論",
       "difficulty": "standard",
-      "question_text": "28歳の男性。墜落事故のため工事現場から救急車で搬入された。現病歴 : 建築作業中に誤って約3mの高さから墜落し、頭部を強打した。意識障害がみられ、救急搬送された。既往歴 : 生来健康で特記すべきことはない。生活歴 : 高校卒業後から建築作業員。独身。大酒家で喫煙歴は不明。家族歴 : 特記すべきことはない。現症 : 来院時、閉眼。身長170cm(推定)。体重70kg(推定)。体温36.4°C。脈拍48/分、整。血圧192/104mmHg。呼吸数12/分。SpO292%(リザーバー付マスク10L/分酸素投与下)。左側頭部に皮下血腫を認める。瞳孔径両側3mmで対光反射は正常である。口腔、鼻孔および耳孔からの出血を認めない。他部位の創傷からの外出血はない。心音と呼吸音とに異常を認めない。痛み刺激で開眼し、発語は「あ〜」「う〜」の発声のみを認める。痛み刺激で手足の逃避的な屈曲を認める。\n退院後も長期に認められる可能性があるのはどれか。",
+      "question_text": "28歳の男性。墜落事故のため工事現場から救急車で搬入された。現病歴 : 建築作業中に誤って約3mの高さから墜落し、頭部を強打した。意識障害がみられ、救急搬送された。既往歴 : 生来健康で特記すべきことはない。生活歴 : 高校卒業後から建築作業員。独身。大酒家で喫煙歴は不明。家族歴 : 特記すべきことはない。現症 : 来院時、閉眼。身長170cm(推定)。体重70kg(推定)。体温36.4°C。脈拍48/分、整。血圧192/104mmHg。呼吸数12/分。SpO292%(リザーバー付マスク10L/分酸素投与下)。左側頭部に皮下血腫を認める。瞳孔径両側3mmで対光反射は正常である。口腔、鼻孔および耳孔からの出血を認めない。他部位の創傷からの外出血はない。心音と呼吸音とに異常を認めない。痛み刺激で開眼し、発語は「あ〜」「う〜」の発声のみを認める。痛み刺激で手足の逃避的な屈曲を認める。\nこの患者のGlasgow Coma Scale〈GCS〉のMスコアはどれか。",
       "choices": [
         {
           "id": "A",
-          "text": "失調"
+          "text": "2"
         },
         {
           "id": "B",
-          "text": "片麻痺"
+          "text": "3"
         },
         {
           "id": "C",
-          "text": "嚥下障害"
+          "text": "4"
         },
         {
           "id": "D",
-          "text": "排便障害"
+          "text": "5"
         },
         {
           "id": "E",
-          "text": "行動障害"
+          "text": "6"
         }
       ],
-      "correct_choice_id": "E",
-      "explanation": "正答は E「行動障害」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E069\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E069（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+      "correct_choice_id": "C",
+      "explanation": "正答は C「4」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 E067\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 E067（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-F001",
@@ -4123,6 +5177,74 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 F005（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-F006",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-F-6",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "医療面接におけるシステムレビュー〈review of systems〉はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "病歴聴取と身体診察とを並行して行う。"
+        },
+        {
+          "id": "B",
+          "text": "問診票の記載に基づいて経過を確認する。"
+        },
+        {
+          "id": "C",
+          "text": "時系列に沿って患者に病歴を説明してもらう。"
+        },
+        {
+          "id": "D",
+          "text": "主訴と関連のない情報も含めて系統的に聴取する。"
+        },
+        {
+          "id": "E",
+          "text": "医療面接で得られた情報を要約して患者に確認する。"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "正答は D「主訴と関連のない情報も含めて系統的に聴取する。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 F006\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 F006（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-F008",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-F-8",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "閉眼しているが名前を呼ぶと容易に開眼し、眼球は左方に偏位し、発語は一切無く、左上下肢には合目的な運動があり、左手は離握手に応じるが右半身は完全麻痺であった。この患者のJapan Coma Scale〈JCS〉とGlasgow Coma Scale〈GCS〉の組合せで正しいのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "JCSII-30 — GCS5(E3V1M1)"
+        },
+        {
+          "id": "B",
+          "text": "JCSII-20 — GCS5(E3V1M1)"
+        },
+        {
+          "id": "C",
+          "text": "JCSII-20 — GCS11(E4V1M6)"
+        },
+        {
+          "id": "D",
+          "text": "JCSII-10 — GCS10(E3V1M6)"
+        },
+        {
+          "id": "E",
+          "text": "JCSII-10 — GCS11(E4V1M6)"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "正答は D「JCSII-10 — GCS10(E3V1M6)」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 F008\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 F008（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-F009",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -4225,13 +5347,81 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 F013（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-F014",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-F-14",
+      "category": "呼吸器",
+      "difficulty": "standard",
+      "question_text": "外傷の初期診療において迅速簡易超音波検査〈FAST〉で確認するのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "骨折"
+        },
+        {
+          "id": "B",
+          "text": "気胸"
+        },
+        {
+          "id": "C",
+          "text": "大動脈径"
+        },
+        {
+          "id": "D",
+          "text": "臓器損傷"
+        },
+        {
+          "id": "E",
+          "text": "体腔内出血"
+        }
+      ],
+      "correct_choice_id": "E",
+      "explanation": "正答は E「体腔内出血」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 F014\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 F014（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-F015",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-F-15",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "成人の栄養状態評価に用いられる皮下脂肪厚の計測部位はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "母指球"
+        },
+        {
+          "id": "B",
+          "text": "顎下正中"
+        },
+        {
+          "id": "C",
+          "text": "額部正中"
+        },
+        {
+          "id": "D",
+          "text": "下腿後面"
+        },
+        {
+          "id": "E",
+          "text": "上腕伸側"
+        }
+      ],
+      "correct_choice_id": "E",
+      "explanation": "正答は E「上腕伸側」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 F015\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 F015（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-F016",
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "110-F-16",
       "category": "循環器",
       "difficulty": "standard",
-      "question_text": "76歳の男性。背部痛と右上下肢の脱力とを主訴に来院した。今朝、午前7時ころ突然の背部から左頸部へ移動する痛みを自覚した。その後、徐々に疼痛が緩和してきたため、消炎鎮痛薬の貼付剤で様子をみていた。10分程して右上肢の脱力も出現した。ソファで休もうとしたところ、右下肢にも脱力があることに気付いた。横になって約30分でいずれの症状も改善したが、心配した家族とともに午前10時に受診した。高血圧症と糖尿病で内服治療中である。意識は清明。身長172cm、体重68kg。体温36.5°C。脈拍88/分、整。右上肢血圧136/70mmHg、左上肢血圧110/62mmHg。呼吸数18/分。SpO298%8room air:。神経学的所見に異常を認めない。最も考えられるのはどれか。",
+      "question_text": "76歳の男性。背部痛と右上下肢の脱力とを主訴に来院した。今朝、午前7時ころ突然の背部から左頸部へ移動する痛みを自覚した。その後、徐々に疼痛が緩和してきたため、消炎鎮痛薬の貼付剤で様子をみていた。10分程して右上肢の脱力も出現した。ソファで休もうとしたところ、右下肢にも脱力があることに気付いた。横になって約30分でいずれの症状も改善したが、心配した家族とともに午前10時に受診した。高血圧症と糖尿病で内服治療中である。意識は清明。身長172cm、体重68kg。体温36.5°C。脈拍88/分、整。右上肢血圧136/70mmHg、左上肢血圧110/62mmHg。呼吸数18/分。SpO298%(room air)。神経学的所見に異常を認めない。最も考えられるのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -4257,6 +5447,40 @@
       "correct_choice_id": "D",
       "explanation": "正答は D「大動脈解離」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 F016\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 F016（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-F017",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-F-17",
+      "category": "代謝・内分泌",
+      "difficulty": "standard",
+      "question_text": "38歳の男性。全身の筋肉痛と倦怠感とを主訴に来院した。生来健康だったが、半年ほど前に脂質異常症であることが判明し、自宅近くの診療所で内服治療を行っていた。3か月前から治験に参加し、治験担当医でもあるかかりつけ医から治験薬を投与されていた。3日前から全身に軽度の筋肉痛があり倦怠感が出てきたため、夕食後に総合病院の救急外来を受診した。血液生化学所見:CK400IU/L(基準30〜140)、尿素窒素20mg/dL、クレアチニン1.2mg/dL。治験担当医に連絡をしようとしているときに、患者から「今日の夕食後の治験薬をまだ飲んでいないがどうすれば良いか」と質問された。救急外来の医師の対応として適切なのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "「内服を寝る前に変更してください」"
+        },
+        {
+          "id": "B",
+          "text": "「いつもの時間で内服してください」"
+        },
+        {
+          "id": "C",
+          "text": "「鎮痛薬と一緒に内服してください」"
+        },
+        {
+          "id": "D",
+          "text": "「明日の朝食後から内服してください」"
+        },
+        {
+          "id": "E",
+          "text": "「担当医と連絡がとれるまで内服しないでください」"
+        }
+      ],
+      "correct_choice_id": "E",
+      "explanation": "正答は E「「担当医と連絡がとれるまで内服しないでください」」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 F017\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 F017（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-F018",
@@ -4327,6 +5551,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 F020（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-F021",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-F-21",
+      "category": "整形外科",
+      "difficulty": "standard",
+      "question_text": "72歳の男性。散歩中に転倒し、左腰部の疼痛と歩行不能のため救急車で搬入された。精査の結果、左大腿骨頸部骨折が認められ、人工股関節置換術を行うことになった。入院時の患者に対する説明は表を用いて行った。その表には入院から手術前、手術当日、手術後および退院までの日程と、それぞれの期間における到達目標、治療内容および安静度が記載されている。この表の説明で正しいのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "主治医ごとに作成される。"
+        },
+        {
+          "id": "B",
+          "text": "我が国ではほとんど普及していない。"
+        },
+        {
+          "id": "C",
+          "text": "記載されている日程は変更できない。"
+        },
+        {
+          "id": "D",
+          "text": "主な目的は平均在院日数の短縮である。"
+        },
+        {
+          "id": "E",
+          "text": "医療者と患者の間で情報共有に活用できる。"
+        }
+      ],
+      "correct_choice_id": "E",
+      "explanation": "正答は E「医療者と患者の間で情報共有に活用できる。」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 F021\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 F021（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-F023",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -4367,7 +5625,7 @@
       "blueprint_code": "110-F-24",
       "category": "代謝・内分泌",
       "difficulty": "standard",
-      "question_text": "61歳の男性。意識障害のため家族に連れられて来院した。昨日、物が二重に見えると家族に話していたという。今日になり、歩行がふらつき、意識もおかしいと家族が気付き受診した。頭部外傷の既往はない。飲酒は日本酒3合/日を40年間。意識レベルはJCSI-3。血圧130/80mmHg。眼瞼結膜は軽度貧血様である。眼球運動は左方視にて右眼球の内転が不良で眼振もみられた。歩行不能である。血液所見:赤血球245万、Hb9.6g/dL、Ht29%、MCV125.7fL、MCH41.7pg、MCHC 33.2g/dL、白血球3,500、血小板14万。血液生化学所見:総蛋白6.0g/dL、アルブミン3.3g/dL、AST47IU/L、ALT17IU/L、LD270IU/L8基準176〜353:、γ-GTP102IU/L8基準8〜50:、クレアチニン0.7mg/dL、血糖90mg/dL、Na 140mEq/L、K4.3mEq/L、Cl104mEq/L。CRP0.1mg/dL。診断のために再度確認すべきなのはどれか。",
+      "question_text": "61歳の男性。意識障害のため家族に連れられて来院した。昨日、物が二重に見えると家族に話していたという。今日になり、歩行がふらつき、意識もおかしいと家族が気付き受診した。頭部外傷の既往はない。飲酒は日本酒3合/日を40年間。意識レベルはJCSI-3。血圧130/80mmHg。眼瞼結膜は軽度貧血様である。眼球運動は左方視にて右眼球の内転が不良で眼振もみられた。歩行不能である。血液所見:赤血球245万、Hb9.6g/dL、Ht29%、MCV125.7fL、MCH41.7pg、MCHC 33.2g/dL、白血球3,500、血小板14万。血液生化学所見:総蛋白6.0g/dL、アルブミン3.3g/dL、AST47IU/L、ALT17IU/L、LD270IU/L(基準176〜353)、γ-GTP102IU/L(基準8〜50)、クレアチニン0.7mg/dL、血糖90mg/dL、Na 140mEq/L、K4.3mEq/L、Cl104mEq/L。CRP0.1mg/dL。診断のために再度確認すべきなのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -5347,6 +6605,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G040（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-G041",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-G-41",
+      "category": "公衆衛生",
+      "difficulty": "standard",
+      "question_text": "45歳の男性。38°Cを超える発熱、下痢、筋肉痛および全身倦怠感が出現したため、自宅から診療所に電話で相談してきた。2週前まで仕事でエボラ出血熱の発生国に滞在していたという。帰国時の体調は良好であった。既往歴に特記すべきことはない。一人暮らしである。医師の指示として適切なのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "「直ちに最寄りの保健所に連絡し自宅で待機してください」"
+        },
+        {
+          "id": "B",
+          "text": "「市販薬を購入して自宅で安静にしてください」"
+        },
+        {
+          "id": "C",
+          "text": "「直ちに大学病院を受診してください」"
+        },
+        {
+          "id": "D",
+          "text": "「そのまま自宅で安静にしてください」"
+        },
+        {
+          "id": "E",
+          "text": "「直ちに来院してください」"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「「直ちに最寄りの保健所に連絡し自宅で待機してください」」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 G041\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G041（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-G042",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -5517,6 +6809,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G046（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-G047",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-G-47",
+      "category": "消化管",
+      "difficulty": "standard",
+      "question_text": "85歳の男性。舌の痛みと息切れとを主訴に来院した。半年前から舌の痛みがあり、2か月前からは労作時の息切れを自覚するようになった。食欲は減退し、時々悪心を感じることがあるが、食事は少しずつ摂取できている。下痢や便秘はない。75歳で胃癌のため胃全摘術を受けている。意識は清明。身長162cm、体重54kg。体温36.2°C。脈拍80/分、整。血圧110/60mmHg。SpO298%(room air)。眼瞼結膜は軽度貧血様である。舌は淡紅色で表面は滑らかである。心音と呼吸音とに異常を認めない。腹部は平坦で正中に手術痕があり、肝・脾を触知しない。下腿に浮腫を認めない。この患者で疑うべきなのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "腎不全"
+        },
+        {
+          "id": "B",
+          "text": "低Ca血症"
+        },
+        {
+          "id": "C",
+          "text": "鉄欠乏性貧血"
+        },
+        {
+          "id": "D",
+          "text": "巨赤芽球性貧血"
+        },
+        {
+          "id": "E",
+          "text": "微量元素欠乏症"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "正答は D「巨赤芽球性貧血」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 G047\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G047（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-G049",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -5585,6 +6911,74 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G054（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-G055",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-G-55",
+      "category": "血液",
+      "difficulty": "standard",
+      "question_text": "65歳の男性。腹部膨満感と倦怠感とを主訴に来院した。3か月前から腹部膨満感と倦怠感とを自覚するようになり徐々に増強してきたため受診した。眼瞼結膜は貧血様である。右季肋下に肝を3cm、左季肋下に脾を10cm触知する。血液所見:赤血球340万、Hb10.2g/dL、Ht33%、白血球8,700(骨髄球3%、後骨髄球5%、好中球59%、好酸球4%、好塩基球2%、単球8%、リンパ球19%、赤芽球3個/100白血球)、血小板35万。血液生化学所見:総蛋白6.8g/dL、アルブミン3.8g/dL、総ビリルビン1.2mg/dL、AST36IU/L、ALT24IU/L、LD587IU/L(基準176〜353)、尿素窒素22mg/dL、クレアチニン1.1mg/dL。骨髄穿刺ではdry tapで骨髄液を採取できなかった。診断のために次に行うべき検査はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "骨髄生検"
+        },
+        {
+          "id": "B",
+          "text": "骨髄MRI"
+        },
+        {
+          "id": "C",
+          "text": "腹部超音波検査"
+        },
+        {
+          "id": "D",
+          "text": "JAK2遺伝子検査"
+        },
+        {
+          "id": "E",
+          "text": "骨シンチグラフィ"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「骨髄生検」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 G055\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G055（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-G056",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-G-56",
+      "category": "医学総論",
+      "difficulty": "standard",
+      "question_text": "71歳の女性。体重減少、易疲労感および腰背部痛を主訴に来院した。食欲が低下し、6か月で体重が7kg減少した。約1か月前から体調不良を自覚していたが家事はこなしていた。毎日30分散歩をしていたが、疲労感が強く休むことが多くなった。最近になって腰背部痛も出現してきたが、なんとか我慢できている。身長156cm、体重42kg。体温36.8°C。脈拍80/分、整。血圧136/80mmHg。呼吸数16/分。腹部は平坦、軟で、上腹部に軽度圧痛を認める。下腿に軽度の浮腫を認める。徒手筋力テストで下肢の筋力は4である。片足立ちは3秒以上保持できず、不安定である。四肢に筋肉痛、関節痛および異常感覚はない。腱反射と振動覚は正常である。血液所見:赤血球392万、Hb10.8g/dL、Ht32%、白血球7,200、血小板30万。血液生化学所見:総蛋白5.4g/dL、アルブミン2.6g/dL、CK62IU/L(基準30〜140)、血糖118mg/dL。CRP3.6mg/dL。腹部造影CTで膵体部に5 cmほどの腫瘍性病変とそれより尾部の膵管の拡張を認め、腹水が貯留していた。入院後の腹水穿刺で、腹水に淡黄色の混濁があり、細胞診でクラスVの腺癌であった。この患者に当てはまるのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "悪液質"
+        },
+        {
+          "id": "B",
+          "text": "多発性筋炎"
+        },
+        {
+          "id": "C",
+          "text": "廃用症候群"
+        },
+        {
+          "id": "D",
+          "text": "慢性疲労症候群"
+        },
+        {
+          "id": "E",
+          "text": "多発ニューロパチー"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "正答は A「悪液質」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 G056\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G056（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-G057",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -5617,6 +7011,108 @@
       "correct_choice_id": "C",
       "explanation": "正答は C「挿管陽圧換気」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 G057\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G057（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-G063",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-G-63",
+      "category": "循環器",
+      "difficulty": "standard",
+      "question_text": "63歳の男性。上行結腸癌の経過観察と腹部造影CT検査のため来院した。現病歴 : 1年前に上行結腸癌に対して右半結腸切除術を受けている。術後の経過観察のため来院し、外来診察、採血検査および腹部造影CT検査を受けた。既往歴 : 高血圧症に対し内服治療中。薬物アレルギーはない。生活歴 : 酒店経営。喫煙歴はない。飲酒は機会飲酒。家族歴 : 父親は心筋梗塞で死亡。母親は膵癌で死亡。検査所見 : 血液所見:赤血球309万、Hb10.4g/dL、Ht32%、白血球4,200、血小板16万。血液生化学所見:総蛋白6.8g/dL、アルブミン3.8g/dL、AST34 IU/L、ALT40IU/L、尿素窒素21mg/dL、クレアチニン0.9mg/dL、Na139 mEq/L、K4.4mEq/L、Cl107mEq/L。その後の経過 : 腹部造影CT検査の直後から、全身の瘙痒感と呼吸困難が生じ、声がかすれてきた。症状出現時の現症 : 意識は清明。体温36.3°C。脈拍88/分、整。血圧80/68 mmHg。呼吸数24/分。SpO292%(room air)。四肢の伸側に膨疹を認める。眼瞼結膜と眼球結膜とに異常を認めない。頸静脈の怒張を認めない。心音に異常を認めない。胸部全体にwheezesを聴取する。腹部は平坦、軟で、肝・脾を触知しない。下腿に浮腫を認めない。\n気道と呼吸の補助を開始した。次に行うべき治療はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "β2刺激薬の吸入"
+        },
+        {
+          "id": "B",
+          "text": "アドレナリンの筋注"
+        },
+        {
+          "id": "C",
+          "text": "抗ヒスタミン薬の静注"
+        },
+        {
+          "id": "D",
+          "text": "ノルアドレナリンの静注"
+        },
+        {
+          "id": "E",
+          "text": "副腎皮質ステロイドの静注"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "正答は B「アドレナリンの筋注」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 G063\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G063（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-G064",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-G-64",
+      "category": "循環器",
+      "difficulty": "standard",
+      "question_text": "63歳の男性。上行結腸癌の経過観察と腹部造影CT検査のため来院した。現病歴 : 1年前に上行結腸癌に対して右半結腸切除術を受けている。術後の経過観察のため来院し、外来診察、採血検査および腹部造影CT検査を受けた。既往歴 : 高血圧症に対し内服治療中。薬物アレルギーはない。生活歴 : 酒店経営。喫煙歴はない。飲酒は機会飲酒。家族歴 : 父親は心筋梗塞で死亡。母親は膵癌で死亡。検査所見 : 血液所見:赤血球309万、Hb10.4g/dL、Ht32%、白血球4,200、血小板16万。血液生化学所見:総蛋白6.8g/dL、アルブミン3.8g/dL、AST34 IU/L、ALT40IU/L、尿素窒素21mg/dL、クレアチニン0.9mg/dL、Na139 mEq/L、K4.4mEq/L、Cl107mEq/L。その後の経過 : 腹部造影CT検査の直後から、全身の瘙痒感と呼吸困難が生じ、声がかすれてきた。症状出現時の現症 : 意識は清明。体温36.3°C。脈拍88/分、整。血圧80/68 mmHg。呼吸数24/分。SpO292%(room air)。四肢の伸側に膨疹を認める。眼瞼結膜と眼球結膜とに異常を認めない。頸静脈の怒張を認めない。心音に異常を認めない。胸部全体にwheezesを聴取する。腹部は平坦、軟で、肝・脾を触知しない。下腿に浮腫を認めない。\nその後の経過 : 適切な治療を行い呼吸困難は改善した。腹部造影CTの結果、単発の肝腫瘤を認め転移性肝癌と診断した。肝切除術を行うこととなり、手術の前日に右内頸静脈から中心静脈カテーテルを留置する方針となった。留置処置の当日、局所麻酔後、穿刺を行ったところ鮮紅色の血液の逆流を認めた。穿刺針を抜去したところ同部位が腫脹し始めた。意識は清明。脈拍72/分、整。SpO296%(room air)。呼吸に異常を認めない。\n直ちに行うべき処置はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "気管挿管"
+        },
+        {
+          "id": "B",
+          "text": "赤血球輸血"
+        },
+        {
+          "id": "C",
+          "text": "局所の圧迫止血"
+        },
+        {
+          "id": "D",
+          "text": "胸腔ドレーン挿入"
+        },
+        {
+          "id": "E",
+          "text": "カテーテル留置手技の継続"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「局所の圧迫止血」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 G064\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G064（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-G065",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-G-65",
+      "category": "循環器",
+      "difficulty": "standard",
+      "question_text": "63歳の男性。上行結腸癌の経過観察と腹部造影CT検査のため来院した。現病歴 : 1年前に上行結腸癌に対して右半結腸切除術を受けている。術後の経過観察のため来院し、外来診察、採血検査および腹部造影CT検査を受けた。既往歴 : 高血圧症に対し内服治療中。薬物アレルギーはない。生活歴 : 酒店経営。喫煙歴はない。飲酒は機会飲酒。家族歴 : 父親は心筋梗塞で死亡。母親は膵癌で死亡。検査所見 : 血液所見:赤血球309万、Hb10.4g/dL、Ht32%、白血球4,200、血小板16万。血液生化学所見:総蛋白6.8g/dL、アルブミン3.8g/dL、AST34 IU/L、ALT40IU/L、尿素窒素21mg/dL、クレアチニン0.9mg/dL、Na139 mEq/L、K4.4mEq/L、Cl107mEq/L。その後の経過 : 腹部造影CT検査の直後から、全身の瘙痒感と呼吸困難が生じ、声がかすれてきた。症状出現時の現症 : 意識は清明。体温36.3°C。脈拍88/分、整。血圧80/68 mmHg。呼吸数24/分。SpO292%(room air)。四肢の伸側に膨疹を認める。眼瞼結膜と眼球結膜とに異常を認めない。頸静脈の怒張を認めない。心音に異常を認めない。胸部全体にwheezesを聴取する。腹部は平坦、軟で、肝・脾を触知しない。下腿に浮腫を認めない。\nその後の経過 : 適切な治療を行い呼吸困難は改善した。腹部造影CTの結果、単発の肝腫瘤を認め転移性肝癌と診断した。肝切除術を行うこととなり、手術の前日に右内頸静脈から中心静脈カテーテルを留置する方針となった。留置処置の当日、局所麻酔後、穿刺を行ったところ鮮紅色の血液の逆流を認めた。穿刺針を抜去したところ同部位が腫脹し始めた。意識は清明。脈拍72/分、整。SpO296%(room air)。呼吸に異常を認めない。\nその後の経過 : 適切な処置をした後、肝切除術が施行された。3年後、多発性の転移性肝腫瘍が再発した。患者と家族は積極的な治療を望まず、自宅で過ごすことを希望したため訪問診療が開始された。今朝になって患者の意識がなく呼吸が停止している状態であると、家族から連絡があった。昨晩は意識があり、意思疎通可能であったという。担当医として駆けつけたところ、瞳孔は散大固定で、対光反射の消失、心停止および呼吸停止を認め死亡を確認した。\n認める可能性が低いのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "死斑"
+        },
+        {
+          "id": "B",
+          "text": "硬直"
+        },
+        {
+          "id": "C",
+          "text": "腐敗"
+        },
+        {
+          "id": "D",
+          "text": "体温低下"
+        },
+        {
+          "id": "E",
+          "text": "角膜混濁"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「腐敗」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 G065\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 G065（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-H001",
@@ -6271,7 +7767,7 @@
       "blueprint_code": "110-H-24",
       "category": "呼吸器",
       "difficulty": "standard",
-      "question_text": "32歳の女性。咳嗽と夜間の呼吸困難とを主訴に来院した。3か月前から夜間主体の咳嗽が出現し、夜間の呼吸困難も伴うようになったため、昼間に来院した。冷気の吸入や線香の煙によっても咳が誘発される。喫煙歴はない。意識は清明。体温36.5°C。脈拍76/分、整。血圧116/68mmHg。呼吸数14/分。SpO297%;room air=。心音に異常を認めない。呼吸音は呼気終末にwheezesを聴取する。血液所見:赤血球395万、Hb13.6g/dL、Ht42%、白血球4,800;好中球63%、好酸球15%、単球5%、リンパ球16%=、血小板18万。IgE280IU/mL;基準250未満=。CRP0.1mg/dL。胸部エックス線写真で異常を認めない。最も考えられる疾患はどれか。",
+      "question_text": "32歳の女性。咳嗽と夜間の呼吸困難とを主訴に来院した。3か月前から夜間主体の咳嗽が出現し、夜間の呼吸困難も伴うようになったため、昼間に来院した。冷気の吸入や線香の煙によっても咳が誘発される。喫煙歴はない。意識は清明。体温36.5°C。脈拍76/分、整。血圧116/68mmHg。呼吸数14/分。SpO297%(room air)。心音に異常を認めない。呼吸音は呼気終末にwheezesを聴取する。血液所見:赤血球395万、Hb13.6g/dL、Ht42%、白血球4,800(好中球63%、好酸球15%、単球5%、リンパ球16%)、血小板18万。IgE280IU/mL(基準250未満)。CRP0.1mg/dL。胸部エックス線写真で異常を認めない。最も考えられる疾患はどれか。",
       "choices": [
         {
           "id": "A",
@@ -6373,7 +7869,7 @@
       "blueprint_code": "110-H-28",
       "category": "医学総論",
       "difficulty": "standard",
-      "question_text": "74歳の女性。下痢と口渇とを主訴に来院した。昨夜から水様便が5回あった。同居している夫も2日前から下痢をしているという。食欲が低下し水分も十分とれないため入院治療を開始した。口腔内は乾燥し、心窩部と左下腹部とに軽い圧痛を認める。入院診療録の問題指向型医療記録$POMR%においてassessment$評価%の記載に該当するのはどれか。",
+      "question_text": "74歳の女性。下痢と口渇とを主訴に来院した。昨夜から水様便が5回あった。同居している夫も2日前から下痢をしているという。食欲が低下し水分も十分とれないため入院治療を開始した。口腔内は乾燥し、心窩部と左下腹部とに軽い圧痛を認める。入院診療録の問題指向型医療記録〈POMR〉においてassessment〈評価〉の記載に該当するのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -6509,7 +8005,7 @@
       "blueprint_code": "110-H-33",
       "category": "循環器",
       "difficulty": "standard",
-      "question_text": "71歳の男性。ふらつきを主訴に来院した。現病歴 : 1週前から朝の目覚めが悪く、散歩中に気分が悪くて座りこむことが多くなった。階段を上がる際に息切れを自覚するようになり、心配になったため受診した。2週前から便が黒かったという。以前から通院中の内科で3週前に行った検査結果を持参している。既往歴 : 高血圧症と心房細動のため、前述の内科に通院中である。1か月前に右膝を痛め、自宅近くの診療所で処方された鎮痛薬を服用している。生活歴 : 6年前に会社を退職して、妻、長男夫婦および小学生の孫と同居している。喫煙は45歳まで15本/日を25年間。飲酒は機会飲酒。検査所見H持参したものN : 血液所見:赤血球343万、Hb10.6g/dL、Ht33%、白血球7,300、血小板10万、PT-INR1.9;基準0.9〜1.1=、APTT38.4秒;基準対照32.2=。血液生化学所見:総蛋白6.0g/dL、アルブミン3.2g/dL、総ビリルビン1.2mg/dL、直接ビリルビン0.3mg/dL、AST33IU/L、ALT26IU/L、LD 256IU/L;基準176〜353=、尿素窒素15mg/dL、クレアチニン0.8mg/dL、血糖98mg/dL、Na131mEq/L、K4.4mEq/L、Cl97mEq/L。現症 : 意識は清明。身長173cm、体重78kg。体温36.2°C。脈拍96/分、不整。血圧148/78mmHg。呼吸数20/分。SpO297%;room air=。皮膚は乾燥している。眼瞼結膜は貧血様で、眼球結膜に黄染を認めない。眼振を認めない。口腔内と咽頭とに異常を認めない。頸静脈の怒張を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。浮腫を認めない。四肢の筋力は保たれており、起立と歩行とに異常を認めない。腱反射に異常を認めない。\n診断のために再度確認すべきなのはどれか。",
+      "question_text": "71歳の男性。ふらつきを主訴に来院した。現病歴 : 1週前から朝の目覚めが悪く、散歩中に気分が悪くて座りこむことが多くなった。階段を上がる際に息切れを自覚するようになり、心配になったため受診した。2週前から便が黒かったという。以前から通院中の内科で3週前に行った検査結果を持参している。既往歴 : 高血圧症と心房細動のため、前述の内科に通院中である。1か月前に右膝を痛め、自宅近くの診療所で処方された鎮痛薬を服用している。生活歴 : 6年前に会社を退職して、妻、長男夫婦および小学生の孫と同居している。喫煙は45歳まで15本/日を25年間。飲酒は機会飲酒。検査所見(持参したもの) : 血液所見:赤血球343万、Hb10.6g/dL、Ht33%、白血球7,300、血小板10万、PT-INR1.9(基準0.9〜1.1)、APTT38.4秒(基準対照32.2)。血液生化学所見:総蛋白6.0g/dL、アルブミン3.2g/dL、総ビリルビン1.2mg/dL、直接ビリルビン0.3mg/dL、AST33IU/L、ALT26IU/L、LD 256IU/L(基準176〜353)、尿素窒素15mg/dL、クレアチニン0.8mg/dL、血糖98mg/dL、Na131mEq/L、K4.4mEq/L、Cl97mEq/L。現症 : 意識は清明。身長173cm、体重78kg。体温36.2°C。脈拍96/分、不整。血圧148/78mmHg。呼吸数20/分。SpO297%(room air)。皮膚は乾燥している。眼瞼結膜は貧血様で、眼球結膜に黄染を認めない。眼振を認めない。口腔内と咽頭とに異常を認めない。頸静脈の怒張を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。浮腫を認めない。四肢の筋力は保たれており、起立と歩行とに異常を認めない。腱反射に異常を認めない。\n診断のために再度確認すべきなのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -6543,7 +8039,7 @@
       "blueprint_code": "110-H-34",
       "category": "循環器",
       "difficulty": "standard",
-      "question_text": "71歳の男性。ふらつきを主訴に来院した。現病歴 : 1週前から朝の目覚めが悪く、散歩中に気分が悪くて座りこむことが多くなった。階段を上がる際に息切れを自覚するようになり、心配になったため受診した。2週前から便が黒かったという。以前から通院中の内科で3週前に行った検査結果を持参している。既往歴 : 高血圧症と心房細動のため、前述の内科に通院中である。1か月前に右膝を痛め、自宅近くの診療所で処方された鎮痛薬を服用している。生活歴 : 6年前に会社を退職して、妻、長男夫婦および小学生の孫と同居している。喫煙は45歳まで15本/日を25年間。飲酒は機会飲酒。検査所見H持参したものN : 血液所見:赤血球343万、Hb10.6g/dL、Ht33%、白血球7,300、血小板10万、PT-INR1.9;基準0.9〜1.1=、APTT38.4秒;基準対照32.2=。血液生化学所見:総蛋白6.0g/dL、アルブミン3.2g/dL、総ビリルビン1.2mg/dL、直接ビリルビン0.3mg/dL、AST33IU/L、ALT26IU/L、LD 256IU/L;基準176〜353=、尿素窒素15mg/dL、クレアチニン0.8mg/dL、血糖98mg/dL、Na131mEq/L、K4.4mEq/L、Cl97mEq/L。現症 : 意識は清明。身長173cm、体重78kg。体温36.2°C。脈拍96/分、不整。血圧148/78mmHg。呼吸数20/分。SpO297%;room air=。皮膚は乾燥している。眼瞼結膜は貧血様で、眼球結膜に黄染を認めない。眼振を認めない。口腔内と咽頭とに異常を認めない。頸静脈の怒張を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。浮腫を認めない。四肢の筋力は保たれており、起立と歩行とに異常を認めない。腱反射に異常を認めない。\n次に行うべきなのはどれか。",
+      "question_text": "71歳の男性。ふらつきを主訴に来院した。現病歴 : 1週前から朝の目覚めが悪く、散歩中に気分が悪くて座りこむことが多くなった。階段を上がる際に息切れを自覚するようになり、心配になったため受診した。2週前から便が黒かったという。以前から通院中の内科で3週前に行った検査結果を持参している。既往歴 : 高血圧症と心房細動のため、前述の内科に通院中である。1か月前に右膝を痛め、自宅近くの診療所で処方された鎮痛薬を服用している。生活歴 : 6年前に会社を退職して、妻、長男夫婦および小学生の孫と同居している。喫煙は45歳まで15本/日を25年間。飲酒は機会飲酒。検査所見(持参したもの) : 血液所見:赤血球343万、Hb10.6g/dL、Ht33%、白血球7,300、血小板10万、PT-INR1.9(基準0.9〜1.1)、APTT38.4秒(基準対照32.2)。血液生化学所見:総蛋白6.0g/dL、アルブミン3.2g/dL、総ビリルビン1.2mg/dL、直接ビリルビン0.3mg/dL、AST33IU/L、ALT26IU/L、LD 256IU/L(基準176〜353)、尿素窒素15mg/dL、クレアチニン0.8mg/dL、血糖98mg/dL、Na131mEq/L、K4.4mEq/L、Cl97mEq/L。現症 : 意識は清明。身長173cm、体重78kg。体温36.2°C。脈拍96/分、不整。血圧148/78mmHg。呼吸数20/分。SpO297%(room air)。皮膚は乾燥している。眼瞼結膜は貧血様で、眼球結膜に黄染を認めない。眼振を認めない。口腔内と咽頭とに異常を認めない。頸静脈の怒張を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。浮腫を認めない。四肢の筋力は保たれており、起立と歩行とに異常を認めない。腱反射に異常を認めない。\n次に行うべきなのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -6571,13 +8067,81 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 H034（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-H035",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-H-35",
+      "category": "呼吸器",
+      "difficulty": "standard",
+      "question_text": "70歳の女性。発熱、咳嗽、喀痰および呼吸困難を主訴に来院した。現病歴 : 3日前から咳嗽と喀痰とを自覚していた。その後、徐々に呼吸困難を感じるようになり、昨晩から発熱も認めたため、家族の運転する車で受診した。既往歴 : 32歳時に虫垂炎。気管支喘息のため、5年前から時々吸入薬を使用している。生活歴 : 長女夫婦と孫との4人暮らし。喫煙歴と飲酒歴はない。ADLは自立している。家事を分担しながら近所の児童館で読み聞かせのボランティアをしている。この1年間で特記すべき旅行歴はない。現症 : 意識は清明。身長153cm、体重48kg。体温38.1°C。脈拍92/分、整。血圧118/62mmHg。呼吸数24/分。SpO293%(room air)。頸静脈の怒張を認めない。心音に異常を認めない。右側の下胸部でcoarse cracklesを聴取する。下腿に浮腫を認めない。検査所見 : 血液所見:赤血球368万、Hb11.9g/dL、Ht36%、白血球9,800、血小板23万。血液生化学所見:尿素窒素22mg/dL、クレアチニン1.2mg/dL。CRP5.2mg/dL。その後の経過 : 酸素投与を開始し、胸部エックス線撮影を行った。撮影室から車椅子で救急外来に戻ったところで突然意識レベルがJCSII-30に低下した。橈骨動脈の脈拍は触知不能。すぐにベッドに移した。脈拍(頸動脈)124/分、整。\n直ちに行うべきなのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "β遮断薬急速静注"
+        },
+        {
+          "id": "B",
+          "text": "ブドウ糖液急速輸液"
+        },
+        {
+          "id": "C",
+          "text": "生理食塩液急速輸液"
+        },
+        {
+          "id": "D",
+          "text": "重炭酸ナトリウム静注"
+        },
+        {
+          "id": "E",
+          "text": "副腎皮質ステロイド静注"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「生理食塩液急速輸液」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 H035\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 H035（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-H036",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-H-36",
+      "category": "呼吸器",
+      "difficulty": "standard",
+      "question_text": "70歳の女性。発熱、咳嗽、喀痰および呼吸困難を主訴に来院した。現病歴 : 3日前から咳嗽と喀痰とを自覚していた。その後、徐々に呼吸困難を感じるようになり、昨晩から発熱も認めたため、家族の運転する車で受診した。既往歴 : 32歳時に虫垂炎。気管支喘息のため、5年前から時々吸入薬を使用している。生活歴 : 長女夫婦と孫との4人暮らし。喫煙歴と飲酒歴はない。ADLは自立している。家事を分担しながら近所の児童館で読み聞かせのボランティアをしている。この1年間で特記すべき旅行歴はない。現症 : 意識は清明。身長153cm、体重48kg。体温38.1°C。脈拍92/分、整。血圧118/62mmHg。呼吸数24/分。SpO293%(room air)。頸静脈の怒張を認めない。心音に異常を認めない。右側の下胸部でcoarse cracklesを聴取する。下腿に浮腫を認めない。検査所見 : 血液所見:赤血球368万、Hb11.9g/dL、Ht36%、白血球9,800、血小板23万。血液生化学所見:尿素窒素22mg/dL、クレアチニン1.2mg/dL。CRP5.2mg/dL。その後の経過 : 酸素投与を開始し、胸部エックス線撮影を行った。撮影室から車椅子で救急外来に戻ったところで突然意識レベルがJCSII-30に低下した。橈骨動脈の脈拍は触知不能。すぐにベッドに移した。脈拍(頸動脈)124/分、整。\nその後の経過 : 適切な治療により状態は安定し、肺炎の診断で入院となった。喀痰のGram染色で好中球によるGram陽性双球菌の貪食像を認めたため、酸素投与に加えてペニシリン系抗菌薬の点滴静注が開始された。5日後、喀痰は減り、呼吸状態も改善して酸素も不要となったが、38°C台の発熱が再燃するとともに頻回の下痢が出現した。\nまず行うべき検査はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "抗核抗体"
+        },
+        {
+          "id": "B",
+          "text": "注腸造影"
+        },
+        {
+          "id": "C",
+          "text": "腹部造影CT"
+        },
+        {
+          "id": "D",
+          "text": "上部消化管内視鏡検査"
+        },
+        {
+          "id": "E",
+          "text": "便中Clostridium difficile毒素"
+        }
+      ],
+      "correct_choice_id": "E",
+      "explanation": "正答は E「便中Clostridium difficile毒素」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 H036\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 H036（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-H037",
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "110-H-37",
       "category": "代謝・内分泌",
       "difficulty": "standard",
-      "question_text": "75歳の男性。尿が出ないことと腹部の膨満感とを主訴に来院した。現病歴 : 2日前からくしゃみと鼻汁のため市販の総合感冒薬を内服していた。昨夜から尿が出なくなり、下腹部の膨満感と疼痛が出現した。以前から尿が出にくく残尿感があったという。既往歴 : 10歳時に虫垂切除術。生活歴 : 無職。妻と2人暮らし。喫煙は45歳まで20本/日を25年間。飲酒は機会飲酒。家族歴 : 特記すべきことはない。現症 : 意識は清明。身長175cm、体重80kg。体温36.7°C。脈拍88/分、整。血圧120/84mmHg。呼吸数20/分。SpO298%;room air=。皮膚は乾燥。眼瞼結膜と眼球結膜とに異常を認めない。口腔内と咽頭とに異常を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。下腹部は緊満しており、恥骨上に圧痛を認める。\nこの患者に直腸指診を行った際の前立腺所見はどれか。",
+      "question_text": "75歳の男性。尿が出ないことと腹部の膨満感とを主訴に来院した。現病歴 : 2日前からくしゃみと鼻汁のため市販の総合感冒薬を内服していた。昨夜から尿が出なくなり、下腹部の膨満感と疼痛が出現した。以前から尿が出にくく残尿感があったという。既往歴 : 10歳時に虫垂切除術。生活歴 : 無職。妻と2人暮らし。喫煙は45歳まで20本/日を25年間。飲酒は機会飲酒。家族歴 : 特記すべきことはない。現症 : 意識は清明。身長175cm、体重80kg。体温36.7°C。脈拍88/分、整。血圧120/84mmHg。呼吸数20/分。SpO298%(room air)。皮膚は乾燥。眼瞼結膜と眼球結膜とに異常を認めない。口腔内と咽頭とに異常を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。下腹部は緊満しており、恥骨上に圧痛を認める。\nこの患者に直腸指診を行った際の前立腺所見はどれか。",
       "choices": [
         {
           "id": "A",
@@ -6611,7 +8175,7 @@
       "blueprint_code": "110-H-38",
       "category": "代謝・内分泌",
       "difficulty": "standard",
-      "question_text": "75歳の男性。尿が出ないことと腹部の膨満感とを主訴に来院した。現病歴 : 2日前からくしゃみと鼻汁のため市販の総合感冒薬を内服していた。昨夜から尿が出なくなり、下腹部の膨満感と疼痛が出現した。以前から尿が出にくく残尿感があったという。既往歴 : 10歳時に虫垂切除術。生活歴 : 無職。妻と2人暮らし。喫煙は45歳まで20本/日を25年間。飲酒は機会飲酒。家族歴 : 特記すべきことはない。現症 : 意識は清明。身長175cm、体重80kg。体温36.7°C。脈拍88/分、整。血圧120/84mmHg。呼吸数20/分。SpO298%;room air=。皮膚は乾燥。眼瞼結膜と眼球結膜とに異常を認めない。口腔内と咽頭とに異常を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。下腹部は緊満しており、恥骨上に圧痛を認める。\nこの患者に尿道カテーテルを留置する際の手順で正しいのはどれか。",
+      "question_text": "75歳の男性。尿が出ないことと腹部の膨満感とを主訴に来院した。現病歴 : 2日前からくしゃみと鼻汁のため市販の総合感冒薬を内服していた。昨夜から尿が出なくなり、下腹部の膨満感と疼痛が出現した。以前から尿が出にくく残尿感があったという。既往歴 : 10歳時に虫垂切除術。生活歴 : 無職。妻と2人暮らし。喫煙は45歳まで20本/日を25年間。飲酒は機会飲酒。家族歴 : 特記すべきことはない。現症 : 意識は清明。身長175cm、体重80kg。体温36.7°C。脈拍88/分、整。血圧120/84mmHg。呼吸数20/分。SpO298%(room air)。皮膚は乾燥。眼瞼結膜と眼球結膜とに異常を認めない。口腔内と咽頭とに異常を認めない。甲状腺腫と頸部リンパ節とを触知しない。心音と呼吸音とに異常を認めない。下腹部は緊満しており、恥骨上に圧痛を認める。\nこの患者に尿道カテーテルを留置する際の手順で正しいのはどれか。",
       "choices": [
         {
           "id": "A",
@@ -6707,6 +8271,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I002（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-I003",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-I-3",
+      "category": "神経",
+      "difficulty": "standard",
+      "question_text": "筋萎縮性側索硬化症患者で第6頸髄の頸椎症性脊髄症を合併するとき、筋萎縮性側索硬化症の病態によるのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "上腕二頭筋萎縮"
+        },
+        {
+          "id": "B",
+          "text": "腕橈骨筋筋力低下"
+        },
+        {
+          "id": "C",
+          "text": "大腿四頭筋反射亢進"
+        },
+        {
+          "id": "D",
+          "text": "下腿三頭筋線維束性収縮"
+        },
+        {
+          "id": "E",
+          "text": "Babinski徴候陽性"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "正答は D「下腿三頭筋線維束性収縮」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I003\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I003（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-I004",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -6751,27 +8349,27 @@
       "choices": [
         {
           "id": "A",
-          "text": "EST5Endoscopic Sphincterotomy9"
+          "text": "EST〈Endoscopic Sphincterotomy〉"
         },
         {
           "id": "B",
-          "text": "EBS5Endoscopic Biliary Stenting9"
+          "text": "EBS〈Endoscopic Biliary Stenting〉"
         },
         {
           "id": "C",
-          "text": "ENBD5Endoscopic Nasobiliary Drainage9"
+          "text": "ENBD〈Endoscopic Nasobiliary Drainage〉"
         },
         {
           "id": "D",
-          "text": "EPBD5Endoscopic Papillary Balloon Dilatation9"
+          "text": "EPBD〈Endoscopic Papillary Balloon Dilatation〉"
         },
         {
           "id": "E",
-          "text": "PTGBD5Percutaneous Transhepatic Gallbladder Drainage9"
+          "text": "PTGBD〈Percutaneous Transhepatic Gallbladder Drainage〉"
         }
       ],
       "correct_choice_id": "E",
-      "explanation": "正答は E「PTGBD5Percutaneous Transhepatic Gallbladder Drainage9」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I005\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "explanation": "正答は E「PTGBD〈Percutaneous Transhepatic Gallbladder Drainage〉」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I005\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I005（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
@@ -6849,7 +8447,7 @@
       "blueprint_code": "110-I-10",
       "category": "神経",
       "difficulty": "standard",
-      "question_text": "急性期の脳梗塞でt-PA5tissue plasminogen activator9の投与が禁忌となる検査値はどれか。",
+      "question_text": "急性期の脳梗塞でt-PA〈tissue plasminogen activator〉の投与が禁忌となる検査値はどれか。",
       "choices": [
         {
           "id": "A",
@@ -6869,7 +8467,7 @@
         },
         {
           "id": "E",
-          "text": "NIHSS5NIH stroke scale9 20/42点"
+          "text": "NIHSS〈NIH stroke scale〉 20/42点"
         }
       ],
       "correct_choice_id": "D",
@@ -6883,7 +8481,7 @@
       "blueprint_code": "110-I-12",
       "category": "医学総論",
       "difficulty": "standard",
-      "question_text": "胃噴門周囲の静脈瘤5Lg-c9の治療法はどれか。",
+      "question_text": "胃噴門周囲の静脈瘤〈Lg-c〉の治療法はどれか。",
       "choices": [
         {
           "id": "A",
@@ -6903,7 +8501,7 @@
         },
         {
           "id": "E",
-          "text": "バルーン閉塞下逆行性経静脈塞栓術5BRTO9"
+          "text": "バルーン閉塞下逆行性経静脈塞栓術〈BRTO〉"
         }
       ],
       "correct_choice_id": "D",
@@ -7039,7 +8637,7 @@
         },
         {
           "id": "E",
-          "text": "グルカゴン類似ペプチド15GLP-19"
+          "text": "グルカゴン類似ペプチド1〈GLP-1〉"
         }
       ],
       "correct_choice_id": "B",
@@ -7215,6 +8813,40 @@
       "correct_choice_id": "B",
       "explanation": "正答は B「50ミリシーベルト」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I024\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I024（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-I025",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-I-25",
+      "category": "呼吸器",
+      "difficulty": "standard",
+      "question_text": "末梢血で好酸球増多を呈することが最も少ないのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "気管支喘息"
+        },
+        {
+          "id": "B",
+          "text": "気管支拡張症"
+        },
+        {
+          "id": "C",
+          "text": "慢性好酸球性肺炎"
+        },
+        {
+          "id": "D",
+          "text": "アレルギー性肉芽腫性多発血管炎"
+        },
+        {
+          "id": "E",
+          "text": "アレルギー性気管支肺アスペルギルス症"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "正答は B「気管支拡張症」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I025\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I025（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-I026",
@@ -7489,6 +9121,40 @@
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I046（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
+      "id": "k110-I047",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-I-47",
+      "category": "皮膚科",
+      "difficulty": "standard",
+      "question_text": "25歳の女性。発熱と関節痛とを主訴に来院した。3週前から38°C台の発熱があった。自宅近くの診療所を受診しセフェム系抗菌薬を処方され服用したが、症状が改善しないため紹介されて受診した。身長147cm、体重52kg。体温37.7°C。脈拍112/分、整。血圧120/70mmHg。頰部に紅斑を認める。胸部に異常を認めない。下腿に軽度の浮腫を認める。尿所見:蛋白3+、潜血2+、沈渣に赤血球10〜29個/1視野、白血球5〜9個/1視野、顆粒円柱1個/数視野、尿蛋白4.2 g/日。血液所見:赤血球321万、Hb9.0g/dL、Ht28%、白血球3,000、血小板11万。血液生化学所見:総蛋白7.8g/dL、アルブミン2.2g/dL、IgG2,100 mg/dL(基準960〜1,960)、IgA486mg/dL(基準110〜410)、IgM188mg/dL(基準65〜350)、尿素窒素30mg/dL、クレアチニン1.6mg/dL。免疫血清学所見:CRP0.5mg/dL、抗核抗体1,280倍(基準20以下)、MPO-ANCA20EU/mL未満(基準20未満)、PR3-ANCA10EU/mL未満(基準10未満)。血清で低値を示すのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "LD値"
+        },
+        {
+          "id": "B",
+          "text": "補体価(CH50)"
+        },
+        {
+          "id": "C",
+          "text": "抗dsDNA抗体価"
+        },
+        {
+          "id": "D",
+          "text": "フィブリノゲン値"
+        },
+        {
+          "id": "E",
+          "text": "総コレステロール値"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "正答は B「補体価(CH50)」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I047\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I047（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
       "id": "k110-I052",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -7521,6 +9187,40 @@
       "correct_choice_id": "E",
       "explanation": "正答は E「大量輸液」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I052\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I052（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-I056",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-I-56",
+      "category": "耳鼻咽喉科",
+      "difficulty": "standard",
+      "question_text": "7歳の男児。腹痛、頻回の嘔吐および全身倦怠感を主訴に母親に連れられて来院した。この数日間、運動会の練習があり易疲労感を訴えていた。昨夜はほとんど食事をとらずに就寝した。今朝から腹痛と頻回の嘔吐とが出現し、徐々に元気がなくなり、表情に乏しく歩行もできなくなったため受診した。5歳ころから今回と同様の経過を数回繰り返している。身長122cm、体重18kg。体温36.4°C。脈拍92/分、整。顔面は蒼白。咽頭に発赤を認めない。呼気に酸臭を認める。心音と呼吸音とに異常を認めない。皮膚のツルゴールは低下している。検査で高値を示すのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "血糖"
+        },
+        {
+          "id": "B",
+          "text": "血清Na"
+        },
+        {
+          "id": "C",
+          "text": "血清Ca"
+        },
+        {
+          "id": "D",
+          "text": "尿ケトン体"
+        },
+        {
+          "id": "E",
+          "text": "血清総ビリルビン"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "正答は D「尿ケトン体」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I056\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I056（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-I057",
@@ -7589,6 +9289,40 @@
       "correct_choice_id": "C",
       "explanation": "正答は C「胸部造影CT」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I060\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I060（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-I063",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-I-63",
+      "category": "婦人科・乳腺外科",
+      "difficulty": "standard",
+      "question_text": "16歳の女子。初経がないことを心配して来院した。身長の伸びは2年前に止まっている。身長164cm、体重52kg。乳腺はTanner4度、恥毛はTanner3度、腋毛はみられない。外陰は女性型だが腟口を認めない。鼠径部に腫瘤を触知しない。最初に行う検査はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "頭部CT"
+        },
+        {
+          "id": "B",
+          "text": "血中FSH"
+        },
+        {
+          "id": "C",
+          "text": "腹部超音波検査"
+        },
+        {
+          "id": "D",
+          "text": "末梢血染色体分析"
+        },
+        {
+          "id": "E",
+          "text": "血中エストラジオール"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「腹部超音波検査」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I063\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I063（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-I064",
@@ -7733,7 +9467,7 @@
       "blueprint_code": "110-I-70",
       "category": "血液",
       "difficulty": "standard",
-      "question_text": "20歳の女性。発熱、関節痛および筋肉痛を主訴に来院した。1か月前に咽頭痛と頸部のリンパ節腫脹が出現した。自宅近くの診療所で総合感冒薬を処方されたがその後も、発熱、関節痛および筋肉痛が続くため受診した。体温は毎日39〜40°Cに上昇し、その後解熱し平熱になる。発熱時には上腕に紅色の皮疹が出現し、解熱すると消退する。来院時、体温38.5°C。上腕部に淡い紅斑を認める。咽頭の発赤を認める。両側の頸部に圧痛を伴う径1〜2cmのリンパ節を数個触知する。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、圧痛を認めない。尿所見:蛋白(−)、潜血(−)、沈渣に白血球を認めない。血液所見:赤血球402万、Hb10.5 g/dL、白血球16,500(桿状核好中球20%、分葉核好中球63%、好酸球3%、好塩基球0%、単球2%、リンパ球12%)、血小板28万。血液生化学所見:IgG1,760 mg/dL(基準960〜1,960)、総ビリルビン0.9mg/dL、AST128IU/L、ALT152 IU/L、γ-GTP82IU/L(基準8〜50)、フェリチン3,100ng/mL(基準20〜120)。可溶性IL-2受容体512U/mL(基準550以下)。免疫血清学所見:CRP11mg/dL、リウマトイド因子5RF9陰性、抗核抗体陰性。CH5052U/mL(基準30〜40)。血液培養は2セット採取し、ともに陰性である。胸部エックス線写真で異常を認めない。骨髄血塗抹染色標本で異常を認めない。この患者で最も考えられる疾患はどれか。",
+      "question_text": "20歳の女性。発熱、関節痛および筋肉痛を主訴に来院した。1か月前に咽頭痛と頸部のリンパ節腫脹が出現した。自宅近くの診療所で総合感冒薬を処方されたがその後も、発熱、関節痛および筋肉痛が続くため受診した。体温は毎日39〜40°Cに上昇し、その後解熱し平熱になる。発熱時には上腕に紅色の皮疹が出現し、解熱すると消退する。来院時、体温38.5°C。上腕部に淡い紅斑を認める。咽頭の発赤を認める。両側の頸部に圧痛を伴う径1〜2cmのリンパ節を数個触知する。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、圧痛を認めない。尿所見:蛋白(−)、潜血(−)、沈渣に白血球を認めない。血液所見:赤血球402万、Hb10.5 g/dL、白血球16,500(桿状核好中球20%、分葉核好中球63%、好酸球3%、好塩基球0%、単球2%、リンパ球12%)、血小板28万。血液生化学所見:IgG1,760 mg/dL(基準960〜1,960)、総ビリルビン0.9mg/dL、AST128IU/L、ALT152 IU/L、γ-GTP82IU/L(基準8〜50)、フェリチン3,100ng/mL(基準20〜120)。可溶性IL-2受容体512U/mL(基準550以下)。免疫血清学所見:CRP11mg/dL、リウマトイド因子〈RF〉陰性、抗核抗体陰性。CH5052U/mL(基準30〜40)。血液培養は2セット採取し、ともに陰性である。胸部エックス線写真で異常を認めない。骨髄血塗抹染色標本で異常を認めない。この患者で最も考えられる疾患はどれか。",
       "choices": [
         {
           "id": "A",
@@ -7753,12 +9487,46 @@
         },
         {
           "id": "E",
-          "text": "全身性エリテマトーデス5SLE9"
+          "text": "全身性エリテマトーデス〈SLE〉"
         }
       ],
       "correct_choice_id": "A",
       "explanation": "正答は A「成人Still病」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I070\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I070（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
+    },
+    {
+      "id": "k110-I071",
+      "exam_type": "KOKUSHI",
+      "question_type": "M",
+      "blueprint_code": "110-I-71",
+      "category": "腎臓",
+      "difficulty": "standard",
+      "question_text": "57歳の女性。全身倦怠感、脱力および食欲不振を主訴に来院した。1か月前から全身倦怠感と食欲不振とを自覚するようになった。数日前から脱力も認めるようになり受診した。50歳時に眼や口腔内の乾燥症状を自覚し、自宅近くの診療所でSjögren症候群と診断され治療を受けている。55歳時に腎結石を指摘されている。身長158cm、体重45kg。体温36.1°C。脈拍64/分、整。血圧124/76mmHg。眼瞼結膜と眼球結膜とに異常を認めない。表在リンパ節を触知しない。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。下腿に浮腫を認めない。上下肢に徒手筋力テスト4程度の筋力低下を認める。尿所見:pH7.0、蛋白(−)、糖(−)、潜血(−)。血液所見:赤血球380万、Hb12.8g/dL、Ht36%、白血球3,200、血小板16万。血液生化学所見:CK386IU/L(基準30〜140)、尿素窒素20mg/dL、クレアチニン0.6mg/dL、Na138mEq/L、K2.3mEq/L、Cl 109mEq/L。CRP0.2mg/dL。最も考えられるのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "原発性アルドステロン症"
+        },
+        {
+          "id": "B",
+          "text": "筋強直性ジストロフィー"
+        },
+        {
+          "id": "C",
+          "text": "尿細管性アシドーシス"
+        },
+        {
+          "id": "D",
+          "text": "Gitelman症候群"
+        },
+        {
+          "id": "E",
+          "text": "多発性筋炎"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "正答は C「尿細管性アシドーシス」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第110回医師国家試験 I071\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
+      "source_note": "出典：厚生労働省ホームページ 第110回医師国家試験 I071（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp160411-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k110-I072",

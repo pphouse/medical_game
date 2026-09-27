@@ -18,6 +18,7 @@ from quiz.categories import CATEGORIES_BY_EXAM, normalize
 from quiz.data_checks import (
     BODY_KANJI_AFTER_DIGIT,
     BRACKET_LOOKALIKE,
+    DECODE_ARTIFACT,
     DROPPED_NUMBER,
     DROPPED_WORD_HEAD,
     FIGURE_REF,
@@ -101,6 +102,21 @@ class TestShippedData:
             if m
         ]
         assert not bad, "グリフ解決に失敗した字が残っている:\n" + "\n".join(bad)
+
+    def test_no_decode_artifacts(self, path):
+        """読める字の形をした抽出の化け（data_checks.DECODE_ARTIFACT）。
+
+        第106〜116回は括弧や符号がほかの記号に（「糖:−<」）、第109回は
+        ギリシャ文字が素の欧字に（「c-GTP」）なって公開まで残っていた。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = [
+            f"{code}.{field}: …{text[max(0, m.start() - 10):m.end() + 10]}…"
+            for code, field, text in iter_texts(payload)
+            for m in [DECODE_ARTIFACT.search(text)]
+            if m
+        ]
+        assert not bad, "抽出の化けが残っている:\n" + "\n".join(bad)
 
     def test_no_foreign_script(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))

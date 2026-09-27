@@ -105,6 +105,22 @@ def strip_stray_separators(text, *, keep_as_separator=False):
     fixed = _SEPARATOR_IN_WORD.sub(" — " if keep_as_separator else "", fixed)
     return _SEPARATOR_AT_HEAD.sub("", fixed)
 
+# 読める字の形をした抽出の化け。どれも国試PDFから実際に取り込まれていた形で、
+# 字化けの網（上の規則や、取り込み時の文字の白名簿）には掛からなかった。
+#   - 第109回の版下の情報: "TP01doc-Aor-11" "山田山企画-医師-本冊Ａ2.indd"
+#   - 第109回の数式フォントのギリシャ文字が素の欧字になったもの:
+#     "c-GTP"（γ-GTP）、"b遮断薬"（β遮断薬）、"nU/mL"（μU/mL）
+#   - 同じフォントの ± が "!" になったもの: "潜血(!)"
+#   - 符号の直後の括弧が別の記号になったもの: "糖:−<"（糖（−））、"蛋白8−:"
+#   - 欧文の語間が落ちたもの: "Thepatientfeltfaintwhilewalkingonthebeach"
+DECODE_ARTIFACT = re.compile(
+    r"TP\d+doc-|\.indd\b"
+    r"|(?<![A-Za-z])[a-c]-GTP|(?<![A-Za-z])[ab]遮断|(?<![A-Za-z])nU/mL"
+    r"|[（(]![）)]"
+    r"|[−±+][:;<>=]"
+    r"|[a-z]{25,}"
+)
+
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
 FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")
 FIGURE_REF_MIN_BODY = 120
