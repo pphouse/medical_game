@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { getCategoryTheme } from "../categoryTheme";
+import ChoiceNotes from "./ChoiceNotes";
 import ExplanationText from "./ExplanationText";
 
 // 5段階すべてを手動で選び直せる（○/✕ は正誤で自動設定されるが、あとから
@@ -178,20 +179,16 @@ export default function QuizScreen({
             } else if (choice.key === selectedKey) {
               cls += " selected";
             }
-            // 選択肢ごとの解説は解答後にだけ、その選択肢の下に出す。
-            const note = result ? result.choice_explanations?.[choice.key] : null;
             return (
-              <div key={choice.key} className="choice-block">
-                <button
-                  className={cls}
-                  disabled={!!result || submitting}
-                  onClick={() => setSelectedKey(choice.key)}
-                >
-                  <span className="choice-key">{choice.key}</span>
-                  <span>{choice.text}</span>
-                </button>
-                {note && <p className="choice-note">{note}</p>}
-              </div>
+              <button
+                key={choice.key}
+                className={cls}
+                disabled={!!result || submitting}
+                onClick={() => setSelectedKey(choice.key)}
+              >
+                <span className="choice-key">{choice.key}</span>
+                <span>{choice.text}</span>
+              </button>
             );
           })}
         </div>
@@ -215,6 +212,16 @@ export default function QuizScreen({
               <span className="badge category-badge">分野: {question.category}</span>
             </div>
             <ExplanationText text={result.explanation} />
+            {/* 選択肢ごとの解説は解説欄の中に並べる。選択肢一覧の下に散らすと
+                本文と行き来しながら読むことになる。 */}
+            <ChoiceNotes
+              choices={question.choices}
+              notes={result.choice_explanations}
+              correctKey={result.correct_choice_key}
+              myKey={selectedKey}
+              heading="選択肢ごとの解説"
+              onlyWhenNoted
+            />
             <p className="mastery-prompt">
               現在の評価: <strong>{MASTERY_DISPLAY[masteryLevel]}</strong>
               　必要であれば下のボタンで上書きできます：

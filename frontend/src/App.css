@@ -1734,19 +1734,20 @@
   font-size: 13px;
 }
 
-/* 選択肢ごとの解説。正解・誤答それぞれ「なぜそうなのか」を選択肢の下に出す。 */
-.choice-block {
-  display: flex;
-  flex-direction: column;
-}
-
+/* 選択肢ごとの解説。解説欄の中に、選択肢の並びのまま出す。 */
 .choice-note {
-  margin: 4px 0 2px;
-  padding-left: 34px;
+  margin: 2px 0 0;
   font-size: 12.5px;
   line-height: 1.6;
   color: var(--text);
   opacity: 0.85;
+}
+
+.choice-note-heading {
+  margin: 12px 0 2px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-h);
 }
 
 .choice-note-list {
@@ -1802,17 +1803,6 @@
 .choice-note-row .choice-note {
   padding-left: 0;
   margin: 2px 0 0;
-}
-
-.battle-review-choice-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.battle-review-choice {
-  flex-direction: column;
-  align-items: stretch;
 }
 
 /* アプリのロゴマーク（医トレ）。ホーム画面の先頭。 */
