@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../api";
 import TierBadge from "../../components/TierBadge";
+import { playVerdict } from "../../lib/sound";
 
 /** 上部に常時出るVSヘッダー。自分と相手の名前・大学・ランク・HPを見せる。 */
 function VersusHeader({ me, opponent, damageFor }) {
@@ -127,6 +128,7 @@ export default function Match({ state, refresh, onLeave }) {
       // （自分の正誤だけでは相手の解答は漏れないので先出しして問題ない）。
       const res = await api.battleAnswer(round.id, selected);
       setMyAnswer(res);
+      playVerdict(res.correct);
       await refresh();
     } catch (e) {
       alert(e.message);

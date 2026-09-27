@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { getCategoryTheme } from "../categoryTheme";
+import { playVerdict } from "../lib/sound";
 import ChoiceNotes from "./ChoiceNotes";
 import ExplanationText from "./ExplanationText";
 
@@ -98,6 +99,7 @@ export default function QuizScreen({
       });
       setMasteryLevel(correct ? "circle" : "cross");
       setScore((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
+      playVerdict(correct);
       return;
     }
     setSubmitting(true);
@@ -115,6 +117,7 @@ export default function QuizScreen({
         correct: s.correct + (res.correct ? 1 : 0),
         total: s.total + 1,
       }));
+      playVerdict(res.correct);
     } catch (e) {
       alert(e.message);
     } finally {
