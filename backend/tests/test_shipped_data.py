@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 
+from quiz.categories import CATEGORIES_BY_EXAM, normalize
 from quiz.data_checks import (
     BODY_KANJI_AFTER_DIGIT,
     BRACKET_LOOKALIKE,
@@ -252,6 +253,36 @@ class TestShippedData:
             and not any("—" in c["text"] for c in q["choices"])
         ]
         assert not bad, "組合せ問題に列の区切りが無い:\n" + "\n".join(bad)
+
+    def test_categories_belong_to_their_exam(self, path):
+        """分野名はその試験種別の正規の科目名で、取り込み直しても変わらない。
+
+        演習画面の科目一覧は分野名の DISTINCT なので、正規名でない名前が
+        1つでも混ざると同じ科目が2行に分かれて出る（「放射線」と「放射線科」、
+        「麻酔」と「救急・中毒・麻酔」が並んでいた）。国試の科目名を CBT の
+        設問に付けるような試験種別の取り違えも同じ見え方になる。
+
+        取り込みは分野名を normalize() に通してから保存するので、ここで
+        値が変わるなら、同梱データと取り込み後の DB が食い違う。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = []
+        for q in payload.get("questions", []):
+            exam = q["exam_type"]
+            code = q.get("blueprint_code") or q.get("id") or "?"
+            if q["category"] not in CATEGORIES_BY_EXAM[exam]:
+                bad.append(f"{code}: 「{q['category']}」は{exam}の科目ではない")
+                continue
+            text = "\n".join(
+                [q["question_text"], q.get("disease", q.get("topic", ""))]
+                + [str(c.get("text", "")) for c in q["choices"] if isinstance(c, dict)]
+            )
+            got = normalize(
+                q["category"], text, blueprint_code=q.get("blueprint_code", ""), exam_type=exam
+            )
+            if got != q["category"]:
+                bad.append(f"{code}: 取り込むと「{q['category']}」→「{got}」")
+        assert not bad, "分野名の食い違い:\n" + "\n".join(bad)
 
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))

@@ -95,4 +95,14 @@ UNION ALL SELECT '14. 図表がないと解けない6問',
                || count(*) FILTER (WHERE status = 'published')::text || '問'
         FROM quiz_question
         WHERE blueprint_code IN ('114-C-14', '117-C-30', '117-E-22',
-                                 '117-F-33', '119-C-15', '119-C-22'));
+                                 '117-F-33', '119-C-15', '119-C-22'))
+
+UNION ALL SELECT '15. 科目名でない分野（CBT / 国試）',
+       -- 0でなければ演習画面で同じ科目が2行に分かれて出る（fix_categories.sql）。
+       -- 科目の一覧は quiz/categories.py の CBT_CATEGORIES / KOKUSHI_CATEGORIES。
+       (SELECT count(*) FROM quiz_question WHERE exam_type = 'CBT'
+          AND category NOT IN ('基礎医学', '循環器', '呼吸器', '消化器', '腎・泌尿器', '内分泌・代謝', '血液', '免疫・膠原病', '感染症', '腫瘍', '神経', '皮膚', '運動器', '眼', '耳鼻咽喉', '精神', '小児（成長と発達）', '産婦人科', '救急・中毒・麻酔', '医学総論・公衆衛生・診療の基本'))::text
+       || '問 / '
+       || (SELECT count(*) FROM quiz_question WHERE exam_type = 'KOKUSHI'
+          AND category NOT IN ('消化管', '肝・胆・膵', '循環器', '代謝・内分泌', '腎・泌尿器', '免疫・膠原病', '血液', '感染症', '呼吸器', '神経', '救急・中毒・麻酔', '医学総論', '小児科', '婦人科・乳腺外科', '産科', '眼科', '耳鼻咽喉科', '整形外科', '精神科', '皮膚科', '泌尿器科', '放射線科', '公衆衛生', '必修問題'))::text
+       || '問（どちらも0であること）';

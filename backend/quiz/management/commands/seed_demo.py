@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from accounts.models import University
+from quiz.categories import normalize
 from quiz.models import Question
 
 # Original sample questions written for this demo (not reproductions of real
@@ -257,14 +258,18 @@ class Command(BaseCommand):
 
         created_count = 0
         for q in SAMPLE_QUESTIONS:
+            # 見本の分野名（「内分泌代謝」「消化器」）はどちらの試験の科目名でも
+            # ないことがあるので、その試験の科目に寄せる。そのまま入れると
+            # 演習画面で「内分泌・代謝」と別の行になる。既存の行は分野名では
+            # なく本文で探す（分野名を直すたびに見本が増えないように）。
             _, was_created = Question.objects.get_or_create(
-                category=q["category"],
                 exam_type=q["exam_type"],
-                explanation=q["explanation"],
+                question_text=q["question_text"],
                 defaults=dict(
-                    # 設問文を defaults に入れ忘れていて、本番に本文の無い行が
-                    # 15件できていた。モデルが blank=True なので保存できてしまう。
-                    question_text=q["question_text"],
+                    category=normalize(
+                        q["category"], q["question_text"], exam_type=q["exam_type"]
+                    ),
+                    explanation=q["explanation"],
                     difficulty=q["difficulty"],
                     choices=q["choices"],
                     correct_choice_key=q["correct_choice_key"],
@@ -311,19 +316,24 @@ class Command(BaseCommand):
         created = 0
 
         for q in payload.get("questions", []):
+            # build_explanation は（本文, 選択肢ごとの解説）の組を返す。
+            explanation, choice_explanations = build_explanation(q)
             _, was_created = Question.objects.get_or_create(
-                category=q["category"],
+                exam_type=q["exam_type"],
                 question_text=q["question_text"],
+                choices=convert_choices(q["choices"]),
                 defaults=dict(
+                    category=normalize(
+                        q["category"], q["question_text"], exam_type=q["exam_type"]
+                    ),
                     topic=q.get("disease", ""),
-                    exam_type=q["exam_type"],
                     difficulty=DIFFICULTY_MAP.get(q.get("difficulty", "standard"), 2),
                     question_type=q.get("question_type", Question.QuestionType.MULTIPLE_CHOICE),
                     blueprint_code=q.get("blueprint_code", ""),
                     class_group=q.get("class_group", ""),
-                    choices=convert_choices(q["choices"]),
                     correct_choice_key=q["correct_choice_id"],
-                    explanation=build_explanation(q),
+                    explanation=explanation,
+                    choice_explanations=choice_explanations,
                     visibility=Question.Visibility.PUBLIC,
                     status=Question.Status.PUBLISHED,
                     source=Question.Source.OFFICIAL,
@@ -342,6 +352,7 @@ class Command(BaseCommand):
                 source=Question.Source.OFFICIAL,
             )
             for step in s["steps"]:
+                step_explanation, step_choice_explanations = build_explanation(step)
                 Question.objects.create(
                     category=s["category"],
                     topic=s.get("disease", ""),
@@ -355,7 +366,8 @@ class Command(BaseCommand):
                     question_text=step["question_text"],
                     choices=convert_choices(step["choices"]),
                     correct_choice_key=step["correct_choice_id"],
-                    explanation=build_explanation(step),
+                    explanation=step_explanation,
+                    choice_explanations=step_choice_explanations,
                     visibility=Question.Visibility.PUBLIC,
                     status=Question.Status.PUBLISHED,
                     source=Question.Source.OFFICIAL,

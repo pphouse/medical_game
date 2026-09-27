@@ -103,29 +103,38 @@ class Command(BaseCommand):
                 exam_type=q["exam_type"],
             )
             explanation, choice_explanations = build_explanation(q)
-            _, was_created = Question.objects.get_or_create(
+            choices = convert_choices(q["choices"])
+            # 取り込み済みかどうかは本文と選択肢で見る。分野名を鍵に含めて
+            # いたときは、科目立てを直したあとに取り込み直すと、同じ設問が
+            # 新しい分野名でもう1つ作られ、古い分野名の行も残っていた
+            # （演習画面で同じ科目が2行に分かれる原因になる）。本文だけで
+            # 見ないのは、国試には「医師の職業倫理に反するのはどれか。」の
+            # ように本文が同じで選択肢の違う別の設問があるため。
+            if Question.objects.filter(
+                exam_type=q["exam_type"], question_text=q["question_text"], choices=choices
+            ).exists():
+                continue
+            Question.objects.create(
                 category=category,
                 question_text=q["question_text"],
-                defaults=dict(
-                    topic=q.get("disease", q.get("topic", "")),
-                    exam_type=q["exam_type"],
-                    difficulty=DIFFICULTY_MAP.get(
-                        q.get("difficulty", "standard"), Question.Difficulty.NORMAL
-                    ),
-                    question_type=q.get("question_type", Question.QuestionType.MULTIPLE_CHOICE),
-                    blueprint_code=q.get("blueprint_code", ""),
-                    class_group=q.get("class_group", ""),
-                    choices=convert_choices(q["choices"]),
-                    correct_choice_key=q["correct_choice_id"],
-                    explanation=explanation,
-                    choice_explanations=choice_explanations,
-                    visibility=Question.Visibility.PUBLIC,
-                    # 強制 (spec 2-1): imported batches enter the review queue.
-                    status=Question.Status.PENDING,
-                    source=Question.Source.LLM,
+                topic=q.get("disease", q.get("topic", "")),
+                exam_type=q["exam_type"],
+                difficulty=DIFFICULTY_MAP.get(
+                    q.get("difficulty", "standard"), Question.Difficulty.NORMAL
                 ),
+                question_type=q.get("question_type", Question.QuestionType.MULTIPLE_CHOICE),
+                blueprint_code=q.get("blueprint_code", ""),
+                class_group=q.get("class_group", ""),
+                choices=choices,
+                correct_choice_key=q["correct_choice_id"],
+                explanation=explanation,
+                choice_explanations=choice_explanations,
+                visibility=Question.Visibility.PUBLIC,
+                # 強制 (spec 2-1): imported batches enter the review queue.
+                status=Question.Status.PENDING,
+                source=Question.Source.LLM,
             )
-            created_questions += int(was_created)
+            created_questions += 1
 
         for s in payload.get("question_sets", []):
             if QuestionSet.objects.filter(case_stem=s["case_stem"]).exists():

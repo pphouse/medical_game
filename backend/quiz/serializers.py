@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from .categories import normalize
 from .explanations import strip_boilerplate
 from .models import AnswerHistory, Question, QuestionReport, ReviewSchedule
 
@@ -228,6 +229,16 @@ class UserQuestionSerializer(serializers.ModelSerializer):
         if choices and correct not in [c["key"] for c in choices]:
             raise serializers.ValidationError(
                 {"correct_choice_key": "正解キーが選択肢に存在しません。"}
+            )
+        if "category" in attrs or "exam_type" in attrs:
+            # 投稿画面の分野は自由入力なので、その試験種別の科目名に寄せてから
+            # 保存する。「循環器系」や国試の「小児科」を CBT の設問に付けたまま
+            # 保存すると、演習画面で同じ科目が別の行に分かれて出る。
+            exam_type = attrs.get("exam_type", getattr(self.instance, "exam_type", None))
+            attrs["category"] = normalize(
+                attrs.get("category", getattr(self.instance, "category", "")),
+                attrs.get("question_text", getattr(self.instance, "question_text", "")),
+                exam_type=exam_type,
             )
         return attrs
 

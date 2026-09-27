@@ -11,8 +11,10 @@
 
 CBT（コアカリ対応の巻立て）:
     基礎医学（vol.1）/ 臓器別・全身性疾患の各論（vol.2）/
-    医学総論・公衆衛生・診療の基本（vol.3）/ 多選択肢・4連問（vol.4）
+    医学総論・公衆衛生・診療の基本（vol.3）
     ただし vol.2 は一括りだと科目選択に使えないので、臓器別に展開する。
+    vol.4（多選択肢・4連問）は出題形式の枠であって科目ではないので置かない。
+    その枠の設問も中身は臨床の各論なので、内容に合う科目へ入れる。
 
 分野の決め方は3段構え:
 
@@ -82,7 +84,6 @@ CBT_CATEGORIES = (
     "産婦人科",
     "救急・中毒・麻酔",
     "医学総論・公衆衛生・診療の基本",
-    "多選択肢・4連問",
 )
 
 CATEGORIES_BY_EXAM = {CBT: CBT_CATEGORIES, KOKUSHI: KOKUSHI_CATEGORIES}
@@ -278,7 +279,10 @@ BLUEPRINT_AREA_BY_EXAM = {
         "E-8": "医学総論・公衆衛生・診療の基本",
         "E-9": "医学総論・公衆衛生・診療の基本",
         "F": "医学総論・公衆衛生・診療の基本",
-        "G": "多選択肢・4連問",
+        # G（臨床実習）は置かない。G-1 の設問は小児の症例問題で、中身は
+        # 循環器・腎・感染症…と各論にまたがる。区分で一括りにすると、
+        # 4連問でもないのに「多選択肢・4連問」という科目にまとめて入って
+        # しまっていた。コードで決めずに、設問ごとに付けた科目をそのまま使う。
     },
     KOKUSHI: {
         "A": "医学総論",
@@ -345,7 +349,8 @@ GENERIC_BY_EXAM = {
         "放射線": "医学総論・公衆衛生・診療の基本",
         "公衆衛生": "医学総論・公衆衛生・診療の基本",
         "基礎医学": "基礎医学",
-        "４連問": "多選択肢・4連問",
+        # 「４連問」は形式の名前で科目ではないので、ここには置かない。
+        # 旧データに残っていれば本文から臓器を判定する。
     },
     KOKUSHI: {
         "循環器": "循環器",
@@ -374,7 +379,6 @@ GENERIC_BY_EXAM = {
         "放射線": "放射線科",
         "公衆衛生": "公衆衛生",
         "基礎医学": "医学総論",
-        "４連問": "医学総論",
     },
 }
 
@@ -421,7 +425,8 @@ LEGACY_TO_GENERIC = {
     "加齢と老化": "基礎医学",
     "終末期・人の死": "公衆衛生",
     "診療の基本・臨床手技": "公衆衛生",
-    "連問（症例シミュレーション）": "４連問",
+    # 「連問（症例シミュレーション）」「４連問」「多選択肢・4連問」は出題形式の
+    # 名前で科目ではないので、読み替え先を置かない。本文から臓器を判定する。
 }
 
 # 2つの科目にまたがる旧名。行き先を候補2つに限り、決め手がなければ既定側に
@@ -749,6 +754,30 @@ def normalize(
     return result
 
 
+def _from_other_exam(category: str | None, text: str, exam: str) -> str | None:
+    """もう一方の試験の科目名を、この試験の科目名に読み替える。
+
+    CBT の設問に国試の「小児科」が付いている、のような取り違えを直す。
+    汎用名を経由して1つに決まればそれを返す。「産婦人科」→ 国試の「産科」か
+    「婦人科・乳腺外科」のように候補が割れるときは本文で決め、決まらなければ
+    None（呼び出し側の推定に任せる）。
+    """
+    other = KOKUSHI if exam == CBT else CBT
+    if category not in CATEGORY_ORDER_BY_EXAM[other]:
+        return None
+    generics = tuple(
+        g
+        for g, name in GENERIC_BY_EXAM[other].items()
+        if name == category and g in GENERIC_BY_EXAM[exam]
+    )
+    targets = {GENERIC_BY_EXAM[exam][g] for g in generics}
+    if len(targets) == 1:
+        return targets.pop()
+    if len(targets) > 1:
+        return _to_category(classify(text, generics), exam)
+    return None
+
+
 def _normalize_raw(
     category: str | None, text: str, blueprint_code: str | None, exam: str
 ) -> str:
@@ -759,6 +788,10 @@ def _normalize_raw(
     order = CATEGORY_ORDER_BY_EXAM[exam]
     if category in order:
         return category
+
+    from_other = _from_other_exam(category, text, exam)
+    if from_other:
+        return from_other
 
     if category in SPLIT_SOURCES:
         allowed, fallback = SPLIT_SOURCES[category]

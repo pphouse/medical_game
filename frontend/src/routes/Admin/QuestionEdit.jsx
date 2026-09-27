@@ -30,8 +30,12 @@ export default function AdminQuestionEdit() {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   // 分野は自由入力にしない。「循環器」と「循環器系」のように同じ分野が
-  // 別名で増えるため、サーバが持つ正典から選ばせる。
-  const [categories, setCategories] = useState([]);
+  // 別名で増えるため、サーバが持つ正典から選ばせる。科目立ては CBT と国試で
+  // 違うので、サーバは試験種別ごとに返す（{CBT: [...], KOKUSHI: [...]}）。
+  // 選んでいる試験種別の一覧だけを出す。両方を混ぜると、国試の設問に
+  // CBT の科目名を付けられてしまい、演習画面で同じ科目が2行に分かれる。
+  const [categoriesByExam, setCategoriesByExam] = useState({});
+  const categories = categoriesByExam[form.exam_type] ?? [];
   // 分野のグループ（基礎医学・内科系…）。プルダウンの見出しに使う。
   const [groups, setGroups] = useState([]);
 
@@ -39,11 +43,11 @@ export default function AdminQuestionEdit() {
     api
       .adminStats()
       .then((s) => {
-        setCategories(s.canonical_categories ?? []);
+        setCategoriesByExam(s.canonical_categories ?? {});
         setGroups(s.category_groups ?? []);
       })
       .catch(() => {
-        setCategories([]);
+        setCategoriesByExam({});
         setGroups([]);
       });
   }, []);

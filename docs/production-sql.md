@@ -81,3 +81,17 @@ SQL を先に流すと `column ... does not exist` で落ちる。
 
 流す前に `scripts/sql/diagnose_migrations.sql` を読むと、いま何が当たって
 いないかが分かる（読むだけで何も変えない）。
+
+## 科目名の統一（fix_categories.sql）
+
+演習画面の科目一覧は分野名の DISTINCT なので、正規の科目名でない分野名が
+残っていると同じ科目が2行に分かれて出る（国試の「放射線」と「放射線科」、
+CBT の「麻酔」と「救急・中毒・麻酔」など）。`scripts/sql/fix_categories.sql`
+が、正規名でない行だけを同梱データの科目へ移す。正規名の行には触らない。
+
+- SQL Editor に1回貼るだけ（206KB）。最後に1つの表が出るので、それを見る。
+  「2.残った」が0行なら完了。
+- 何度流しても結果は同じ。コードのデプロイとの順番は問わない。
+- 科目立てを変えたら `python scripts/build_category_fix_sql.py` で作り直す。
+- いまの状態は `verify_state.sql` の15行目でも分かる。
+
