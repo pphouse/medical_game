@@ -282,9 +282,9 @@
 }
 
 .chip-double_circle { background: var(--m-double); }
-/* ○ の黄緑は明るいので、白抜きだと読めない。文字だけ濃くする。 */
+/* ○と△は地色が明るいので、記号だけ濃い文字色にする（白抜きだと読めない）。 */
 .chip-circle { background: var(--m-circle); color: #1a2e05; }
-.chip-triangle { background: var(--m-triangle); }
+.chip-triangle { background: var(--m-triangle); color: #422006; }
 .chip-cross { background: var(--m-cross); }
 .chip-unstudied { background: var(--m-unstudied); color: var(--text); }
 
@@ -661,6 +661,7 @@
   color: white;
 }
 
+
 /* Question list (per-question rows shown after subject selection) */
 .question-list {
   display: flex;
@@ -729,7 +730,7 @@
 
 .question-row-mastery.mastery-double_circle { background: var(--m-double); }
 .question-row-mastery.mastery-circle { background: var(--m-circle); color: #1a2e05; }
-.question-row-mastery.mastery-triangle { background: var(--m-triangle); }
+.question-row-mastery.mastery-triangle { background: var(--m-triangle); color: #422006; }
 .question-row-mastery.mastery-cross { background: var(--m-cross); }
 .question-row-mastery.mastery-unstudied {
   background: var(--m-unstudied);
@@ -1877,7 +1878,8 @@
   }
 }
 
-/* 問題一覧の見出し。分野によらず青で統一する。 */
+/* 問題一覧の見出し。分野によらず青で統一する。背景は画面の地色と同化しない
+   ようカードと同じ白（ダークモードではカードの地色）にする。 */
 .picker-heading {
   display: flex;
   align-items: center;
@@ -1886,7 +1888,8 @@
   border: 1px solid var(--card-border);
   border-left: 5px solid var(--accent);
   border-radius: 14px;
-  background: var(--accent-bg);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
 }
 
 .picker-heading-text {

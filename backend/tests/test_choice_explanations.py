@@ -5,6 +5,7 @@
 """
 
 import json
+import pathlib
 
 import pytest
 from django.core.management import call_command
@@ -224,3 +225,47 @@ class TestCoverageReport:
 
         row = next(r for r in coverage_rows("CBT") if r["category"] == "循環器")
         assert (row["full"], row["partial"], row["none"], row["total"]) == (1, 1, 1, 3)
+
+
+class TestTumorMarkerChoicesUseAbbreviations:
+    """腫瘍マーカーの設問は略号だけで書く。
+
+    和名（癌胎児性抗原など）を併記すると選択肢が長くなるだけで、どの
+    マーカーかは略号で足りる。取り込み元のバッチも同じ内容にしてある。
+    """
+
+    def test_the_bundled_batch_has_no_japanese_marker_names(self):
+        import json
+        import pathlib
+
+        path = (
+            pathlib.Path("quiz/management/commands/data/cbt_batch_core_2026.json")
+        )
+        batch = json.loads(path.read_text(encoding="utf-8"))
+        question = next(q for q in batch["questions"] if q["id"] == "core2026-101")
+
+        assert [c["text"] for c in question["choices"]] == [
+            "CEA", "AFP", "PSA", "CA15-3", "NSE",
+        ]
+        assert "癌胎児性抗原" not in question["explanation"]
+
+    def test_importing_it_keeps_the_abbreviations(self, tmp_path):
+        import json
+
+        from django.core.management import call_command
+
+        path = pathlib.Path("quiz/management/commands/data/cbt_batch_core_2026.json")
+        batch = json.loads(path.read_text(encoding="utf-8"))
+        question = next(q for q in batch["questions"] if q["id"] == "core2026-101")
+        one = tmp_path / "one.json"
+        one.write_text(json.dumps({"questions": [question]}, ensure_ascii=False), "utf-8")
+
+        call_command("import_questions", f"--file={one}", verbosity=0)
+
+        imported = Question.objects.get(question_text=question["question_text"])
+        assert [c["text"] for c in imported.choices] == [
+            "CEA", "AFP", "PSA", "CA15-3", "NSE",
+        ]
+        assert "癌胎児性抗原" not in imported.explanation
+        # 誤答の解説はそのまま（もともと和名を使っていない）
+        assert set(imported.choice_explanations) == {"B", "C", "D", "E"}

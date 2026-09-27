@@ -93,12 +93,9 @@ function ReviewRow({ row, open, onToggle }) {
                   <span className="choice-key">{c.key}</span>
                   <span>{c.text}</span>
                   {isMine && <span className="battle-review-yours">あなたの解答</span>}
-                  {(isCorrect || (isMine && !isCorrect)) && (
-                    <span
-                      className="choice-mark"
-                      aria-label={isCorrect ? "正解" : "あなたの誤答"}
-                    >
-                      {isCorrect ? "⭕️" : "❌"}
+                  {isMine && !isCorrect && (
+                    <span className="choice-mark" aria-label="あなたの誤答">
+                      ❌
                     </span>
                   )}
                 </li>

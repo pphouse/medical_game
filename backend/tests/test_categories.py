@@ -268,3 +268,71 @@ class TestSortKey:
         for exam, majors in MAJOR_CATEGORIES_BY_EXAM.items():
             assert majors <= set(categories_for(exam))
             assert majors, exam
+
+
+class TestDisplayOrderPriorities:
+    """一覧の並びで決めていること。
+
+    出題数の多い消化器系・内分泌代謝・腎を先頭寄りに置き、公衆衛生は最後の
+    枠（CBTは多選択肢・4連問、国試は必修問題）の直前に置く。
+    """
+
+    def order(self, exam):
+        return sorted(categories_for(exam), key=lambda c: category_sort_key(c, exam))
+
+    def test_cbt_starts_with_the_heavy_organ_subjects(self):
+        assert self.order(CBT)[:3] == ["消化器", "内分泌・代謝", "腎・泌尿器"]
+
+    def test_kokushi_starts_with_the_heavy_organ_subjects(self):
+        assert self.order(KOKUSHI)[:4] == [
+            "消化管", "肝・胆・膵", "代謝・内分泌", "腎・泌尿器",
+        ]
+
+    def test_public_health_sits_just_before_the_last_block(self):
+        cbt = self.order(CBT)
+        # CBTの公衆衛生は総論とひとまとめ。最後の枠は多選択肢・4連問。
+        assert cbt[-2:] == ["医学総論・公衆衛生・診療の基本", "多選択肢・4連問"]
+
+        kokushi = self.order(KOKUSHI)
+        assert kokushi[-2:] == ["公衆衛生", "必修問題"]
+
+
+@pytest.mark.django_db
+class TestLegacyToxicologyIsMerged:
+    """旧分野「中毒・環境異常症」は「救急・中毒・麻酔」に寄せる。
+
+    救急・中毒・麻酔科は1つの科目なので、同じ中身が2つに割れて一覧に並ぶと
+    どちらを開けばいいのか分からない。
+    """
+
+    @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
+    def test_the_legacy_name_normalizes_to_the_merged_subject(self, exam):
+        from quiz.categories import normalize
+
+        assert normalize("中毒・環境異常症", exam_type=exam) == "救急・中毒・麻酔"
+
+    def test_it_is_not_a_subject_of_its_own(self):
+        assert "中毒・環境異常症" not in categories_for(CBT)
+        assert "中毒・環境異常症" not in categories_for(KOKUSHI)
+
+    def test_existing_questions_are_moved(self):
+        """マイグレーションと同じ内容を流し直しても結果が変わらないこと。"""
+        from django.core.management import call_command
+
+        from quiz.models import Question
+
+        Question.objects.create(
+            category="中毒・環境異常症",
+            exam_type="CBT",
+            difficulty=2,
+            question_text="旧分野のままの設問",
+            choices=[{"key": k, "text": k} for k in "ABCDE"],
+            correct_choice_key="A",
+            explanation="",
+            status=Question.Status.PUBLISHED,
+        )
+
+        call_command("reclassify_categories", verbosity=0)
+
+        assert not Question.objects.filter(category="中毒・環境異常症").exists()
+        assert Question.objects.filter(category="救急・中毒・麻酔").count() == 1
