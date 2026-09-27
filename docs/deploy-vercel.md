@@ -164,7 +164,7 @@ select status, count(*) from quiz_question group by status;
 | `SUPABASE_SERVICE_ROLE_KEY` | service キー（**バックエンドのみ**） |
 | `SUPABASE_JWT_SECRET` | レガシー HS256 のみ使う場合に設定（任意） |
 | `INTERNAL_API_TOKEN` | 集計エンドポイント保護用の共有シークレット |
-| `VAPID_*` | 復習リマインドを使う場合 |
+| `VAPID_*` | 学習リマインド（ブラウザの Web Push）を使う場合。作り方は下の「3. 定期実行」 |
 
 **Target は Production だけでなく Preview にも設定すること。** Vercel の環境変数は
 Target ごとに独立していて、Production だけに入れるとプレビューには何も渡らない。
@@ -245,6 +245,29 @@ vercel deploy --prod --token "$VERCEL_TOKEN"
 模試採点 `grade_mock_exam` / リマインド `send_review_reminders` は管理コマンドなので、
 Cron から内部エンドポイント経由で起動するか、スケジュール実行環境（GitHub Actions 等）
 から `manage.py` を叩く運用にします。
+
+### 学習リマインド（1日の目標・連続記録）
+
+- **Vercel Cron** が毎時 `/api/internal/send-reminders/` を叩く（`backend/vercel.json`）。
+  ブラウザで通知をオンにした人に、その人の時刻になったら Web Push を送る。
+  同じ種類は1日1回まで。iOS アプリの通知は端末内で予約するので、ここは関係ない。
+- 送るには backend に VAPID の鍵が要る（Production と Preview の両方）。無ければ
+  何も送らずに終わる。鍵は手元で作る（秘密鍵をチャットやリポジトリに貼らない）:
+
+  ```bash
+  npx web-push generate-vapid-keys
+  ```
+
+  | 変数 | 値 |
+  |---|---|
+  | `VAPID_PUBLIC_KEY` | 出力の Public Key |
+  | `VAPID_PRIVATE_KEY` | 出力の Private Key |
+  | `VAPID_ADMIN_EMAIL` | 連絡先のメールアドレス（Push サービスに渡る） |
+
+  鍵を変えると、それまでのブラウザの購読は使えなくなる（各自がオンにし直す）。
+- 表は `scripts/sql/migrate_habits_0001.sql` で作る（**デプロイの前に**。
+  `docs/production-sql.md`）。
+- 手で送るときは `manage.py send_habit_reminders --at 2026-09-27T20:00+09:00`。
 
 ## 環境変数チェックリスト
 

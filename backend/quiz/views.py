@@ -8,6 +8,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from config.permissions import IsModerator
+from habits.progress import progress_after_answer
 
 from .categories import category_sort_key
 from .explanations import strip_boilerplate
@@ -437,6 +438,8 @@ class SubmitAnswerView(APIView):
                 "correct_rate": question.public_correct_rate,
                 "mastery_level": auto_mastery,
                 "next_review_at": review_schedule.next_review_at if review_schedule else None,
+                # 今日の目標の進み具合（目標が無い人は goal が null）。取れなければ null。
+                "daily_progress": progress_after_answer(request.user, answer_history),
             }
         )
 

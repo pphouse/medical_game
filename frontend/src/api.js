@@ -1,5 +1,5 @@
 import { supabase } from "./lib/supabase";
-import { isNative } from "./native";
+import { isLiveReload, isNative } from "./native";
 
 // Same-origin "/api" by default (dev proxy / same-domain deploy). Set
 // VITE_API_BASE_URL to the backend origin when the Django API is hosted on a
@@ -8,8 +8,9 @@ import { isNative } from "./native";
 // iOS アプリは capacitor://localhost から動くので、相対パスの "/api" は
 // アプリ自身のバンドルを指してしまい、絶対 URL でないと必ず失敗する。
 // ビルド時に落とすチェックが scripts/check-native-env.mjs にある。
+// ライブリロード中だけは画面が開発サーバから来るので、相対パスでよい。
 const CONFIGURED_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
-export const apiOriginMissing = isNative && !CONFIGURED_BASE_URL;
+export const apiOriginMissing = isNative && !isLiveReload && !CONFIGURED_BASE_URL;
 const BASE_URL = (CONFIGURED_BASE_URL || "/api").replace(/\/$/, "");
 
 export class ApiError extends Error {
@@ -100,6 +101,7 @@ const post = (path, payload) =>
   request(path, { method: "POST", body: payload === undefined ? undefined : JSON.stringify(payload) });
 const patch = (path, payload) =>
   request(path, { method: "PATCH", body: JSON.stringify(payload) });
+const put = (path, payload) => request(path, { method: "PUT", body: JSON.stringify(payload) });
 
 export const api = {
   // auth / profile
@@ -111,6 +113,17 @@ export const api = {
   deleteAccount: () =>
     request("/auth/me/", { method: "DELETE", body: JSON.stringify({ confirm: true }) }),
   universities: () => get("/auth/universities/"),
+
+  // 1日の目標・連続記録（とアプリが端末に予約する通知の予定）
+  habitToday: () => get("/habits/today/"),
+  setDailyGoal: (questionsPerDay) =>
+    put("/habits/goal/", { questions_per_day: questionsPerDay }),
+  // 学習リマインドの設定（Web Push の購読は別。VAPID 公開鍵もここから受け取る）
+  notificationPrefs: () => get("/auth/notifications/"),
+  updateNotificationPrefs: (payload) => patch("/auth/notifications/", payload),
+  registerPush: (subscription) => post("/auth/push-subscriptions/", subscription),
+  unregisterPush: (endpoint) =>
+    request("/auth/push-subscriptions/", { method: "DELETE", body: JSON.stringify({ endpoint }) }),
 
   // solo quiz
   categories: () => get("/quiz/categories/"),
