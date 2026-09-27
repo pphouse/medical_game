@@ -16,6 +16,13 @@ import { isNative } from "./native";
 
 const SERVICE_WORKER_URL = "/sw.js";
 
+// 「通知を試す」の1通。学習リマインドの番号（日付×10＋種類、20億台）とは重ならない。
+const TEST_NOTIFICATION_ID = 1;
+const TEST_TITLE = "通知のテスト";
+const TEST_BODY = "学習リマインドはこのように届きます。";
+// アプリを開いたままだと iOS は通知を出さないことがあるので、ホーム画面に戻る間をとる。
+const TEST_DELAY_MS = 5000;
+
 export function remindersSupported() {
   if (isNative) return true;
   return (
@@ -48,8 +55,10 @@ export async function syncReminders(habit) {
     const LocalNotifications = await localNotifications();
     const plan = habit ?? (await api.habitToday());
     const { notifications: pending } = await LocalNotifications.getPending();
-    if (pending.length) {
-      await LocalNotifications.cancel({ notifications: pending.map((n) => ({ id: n.id })) });
+    // 「通知を試す」の1通は、届く前に予約を作り直しても消さない。
+    const reminders = pending.filter((n) => n.id !== TEST_NOTIFICATION_ID);
+    if (reminders.length) {
+      await LocalNotifications.cancel({ notifications: reminders.map((n) => ({ id: n.id })) });
     }
     const { display } = await LocalNotifications.checkPermissions();
     if (display !== "granted" || !plan?.reminders?.length) return;
@@ -107,6 +116,40 @@ async function unsubscribeWebPush() {
   if (!subscription) return;
   await api.unregisterPush(subscription.endpoint).catch(() => {});
   await subscription.unsubscribe().catch(() => {});
+}
+
+/**
+ * 通知が届くか試す。サーバは通さず、この端末に1通だけ出す。
+ * iOS は数秒後に届く（delayed: true）。ブラウザはその場で出す。
+ */
+export async function sendTestReminder() {
+  if (isNative) {
+    const LocalNotifications = await localNotifications();
+    const { display } = await LocalNotifications.checkPermissions();
+    if (display !== "granted") return { ok: false, reason: "denied" };
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: TEST_NOTIFICATION_ID,
+          title: TEST_TITLE,
+          body: TEST_BODY,
+          schedule: { at: new Date(Date.now() + TEST_DELAY_MS) },
+          extra: { url: "/mypage" },
+        },
+      ],
+    });
+    return { ok: true, delayed: true };
+  }
+  if (!remindersSupported()) return { ok: false, reason: "unsupported" };
+  if (Notification.permission !== "granted") return { ok: false, reason: "denied" };
+  const registration = await navigator.serviceWorker.getRegistration(SERVICE_WORKER_URL);
+  if (!registration) return { ok: false, reason: "unavailable" };
+  await registration.showNotification(TEST_TITLE, {
+    body: TEST_BODY,
+    icon: "/icons/icon-192.png",
+    data: { url: "/mypage" },
+  });
+  return { ok: true, delayed: false };
 }
 
 /** 通知をオンにする。許可を求めてから設定を保存し、新しい今日の状態を返す。 */

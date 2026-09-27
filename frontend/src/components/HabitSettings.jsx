@@ -6,6 +6,7 @@ import {
   disableReminders,
   enableReminders,
   remindersSupported,
+  sendTestReminder,
   setReminderHour,
 } from "../reminders";
 import { GoalChips } from "./DailyGoalCard";
@@ -18,6 +19,7 @@ export default function HabitSettings() {
   const { habit, setHabit, unavailable } = useHabit();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [notice, setNotice] = useState(null);
 
   if (unavailable) return null;
   if (!habit) {
@@ -34,6 +36,7 @@ export default function HabitSettings() {
   async function run(action) {
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       await action();
     } catch (e) {
@@ -57,6 +60,14 @@ export default function HabitSettings() {
     });
 
   const changeHour = (value) => run(async () => setHabit(await setReminderHour(value)));
+
+  const tryNotification = () =>
+    run(async () => {
+      const result = await sendTestReminder();
+      if (!result.ok) setError(REMINDER_ERRORS[result.reason]);
+      else if (result.delayed) setNotice("5秒後に届きます。ホーム画面に戻って待ってください。");
+      else setNotice("通知を出しました。");
+    });
 
   return (
     <div className="mypage-card habit-settings">
@@ -116,6 +127,12 @@ export default function HabitSettings() {
           </button>
         </p>
       )}
+      {enabled && (
+        <button className="toolbar-btn habit-test" disabled={busy} onClick={tryNotification}>
+          通知を試す
+        </button>
+      )}
+      {notice && <p className="exam-meta">{notice}</p>}
       <p className="exam-meta">
         目標に届いた日は送りません。夜9時になってもまだなら、連続記録が途切れそうだとお知らせします。
         7日間解かなかった場合は、いったん止めます。

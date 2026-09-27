@@ -8,6 +8,13 @@ export const isNative = Capacitor.isNativePlatform();
 export const platform = Capacitor.getPlatform();
 
 /**
+ * ライブリロード中か（npx cap run ios -l。docs/ios.md の「10.」）。画面を Mac の
+ * 開発サーバから http(s) で読んでいるので、相対パスの /api が開発サーバの
+ * プロキシに届く。アプリに組み込んだ画面は capacitor://localhost から動く。
+ */
+export const isLiveReload = isNative && /^https?:$/.test(window.location.protocol);
+
+/**
  * アプリを開き直すためのカスタム URL スキーム。
  * ios/App/App/Info.plist の CFBundleURLTypes と、Supabase の
  * Authentication → URL Configuration → Redirect URLs の両方に、

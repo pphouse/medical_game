@@ -7,6 +7,7 @@ vi.mock("../reminders", () => ({
   disableReminders: vi.fn(),
   enableReminders: vi.fn(),
   remindersSupported: vi.fn(() => true),
+  sendTestReminder: vi.fn(),
   setReminderHour: vi.fn(),
   syncReminders: vi.fn(),
 }));
@@ -17,6 +18,7 @@ import {
   disableReminders,
   enableReminders,
   remindersSupported,
+  sendTestReminder,
   setReminderHour,
 } from "../reminders";
 
@@ -84,6 +86,28 @@ describe("マイページの目標とリマインド", () => {
     fireEvent.click(await screen.findByRole("switch", { name: "リマインド" }));
     await waitFor(() => expect(reminderSwitch()).toHaveAttribute("aria-checked", "false"));
     expect(disableReminders).toHaveBeenCalled();
+  });
+
+  it("通知がオンなら、届くか試せる", async () => {
+    api.habitToday.mockResolvedValue(habit({ reminder: { enabled: true, hour: 20 } }));
+    sendTestReminder.mockResolvedValue({ ok: true, delayed: true });
+    render(<HabitSettings />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "通知を試す" }));
+    expect(
+      await screen.findByText("5秒後に届きます。ホーム画面に戻って待ってください。"),
+    ).toBeInTheDocument();
+
+    sendTestReminder.mockResolvedValue({ ok: false, reason: "denied" });
+    fireEvent.click(screen.getByRole("button", { name: "通知を試す" }));
+    expect(await screen.findByText("通知が許可されていません。")).toBeInTheDocument();
+  });
+
+  it("通知がオフのうちは「通知を試す」を出さない", async () => {
+    api.habitToday.mockResolvedValue(habit());
+    render(<HabitSettings />);
+    await screen.findByRole("switch", { name: "リマインド" });
+    expect(screen.queryByRole("button", { name: "通知を試す" })).not.toBeInTheDocument();
   });
 
   it("目標が無いうちは通知をオンにできない", async () => {

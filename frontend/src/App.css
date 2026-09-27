@@ -3799,6 +3799,10 @@
   font-size: 14px;
 }
 
+.habit-test {
+  align-self: flex-start;
+}
+
 .habit-suggest {
   margin-left: 6px;
   padding: 2px 10px;

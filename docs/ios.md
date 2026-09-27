@@ -151,3 +151,54 @@ GitHub Actions の `macos-14` ランナーでビルド・署名・TestFlight 提
 | 画面の上がステータスバーに隠れる | `env(safe-area-inset-*)` を使っていない CSS を足した |
 | 入力欄をタップすると勝手に拡大する | その入力欄の `font-size` が 16px 未満 |
 | 外部リンクを踏むと戻れなくなる | `nativeBootstrap.js` の in-app ブラウザ処理を通っていない |
+| ライブリロードで「APIに接続できませんでした」 | `.env` か `.env.development.local` に `VITE_API_BASE_URL` を書いている（開発サーバの中継を通らず CORS で弾かれる） |
+| ライブリロードで画面が真っ白 | iPhone と Mac が別の Wi-Fi、または開発サーバを `--host 0.0.0.0` で起動していない |
+
+## 10. 直したそばから iPhone で確かめる（ライブリロード）
+
+画面を Mac の開発サーバ（Vite）から読ませると、コードを直した瞬間に
+シミュレーターや実機の画面が変わる。`npm run ios:sync` も Xcode の再ビルドも
+要らない（ネイティブのプラグインを足したときだけ要る）。
+
+API はこの開発サーバが中継する（`vite.config.js` の `/api`）。画面と同じ
+オリジンになるので CORS に引っかからない。中継先は `DEV_API_PROXY_TARGET`
+（既定は手元の Django、`http://127.0.0.1:8000`）。
+
+1. `frontend/.env.development.local` を作る（コミットされない）:
+
+   ```sh
+   VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+   VITE_SUPABASE_ANON_KEY=<anon key>
+   # デプロイ済みのバックエンドを使う場合（/api は付けない）
+   DEV_API_PROXY_TARGET=https://<バックエンドのドメイン>
+   ```
+
+   `VITE_API_BASE_URL` はここにも `.env` にも書かない（`.env.production` は
+   ビルド用なので、あってよい）。
+
+2. 開発サーバを同じネットワークから見えるように起動する:
+
+   ```sh
+   cd frontend
+   npm run dev -- --host 0.0.0.0
+   ```
+
+3. 別のターミナルで、起動先を選んでアプリを入れる:
+
+   ```sh
+   npx cap run ios --list      # 使える端末とシミュレーターの ID
+   # シミュレーター
+   npx cap run ios -l --host localhost --port 5173 --target <ID>
+   # 実機（Mac と同じ Wi-Fi に。Mac の IP は ipconfig getifaddr en0）
+   npx cap run ios -l --host <Mac の IP> --port 5173 --target <ID>
+   ```
+
+   実機は、先に一度 4. の手順で Team を選んで Xcode から ▶︎ で入れておく
+   （署名のため）。iPhone 側は **設定 → プライバシーとセキュリティ →
+   デベロッパモード** をオンにする。
+
+4. 終わったら `Ctrl+C`。アプリの設定（`server.url`）が元に戻る。
+
+通知の確認は、マイページ →「目標とリマインド」で通知をオンにしてから
+「通知を試す」。5秒後に1通届くので、その間にホーム画面へ戻る（アプリを
+開いたままだと出ないことがある）。本番の通知は選んだ時刻に届く。

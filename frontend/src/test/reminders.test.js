@@ -16,7 +16,7 @@ const LocalNotifications = vi.hoisted(() => ({
 vi.mock("@capacitor/local-notifications", () => ({ LocalNotifications }));
 
 import { api } from "../api";
-import { enableReminders, syncReminders } from "../reminders";
+import { enableReminders, sendTestReminder, syncReminders } from "../reminders";
 
 const PLAN = {
   reminders: [
@@ -42,14 +42,16 @@ const PLAN = {
 describe("iOS の通知の予約", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    LocalNotifications.getPending.mockResolvedValue({ notifications: [{ id: 1 }, { id: 2 }] });
+    LocalNotifications.getPending.mockResolvedValue({
+      notifications: [{ id: 202609251 }, { id: 202609252 }],
+    });
     LocalNotifications.checkPermissions.mockResolvedValue({ display: "granted" });
   });
 
   it("予約済みの通知を消してから、サーバの予定を予約し直す", async () => {
     await syncReminders(PLAN);
     expect(LocalNotifications.cancel).toHaveBeenCalledWith({
-      notifications: [{ id: 1 }, { id: 2 }],
+      notifications: [{ id: 202609251 }, { id: 202609252 }],
     });
     const [{ notifications }] = LocalNotifications.schedule.mock.calls[0];
     expect(notifications).toHaveLength(2);
@@ -82,10 +84,37 @@ describe("iOS の通知の予約", () => {
   });
 
   it("予約に失敗しても例外を投げない（学習の邪魔をしない）", async () => {
-    LocalNotifications.schedule.mockRejectedValue(new Error("boom"));
+    LocalNotifications.schedule.mockRejectedValueOnce(new Error("boom"));
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     await expect(syncReminders(PLAN)).resolves.toBeUndefined();
     warn.mockRestore();
+  });
+
+  it("「通知を試す」は数秒後に1通だけ予約し、予約の作り直しでは消さない", async () => {
+    const before = Date.now();
+    expect(await sendTestReminder()).toEqual({ ok: true, delayed: true });
+    const [{ notifications }] = LocalNotifications.schedule.mock.calls[0];
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]).toMatchObject({
+      id: 1,
+      title: "通知のテスト",
+      extra: { url: "/mypage" },
+    });
+    const delay = notifications[0].schedule.at.getTime() - before;
+    expect(delay).toBeGreaterThanOrEqual(4000);
+    expect(delay).toBeLessThan(10000);
+
+    LocalNotifications.getPending.mockResolvedValue({
+      notifications: [{ id: 1 }, { id: 202609261 }],
+    });
+    await syncReminders(PLAN);
+    expect(LocalNotifications.cancel).toHaveBeenCalledWith({ notifications: [{ id: 202609261 }] });
+  });
+
+  it("通知が許可されていなければ「通知を試す」は理由を返す", async () => {
+    LocalNotifications.checkPermissions.mockResolvedValue({ display: "denied" });
+    expect(await sendTestReminder()).toEqual({ ok: false, reason: "denied" });
+    expect(LocalNotifications.schedule).not.toHaveBeenCalled();
   });
 
   it("オンにするときは先に許可を求め、断られたら設定を変えない", async () => {
