@@ -282,7 +282,8 @@
 }
 
 .chip-double_circle { background: var(--m-double); }
-.chip-circle { background: var(--m-circle); }
+/* ○ の黄緑は明るいので、白抜きだと読めない。文字だけ濃くする。 */
+.chip-circle { background: var(--m-circle); color: #1a2e05; }
 .chip-triangle { background: var(--m-triangle); }
 .chip-cross { background: var(--m-cross); }
 .chip-unstudied { background: var(--m-unstudied); color: var(--text); }
@@ -582,9 +583,20 @@
 }
 
 .cta-button:disabled {
-  opacity: 0.4;
+  /* 押せないことが色で分かるよう灰色にする。青のまま薄くすると
+     「押せるが効いていない」ように見える。 */
+  background: var(--m-unstudied);
+  color: var(--text);
+  opacity: 0.85;
   cursor: default;
   box-shadow: none;
+}
+
+/* Link を cta-button として使うとき（下線と行揃えを消す）。 */
+.exam-grade-link {
+  display: block;
+  text-align: center;
+  text-decoration: none;
 }
 
 /* Question picker filter chips */
@@ -698,7 +710,7 @@
 }
 
 .question-row-mastery.mastery-double_circle { background: var(--m-double); }
-.question-row-mastery.mastery-circle { background: var(--m-circle); }
+.question-row-mastery.mastery-circle { background: var(--m-circle); color: #1a2e05; }
 .question-row-mastery.mastery-triangle { background: var(--m-triangle); }
 .question-row-mastery.mastery-cross { background: var(--m-cross); }
 .question-row-mastery.mastery-unstudied {
@@ -2088,9 +2100,13 @@
 
 .exam-review-card { margin-bottom: 8px; }
 
-/* 提出直後（成績の集計待ち）の案内。 */
+/* 提出直後（成績の集計待ち）の案内。解禁されたら帯を緑に変える。 */
 .exam-pending-card {
-  border-left: 4px solid var(--accent);
+  border-left: 4px solid var(--m-unstudied);
+}
+
+.exam-pending-card.ready {
+  border-left-color: var(--accent);
 }
 
 .exam-pending-title {

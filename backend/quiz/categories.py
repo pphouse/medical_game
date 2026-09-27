@@ -87,11 +87,61 @@ CBT_CATEGORIES = (
 
 CATEGORIES_BY_EXAM = {CBT: CBT_CATEGORIES, KOKUSHI: KOKUSHI_CATEGORIES}
 
+# --- メジャー科 / それ以外 -------------------------------------------------
+# 一覧の先頭にはメジャー科（内科系の主要科）を並べる。出題数が多く、
+# 学習の軸になる科目から手を付けられるようにするため。マイナー科
+# （眼科・耳鼻科・皮膚科など）や総論・公衆衛生はそのあとに続く。
+#
+# グループ内の並びは従来どおり（CBTは巻の順、国試はQBの章の順）なので、
+# 「メジャーが上に来る」以外の並びは変わらない。
+MAJOR_CATEGORIES_BY_EXAM = {
+    CBT: frozenset(
+        {
+            "循環器",
+            "呼吸器",
+            "消化器",
+            "腎・泌尿器",
+            "内分泌・代謝",
+            "血液",
+            "神経",
+            "免疫・膠原病",
+            "感染症",
+        }
+    ),
+    KOKUSHI: frozenset(
+        {
+            "消化管",
+            "肝・胆・膵",
+            "循環器",
+            "代謝・内分泌",
+            "腎・泌尿器",
+            "免疫・膠原病",
+            "血液",
+            "感染症",
+            "呼吸器",
+            "神経",
+        }
+    ),
+}
+
+
+def is_major(category: str, exam_type: str = CBT) -> bool:
+    """メジャー科（内科系の主要科）かどうか。"""
+    return category in MAJOR_CATEGORIES_BY_EXAM[_exam(exam_type)]
+
+
 # 全試験種別ぶんの正規名（どちらかに属していれば正規名として扱う）。
 # 試験種別を指定しない古い呼び出し向けの別名も残す。
 ALL_CATEGORIES = tuple(dict.fromkeys(CBT_CATEGORIES + KOKUSHI_CATEGORIES))
 CANONICAL_CATEGORIES = ALL_CATEGORIES
 CATEGORY_ORDER = {name: i for i, name in enumerate(ALL_CATEGORIES)}
+
+# メジャー科は正規名でなければならない（科目名を変えたのに片方だけ直すと、
+# そのメジャー科が静かに「その他」へ落ちる）。
+for _exam_key, _majors in MAJOR_CATEGORIES_BY_EXAM.items():
+    assert _majors <= set(CATEGORIES_BY_EXAM[_exam_key]), (
+        _majors - set(CATEGORIES_BY_EXAM[_exam_key])
+    )
 
 CATEGORY_ORDER_BY_EXAM = {
     exam: {name: i for i, name in enumerate(names)}
@@ -596,13 +646,19 @@ def default_category(exam_type):
     return DEFAULT_CATEGORY_BY_EXAM[_exam(exam_type)]
 
 
-def category_sort_key(category: str, exam_type: str = CBT) -> tuple[int, str]:
-    """一覧の並び順。正規の科目はその試験の並び、それ以外（移行前のデータが
-    残っている場合）は後ろにまとめて五十音順。"""
-    order = CATEGORY_ORDER_BY_EXAM[_exam(exam_type)]
-    if category in order:
-        return (order[category], "")
-    return (len(order), category or "")
+def category_sort_key(category: str, exam_type: str = CBT) -> tuple[int, int, str]:
+    """一覧の並び順。
+
+    メジャー科を先頭にまとめ、そのあとに残りの科目が続く。グループ内は
+    その試験の並び（CBTは巻の順、国試はQBの章の順）。正規名でない科目
+    （移行前のデータが残っている場合）は最後に五十音順。
+    """
+    exam = _exam(exam_type)
+    order = CATEGORY_ORDER_BY_EXAM[exam]
+    if category not in order:
+        return (2, len(order), category or "")
+    group = 0 if is_major(category, exam) else 1
+    return (group, order[category], "")
 
 
 def category_for_blueprint_code(blueprint_code: str | None, exam_type: str = CBT) -> str | None:

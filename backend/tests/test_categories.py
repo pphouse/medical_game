@@ -189,10 +189,36 @@ class TestClassify:
 
 class TestSortKey:
     @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
-    def test_that_exams_order_is_followed(self, exam):
+    def test_major_subjects_come_first(self, exam):
+        """メジャー科（内科系の主要科）を先頭にまとめる。"""
+        from quiz.categories import is_major
+
+        ordered = sorted(categories_for(exam), key=lambda c: category_sort_key(c, exam))
+        flags = [is_major(c, exam) for c in ordered]
+        # True が続いたあと False が続く（間で戻らない）
+        assert flags == sorted(flags, reverse=True)
+        assert flags[0] is True
+
+    @pytest.mark.parametrize("exam", [CBT, KOKUSHI])
+    def test_the_order_inside_each_group_is_the_exams_own(self, exam):
+        """グループ内の並びは従来どおり（CBTは巻の順、国試はQBの章の順）。"""
+        from quiz.categories import is_major
+
         names = categories_for(exam)
-        assert tuple(sorted(names, key=lambda c: category_sort_key(c, exam))) == names
+        ordered = sorted(names, key=lambda c: category_sort_key(c, exam))
+        for major in (True, False):
+            group = [c for c in ordered if is_major(c, exam) is major]
+            assert group == [c for c in names if is_major(c, exam) is major]
 
     def test_unknown_names_go_last(self):
         last = KOKUSHI_CATEGORIES[-1]
         assert category_sort_key("知らない科目", KOKUSHI) > category_sort_key(last, KOKUSHI)
+
+    def test_major_subjects_are_canonical_names(self):
+        """科目名を変えたのにメジャー科の一覧を直し忘れると、静かに
+        「その他」へ落ちるので、正規名であることを検査しておく。"""
+        from quiz.categories import MAJOR_CATEGORIES_BY_EXAM
+
+        for exam, majors in MAJOR_CATEGORIES_BY_EXAM.items():
+            assert majors <= set(categories_for(exam))
+            assert majors, exam

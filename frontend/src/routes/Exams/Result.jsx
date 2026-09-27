@@ -26,9 +26,24 @@ function formatDate(iso) {
   return JST_DATE.format(new Date(iso));
 }
 
+/** 左上の戻る。1つ前の画面に戻す。 */
+function BackButton({ onClick }) {
+  return (
+    <button className="back-link" onClick={onClick}>
+      ← 戻る
+    </button>
+  );
+}
+
 export default function Result() {
   const { examId } = useParams();
   const navigate = useNavigate();
+
+  // 履歴があれば1つ前へ。URLを直接開かれたときは戻る先が無いので模試一覧へ。
+  function goBack() {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/exams");
+  }
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
@@ -42,11 +57,9 @@ export default function Result() {
   if (data.status === "grading") {
     return (
       <div className="screen">
+        <BackButton onClick={goBack} />
         <h2>模試結果</h2>
         <div className="empty-card">{data.message}</div>
-        <Link to="/exams" className="back-link">
-          ← 模試一覧へ
-        </Link>
       </div>
     );
   }
@@ -73,6 +86,7 @@ export default function Result() {
 
   return (
     <div className="screen">
+      <BackButton onClick={goBack} />
       <h2>{data.title} 結果</h2>
 
       <div className="summary-card">
@@ -108,18 +122,28 @@ export default function Result() {
         </div>
       </div>
 
-      {!graded && (
-        <div className="mypage-card exam-pending-card">
-          <p className="exam-pending-title">成績は集計中です</p>
-          <p className="exam-meta">
-            {`全国順位・学内順位・偏差値は${rankingDate ?? "翌月1日"}に「ランキング」タブの` +
+      {/* 成績（順位・偏差値）が見られるようになったら青いボタン、まだなら
+          灰色で押せないボタンにする。押せるかどうかで解禁済みかが分かる。 */}
+      <div className={`mypage-card exam-pending-card${graded ? " ready" : ""}`}>
+        <p className="exam-pending-title">
+          {graded ? "成績を確認できます" : "成績は集計中です"}
+        </p>
+        <p className="exam-meta">
+          {graded
+            ? "全国順位・学内順位・偏差値は「ランキング」タブの「模試」から確認できます。"
+            : `全国順位・学内順位・偏差値は${rankingDate ?? "翌月1日"}に「ランキング」タブの` +
               "「模試」から確認できます。下の見直しでは、いまのうちに正誤と解説を確認できます。"}
-          </p>
-          <Link to="/ranking?category=exams" className="toolbar-btn exam-pending-link">
-            ランキングを見る
+        </p>
+        {graded ? (
+          <Link to="/ranking?category=exams" className="cta-button exam-grade-link">
+            成績を見る
           </Link>
-        </div>
-      )}
+        ) : (
+          <button type="button" className="cta-button" disabled>
+            {rankingDate ? `成績を見る（${rankingDate}から）` : "成績を見る"}
+          </button>
+        )}
+      </div>
 
       {data.points_delta != null && (
         <div className="mypage-card">
