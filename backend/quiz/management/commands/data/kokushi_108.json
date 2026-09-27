@@ -995,74 +995,6 @@
       "source_note": "出典：厚生労働省ホームページ 第108回医師国家試験 B043（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
-      "id": "k108-B051",
-      "exam_type": "KOKUSHI",
-      "question_type": "M",
-      "blueprint_code": "108-B-51",
-      "category": "神経",
-      "difficulty": "standard",
-      "question_text": "頭部CTでは異常を認めなかった。ICUに入室し髄液検査が実施された。脳脊髄液所見:初圧210 mmH2O(基準70~170)、細胞数4,200/mm3(基準0 ~ 2 )(単核球8 %、多形核球92 %)、蛋白340 mg/dl(基準15~45)、糖18 mg/dl(基準50~75)。脳脊髄液のGram染色では細菌は検出されなかった。 6時間後に血圧が76/52 mmHgに低下し無尿となった。意識レベルはJCSIII-200。体温39.0 °C。脈拍112/分。四肢末の皮膚は温かい。この時点の治療として適切なのはどれか。",
-      "choices": [
-        {
-          "id": "A",
-          "text": "フロセミド急速静注"
-        },
-        {
-          "id": "B",
-          "text": "アドレナリン急速静注"
-        },
-        {
-          "id": "C",
-          "text": "カルシウム拮抗薬持続静注"
-        },
-        {
-          "id": "D",
-          "text": "ノルアドレナリン持続静注"
-        },
-        {
-          "id": "E",
-          "text": "アセトアミノフェン直腸内投与"
-        }
-      ],
-      "correct_choice_id": "D",
-      "explanation": "正答は D「ノルアドレナリン持続静注」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第108回医師国家試験 B051\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第108回医師国家試験 B051（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html）／設問文および選択肢を本アプリの表示形式に整形"
-    },
-    {
-      "id": "k108-B057",
-      "exam_type": "KOKUSHI",
-      "question_type": "M",
-      "blueprint_code": "108-B-57",
-      "category": "麻酔",
-      "difficulty": "standard",
-      "question_text": "最も適切な麻酔法はどれか。",
-      "choices": [
-        {
-          "id": "A",
-          "text": "伝達麻酔"
-        },
-        {
-          "id": "B",
-          "text": "全身麻酔"
-        },
-        {
-          "id": "C",
-          "text": "硬膜外麻酔"
-        },
-        {
-          "id": "D",
-          "text": "脊髄くも膜下麻酔"
-        },
-        {
-          "id": "E",
-          "text": "全身麻酔と硬膜外麻酔の併用"
-        }
-      ],
-      "correct_choice_id": "B",
-      "explanation": "正答は B「全身麻酔」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第108回医師国家試験 B057\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第108回医師国家試験 B057（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html）／設問文および選択肢を本アプリの表示形式に整形"
-    },
-    {
       "id": "k108-C001",
       "exam_type": "KOKUSHI",
       "question_type": "M",
@@ -2291,9 +2223,9 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "108-E-61",
-      "category": "医学総論",
+      "category": "救急・中毒",
       "difficulty": "standard",
-      "question_text": "治療方針の決定のため、初療室で行う単純エックス線撮影で最も優先順位が高い部位はどれか。",
+      "question_text": "19歳の男性。交通外傷のため搬入された。現病歴 : 河川沿いの堤防道路でオートバイを運転中に対向車と接触し転倒、崖下に転落した。既往歴 : 特記すべきことはない。現症 : 意識はほぼ清明だが会話は困難。脈拍124/分。血圧92/70 mmHg。呼吸数28/分。SpO2 100 %(リザーバー付マスク10 l/分酸素投与下)。顔面に挫創があり、口腔から出血と凝血塊の喀出を認める。胸部は右前胸部に圧痛があり、右呼吸音が減弱している。右下肢は外旋位で、右下腿の変形と開放創を認める。腹部超音波検査で腹腔内に液体貯留を認める。マスクによる酸素投与を継続している。\n治療方針の決定のため、初療室で行う単純エックス線撮影で最も優先順位が高い部位はどれか。",
       "choices": [
         {
           "id": "A",
@@ -2319,40 +2251,6 @@
       "correct_choice_id": "D",
       "explanation": "正答は D「胸部」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第108回医師国家試験 E061\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第108回医師国家試験 E061（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html）／設問文および選択肢を本アプリの表示形式に整形"
-    },
-    {
-      "id": "k108-E063",
-      "exam_type": "KOKUSHI",
-      "question_type": "M",
-      "blueprint_code": "108-E-63",
-      "category": "医学総論",
-      "difficulty": "standard",
-      "question_text": "9の法則で評価したこの患者のBurn Indexはどれか。",
-      "choices": [
-        {
-          "id": "A",
-          "text": "54"
-        },
-        {
-          "id": "B",
-          "text": "45"
-        },
-        {
-          "id": "C",
-          "text": "36"
-        },
-        {
-          "id": "D",
-          "text": "27"
-        },
-        {
-          "id": "E",
-          "text": "18"
-        }
-      ],
-      "correct_choice_id": "C",
-      "explanation": "正答は C「36」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第108回医師国家試験 E063\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第108回医師国家試験 E063（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k108-F001",
@@ -3373,40 +3271,6 @@
       "correct_choice_id": "C",
       "explanation": "正答は C「「内服したのは着床のころなので心配はありません」」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第108回医師国家試験 G054\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
       "source_note": "出典：厚生労働省ホームページ 第108回医師国家試験 G054（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html）／設問文および選択肢を本アプリの表示形式に整形"
-    },
-    {
-      "id": "k108-G067",
-      "exam_type": "KOKUSHI",
-      "question_type": "M",
-      "blueprint_code": "108-G-67",
-      "category": "消化管",
-      "difficulty": "standard",
-      "question_text": "追加すべき質問はどれか。",
-      "choices": [
-        {
-          "id": "A",
-          "text": "「生魚は食べていませんか」"
-        },
-        {
-          "id": "B",
-          "text": "「痛み止めは飲んでいませんか」"
-        },
-        {
-          "id": "C",
-          "text": "「最近海外に行きませんでしたか」"
-        },
-        {
-          "id": "D",
-          "text": "「最近井戸水を飲んでいませんか」"
-        },
-        {
-          "id": "E",
-          "text": "「血のつながった家族に大腸癌の方はいませんか」"
-        }
-      ],
-      "correct_choice_id": "B",
-      "explanation": "正答は B「「痛み止めは飲んでいませんか」」。\n\nこの設問は医師国家試験の過去問です。詳しい解説は準備中で、内容の確認後に順次追加されます。\n\n出典：厚生労働省ホームページ 第108回医師国家試験 G067\nhttps://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html\n（設問文および選択肢は本アプリの表示形式に整形しています）",
-      "source_note": "出典：厚生労働省ホームページ 第108回医師国家試験 G067（https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics/tp140512-01.html）／設問文および選択肢を本アプリの表示形式に整形"
     },
     {
       "id": "k108-H001",

@@ -188,7 +188,7 @@ MULTI_SELECT = re.compile(r"[２2３3４4]\s*つ選べ")
 # 連問の導入。「次の文を読み、47、48の問いに答えよ。」に続く症例文を複数の設問が
 # 共有する形式。個々の設問文は「診断はどれか。」のように単独では成立しないため、
 # 現状は取り込まない（将来 question_set として扱う余地はある）。
-SERIES_HEAD = re.compile(r"次の文を読み[、,]\s*([0-9０-９、,〜～\-]+?)\s*の問いに答えよ")
+SERIES_HEAD = re.compile(r"次の文を読み[、,]\s*([0-9０-９、,〜～~\-]+?)\s*の問いに答えよ")
 
 # pdfplumber がグリフを解決できなかった箇所。本文に "(cid:7674)" の形で残る。
 CID_ARTIFACT = re.compile(r"\(cid:\d+\)")
@@ -1342,18 +1342,7 @@ def series_groups(lines: list[str]) -> dict[int, str]:
     """
     groups: dict[int, str] = {}
     for i, line in enumerate(lines):
-        m = SERIES_HEAD.search(line)
-        if not m:
-            continue
-        spec = unicodedata.normalize("NFKC", m.group(1))
-        nums: set[int] = set()
-        for part in re.split(r"[、,]", spec):
-            part = part.strip()
-            rng = re.fullmatch(r"(\d+)\s*[〜～\-]\s*(\d+)", part)
-            if rng:
-                nums.update(range(int(rng.group(1)), int(rng.group(2)) + 1))
-            elif part.isdigit():
-                nums.add(int(part))
+        nums = _series_head_numbers(line)
         if not nums:
             continue
 
@@ -1382,17 +1371,29 @@ def series_numbers(lines: list[str]) -> set[int]:
     """
     nums: set[int] = set()
     for line in lines:
-        m = SERIES_HEAD.search(line)
-        if not m:
-            continue
-        spec = unicodedata.normalize("NFKC", m.group(1))
-        for part in re.split(r"[、,]", spec):
-            part = part.strip()
-            rng = re.fullmatch(r"(\d+)\s*[〜～\-]\s*(\d+)", part)
-            if rng:
-                nums.update(range(int(rng.group(1)), int(rng.group(2)) + 1))
-            elif part.isdigit():
-                nums.add(int(part))
+        nums |= _series_head_numbers(line)
+    return nums
+
+
+def _series_head_numbers(line: str) -> set[int]:
+    """連問の導入行なら、その組の設問番号を返す（導入行でなければ空）。
+
+    範囲の「～」（全角チルダ）は NFKC で半角の "~" になる。これを範囲と
+    読めずにいたため、第108回B50〜61のような3問組は症例文が付かず、
+    B57 は「最も適切な麻酔法はどれか。」だけの設問になっていた。
+    """
+    m = SERIES_HEAD.search(line)
+    if not m:
+        return set()
+    spec = unicodedata.normalize("NFKC", m.group(1))
+    nums: set[int] = set()
+    for part in re.split(r"[、,]", spec):
+        part = part.strip()
+        rng = re.fullmatch(r"(\d+)\s*[〜~\-]\s*(\d+)", part)
+        if rng:
+            nums.update(range(int(rng.group(1)), int(rng.group(2)) + 1))
+        elif part.isdigit():
+            nums.add(int(part))
     return nums
 
 

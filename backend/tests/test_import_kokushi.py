@@ -147,6 +147,13 @@ class TestChoicesAndInterludes:
         assert texts[-1].startswith("戊その後の経過")
         assert case == []
 
+    @pytest.mark.parametrize("spec", ["50～52", "50〜52", "50、51、52"])
+    def test_three_question_series_share_the_case(self, ik, spec):
+        # 第108回B50〜61は「50～52」（全角チルダ）。NFKC で "~" になり、
+        # 範囲と読めずに症例文が付かなかった（B57 は設問文だけになった）
+        lines = [f"次の文を読み、{spec}の問いに答えよ。", "症例文である。", "50 最初の設問はどれか。"]
+        assert ik.series_groups(lines) == dict.fromkeys((50, 51, 52), "症例文である。")
+
     def test_image_note_is_not_an_interlude(self, ik):
         # 「別冊」の案内はその設問の画像。次の設問へ回すと、画像の要る設問が残ってしまう
         lines = BLOCK[:8] + ["別冊", "No. 3"] + BLOCK[9:]
