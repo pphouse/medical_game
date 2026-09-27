@@ -22,7 +22,7 @@ UNION ALL SELECT '4. 科目の統合',
             THEN '未反映 — 旧科目名が ' ||
                  (SELECT count(*) FROM quiz_question
                   WHERE category IN ('救急', '中毒', '麻酔科', '中毒・環境'))::text ||
-                 '問残っている（apply_categories.sql）'
+                 '問残っている（fix_categories.sql）'
             ELSE '反映済み（旧科目名は0問）' END
 
 UNION ALL SELECT '5. 統合後の科目',
@@ -30,8 +30,10 @@ UNION ALL SELECT '5. 統合後の科目',
                  WHERE category = '救急・中毒・麻酔')::text || '問', '0問')
 
 UNION ALL SELECT '6. 感染症 / 放射線科',
+       -- 放射線科は問題数が少なく科目として成立しないので医学総論にまとめた（categories.py）。
        (SELECT count(*) FROM quiz_question WHERE category = '感染症')::text || '問 / ' ||
-       (SELECT count(*) FROM quiz_question WHERE category = '放射線科')::text || '問'
+       (SELECT count(*) FROM quiz_question WHERE category = '放射線科')::text
+       || '問（放射線科は医学総論に統合したので0であること）'
 
 UNION ALL SELECT '7. 本文なしの設問',
        (SELECT count(*) FROM quiz_question
@@ -95,4 +97,15 @@ UNION ALL SELECT '14. 図表がないと解けない6問',
                || count(*) FILTER (WHERE status = 'published')::text || '問'
         FROM quiz_question
         WHERE blueprint_code IN ('114-C-14', '117-C-30', '117-E-22',
-                                 '117-F-33', '119-C-15', '119-C-22'));
+                                 '117-F-33', '119-C-15', '119-C-22'))
+
+UNION ALL SELECT '15. 科目名でない分野（CBT / 国試）',
+       -- 0でなければ演習画面で同じ科目が2行に分かれて出る（fix_categories.sql）。
+       -- 科目の一覧は quiz/categories.py の CBT_CATEGORIES / KOKUSHI_CATEGORIES と同じにする
+       -- （tests/test_sql_scripts.py が突き合わせる）。
+       (SELECT count(*) FROM quiz_question WHERE exam_type = 'CBT'
+          AND category NOT IN ('循環器', '消化器', '内分泌・代謝', '呼吸器', '腎臓', '泌尿器', '神経', '血液', '免疫・膠原病', '感染症', '腫瘍', '基礎医学', '皮膚', '運動器', '眼', '耳鼻咽喉', '精神', '小児（成長と発達）', '産婦人科', '救急・中毒・麻酔', '医学総論・公衆衛生・診療の基本'))::text
+       || '問 / '
+       || (SELECT count(*) FROM quiz_question WHERE exam_type = 'KOKUSHI'
+          AND category NOT IN ('循環器', '消化管', '肝・胆・膵', '代謝・内分泌', '腎臓', '泌尿器', '呼吸器', '神経', '血液', '免疫・膠原病', '感染症', '救急・中毒・麻酔', '医学総論', '小児科', '婦人科・乳腺外科', '産科', '眼科', '耳鼻咽喉科', '整形外科', '精神科', '皮膚科', '公衆衛生'))::text
+       || '問（どちらも0であること）';

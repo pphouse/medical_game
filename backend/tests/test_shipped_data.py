@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 
+from quiz.categories import CATEGORIES_BY_EXAM, normalize
 from quiz.data_checks import (
     BODY_KANJI_AFTER_DIGIT,
     BRACKET_LOOKALIKE,
@@ -252,6 +253,56 @@ class TestShippedData:
             and not any("—" in c["text"] for c in q["choices"])
         ]
         assert not bad, "組合せ問題に列の区切りが無い:\n" + "\n".join(bad)
+
+    def test_categories_belong_to_their_exam(self, path):
+        """分野名はその試験種別の正規の科目名で、取り込み直しても変わらない。
+
+        演習画面の科目一覧は分野名の DISTINCT なので、正規名でない名前が
+        1つでも混ざると同じ科目が2行に分かれて出る（「放射線」と「放射線科」、
+        「麻酔」と「救急・中毒・麻酔」が並んでいた）。国試の科目名を CBT の
+        設問に付けるような試験種別の取り違えも同じ見え方になる。
+
+        取り込みは分野名を normalize() に通してから保存するので、ここで
+        値が変わるなら、同梱データと取り込み後の DB が食い違う。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = []
+        for q in payload.get("questions", []):
+            exam = q["exam_type"]
+            code = q.get("blueprint_code") or q.get("id") or "?"
+            if q["category"] not in CATEGORIES_BY_EXAM[exam]:
+                bad.append(f"{code}: 「{q['category']}」は{exam}の科目ではない")
+                continue
+            text = "\n".join(
+                [q["question_text"], q.get("disease", q.get("topic", ""))]
+                + [str(c.get("text", "")) for c in q["choices"] if isinstance(c, dict)]
+            )
+            got = normalize(
+                q["category"], text, blueprint_code=q.get("blueprint_code", ""), exam_type=exam
+            )
+            if got != q["category"]:
+                bad.append(f"{code}: 取り込むと「{q['category']}」→「{got}」")
+        assert not bad, "分野名の食い違い:\n" + "\n".join(bad)
+
+    def test_no_series_questions(self, path):
+        """四連問（question_sets / タイプQ）を同梱データに入れない。
+
+        四連問は、同じ症例で1問答えるたびに所見が明かされて臨床推論が進む、
+        4問でひとつのストーリーになった出題のこと。いまの演習画面は各設問を
+        科目の一覧に1問ずつ並べ、どれからでも開ける作りなので、4問を順に
+        解かせることができない（「四連問 2/4」の印だけが付いた単問になる）。
+        そのため同梱の2セットは症例文を各設問の頭に付けて単問にほどき、
+        内容の科目（循環器・消化器）に入れた。順に解かせる画面ができるまでは
+        入れない。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        assert not payload.get("question_sets"), "四連問のセットが入っている"
+        series = [
+            q.get("id") or q.get("blueprint_code")
+            for q in payload.get("questions", [])
+            if q.get("question_type") == "Q"
+        ]
+        assert not series, f"タイプQの設問が入っている: {series}"
 
     def test_question_text_is_not_empty(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))

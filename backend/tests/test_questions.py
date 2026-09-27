@@ -172,6 +172,50 @@ class TestImportCommand:
         assert all(s.status == Question.Status.PENDING for s in steps)
         assert all(s.question_type == Question.QuestionType.SEQUENTIAL for s in steps)
 
+    @staticmethod
+    def _write(tmp_path, questions):
+        path = tmp_path / "batch.json"
+        payload = {"meta": {"batch_id": "t"}, "questions": questions}
+        path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        return path
+
+    @staticmethod
+    def _question(category="循環器", text="心不全の設問" * 5, choice_prefix="選択肢"):
+        return {
+            "id": "t-001",
+            "exam_type": "CBT",
+            "category": category,
+            "question_text": text,
+            "choices": [{"id": k, "text": f"{choice_prefix}{k}"} for k in "ABCDE"],
+            "correct_choice_id": "B",
+            "explanation": "解説" * 50,
+        }
+
+    def test_reimport_after_recategorizing_does_not_duplicate(self, tmp_path):
+        """分野名を直してから取り込み直しても、同じ設問は増えない。
+
+        以前は分野名と本文の組で既存の行を探していたので、分野名が変わると
+        別の設問とみなして2つ目を作り、古い分野名の行も残っていた。演習画面で
+        同じ科目が2行に分かれて出た原因の1つ。
+        """
+        call_command("import_questions", "--file", str(self._write(tmp_path, [self._question()])))
+        call_command(
+            "import_questions",
+            "--file",
+            str(self._write(tmp_path, [self._question(category="呼吸器")])),
+        )
+        assert Question.objects.filter(question_text="心不全の設問" * 5).count() == 1
+
+    def test_same_stem_with_different_choices_are_separate_questions(self, tmp_path):
+        """本文が同じでも選択肢が違えば別の設問（国試に実例がある）。"""
+        stem = "医師の職業倫理に反するのはどれか。"
+        questions = [
+            self._question(text=stem, choice_prefix="第1問"),
+            self._question(text=stem, choice_prefix="第2問"),
+        ]
+        call_command("import_questions", "--file", str(self._write(tmp_path, questions)))
+        assert Question.objects.filter(question_text=stem).count() == 2
+
 
 class TestBundledCoreBatch:
     """同梱の編集バッチ(cbt_batch_core_2026.json)が検証器の必須ゲートを
@@ -221,8 +265,10 @@ class TestBundledCoreBatch:
         # すべて審査待ちで入る（人手レビュー前に出題されない, spec 2-1）
         assert imported.count() >= 300
         assert not imported.exclude(status=Question.Status.PENDING).exists()
-        # 四連問が2セット取り込まれている
-        assert QuestionSet.objects.count() == 2
+        # 同梱データに四連問は無い（2セットあったが単問にほどいた。
+        # test_shipped_data.py の test_no_series_questions を参照）
+        assert QuestionSet.objects.count() == 0
+        assert not imported.filter(question_type=Question.QuestionType.SEQUENTIAL).exists()
 
 
 class TestBundledKokushiBatches:
@@ -367,6 +413,42 @@ class TestSeedDemoSamples:
         # サンプルの設問文がそのまま入っていること。
         for q in SAMPLE_QUESTIONS[:3]:
             assert Question.objects.filter(question_text=q["question_text"]).exists()
+
+    def test_seed_demo_uses_each_exams_category_names(self, db):
+        """見本の分野名は、その試験種別の科目名に寄せてから保存する。
+
+        見本は「内分泌代謝」「消化器」と書いてあり、どちらも国試の科目名では
+        ない（CBT でも「内分泌・代謝」）。そのまま入れると演習画面で同じ
+        科目が別の行に分かれる。2回流しても見本は増えない。
+        """
+        from django.core.management import call_command
+
+        from quiz.categories import CATEGORIES_BY_EXAM
+        from quiz.models import Question
+
+        call_command("seed_demo")
+        call_command("seed_demo")
+        for exam, names in CATEGORIES_BY_EXAM.items():
+            stray = set(
+                Question.objects.filter(exam_type=exam)
+                .exclude(category__in=names)
+                .values_list("category", flat=True)
+            )
+            assert not stray, f"{exam} に科目名でない分野: {stray}"
+        from quiz.management.commands.seed_demo import SAMPLE_QUESTIONS
+
+        assert Question.objects.count() == len(SAMPLE_QUESTIONS)
+
+    def test_bundled_batch_stores_explanation_text(self, db):
+        """build_explanation は組を返すので、そのまま解説に入れてはいけない。"""
+        from django.core.management import call_command
+
+        from quiz.models import Question
+
+        call_command("seed_demo", "--with-batch")
+        broken = Question.objects.filter(explanation__startswith="(").count()
+        assert broken == 0, f"解説にタプルがそのまま入った設問: {broken}"
+        assert Question.objects.exclude(choice_explanations={}).exists()
 
     def test_correct_answer_is_among_the_choices(self):
         """設問文を後から書いたので、正答と選択肢の対応が崩れていないか見る。"""

@@ -489,7 +489,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-A-30",
-      "category": "泌尿器科",
+      "category": "泌尿器",
       "difficulty": "standard",
       "question_text": "42歳の男性。下腹部痛と悪心を主訴に来院した。生来健康で、半年前の定期健診でも異常は指摘されなかった。朝食後に右側腹部に張る感じがあり、次第に痛みへと変わり、急速に激痛となった。うずくまってじっとしているうちに数分で痛みは一旦改善したが10分ほどで悪化し、悪心とともに嘔吐した。その後も数分から10数分の周期で痛みと悪心があり、タクシーで来院した。発熱は認めない。痛みは下方へと少しずつ移動しており来院時には右下腹部痛を認めるが、右側腹部から背部のこわばるような違和感も持続している。予想される所見はどれか。",
       "choices": [
@@ -4297,7 +4297,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-6",
-      "category": "泌尿器科",
+      "category": "肝・胆・膵",
       "difficulty": "standard",
       "question_text": "腹部診察所見と疾患の組合せで正しいのはどれか。",
       "choices": [
@@ -4841,7 +4841,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-E-24",
-      "category": "泌尿器科",
+      "category": "泌尿器",
       "difficulty": "standard",
       "question_text": "尿閉の原疾患として正しいのはどれか。",
       "choices": [
@@ -5317,7 +5317,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "116-F-3",
-      "category": "放射線科",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "最も放射線感受性が低いのはどれか。",
       "choices": [

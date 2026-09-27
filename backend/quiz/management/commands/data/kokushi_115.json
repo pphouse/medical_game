@@ -2835,7 +2835,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "115-C-22",
-      "category": "泌尿器科",
+      "category": "泌尿器",
       "difficulty": "standard",
       "question_text": "男性の尿道カテーテル留置に際し、適切なのはどれか。",
       "choices": [
@@ -3005,7 +3005,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "115-C-43",
-      "category": "泌尿器科",
+      "category": "泌尿器",
       "difficulty": "standard",
       "question_text": "71歳の男性。尿失禁を主訴に来院した。2年前から夜間に尿意で目が覚めてトイレに行くようになり、3か月前からその頻度が増えてきた。高血圧症で内服治療中である。身長172cm、体重69kg。体温36.4°C。脈拍80/分、整。血圧140/80 mmHg。下腹部に弾性軟の腫瘤を触知する。直腸指診で4cm大の弾性硬の前立腺を触知し、圧痛を認めない。腹部超音波検査で膀胱内に大量の尿貯留を認める。治療として適切なのはどれか。",
       "choices": [
@@ -5657,7 +5657,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "115-F-21",
-      "category": "放射線科",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "100mGy以上の放射線被曝が原因で胎児奇形(構造異常)が発生する可能性が高い時期はどれか。",
       "choices": [

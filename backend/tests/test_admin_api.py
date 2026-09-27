@@ -348,6 +348,40 @@ class TestAdminCategoryGate:
         )
         assert res.status_code == 400
 
+    def test_other_exams_category_is_rejected(self):
+        """国試の設問に CBT の科目名は付けられない（逆も同じ）。
+
+        分野名の検査が CBT と国試を合わせた一覧で行われていたので、国試の
+        「小児科」を CBT の設問に付けても通っていた。演習画面の科目一覧は
+        分野名の DISTINCT なので、同じ科目が別の行として並んでしまう。
+        """
+        client, _ = admin_client()
+        res = client.post(
+            "/api/admin/questions/",
+            {**self.payload, "exam_type": "CBT", "category": "小児科"},
+            format="json",
+        )
+        assert res.status_code == 400
+        assert "小児（成長と発達）" in str(res.json()["category"])
+        res = client.post(
+            "/api/admin/questions/",
+            {**self.payload, "exam_type": "KOKUSHI", "category": "運動器"},
+            format="json",
+        )
+        assert res.status_code == 400
+        assert "整形外科" in str(res.json()["category"])
+
+    def test_changing_only_the_exam_type_rechecks_the_category(self):
+        """試験種別だけを変えても、元の分野名が新しい試験の科目か確かめる。"""
+        client, _ = admin_client()
+        question = make_question(category="小児（成長と発達）", exam_type="CBT")
+        res = client.patch(
+            f"/api/admin/questions/{question.id}/", {"exam_type": "KOKUSHI"}, format="json"
+        )
+        assert res.status_code == 400
+        question.refresh_from_db()
+        assert question.exam_type == "CBT"
+
     def test_stats_exposes_the_canon_for_the_dropdown(self):
         from quiz.categories import CATEGORIES_BY_EXAM
 

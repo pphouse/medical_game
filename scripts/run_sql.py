@@ -19,7 +19,7 @@ Supabase の SQL Editor は1クエリ1MB前後が上限で、分割したファ�
    なくファイルに置いて `set -a; . ./.env; set +a` で読むのが安全。
 
 使い方:
-    python scripts/run_sql.py scripts/sql/apply_categories.sql
+    python scripts/run_sql.py scripts/sql/fix_categories.sql
     python scripts/run_sql.py scripts/sql/repair_question_text_*.sql
     python scripts/run_sql.py --dry-run scripts/sql/*.sql
 """

@@ -10,7 +10,7 @@
 
 from django.core.management.base import BaseCommand
 
-from quiz.categories import CATEGORY_ORDER, normalize
+from quiz.categories import CATEGORIES_BY_EXAM, normalize
 from quiz.models import Question
 
 BATCH = 500
@@ -29,7 +29,7 @@ def question_text_for_classification(q: Question) -> str:
 
 
 class Command(BaseCommand):
-    help = "問題の分野名を正規の分野立て（循環器・呼吸器…公衆衛生・４連問）に揃える。"
+    help = "問題の分野名を、試験種別ごとの正規の科目立てに揃える。"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -74,12 +74,16 @@ class Command(BaseCommand):
         if dry_run:
             return
 
-        remaining = sorted(
-            Question.objects.exclude(category__in=CATEGORY_ORDER)
-            .values_list("category", flat=True)
-            .distinct()
-        )
-        if remaining:
-            self.stdout.write(
-                self.style.WARNING(f"正規名でない分野が残っています: {remaining}")
+        # 試験種別ごとに見る。両方の科目を合わせた一覧で見ると、CBT の設問に
+        # 国試の「小児科」が付いているような取り違えを見逃す。
+        for exam, names in CATEGORIES_BY_EXAM.items():
+            remaining = sorted(
+                Question.objects.filter(exam_type=exam)
+                .exclude(category__in=names)
+                .values_list("category", flat=True)
+                .distinct()
             )
+            if remaining:
+                self.stdout.write(
+                    self.style.WARNING(f"{exam} に正規名でない分野が残っています: {remaining}")
+                )
