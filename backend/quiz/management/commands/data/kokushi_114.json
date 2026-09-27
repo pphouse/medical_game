@@ -285,7 +285,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-A-11",
-      "category": "産科",
+      "category": "免疫・膠原病",
       "difficulty": "standard",
       "question_text": "挙児希望のある関節リウマチの女性に対して、妊娠前にあらかじめ中止すべき治療薬はどれか。",
       "choices": [
@@ -659,7 +659,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-A-51",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "52歳の男性。意識障害のため同僚とともに来院した。倉庫内でガソリンエンジンを動力源とするコンクリートカッターを使用して鉄筋コンクリートの床面の切断作業を行っていたが、うずくまるようにして倒れているのを発見された。コンクリートカッターは作動したまま、放置されていた。意識はもうろうとしていたが、外傷はなかったため、社用車で来院した。同所で作業し、ともに来院した同僚3名は頭痛や悪心の症状を訴えている。意識レベルはJCSII-10。体温36.8°C。脈拍88/分、整。血圧146/80mmHg。呼吸数24/分。SpO297%(room air)。顔色は紅潮している。心音と呼吸音とに異常を認めない。腹部は平坦、軟で、肝・脾を触知しない。四肢の筋緊張は低下している。まず行うべき処置はどれか。",
       "choices": [
@@ -1373,7 +1373,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-B-23",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "散瞳を認めるのはどれか。",
       "choices": [
@@ -1441,7 +1441,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-B-26",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "24歳の男性。調理中に包丁で右母指を切ったという。現場で創部をガーゼで圧迫し来院した。脈拍72/分、整。血圧110/60mmHg。呼吸数18/分。SpO298%(room air)。ガーゼによる圧迫を解除して創部を観察し止血されているのを確認したが、この際に創部を見た患者が気分不快を訴えた。顔面は蒼白で多量の発汗を認める。直ちに行うべき対応はどれか。",
       "choices": [
@@ -1985,7 +1985,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-C-3",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "乳児の心肺蘇生法で正しいのはどれか。",
       "choices": [
@@ -2223,7 +2223,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-C-12",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "食中毒について正しいのはどれか。",
       "choices": [
@@ -2359,7 +2359,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-C-18",
-      "category": "放射線科",
+      "category": "放射線",
       "difficulty": "standard",
       "question_text": "被験者の検査1回当たりの放射線被ばくが最も多いのはどれか。",
       "choices": [
@@ -3345,7 +3345,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-D-35",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "21歳の男性。手指の震えを主訴に来院した。18歳時から事務仕事をしていたが、昨年から週に3日午前中、派遣先の大型塗料店で在庫管理の仕事をしている。4日前と一昨日離島でダイビングをし、一昨日の夕方、ジェット旅客機に搭乗し帰宅した。帰路、天候が悪く、機体の揺れのため席から離れることができなかった。帰宅日の就寝時、右中指の近位指節間関節が痛いのに気付いた。昨日も指先の感覚に違和感を覚えたという。本日、字を書く時に指先が震えるため受診した。最も考えられるのはどれか。",
       "choices": [
@@ -3719,7 +3719,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-E-2",
-      "category": "救急・中毒・麻酔",
+      "category": "麻酔",
       "difficulty": "standard",
       "question_text": "局所麻酔下で患者に外科的処置を行う際の正しい方法はどれか。",
       "choices": [
@@ -4739,7 +4739,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-E-39",
-      "category": "泌尿器科",
+      "category": "泌尿器",
       "difficulty": "standard",
       "question_text": "71歳の男性。6か月前からの排尿困難と夜間頻尿を主訴に来院した。既往歴および家族歴に特記すべきことはない。身長162cm、体重60kg。体温36.4°C。脈拍72/分、整。血圧154/82mmHg。呼吸数14/分。腹部は平坦、軟で、肝・脾を触知しない。直腸指診で横径40mm程度の前立腺を触知するが硬結を認めない。尿所見:蛋白(−)、糖(−)、沈渣に赤血球と白血球とを認めない。血清PSA2.5 ng/mL(基準4.0以下)。国際前立腺症状スコア28点(軽症0〜7点、中等症8〜19点、重症20〜35点)。腹部超音波検査で推定前立腺体積60mL。尿流測定で排尿量120mL、最大尿流率2.5mL/秒、残尿量240mL。治療薬として適切でないのはどれか。",
       "choices": [
@@ -5181,7 +5181,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-F-9",
-      "category": "放射線科",
+      "category": "放射線",
       "difficulty": "standard",
       "question_text": "四肢の転移性骨腫瘍に対する放射線治療で最も期待される効果はどれか。",
       "choices": [
@@ -5623,7 +5623,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "114-F-38",
-      "category": "泌尿器科",
+      "category": "泌尿器",
       "difficulty": "standard",
       "question_text": "5歳の男児。夜尿を主訴に父親に連れられて来院した。毎晩夜尿があり、これまでに夜間おむつがとれたことがない。日中の尿失禁はないという。尿所見:比重1.030、蛋白(−)、糖(−)、潜血(−)、沈渣は赤血球0〜1/HPF、白血球1〜4/HPF。腹部超音波検査で両側の腎と膀胱とに異常を認めない。父親への説明として適切でないのはどれか。",
       "choices": [

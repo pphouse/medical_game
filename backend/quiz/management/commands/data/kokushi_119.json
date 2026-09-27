@@ -183,7 +183,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-A-8",
-      "category": "泌尿器科",
+      "category": "泌尿器",
       "difficulty": "standard",
       "question_text": "尿路結石症の予防で正しいのはどれか。",
       "choices": [
@@ -2053,7 +2053,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-B-32",
-      "category": "腎臓",
+      "category": "医学総論",
       "difficulty": "standard",
       "question_text": "75歳の男性。下行結腸癌術後、肝転移のため在宅療養中である。3年前に下行結腸癌で手術を受けた。1年前に肝転移を診断されたが、薬物による抗癌治療は選択しなかった。1か月前から食欲不振が出現し、在宅で1日1,500mLの維持輸液が開始された。その後徐々にベッド上で過ごすことが多くなり、2週間前から両下腿の浮腫が増悪している。最近では喀痰が増えてきて、心配した妻から主治医が相談を受けた。妻と2人暮らしで、患者本人と妻は自宅での療養の継続と自宅での看取りを希望している。身長165cm、体重52kg。体温36.2°C。脈拍92/分、整。血圧90/60 mmHg。呼吸数18/分。SpO2 96%(room air)。呼吸音は両側胸部で減弱しており、coarse cracklesと軽度のwheezesを聴取する。心窩部に径 4cmの有痛性の腫瘤を触知する。両下腿に著明な浮腫を認める。まず行うのはどれか。",
       "choices": [
@@ -2801,7 +2801,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-C-8",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "病院搬入時にショックを合併する鈍的外傷患者のエックス線撮影で、胸部とともに撮影する部位はどれか。",
       "choices": [
@@ -2869,7 +2869,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-C-10",
-      "category": "泌尿器科",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "尿所見で、潜血3+、沈渣に赤血球1〜4/HPFを示すのはどれか。",
       "choices": [
@@ -3277,7 +3277,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-C-26",
-      "category": "呼吸器",
+      "category": "免疫・膠原病",
       "difficulty": "standard",
       "question_text": "自己抗体と臓器障害の組合せで正しいのはどれか。",
       "choices": [
@@ -3719,7 +3719,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-C-47",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "58歳の女性。既往歴に特記すべきことはない。昨日、交通事故で死亡した息子の通夜があった。息子の傍にいたいと言って棺が安置されている部屋に行ったまま、朝になっても帰ってこないのを不審に思った夫が部屋に行ったところ、棺内に上半身を入れた状態で死亡しているのを発見した。死因で考えられるのはどれか。",
       "choices": [
@@ -4263,7 +4263,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-D-4",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "食中毒の予防で加熱が最も有効なのはどれか。",
       "choices": [
@@ -4297,7 +4297,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-D-5",
-      "category": "泌尿器科",
+      "category": "泌尿器",
       "difficulty": "standard",
       "question_text": "膀胱鏡検査をする体位で、最も適切なのはどれか。",
       "choices": [
@@ -5249,7 +5249,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-D-55",
-      "category": "泌尿器科",
+      "category": "泌尿器",
       "difficulty": "standard",
       "question_text": "44歳の男性。下腹部痛を主訴に来院した。昨日落馬して会陰部を打撲した後から排尿を認めない。意識は清明。体温36.4°C。脈拍88/分、整。血圧142/86 mmHg。会陰部の皮下に出血斑を認める。血液所見:赤血球348万、Hb11.4g/dL、Ht33%、白血球8,800、血小板20万。血液生化学所見:総蛋白6.8g/dL、アルブミン3.6g/dL、尿素窒素22mg/dL、クレアチニン0.9mg/dL。CRP0.4mg/dL。腹部超音波検査で多量の尿で拡張している膀胱を認める。逆行性尿道造影検査で膀胱は描出されなかった。適切な対応はどれか。",
       "choices": [
@@ -7119,7 +7119,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "119-F-11",
-      "category": "放射線科",
+      "category": "放射線",
       "difficulty": "standard",
       "question_text": "原発巣コントロール良好な転移性脳腫瘍の治療で、定位放射線照射が適切なのはどれか。",
       "choices": [

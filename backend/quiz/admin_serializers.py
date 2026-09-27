@@ -8,7 +8,7 @@ status を read_only にしているので（フェーズ7: 投稿者が自分�
 
 from rest_framework import serializers
 
-from .categories import CATEGORY_ORDER, normalize
+from .categories import CATEGORIES_BY_EXAM, CATEGORY_ORDER, normalize
 from .models import Question, QuestionReport
 from .serializers import VALID_CHOICE_KEYS
 
@@ -116,7 +116,31 @@ class AdminQuestionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"correct_choice_key": "正解キーが選択肢に存在しません。"}
             )
+        self._validate_category_for_exam(attrs)
         return attrs
+
+    def _validate_category_for_exam(self, attrs):
+        """分野名がその設問の試験種別の科目か。
+
+        validate_category は CBT と国試を合わせた一覧で見ているので、国試の
+        設問に CBT の科目名（「小児（成長と発達）」など）を付けても通って
+        しまう。そうなると演習画面の科目一覧は分野名の DISTINCT なので、
+        同じ科目が別の行として並ぶ。試験種別だけを変えた場合も、元の分野名が
+        新しい試験の科目か確かめる必要があるので、足りない側は保存済みの
+        値で補う。
+        """
+        category = attrs.get("category", getattr(self.instance, "category", None))
+        exam_type = attrs.get("exam_type", getattr(self.instance, "exam_type", None))
+        names = CATEGORIES_BY_EXAM.get(exam_type)
+        if not category or names is None or category in names:
+            return
+        label = "医師国家試験" if exam_type == "KOKUSHI" else exam_type
+        fixed = normalize(category, exam_type=exam_type)
+        raise serializers.ValidationError(
+            {
+                "category": f"「{category}」は{label}の科目ではありません。「{fixed}」を指定してください。"
+            }
+        )
 
 
 class AdminReportSerializer(serializers.ModelSerializer):

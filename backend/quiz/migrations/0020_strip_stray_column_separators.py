@@ -76,6 +76,6 @@ def noop(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [("quiz", "0018_split_radiology_and_anesthesia")]
+    dependencies = [("quiz", "0019_split_radiology_and_anesthesia")]
 
     operations = [migrations.RunPython(strip_separators, noop)]

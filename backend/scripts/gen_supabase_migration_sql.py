@@ -27,31 +27,6 @@ REVIEWED_BATCHES = (
     "kokushi_batch_anesthesia_radiology_2026.json",
 )
 
-# quiz/0013 と同じ。取り込み時期でばらけた救急系の旧名。
-# 「麻酔」はこの表に入れない。0018 のあとは国試の正規の科目名なので、
-# 入れるともう一度流したときに救急へ吸われてしまう（CBTの「麻酔」だけは
-# 別の UPDATE で寄せる）。同じ理由で 0015 の表からも「泌尿器」を外してある。
-EMERGENCY_LEGACY = [
-    "中毒", "中毒・環境", "中毒・環境異常症", "中毒・物理化学的因子",
-    "救急", "救急系", "救急・中毒", "救急・集中治療", "麻酔科",
-]
-
-# quiz/0014 と同じ。放射線そのものを主題にした設問の語。
-RADIOLOGY_SUBJECT_MARKERS = [
-    "放射線被ばく", "放射線被曝", "被曝線量", "被ばく線量", "密封線源",
-    "放射性物質", "定位放射線", "放射線治療で最も", "放射線療法で最も",
-    "放射線宿酔",
-]
-
-# quiz/0016 と同じ。膠原病そのものを主題にした設問の語。
-IMMUNOLOGY_MARKERS = [
-    "関節リウマチの", "膠原病", "自己抗体と", "抗リン脂質抗体症候群",
-    "好中球の構成成分に対する自己抗体", "ANCA関連", "Sjögren症候群",
-    "シェーグレン症候群", "皮膚筋炎", "多発性筋炎", "全身性強皮症",
-    "ベーチェット", "成人Still病", "リウマチ性多発筋痛症",
-    "結節性多発動脈炎", "顕微鏡的多発血管炎", "巨細胞性動脈炎",
-]
-
 # quiz/0018 と同じ。設問の最後の一文に出たら主題がその領域だと言える語。
 ASKED_RADIOLOGY = [
     "放射線", "被曝", "被ばく", "線量", "核医学", "シンチグラ",
@@ -62,14 +37,6 @@ ASKED_ANESTHESIA = [
     "脊髄くも膜下", "気道確保の手技", "鎮静",
 ]
 ASKED_EXCEPTIONS = ["母子健康手帳", "母子保健法", "検疫法", "社会保障", "医療費"]
-
-# quiz/categories.UROLOGY_KEYWORDS と同じ（0017 が使う）。
-UROLOGY_KEYWORDS = [
-    "前立腺", "膀胱", "尿管", "尿道", "精巣", "陰茎", "陰囊", "陰嚢", "精索",
-    "尿路結石", "腎結石", "水腎症", "腎細胞癌", "腎盂", "尿路上皮",
-    "排尿障害", "尿閉", "夜間頻尿", "過活動膀胱", "神経因性膀胱",
-    "包茎", "停留精巣", "精巣捻転", "腎摘", "TUR",
-]
 
 APPLIED = [
     ("quiz", "0008_strip_explanation_boilerplate"),
@@ -82,8 +49,9 @@ APPLIED = [
     ("quiz", "0015_merge_urology_into_kidney"),
     ("quiz", "0016_consolidate_small_subjects"),
     ("quiz", "0017_split_kidney_and_urology"),
-    ("quiz", "0018_split_radiology_and_anesthesia"),
-    ("quiz", "0019_strip_stray_column_separators"),
+    ("quiz", "0018_unpack_series_and_align_categories"),
+    ("quiz", "0019_split_radiology_and_anesthesia"),
+    ("quiz", "0020_strip_stray_column_separators"),
     ("exams", "0007_monthly_kokushi_is_for_fifth_year_and_up"),
     ("exams", "0008_rename_cbt_once_title"),
     ("exams", "0009_alter_mockexam_kind_label"),
@@ -102,14 +70,6 @@ def json_lit(value):
 
 def text_array(values):
     return "ARRAY[" + ", ".join(lit(v) for v in values) + "]"
-
-
-def in_list(values):
-    return "(" + ", ".join(lit(v) for v in values) + ")"
-
-
-def like_any(column, needles):
-    return "(" + "\n       OR ".join(f"{column} LIKE {lit('%' + n + '%')}" for n in needles) + ")"
 
 
 def insert_statements():
@@ -144,14 +104,19 @@ TEMPLATE = """\
 --
 -- backend/scripts/gen_supabase_migration_sql.py が生成。手で直さないこと。
 --
--- 使い方: 全文をコピーして SQL Editor に貼り、実行する。
+-- 使い方:
+--   1. 先に scripts/sql/fix_categories.sql を流す（＝マイグレーション 0018。
+--      四連問を単問にほどき、分野を同梱データへそろえる）。
+--   2. そのあとでこの全文をコピーして SQL Editor に貼り、実行する。
+--
 --   * 何度流しても同じ結果になる（途中まで当たっていても流してよい）。
 --   * 全体が1つのトランザクションなので、途中で失敗すれば何も残らない。
 --   * `manage.py migrate` を流せるならそちらが正。これは本番DBへ直接
 --     つなげないときの逃げ道。
 --
--- 中身は quiz/0008〜0019・exams/0007〜0010 と
--- `manage.py seed_editorial_questions` と同じ。
+-- 中身は quiz/0008・0009・0010・0012・0019・0020 と exams/0007〜0010、
+-- `manage.py seed_editorial_questions` と同じ。分野の統合（0011〜0017）は
+-- fix_categories.sql が面倒を見るので、ここには入れていない。
 
 BEGIN;
 
@@ -288,64 +253,11 @@ UPDATE quiz_question
  WHERE question_text LIKE '68歳の男性。6か月前から便が細くなり%';
 
 -- ===========================================================================
--- quiz/0011, quiz/0013  救急・中毒・麻酔の旧科目名をまとめる
+-- quiz/0019  放射線と麻酔を独立した科目に切り出す
 -- ===========================================================================
-UPDATE quiz_question
-   SET category = '救急・中毒・麻酔'
- WHERE category IN {emergency_legacy};
-
--- CBT には麻酔の科目が無いので、CBTの「麻酔」もここへ寄せる。国試の
--- 「麻酔」は 0018 で立てた正規の科目名なので触らない。
-UPDATE quiz_question
-   SET category = '救急・中毒・麻酔'
- WHERE exam_type = 'CBT' AND category = '麻酔';
-
--- ===========================================================================
--- quiz/0014  放射線そのものを主題にした設問を集める（国試）
--- ===========================================================================
-UPDATE quiz_question
-   SET category = '放射線科'
- WHERE exam_type = 'KOKUSHI'
-   AND category NOT IN ('放射線科', '放射線')
-   AND {radiology_subject};
-
--- ===========================================================================
--- quiz/0015  被っていた「泌尿器科」を「腎・泌尿器」に寄せる
--- ===========================================================================
-UPDATE quiz_question
-   SET category = '腎・泌尿器'
- WHERE category IN ('泌尿器科', '泌尿器系');
-
--- ===========================================================================
--- quiz/0016  問題数の少ない科目を整理する（国試）
--- ===========================================================================
-UPDATE quiz_question
-   SET category = '免疫・膠原病'
- WHERE exam_type = 'KOKUSHI'
-   AND category <> '免疫・膠原病'
-   AND question_text NOT LIKE '%歳の%'
-   AND {immunology};
-
-UPDATE quiz_question
-   SET category = '医学総論'
- WHERE exam_type = 'KOKUSHI'
-   AND category IN ('放射線科', '必修問題');
-
--- ===========================================================================
--- quiz/0017  「腎・泌尿器」を「腎臓」と「泌尿器」に分ける
--- ===========================================================================
-UPDATE quiz_question
-   SET category = '泌尿器'
- WHERE category IN ('腎・泌尿器', '腎・尿路系')
-   AND {urology};
-
-UPDATE quiz_question
-   SET category = '腎臓'
- WHERE category IN ('腎・泌尿器', '腎・尿路系');
-
--- ===========================================================================
--- quiz/0018  放射線と麻酔を独立した科目に切り出す
--- ===========================================================================
+-- 先に fix_categories.sql（＝マイグレーション 0018）を流しておくこと。
+-- あちらが同梱データへ分野をそろえ直すので、順番が逆だとここで移した
+-- 設問が元の分野へ戻される。
 UPDATE quiz_question
    SET category = '救急・中毒'
  WHERE exam_type = 'KOKUSHI' AND category = '救急・中毒・麻酔';
@@ -408,7 +320,7 @@ END
 $asked$;
 
 -- ===========================================================================
--- quiz/0019  語の途中に紛れ込んだ列区切り "—" を落とす
+-- quiz/0020  語の途中に紛れ込んだ列区切り "—" を落とす
 -- ===========================================================================
 -- 「Bell麻痺— の症状で誤って— いるのはどれか。」のように、PDFの取り込みで
 -- 字間の広い箇所へ差し込んだ区切りが語中に入っていた。前後に空白のある
@@ -513,10 +425,6 @@ COMMIT;
 
 def main():
     sql = TEMPLATE.format(
-        emergency_legacy=in_list(EMERGENCY_LEGACY),
-        radiology_subject=like_any("question_text", RADIOLOGY_SUBJECT_MARKERS),
-        immunology=like_any("question_text", IMMUNOLOGY_MARKERS),
-        urology=like_any("question_text", UROLOGY_KEYWORDS),
         asked_radiology=text_array(ASKED_RADIOLOGY),
         asked_anesthesia=text_array(ASKED_ANESTHESIA),
         asked_exceptions=text_array(ASKED_EXCEPTIONS),

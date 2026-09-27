@@ -11,6 +11,9 @@
   CBT では麻酔の設問が無いので「救急・中毒・麻酔」のまま。
 
 設問文で判定するので、どのデータベースで流しても同じ問題が動く。
+
+0018（同梱データへ分野をそろえ直す）の後ろに置く。先に流すと、せっかく
+移した設問が同梱データの分野へ戻されてしまう。
 """
 
 import re
@@ -82,6 +85,6 @@ def noop(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [("quiz", "0017_split_kidney_and_urology")]
+    dependencies = [("quiz", "0018_unpack_series_and_align_categories")]
 
     operations = [migrations.RunPython(split, noop)]

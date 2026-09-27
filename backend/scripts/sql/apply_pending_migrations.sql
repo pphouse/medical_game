@@ -2,14 +2,19 @@
 --
 -- backend/scripts/gen_supabase_migration_sql.py が生成。手で直さないこと。
 --
--- 使い方: 全文をコピーして SQL Editor に貼り、実行する。
+-- 使い方:
+--   1. 先に scripts/sql/fix_categories.sql を流す（＝マイグレーション 0018。
+--      四連問を単問にほどき、分野を同梱データへそろえる）。
+--   2. そのあとでこの全文をコピーして SQL Editor に貼り、実行する。
+--
 --   * 何度流しても同じ結果になる（途中まで当たっていても流してよい）。
 --   * 全体が1つのトランザクションなので、途中で失敗すれば何も残らない。
 --   * `manage.py migrate` を流せるならそちらが正。これは本番DBへ直接
 --     つなげないときの逃げ道。
 --
--- 中身は quiz/0008〜0019・exams/0007〜0010 と
--- `manage.py seed_editorial_questions` と同じ。
+-- 中身は quiz/0008・0009・0010・0012・0019・0020 と exams/0007〜0010、
+-- `manage.py seed_editorial_questions` と同じ。分野の統合（0011〜0017）は
+-- fix_categories.sql が面倒を見るので、ここには入れていない。
 
 BEGIN;
 
@@ -146,113 +151,11 @@ UPDATE quiz_question
  WHERE question_text LIKE '68歳の男性。6か月前から便が細くなり%';
 
 -- ===========================================================================
--- quiz/0011, quiz/0013  救急・中毒・麻酔の旧科目名をまとめる
+-- quiz/0019  放射線と麻酔を独立した科目に切り出す
 -- ===========================================================================
-UPDATE quiz_question
-   SET category = '救急・中毒・麻酔'
- WHERE category IN ('中毒', '中毒・環境', '中毒・環境異常症', '中毒・物理化学的因子', '救急', '救急系', '救急・中毒', '救急・集中治療', '麻酔科');
-
--- CBT には麻酔の科目が無いので、CBTの「麻酔」もここへ寄せる。国試の
--- 「麻酔」は 0018 で立てた正規の科目名なので触らない。
-UPDATE quiz_question
-   SET category = '救急・中毒・麻酔'
- WHERE exam_type = 'CBT' AND category = '麻酔';
-
--- ===========================================================================
--- quiz/0014  放射線そのものを主題にした設問を集める（国試）
--- ===========================================================================
-UPDATE quiz_question
-   SET category = '放射線科'
- WHERE exam_type = 'KOKUSHI'
-   AND category NOT IN ('放射線科', '放射線')
-   AND (question_text LIKE '%放射線被ばく%'
-       OR question_text LIKE '%放射線被曝%'
-       OR question_text LIKE '%被曝線量%'
-       OR question_text LIKE '%被ばく線量%'
-       OR question_text LIKE '%密封線源%'
-       OR question_text LIKE '%放射性物質%'
-       OR question_text LIKE '%定位放射線%'
-       OR question_text LIKE '%放射線治療で最も%'
-       OR question_text LIKE '%放射線療法で最も%'
-       OR question_text LIKE '%放射線宿酔%');
-
--- ===========================================================================
--- quiz/0015  被っていた「泌尿器科」を「腎・泌尿器」に寄せる
--- ===========================================================================
-UPDATE quiz_question
-   SET category = '腎・泌尿器'
- WHERE category IN ('泌尿器科', '泌尿器系');
-
--- ===========================================================================
--- quiz/0016  問題数の少ない科目を整理する（国試）
--- ===========================================================================
-UPDATE quiz_question
-   SET category = '免疫・膠原病'
- WHERE exam_type = 'KOKUSHI'
-   AND category <> '免疫・膠原病'
-   AND question_text NOT LIKE '%歳の%'
-   AND (question_text LIKE '%関節リウマチの%'
-       OR question_text LIKE '%膠原病%'
-       OR question_text LIKE '%自己抗体と%'
-       OR question_text LIKE '%抗リン脂質抗体症候群%'
-       OR question_text LIKE '%好中球の構成成分に対する自己抗体%'
-       OR question_text LIKE '%ANCA関連%'
-       OR question_text LIKE '%Sjögren症候群%'
-       OR question_text LIKE '%シェーグレン症候群%'
-       OR question_text LIKE '%皮膚筋炎%'
-       OR question_text LIKE '%多発性筋炎%'
-       OR question_text LIKE '%全身性強皮症%'
-       OR question_text LIKE '%ベーチェット%'
-       OR question_text LIKE '%成人Still病%'
-       OR question_text LIKE '%リウマチ性多発筋痛症%'
-       OR question_text LIKE '%結節性多発動脈炎%'
-       OR question_text LIKE '%顕微鏡的多発血管炎%'
-       OR question_text LIKE '%巨細胞性動脈炎%');
-
-UPDATE quiz_question
-   SET category = '医学総論'
- WHERE exam_type = 'KOKUSHI'
-   AND category IN ('放射線科', '必修問題');
-
--- ===========================================================================
--- quiz/0017  「腎・泌尿器」を「腎臓」と「泌尿器」に分ける
--- ===========================================================================
-UPDATE quiz_question
-   SET category = '泌尿器'
- WHERE category IN ('腎・泌尿器', '腎・尿路系')
-   AND (question_text LIKE '%前立腺%'
-       OR question_text LIKE '%膀胱%'
-       OR question_text LIKE '%尿管%'
-       OR question_text LIKE '%尿道%'
-       OR question_text LIKE '%精巣%'
-       OR question_text LIKE '%陰茎%'
-       OR question_text LIKE '%陰囊%'
-       OR question_text LIKE '%陰嚢%'
-       OR question_text LIKE '%精索%'
-       OR question_text LIKE '%尿路結石%'
-       OR question_text LIKE '%腎結石%'
-       OR question_text LIKE '%水腎症%'
-       OR question_text LIKE '%腎細胞癌%'
-       OR question_text LIKE '%腎盂%'
-       OR question_text LIKE '%尿路上皮%'
-       OR question_text LIKE '%排尿障害%'
-       OR question_text LIKE '%尿閉%'
-       OR question_text LIKE '%夜間頻尿%'
-       OR question_text LIKE '%過活動膀胱%'
-       OR question_text LIKE '%神経因性膀胱%'
-       OR question_text LIKE '%包茎%'
-       OR question_text LIKE '%停留精巣%'
-       OR question_text LIKE '%精巣捻転%'
-       OR question_text LIKE '%腎摘%'
-       OR question_text LIKE '%TUR%');
-
-UPDATE quiz_question
-   SET category = '腎臓'
- WHERE category IN ('腎・泌尿器', '腎・尿路系');
-
--- ===========================================================================
--- quiz/0018  放射線と麻酔を独立した科目に切り出す
--- ===========================================================================
+-- 先に fix_categories.sql（＝マイグレーション 0018）を流しておくこと。
+-- あちらが同梱データへ分野をそろえ直すので、順番が逆だとここで移した
+-- 設問が元の分野へ戻される。
 UPDATE quiz_question
    SET category = '救急・中毒'
  WHERE exam_type = 'KOKUSHI' AND category = '救急・中毒・麻酔';
@@ -315,7 +218,7 @@ END
 $asked$;
 
 -- ===========================================================================
--- quiz/0019  語の途中に紛れ込んだ列区切り "—" を落とす
+-- quiz/0020  語の途中に紛れ込んだ列区切り "—" を落とす
 -- ===========================================================================
 -- 「Bell麻痺— の症状で誤って— いるのはどれか。」のように、PDFの取り込みで
 -- 字間の広い箇所へ差し込んだ区切りが語中に入っていた。前後に空白のある
@@ -717,8 +620,9 @@ SELECT v.app, v.name, now()
            ('quiz', '0015_merge_urology_into_kidney'),
            ('quiz', '0016_consolidate_small_subjects'),
            ('quiz', '0017_split_kidney_and_urology'),
-           ('quiz', '0018_split_radiology_and_anesthesia'),
-           ('quiz', '0019_strip_stray_column_separators'),
+           ('quiz', '0018_unpack_series_and_align_categories'),
+           ('quiz', '0019_split_radiology_and_anesthesia'),
+           ('quiz', '0020_strip_stray_column_separators'),
            ('exams', '0007_monthly_kokushi_is_for_fifth_year_and_up'),
            ('exams', '0008_rename_cbt_once_title'),
            ('exams', '0009_alter_mockexam_kind_label'),

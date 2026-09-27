@@ -98,8 +98,17 @@ class TestTaxonomy:
             assert normalize("放射線科", "", None, exam) == "放射線"
 
     def test_cbt_follows_the_core_curriculum_volumes(self):
-        for name in ("基礎医学", "医学総論・公衆衛生・診療の基本", "多選択肢・4連問"):
+        for name in ("基礎医学", "医学総論・公衆衛生・診療の基本"):
             assert name in CBT_CATEGORIES
+
+    def test_question_formats_are_not_categories(self):
+        """多選択肢・4連問は出題形式の枠で、科目ではない。
+
+        科目として置いていたとき、出題基準 G-1 の単問38問（小児の症例問題）が
+        4連問でもないのにまとめてそこに入っていた。
+        """
+        assert "多選択肢・4連問" not in CBT_CATEGORIES
+        assert category_for_blueprint_code("G-1", CBT) is None
 
 
 class TestBlueprintCode:
@@ -119,7 +128,7 @@ class TestBlueprintCode:
             ("E-7", "小児（成長と発達）", "小児科"),
             ("B-1", "医学総論・公衆衛生・診療の基本", "公衆衛生"),
             ("C-2", "基礎医学", "医学総論"),
-            ("G-1", "多選択肢・4連問", "医学総論"),
+            ("G-1", None, "医学総論"),
         ],
     )
     def test_same_code_maps_per_exam(self, code, cbt, kokushi):
@@ -132,7 +141,7 @@ class TestBlueprintCode:
         assert category_for_blueprint_code(code, CBT) is None
 
     def test_section_only_codes_fall_back_to_the_section(self):
-        """A/B/C/F/G は大区分ごとに1科目へまとめてあるので、枝番が無くても引ける。"""
+        """A/B/C/F は大区分ごとに1科目へまとめてあるので、枝番が無くても引ける。"""
         assert category_for_blueprint_code("F", CBT) == "医学総論・公衆衛生・診療の基本"
         assert category_for_blueprint_code("B", KOKUSHI) == "公衆衛生"
 
@@ -158,12 +167,67 @@ class TestNormalize:
             ("血液・造血器・リンパ系", "血液", "血液"),
             ("免疫・アレルギー・膠原病", "免疫・膠原病", "免疫・膠原病"),
             ("集団に対する医療", "医学総論・公衆衛生・診療の基本", "公衆衛生"),
-            ("４連問", "多選択肢・4連問", "医学総論"),
+            # 形式の名前なので、本文が無ければ既定の科目に落ちる。
+            ("４連問", "医学総論・公衆衛生・診療の基本", "医学総論"),
         ],
     )
     def test_legacy_names_are_renamed_per_exam(self, old, cbt, kokushi):
         assert normalize(old, exam_type=CBT) == cbt
         assert normalize(old, exam_type=KOKUSHI) == kokushi
+
+    @pytest.mark.parametrize(
+        ("name", "exam", "expected"),
+        [
+            # 国試の科目名が CBT の設問に付いている
+            ("小児科", CBT, "小児（成長と発達）"),
+            ("整形外科", CBT, "運動器"),
+            ("代謝・内分泌", CBT, "内分泌・代謝"),
+            ("泌尿器科", CBT, "泌尿器"),
+            # CBT の科目名が国試の設問に付いている
+            ("小児（成長と発達）", KOKUSHI, "小児科"),
+            ("運動器", KOKUSHI, "整形外科"),
+            ("内分泌・代謝", KOKUSHI, "代謝・内分泌"),
+            ("眼", KOKUSHI, "眼科"),
+        ],
+    )
+    def test_the_other_exams_name_is_translated(self, name, exam, expected):
+        """もう一方の試験の科目名は、対応する科目へ読み替える。
+
+        読み替えが無かったときは既定の科目（医学総論）に落ちていて、
+        管理画面でも「小児科」に対して「医学総論…を指定してください」と
+        見当違いの案内を出していた。
+        """
+        assert normalize(name, "", None, exam) == expected
+
+    def test_the_retired_kidney_urology_name_is_split_by_the_text(self):
+        """科目を分ける前の「腎・泌尿器」は、本文で腎臓／泌尿器に振り分ける。
+
+        読み替えが無かったときは、本文に手掛かりが無いと既定の科目
+        （医学総論）に落ちていた。
+        """
+        assert normalize("腎・泌尿器", "前立腺肥大症で排尿困難がある。", None, CBT) == "泌尿器"
+        assert normalize("腎・泌尿器", "ネフローゼ症候群で浮腫がある。", None, KOKUSHI) == "腎臓"
+        assert normalize("腎・泌尿器", "", None, CBT) == "腎臓"
+
+    def test_stored_urology_survives_the_renal_blueprint_code(self):
+        """出題基準 D-8 は腎臓に引けるが、分野名が泌尿器ならそのまま通す。
+
+        本文に泌尿器の語が無い「尿失禁の分類」が、取り込み直すたびに
+        腎臓へ戻されていた。
+        """
+        assert normalize("泌尿器", "尿失禁の分類として正しいのはどれか。", "D-8", CBT) == "泌尿器"
+
+    def test_split_names_across_exams_are_decided_by_the_text(self):
+        """候補が2つに割れるものは本文で決める。"""
+        assert normalize("産婦人科", "妊娠32週の妊婦。", None, KOKUSHI) == "産科"
+        assert normalize("産婦人科", "子宮筋腫の患者。", None, KOKUSHI) == "婦人科・乳腺外科"
+        assert normalize("消化器", "肝硬変の患者。", None, KOKUSHI) == "肝・胆・膵"
+
+    def test_series_questions_go_to_the_organ_of_their_content(self):
+        """旧名「４連問」の設問は、本文から臓器の科目へ入る。"""
+        text = "心電図でST上昇を認め、急性心筋梗塞と診断した。"
+        assert normalize("４連問", text, exam_type=CBT) == "循環器"
+        assert normalize("多選択肢・4連問", text, exam_type=CBT) == "循環器"
 
     def test_unknown_name_is_routed_by_keywords(self):
         text = "疫学調査で罹患率とオッズ比を求めた。"
@@ -249,8 +313,8 @@ class TestSortKey:
 class TestDisplayOrderPriorities:
     """一覧の並びで決めていること。
 
-    出題数の多い消化器系・内分泌代謝・腎を先頭寄りに置き、公衆衛生は最後の
-    枠（CBTは多選択肢・4連問、国試は必修問題）の直前に置く。
+    出題数の多い循環器・消化器系・内分泌代謝・腎を先頭寄りに置き、公衆衛生は
+    一番下に置く。CBT の多選択肢・4連問は形式の枠で科目ではないので、一覧に無い。
     """
 
     def order(self, exam):
@@ -535,7 +599,7 @@ class TestEverySubjectHasEnoughQuestions:
 
 @pytest.mark.django_db
 class TestRadiologyAndAnesthesiaSplit:
-    """放射線と麻酔を独立した科目に切り出す（マイグレーション 0018）。
+    """放射線と麻酔を独立した科目に切り出す（マイグレーション 0019）。
 
     画像や全身麻酔は各科の臨床問題にも普通に出てくるので、本文に語が在る
     だけでは移さない。「何を問うているか」＝設問の最後の一文で判断する。
@@ -561,7 +625,7 @@ class TestRadiologyAndAnesthesiaSplit:
         from django.apps import apps as django_apps
 
         module = importlib.import_module(
-            "quiz.migrations.0018_split_radiology_and_anesthesia"
+            "quiz.migrations.0019_split_radiology_and_anesthesia"
         )
         module.split(django_apps, None)
 

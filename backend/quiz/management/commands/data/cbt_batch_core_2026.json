@@ -749,7 +749,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "D-8",
-      "category": "腎臓",
+      "category": "泌尿器",
       "disease": "尿路結石",
       "class_group": "",
       "difficulty": "standard",
@@ -11286,7 +11286,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "熱性けいれん",
       "class_group": "",
       "difficulty": "easy",
@@ -11327,7 +11327,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "循環器",
       "disease": "川崎病",
       "class_group": "",
       "difficulty": "standard",
@@ -11368,7 +11368,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "耳鼻咽喉",
       "disease": "クループ症候群",
       "class_group": "",
       "difficulty": "standard",
@@ -11409,7 +11409,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "消化器",
       "disease": "腸重積症",
       "class_group": "",
       "difficulty": "standard",
@@ -11450,7 +11450,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "循環器",
       "disease": "心室中隔欠損症",
       "class_group": "",
       "difficulty": "standard",
@@ -11491,7 +11491,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "腎臓",
       "disease": "微小変化型ネフローゼ症候群",
       "class_group": "",
       "difficulty": "easy",
@@ -11532,7 +11532,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "感染症",
       "disease": "麻疹",
       "class_group": "",
       "difficulty": "hard",
@@ -11573,7 +11573,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "消化器",
       "disease": "先天性肥厚性幽門狭窄症",
       "class_group": "",
       "difficulty": "standard",
@@ -11614,7 +11614,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "呼吸器",
       "disease": "RSウイルス細気管支炎",
       "class_group": "",
       "difficulty": "standard",
@@ -11655,7 +11655,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "感染症",
       "disease": "手足口病",
       "class_group": "",
       "difficulty": "easy",
@@ -11860,7 +11860,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "D-8",
-      "category": "腎臓",
+      "category": "泌尿器",
       "disease": "腎細胞癌",
       "class_group": "",
       "difficulty": "standard",
@@ -14730,7 +14730,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "F-2",
-      "category": "医学総論・公衆衛生・診療の基本",
+      "category": "放射線",
       "disease": "エックス線検査と被曝",
       "class_group": "",
       "difficulty": "standard",
@@ -16329,7 +16329,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "E-3",
-      "category": "腫瘍",
+      "category": "放射線",
       "disease": "がんの3大治療",
       "class_group": "",
       "difficulty": "standard",
@@ -23996,7 +23996,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "D-8",
-      "category": "泌尿器",
+      "category": "腎臓",
       "disease": "IgA腎症",
       "class_group": "",
       "difficulty": "standard",
@@ -24037,7 +24037,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "D-8",
-      "category": "泌尿器",
+      "category": "腎臓",
       "disease": "急性糸球体腎炎",
       "class_group": "",
       "difficulty": "standard",
@@ -24693,7 +24693,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "D-8",
-      "category": "腎臓",
+      "category": "泌尿器",
       "disease": "尿失禁の分類",
       "class_group": "",
       "difficulty": "standard",
@@ -24816,7 +24816,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "D-8",
-      "category": "泌尿器",
+      "category": "腎臓",
       "disease": "腎前性と腎性の鑑別",
       "class_group": "",
       "difficulty": "hard",
@@ -32934,7 +32934,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "新生児蘇生",
       "class_group": "",
       "difficulty": "hard",
@@ -32975,7 +32975,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "新生児黄疸",
       "class_group": "",
       "difficulty": "standard",
@@ -33016,7 +33016,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "新生児呼吸窮迫症候群",
       "class_group": "",
       "difficulty": "hard",
@@ -33057,7 +33057,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "乳児突然死症候群",
       "class_group": "",
       "difficulty": "standard",
@@ -33098,7 +33098,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "小児の脱水と経口補水療法",
       "class_group": "",
       "difficulty": "standard",
@@ -33139,7 +33139,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "感染症",
       "disease": "ロタウイルス胃腸炎",
       "class_group": "",
       "difficulty": "standard",
@@ -33180,7 +33180,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "泌尿器",
       "disease": "停留精巣",
       "class_group": "",
       "difficulty": "standard",
@@ -33221,7 +33221,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "泌尿器",
       "disease": "膀胱尿管逆流症",
       "class_group": "",
       "difficulty": "hard",
@@ -33262,7 +33262,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "循環器",
       "disease": "起立性調節障害",
       "class_group": "",
       "difficulty": "standard",
@@ -33303,7 +33303,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "免疫・膠原病",
       "disease": "IgA血管炎",
       "class_group": "",
       "difficulty": "hard",
@@ -33344,7 +33344,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "免疫・膠原病",
       "disease": "若年性特発性関節炎",
       "class_group": "",
       "difficulty": "hard",
@@ -33385,7 +33385,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "低身長の評価",
       "class_group": "",
       "difficulty": "standard",
@@ -33426,7 +33426,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "泌尿器",
       "disease": "夜尿症",
       "class_group": "",
       "difficulty": "standard",
@@ -33467,7 +33467,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "呼吸器",
       "disease": "小児気管支喘息の管理",
       "class_group": "",
       "difficulty": "standard",
@@ -33508,7 +33508,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "救急・中毒・麻酔",
       "disease": "けいれん重積状態",
       "class_group": "",
       "difficulty": "hard",
@@ -33549,7 +33549,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "感染症",
       "disease": "伝染性紅斑",
       "class_group": "",
       "difficulty": "standard",
@@ -40273,7 +40273,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "呼吸器",
       "disease": "細気管支炎の管理",
       "class_group": "",
       "difficulty": "standard",
@@ -40314,7 +40314,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "小児の脱水の重症度",
       "class_group": "",
       "difficulty": "standard",
@@ -40355,7 +40355,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "乳児の発熱への対応",
       "class_group": "",
       "difficulty": "hard",
@@ -40396,7 +40396,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "小児の薬用量",
       "class_group": "",
       "difficulty": "standard",
@@ -40437,7 +40437,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "耳鼻咽喉",
       "disease": "急性中耳炎の小児",
       "class_group": "",
       "difficulty": "standard",
@@ -40478,7 +40478,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "消化器",
       "disease": "小児の腹痛の鑑別",
       "class_group": "",
       "difficulty": "hard",
@@ -40519,7 +40519,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "小児のけいれんと発熱",
       "class_group": "",
       "difficulty": "hard",
@@ -40560,7 +40560,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "循環器",
       "disease": "小児の心雑音の評価",
       "class_group": "",
       "difficulty": "standard",
@@ -40601,7 +40601,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "救急・中毒・麻酔",
       "disease": "小児の気道異物と窒息",
       "class_group": "",
       "difficulty": "hard",
@@ -40642,7 +40642,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "小児（成長と発達）",
       "disease": "small for gestational age児",
       "class_group": "",
       "difficulty": "hard",
@@ -40683,7 +40683,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "医学総論・公衆衛生・診療の基本",
       "disease": "小児のインフォームド・アセント",
       "class_group": "",
       "difficulty": "standard",
@@ -40724,7 +40724,7 @@
       "question_type": "M",
       "exam_type": "CBT",
       "blueprint_code": "G-1",
-      "category": "多選択肢・4連問",
+      "category": "感染症",
       "disease": "小児のワクチン接種後の対応",
       "class_group": "",
       "difficulty": "standard",
@@ -40759,312 +40759,334 @@
         "C": "原因を評価したうえで判断するもので、一律に中止するものではない。",
         "E": "当日の激しい運動は避けるが、1週間の禁止は根拠がない。"
       }
-    }
-  ],
-  "question_sets": [
+    },
     {
-      "id": "core2026-set-mi",
-      "blueprint_code": "D-5",
+      "id": "core2026-set-mi-1",
+      "question_type": "M",
       "exam_type": "CBT",
+      "blueprint_code": "D-5",
       "category": "循環器",
       "disease": "急性心筋梗塞",
       "class_group": "I",
       "difficulty": "standard",
-      "case_stem": "68歳男性。高血圧と脂質異常症で通院中。本日午前、安静時に突然の前胸部絞扼感が出現し、30分以上持続するため救急外来を受診した。冷汗を伴い、痛みは左肩に放散する。来院時、血圧142/88mmHg、脈拍96/分、整。",
-      "steps": [
+      "question_text": "68歳男性。高血圧と脂質異常症で通院中。本日午前、安静時に突然の前胸部絞扼感が出現し、30分以上持続するため救急外来を受診した。冷汗を伴い、痛みは左肩に放散する。来院時、血圧142/88mmHg、脈拍96/分、整。\n持続する前胸部絞扼感で来院したこの患者に対して、来院後まず優先して行うべき最も適切な検査はどれか。",
+      "choices": [
         {
-          "set_order": 1,
-          "phase": "診断",
-          "question_text": "持続する前胸部絞扼感で来院したこの患者に対して、来院後まず優先して行うべき最も適切な検査はどれか。",
-          "choices": [
-            {
-              "id": "A",
-              "text": "12誘導心電図"
-            },
-            {
-              "id": "B",
-              "text": "長時間の運動を負荷して行う運動負荷心電図検査"
-            },
-            {
-              "id": "C",
-              "text": "造影剤を用いて全身を評価する腹部造影CT検査"
-            },
-            {
-              "id": "D",
-              "text": "下肢の深部静脈血栓を評価する下肢静脈エコー"
-            },
-            {
-              "id": "E",
-              "text": "消化管粘膜を観察する上部消化管内視鏡検査"
-            }
-          ],
-          "correct_choice_id": "A",
-          "explanation": "持続する前胸部絞扼感では急性冠症候群を疑い、まず12誘導心電図でST変化を評価する。迅速な心電図は再灌流療法の適応判断に直結する。心電図は来院後10分以内の記録が推奨され、経時的な再検も重要である。",
-          "distractor_rationale": {
-            "B": "急性冠症候群が疑われる胸痛に運動負荷は危険で禁忌である。",
-            "C": "急性冠症候群の初期評価として適切でない。",
-            "D": "肺塞栓の評価で、胸痛の初期評価の第一選択でない。",
-            "E": "胸痛の原因検索でまず行う検査ではない。"
-          }
+          "id": "A",
+          "text": "12誘導心電図"
         },
         {
-          "set_order": 2,
-          "phase": "検査",
-          "question_text": "心電図でV1〜V4誘導のST上昇を認めた。診断確定と重症度評価に加えるべき検査はどれか。",
-          "choices": [
-            {
-              "id": "A",
-              "text": "甲状腺ホルモンを評価する甲状腺機能検査の実施"
-            },
-            {
-              "id": "B",
-              "text": "心筋トロポニンの測定"
-            },
-            {
-              "id": "C",
-              "text": "炎症を評価する赤血球沈降速度の測定の実施"
-            },
-            {
-              "id": "D",
-              "text": "鉄欠乏を評価する血清フェリチンの測定の実施"
-            },
-            {
-              "id": "E",
-              "text": "アレルギーを評価する血清IgEの測定の実施"
-            }
-          ],
-          "correct_choice_id": "B",
-          "explanation": "ST上昇に加え心筋トロポニンの上昇は心筋壊死を示し診断を裏づける。前壁誘導のST上昇は左前下行枝領域の梗塞を示唆する。心筋トロポニンは発症ごく早期には上昇しないことがあり、経時的な測定で判断する。",
-          "distractor_rationale": {
-            "A": "動悸の鑑別にはなるが心筋梗塞の確定に直結しない。",
-            "C": "非特異的で、急性心筋梗塞の診断には有用でない。",
-            "D": "貧血の評価で、心筋梗塞の診断にはならない。",
-            "E": "本病態の診断・重症度評価に無関係である。"
-          }
+          "id": "B",
+          "text": "長時間の運動を負荷して行う運動負荷心電図検査"
         },
         {
-          "set_order": 3,
-          "phase": "治療",
-          "question_text": "ST上昇型心筋梗塞と診断した。発症からの時間が短く禁忌がない。最も推奨される再灌流療法はどれか。",
-          "choices": [
-            {
-              "id": "A",
-              "text": "上肢の静脈から輸液のみを行い経過を観察する対応"
-            },
-            {
-              "id": "B",
-              "text": "抗不安薬を投与し安静のみで自然軽快を待つ対応"
-            },
-            {
-              "id": "C",
-              "text": "経皮的冠動脈インターベンション"
-            },
-            {
-              "id": "D",
-              "text": "利尿薬のみを投与し次回外来で再評価する対応"
-            },
-            {
-              "id": "E",
-              "text": "運動療法を直ちに開始し心機能の改善を図る対応"
-            }
-          ],
-          "correct_choice_id": "C",
-          "explanation": "STEMIでは可及的速やかな再灌流が重要で、実施可能施設では経皮的冠動脈インターベンション（PCI）が第一選択。適応時間内であれば血栓溶解療法も選択肢となる。施設や時間の制約でインターベンションが速やかに行えない場合は、適応時間内の血栓溶解療法を検討する。",
-          "distractor_rationale": {
-            "A": "再灌流を行わず梗塞が拡大するため不適切。",
-            "B": "再灌流の機会を逸し予後を悪化させる。",
-            "D": "急性期の再灌流療法にならず適切でない。",
-            "E": "急性期の運動は禁忌で病態を悪化させる。"
-          }
+          "id": "C",
+          "text": "造影剤を用いて全身を評価する腹部造影CT検査"
         },
         {
-          "set_order": 4,
-          "phase": "予後・合併症",
-          "question_text": "再灌流療法に成功し全身状態が安定した。この患者の退院後の二次予防として最も適切なのはどれか。",
-          "choices": [
-            {
-              "id": "A",
-              "text": "症状がないため服薬を中止し定期通院も終了する対応"
-            },
-            {
-              "id": "B",
-              "text": "抗菌薬を長期に予防投与し感染を防止する対応"
-            },
-            {
-              "id": "C",
-              "text": "免疫抑制薬を導入し炎症の再燃を予防する対応"
-            },
-            {
-              "id": "D",
-              "text": "抗血小板薬とスタチンの継続と危険因子の管理"
-            },
-            {
-              "id": "E",
-              "text": "高カロリー食で体力を回復させることを最優先する対応"
-            }
-          ],
-          "correct_choice_id": "D",
-          "explanation": "心筋梗塞後の二次予防では抗血小板薬・スタチン・β遮断薬・ACE阻害薬などの継続と、禁煙・血圧・血糖・脂質の管理が再発予防に重要である。心臓リハビリテーションと生活習慣の改善も再発予防に有用である。",
-          "distractor_rationale": {
-            "A": "再発予防に反し、心事故のリスクを高める。",
-            "B": "二次予防の根拠がなく耐性菌の問題を生む。",
-            "C": "適応がなく、二次予防の標準ではない。",
-            "E": "脂質・体重管理に反し危険因子を悪化させる。"
-          }
+          "id": "D",
+          "text": "下肢の深部静脈血栓を評価する下肢静脈エコー"
+        },
+        {
+          "id": "E",
+          "text": "消化管粘膜を観察する上部消化管内視鏡検査"
         }
-      ]
+      ],
+      "correct_choice_id": "A",
+      "explanation": "持続する前胸部絞扼感では急性冠症候群を疑い、まず12誘導心電図でST変化を評価する。迅速な心電図は再灌流療法の適応判断に直結する。心電図は来院後10分以内の記録が推奨され、経時的な再検も重要である。",
+      "distractor_rationale": {
+        "B": "急性冠症候群が疑われる胸痛に運動負荷は危険で禁忌である。",
+        "C": "急性冠症候群の初期評価として適切でない。",
+        "D": "肺塞栓の評価で、胸痛の初期評価の第一選択でない。",
+        "E": "胸痛の原因検索でまず行う検査ではない。"
+      }
     },
     {
-      "id": "core2026-set-gib",
-      "blueprint_code": "D-7",
+      "id": "core2026-set-mi-2",
+      "question_type": "M",
       "exam_type": "CBT",
+      "blueprint_code": "D-5",
+      "category": "循環器",
+      "disease": "急性心筋梗塞",
+      "class_group": "I",
+      "difficulty": "standard",
+      "question_text": "68歳男性。高血圧と脂質異常症で通院中。本日午前、安静時に突然の前胸部絞扼感が出現し、30分以上持続するため救急外来を受診した。冷汗を伴い、痛みは左肩に放散する。来院時、血圧142/88mmHg、脈拍96/分、整。\n心電図でV1〜V4誘導のST上昇を認めた。診断確定と重症度評価に加えるべき検査はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "甲状腺ホルモンを評価する甲状腺機能検査の実施"
+        },
+        {
+          "id": "B",
+          "text": "心筋トロポニンの測定"
+        },
+        {
+          "id": "C",
+          "text": "炎症を評価する赤血球沈降速度の測定の実施"
+        },
+        {
+          "id": "D",
+          "text": "鉄欠乏を評価する血清フェリチンの測定の実施"
+        },
+        {
+          "id": "E",
+          "text": "アレルギーを評価する血清IgEの測定の実施"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "ST上昇に加え心筋トロポニンの上昇は心筋壊死を示し診断を裏づける。前壁誘導のST上昇は左前下行枝領域の梗塞を示唆する。心筋トロポニンは発症ごく早期には上昇しないことがあり、経時的な測定で判断する。",
+      "distractor_rationale": {
+        "A": "動悸の鑑別にはなるが心筋梗塞の確定に直結しない。",
+        "C": "非特異的で、急性心筋梗塞の診断には有用でない。",
+        "D": "貧血の評価で、心筋梗塞の診断にはならない。",
+        "E": "本病態の診断・重症度評価に無関係である。"
+      }
+    },
+    {
+      "id": "core2026-set-mi-3",
+      "question_type": "M",
+      "exam_type": "CBT",
+      "blueprint_code": "D-5",
+      "category": "循環器",
+      "disease": "急性心筋梗塞",
+      "class_group": "I",
+      "difficulty": "standard",
+      "question_text": "68歳男性。高血圧と脂質異常症で通院中。本日午前、安静時に突然の前胸部絞扼感が出現し、30分以上持続するため救急外来を受診した。冷汗を伴い、痛みは左肩に放散する。来院時、血圧142/88mmHg、脈拍96/分、整。\nST上昇型心筋梗塞と診断した。発症からの時間が短く禁忌がない。最も推奨される再灌流療法はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "上肢の静脈から輸液のみを行い経過を観察する対応"
+        },
+        {
+          "id": "B",
+          "text": "抗不安薬を投与し安静のみで自然軽快を待つ対応"
+        },
+        {
+          "id": "C",
+          "text": "経皮的冠動脈インターベンション"
+        },
+        {
+          "id": "D",
+          "text": "利尿薬のみを投与し次回外来で再評価する対応"
+        },
+        {
+          "id": "E",
+          "text": "運動療法を直ちに開始し心機能の改善を図る対応"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "STEMIでは可及的速やかな再灌流が重要で、実施可能施設では経皮的冠動脈インターベンション（PCI）が第一選択。適応時間内であれば血栓溶解療法も選択肢となる。施設や時間の制約でインターベンションが速やかに行えない場合は、適応時間内の血栓溶解療法を検討する。",
+      "distractor_rationale": {
+        "A": "再灌流を行わず梗塞が拡大するため不適切。",
+        "B": "再灌流の機会を逸し予後を悪化させる。",
+        "D": "急性期の再灌流療法にならず適切でない。",
+        "E": "急性期の運動は禁忌で病態を悪化させる。"
+      }
+    },
+    {
+      "id": "core2026-set-mi-4",
+      "question_type": "M",
+      "exam_type": "CBT",
+      "blueprint_code": "D-5",
+      "category": "循環器",
+      "disease": "急性心筋梗塞",
+      "class_group": "I",
+      "difficulty": "standard",
+      "question_text": "68歳男性。高血圧と脂質異常症で通院中。本日午前、安静時に突然の前胸部絞扼感が出現し、30分以上持続するため救急外来を受診した。冷汗を伴い、痛みは左肩に放散する。来院時、血圧142/88mmHg、脈拍96/分、整。\n再灌流療法に成功し全身状態が安定した。この患者の退院後の二次予防として最も適切なのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "症状がないため服薬を中止し定期通院も終了する対応"
+        },
+        {
+          "id": "B",
+          "text": "抗菌薬を長期に予防投与し感染を防止する対応"
+        },
+        {
+          "id": "C",
+          "text": "免疫抑制薬を導入し炎症の再燃を予防する対応"
+        },
+        {
+          "id": "D",
+          "text": "抗血小板薬とスタチンの継続と危険因子の管理"
+        },
+        {
+          "id": "E",
+          "text": "高カロリー食で体力を回復させることを最優先する対応"
+        }
+      ],
+      "correct_choice_id": "D",
+      "explanation": "心筋梗塞後の二次予防では抗血小板薬・スタチン・β遮断薬・ACE阻害薬などの継続と、禁煙・血圧・血糖・脂質の管理が再発予防に重要である。心臓リハビリテーションと生活習慣の改善も再発予防に有用である。",
+      "distractor_rationale": {
+        "A": "再発予防に反し、心事故のリスクを高める。",
+        "B": "二次予防の根拠がなく耐性菌の問題を生む。",
+        "C": "適応がなく、二次予防の標準ではない。",
+        "E": "脂質・体重管理に反し危険因子を悪化させる。"
+      }
+    },
+    {
+      "id": "core2026-set-gib-1",
+      "question_type": "M",
+      "exam_type": "CBT",
+      "blueprint_code": "D-7",
       "category": "消化器",
       "disease": "上部消化管出血",
       "class_group": "I",
       "difficulty": "standard",
-      "case_stem": "60歳男性。長年の飲酒歴がある。本日、大量の吐血とその後の黒色便を認め救急搬送された。来院時、顔面蒼白で血圧92/60mmHg、脈拍112/分。眼瞼結膜は貧血様である。",
-      "steps": [
+      "question_text": "60歳男性。長年の飲酒歴がある。本日、大量の吐血とその後の黒色便を認め救急搬送された。来院時、顔面蒼白で血圧92/60mmHg、脈拍112/分。眼瞼結膜は貧血様である。\n吐血とショック徴候を認めるこの患者に対して、来院直後に最も優先して行うべき対応はどれか。",
+      "choices": [
         {
-          "set_order": 1,
-          "phase": "初期対応",
-          "question_text": "吐血とショック徴候を認めるこの患者に対して、来院直後に最も優先して行うべき対応はどれか。",
-          "choices": [
-            {
-              "id": "A",
-              "text": "直ちに上部消化管内視鏡を循環評価より先に施行する"
-            },
-            {
-              "id": "B",
-              "text": "経口の止血薬を内服させて経過を観察する対応"
-            },
-            {
-              "id": "C",
-              "text": "下部消化管内視鏡を先行し出血源を検索する対応"
-            },
-            {
-              "id": "D",
-              "text": "外来で鉄剤を処方し後日の再検査を予約する対応"
-            },
-            {
-              "id": "E",
-              "text": "静脈路確保と細胞外液による輸液・循環の安定化"
-            }
-          ],
-          "correct_choice_id": "E",
-          "explanation": "吐血とショック徴候を認める上部消化管出血では、まず静脈路確保と輸液・輸血で循環を安定させる蘇生が最優先。安定後に内視鏡的診断・止血を行う。出血量が多ければ赤血球輸血を行い、必要に応じて凝固因子も補充する。",
-          "distractor_rationale": {
-            "A": "循環が不安定なまま内視鏡は危険で、蘇生が先行する。",
-            "B": "活動性出血・ショック徴候に対して不十分である。",
-            "C": "吐血であり上部消化管が疑われ、まず蘇生を優先する。",
-            "D": "ショックを伴う消化管出血の対応として不適切。"
-          }
+          "id": "A",
+          "text": "直ちに上部消化管内視鏡を循環評価より先に施行する"
         },
         {
-          "set_order": 2,
-          "phase": "診断",
-          "question_text": "輸液・輸血で循環を安定させた後、出血源の診断と内視鏡的止血のために最も適切な検査はどれか。",
-          "choices": [
-            {
-              "id": "A",
-              "text": "上部消化管内視鏡検査"
-            },
-            {
-              "id": "B",
-              "text": "腹部単純X線写真による遊離ガスの評価の検査"
-            },
-            {
-              "id": "C",
-              "text": "注腸造影検査による大腸病変の評価の検査"
-            },
-            {
-              "id": "D",
-              "text": "腹部MRIによる肝胆道系の精密評価の検査"
-            },
-            {
-              "id": "E",
-              "text": "カプセル内視鏡による小腸の評価の検査"
-            }
-          ],
-          "correct_choice_id": "A",
-          "explanation": "上部消化管出血では、循環安定後に上部消化管内視鏡を行い出血源（食道静脈瘤・消化性潰瘍など）を同定し、同時に内視鏡的止血が可能である。内視鏡前からプロトンポンプ阻害薬を開始し、静脈瘤が疑われれば血管作動薬も併用する。",
-          "distractor_rationale": {
-            "B": "穿孔の評価にはなるが出血源の同定・止血はできない。",
-            "C": "下部消化管の評価で、吐血の出血源同定に適さない。",
-            "D": "急性出血源の同定・止血には適さない。",
-            "E": "急性大量出血では緊急止血ができず適さない。"
-          }
+          "id": "B",
+          "text": "経口の止血薬を内服させて経過を観察する対応"
         },
         {
-          "set_order": 3,
-          "phase": "治療",
-          "question_text": "上部消化管内視鏡で食道静脈瘤からの噴出性出血を認めた。この患者にまず行うべき止血法はどれか。",
-          "choices": [
-            {
-              "id": "A",
-              "text": "抗血小板薬を投与して微小循環を改善させる方法"
-            },
-            {
-              "id": "B",
-              "text": "内視鏡的静脈瘤結紮術"
-            },
-            {
-              "id": "C",
-              "text": "直ちに開腹して脾臓を摘出し門脈圧を下げる方法"
-            },
-            {
-              "id": "D",
-              "text": "経過観察のみとし自然止血を期待する方法"
-            },
-            {
-              "id": "E",
-              "text": "大量の経口水分負荷で希釈と洗浄を図る方法"
-            }
-          ],
-          "correct_choice_id": "B",
-          "explanation": "食道静脈瘤破裂には内視鏡的静脈瘤結紮術（EVL）や硬化療法で止血し、血管作動薬（ソマトスタチン等）を併用する。門脈圧亢進の基礎（肝硬変）の管理も重要である。止血後も再出血の危険があり、一定時間の慎重な経過観察を要する。",
-          "distractor_rationale": {
-            "A": "出血を助長する方向で、静脈瘤出血には不適切。",
-            "C": "急性出血の一次止血としては第一選択にならない。",
-            "D": "噴出性出血の放置は致命的で不適切。",
-            "E": "止血効果がなく誤嚥・増悪の危険がある。"
-          }
+          "id": "C",
+          "text": "下部消化管内視鏡を先行し出血源を検索する対応"
         },
         {
-          "set_order": 4,
-          "phase": "予後・再発予防",
-          "question_text": "内視鏡的止血に成功し全身状態が安定した。食道静脈瘤の再出血予防として最も適切なのはどれか。",
-          "choices": [
-            {
-              "id": "A",
-              "text": "非ステロイド性抗炎症薬を定期的に内服させる対応"
-            },
-            {
-              "id": "B",
-              "text": "抗凝固療法を導入して血流を維持する対応"
-            },
-            {
-              "id": "C",
-              "text": "非選択的β遮断薬の投与と計画的な内視鏡治療"
-            },
-            {
-              "id": "D",
-              "text": "高塩分食で循環血液量を増やし血圧を保つ対応"
-            },
-            {
-              "id": "E",
-              "text": "免疫抑制薬を導入して炎症を抑える対応"
-            }
-          ],
-          "correct_choice_id": "C",
-          "explanation": "食道静脈瘤の再出血予防には非選択的β遮断薬による門脈圧の低下と、計画的な内視鏡的静脈瘤治療（結紮術）が有効。基礎肝疾患の管理も並行して行う。根治的には肝硬変など基礎疾患の管理と門脈圧の低下が重要である。",
-          "distractor_rationale": {
-            "A": "粘膜傷害・出血リスクを高め再発予防に反する。",
-            "B": "静脈瘤出血の再発を助長するため不適切。",
-            "D": "腹水・門脈圧亢進を悪化させ有害である。",
-            "E": "再出血予防の根拠がなく標準治療でない。"
-          }
+          "id": "D",
+          "text": "外来で鉄剤を処方し後日の再検査を予約する対応"
+        },
+        {
+          "id": "E",
+          "text": "静脈路確保と細胞外液による輸液・循環の安定化"
         }
-      ]
+      ],
+      "correct_choice_id": "E",
+      "explanation": "吐血とショック徴候を認める上部消化管出血では、まず静脈路確保と輸液・輸血で循環を安定させる蘇生が最優先。安定後に内視鏡的診断・止血を行う。出血量が多ければ赤血球輸血を行い、必要に応じて凝固因子も補充する。",
+      "distractor_rationale": {
+        "A": "循環が不安定なまま内視鏡は危険で、蘇生が先行する。",
+        "B": "活動性出血・ショック徴候に対して不十分である。",
+        "C": "吐血であり上部消化管が疑われ、まず蘇生を優先する。",
+        "D": "ショックを伴う消化管出血の対応として不適切。"
+      }
+    },
+    {
+      "id": "core2026-set-gib-2",
+      "question_type": "M",
+      "exam_type": "CBT",
+      "blueprint_code": "D-7",
+      "category": "消化器",
+      "disease": "上部消化管出血",
+      "class_group": "I",
+      "difficulty": "standard",
+      "question_text": "60歳男性。長年の飲酒歴がある。本日、大量の吐血とその後の黒色便を認め救急搬送された。来院時、顔面蒼白で血圧92/60mmHg、脈拍112/分。眼瞼結膜は貧血様である。\n輸液・輸血で循環を安定させた後、出血源の診断と内視鏡的止血のために最も適切な検査はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "上部消化管内視鏡検査"
+        },
+        {
+          "id": "B",
+          "text": "腹部単純X線写真による遊離ガスの評価の検査"
+        },
+        {
+          "id": "C",
+          "text": "注腸造影検査による大腸病変の評価の検査"
+        },
+        {
+          "id": "D",
+          "text": "腹部MRIによる肝胆道系の精密評価の検査"
+        },
+        {
+          "id": "E",
+          "text": "カプセル内視鏡による小腸の評価の検査"
+        }
+      ],
+      "correct_choice_id": "A",
+      "explanation": "上部消化管出血では、循環安定後に上部消化管内視鏡を行い出血源（食道静脈瘤・消化性潰瘍など）を同定し、同時に内視鏡的止血が可能である。内視鏡前からプロトンポンプ阻害薬を開始し、静脈瘤が疑われれば血管作動薬も併用する。",
+      "distractor_rationale": {
+        "B": "穿孔の評価にはなるが出血源の同定・止血はできない。",
+        "C": "下部消化管の評価で、吐血の出血源同定に適さない。",
+        "D": "急性出血源の同定・止血には適さない。",
+        "E": "急性大量出血では緊急止血ができず適さない。"
+      }
+    },
+    {
+      "id": "core2026-set-gib-3",
+      "question_type": "M",
+      "exam_type": "CBT",
+      "blueprint_code": "D-7",
+      "category": "消化器",
+      "disease": "上部消化管出血",
+      "class_group": "I",
+      "difficulty": "standard",
+      "question_text": "60歳男性。長年の飲酒歴がある。本日、大量の吐血とその後の黒色便を認め救急搬送された。来院時、顔面蒼白で血圧92/60mmHg、脈拍112/分。眼瞼結膜は貧血様である。\n上部消化管内視鏡で食道静脈瘤からの噴出性出血を認めた。この患者にまず行うべき止血法はどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "抗血小板薬を投与して微小循環を改善させる方法"
+        },
+        {
+          "id": "B",
+          "text": "内視鏡的静脈瘤結紮術"
+        },
+        {
+          "id": "C",
+          "text": "直ちに開腹して脾臓を摘出し門脈圧を下げる方法"
+        },
+        {
+          "id": "D",
+          "text": "経過観察のみとし自然止血を期待する方法"
+        },
+        {
+          "id": "E",
+          "text": "大量の経口水分負荷で希釈と洗浄を図る方法"
+        }
+      ],
+      "correct_choice_id": "B",
+      "explanation": "食道静脈瘤破裂には内視鏡的静脈瘤結紮術（EVL）や硬化療法で止血し、血管作動薬（ソマトスタチン等）を併用する。門脈圧亢進の基礎（肝硬変）の管理も重要である。止血後も再出血の危険があり、一定時間の慎重な経過観察を要する。",
+      "distractor_rationale": {
+        "A": "出血を助長する方向で、静脈瘤出血には不適切。",
+        "C": "急性出血の一次止血としては第一選択にならない。",
+        "D": "噴出性出血の放置は致命的で不適切。",
+        "E": "止血効果がなく誤嚥・増悪の危険がある。"
+      }
+    },
+    {
+      "id": "core2026-set-gib-4",
+      "question_type": "M",
+      "exam_type": "CBT",
+      "blueprint_code": "D-7",
+      "category": "消化器",
+      "disease": "上部消化管出血",
+      "class_group": "I",
+      "difficulty": "standard",
+      "question_text": "60歳男性。長年の飲酒歴がある。本日、大量の吐血とその後の黒色便を認め救急搬送された。来院時、顔面蒼白で血圧92/60mmHg、脈拍112/分。眼瞼結膜は貧血様である。\n内視鏡的止血に成功し全身状態が安定した。食道静脈瘤の再出血予防として最も適切なのはどれか。",
+      "choices": [
+        {
+          "id": "A",
+          "text": "非ステロイド性抗炎症薬を定期的に内服させる対応"
+        },
+        {
+          "id": "B",
+          "text": "抗凝固療法を導入して血流を維持する対応"
+        },
+        {
+          "id": "C",
+          "text": "非選択的β遮断薬の投与と計画的な内視鏡治療"
+        },
+        {
+          "id": "D",
+          "text": "高塩分食で循環血液量を増やし血圧を保つ対応"
+        },
+        {
+          "id": "E",
+          "text": "免疫抑制薬を導入して炎症を抑える対応"
+        }
+      ],
+      "correct_choice_id": "C",
+      "explanation": "食道静脈瘤の再出血予防には非選択的β遮断薬による門脈圧の低下と、計画的な内視鏡的静脈瘤治療（結紮術）が有効。基礎肝疾患の管理も並行して行う。根治的には肝硬変など基礎疾患の管理と門脈圧の低下が重要である。",
+      "distractor_rationale": {
+        "A": "粘膜傷害・出血リスクを高め再発予防に反する。",
+        "B": "静脈瘤出血の再発を助長するため不適切。",
+        "D": "腹水・門脈圧亢進を悪化させ有害である。",
+        "E": "再出血予防の根拠がなく標準治療でない。"
+      }
     }
   ]
 }

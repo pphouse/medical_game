@@ -11,8 +11,10 @@
 
 CBT（コアカリ対応の巻立て）:
     基礎医学（vol.1）/ 臓器別・全身性疾患の各論（vol.2）/
-    医学総論・公衆衛生・診療の基本（vol.3）/ 多選択肢・4連問（vol.4）
+    医学総論・公衆衛生・診療の基本（vol.3）
     ただし vol.2 は一括りだと科目選択に使えないので、臓器別に展開する。
+    vol.4（多選択肢・4連問）は出題形式の枠であって科目ではないので置かない。
+    その枠の設問も中身は臨床の各論なので、内容に合う科目へ入れる。
 
 分野の決め方は3段構え:
 
@@ -70,10 +72,12 @@ KOKUSHI_CATEGORIES = (
 )
 
 # --- CBT の科目立て -------------------------------------------------------
-# 巻の順（vol.1 基礎医学 → vol.2 各論 → vol.3 総論 → vol.4 連問）ではなく、
+# 巻の順（vol.1 基礎医学 → vol.2 各論 → vol.3 総論）ではなく、
 # 循環器・消化器・内分泌代謝・腎といった出題数の多い科目から始める
 # （国試側と同じ考え）。
 # 公衆衛生を含む総論は一番下に置く（国試側と同じ扱い）。
+# vol.4（多選択肢・4連問）は形式の枠で科目ではないので置かない
+# （冒頭の説明を参照）。
 CBT_CATEGORIES = (
     "循環器",
     "消化器",
@@ -96,7 +100,6 @@ CBT_CATEGORIES = (
     "産婦人科",
     "救急・中毒・麻酔",
     "放射線",
-    "多選択肢・4連問",
     # 公衆衛生は一番下（国試側と同じ）。CBTでは医学総論・診療の基本と
     # ひとまとめの科目なので、このまとまりごと最後に置く。
     "医学総論・公衆衛生・診療の基本",
@@ -305,7 +308,10 @@ BLUEPRINT_AREA_BY_EXAM = {
         "E-8": "医学総論・公衆衛生・診療の基本",
         "E-9": "医学総論・公衆衛生・診療の基本",
         "F": "医学総論・公衆衛生・診療の基本",
-        "G": "多選択肢・4連問",
+        # G（臨床実習）は置かない。G-1 の設問は小児の症例問題で、中身は
+        # 循環器・腎・感染症…と各論にまたがる。区分で一括りにすると、
+        # 4連問でもないのに「多選択肢・4連問」という科目にまとめて入って
+        # しまっていた。コードで決めずに、設問ごとに付けた科目をそのまま使う。
     },
     KOKUSHI: {
         "A": "医学総論",
@@ -372,7 +378,8 @@ GENERIC_BY_EXAM = {
         "放射線": "放射線",
         "公衆衛生": "医学総論・公衆衛生・診療の基本",
         "基礎医学": "基礎医学",
-        "４連問": "多選択肢・4連問",
+        # 「４連問」は形式の名前で科目ではないので、ここには置かない。
+        # 旧データに残っていれば本文から臓器を判定する。
     },
     KOKUSHI: {
         "循環器": "循環器",
@@ -403,7 +410,6 @@ GENERIC_BY_EXAM = {
         "放射線": "放射線",
         "公衆衛生": "公衆衛生",
         "基礎医学": "医学総論",
-        "４連問": "医学総論",
     },
 }
 
@@ -413,6 +419,9 @@ LEGACY_TO_GENERIC = {
     "呼吸器系": "呼吸器",
     "消化器系": "消化器",
     "腎・尿路系": "腎臓",
+    # 腎臓と泌尿器に分ける前の科目名。汎用名を腎臓にしておくと、normalize() の
+    # 最後で本文から腎臓／泌尿器に振り分けられる（本文が無ければ腎臓）。
+    "腎・泌尿器": "腎臓",
     "泌尿器系": "泌尿器",
     # 「泌尿器科」は国試の旧章立ての名前。腎・泌尿器と中身が被るのでそちらへ。
     "泌尿器科": "泌尿器",
@@ -456,7 +465,8 @@ LEGACY_TO_GENERIC = {
     "加齢と老化": "基礎医学",
     "終末期・人の死": "公衆衛生",
     "診療の基本・臨床手技": "公衆衛生",
-    "連問（症例シミュレーション）": "４連問",
+    # 「連問（症例シミュレーション）」「４連問」「多選択肢・4連問」は出題形式の
+    # 名前で科目ではないので、読み替え先を置かない。本文から臓器を判定する。
 }
 
 # 2つの科目にまたがる旧名。行き先を候補2つに限り、決め手がなければ既定側に
@@ -803,9 +813,39 @@ def normalize(
         return _split_digestive(blob)
     # 腎・尿路も出題基準では1区分なので、本文で腎臓と泌尿器に分ける。
     # 分野名で泌尿器だと分かっているものは、本文を見ずにそのまま通す。
-    if result == "腎臓" and category not in ("腎臓", "腎・尿路系"):
-        return _split_renal(blob)
+    # （出題基準 D-8 からは「腎臓」が引けるので、分野名が「泌尿器」でも
+    # ここに来る。本文に泌尿器の語が無い「尿失禁の分類」のような設問が、
+    # 取り込み直すたびに腎臓へ戻されていた。）
+    if result == "腎臓":
+        if category == "泌尿器":
+            return "泌尿器"
+        if category not in ("腎臓", "腎・尿路系"):
+            return _split_renal(blob)
     return result
+
+
+def _from_other_exam(category: str | None, text: str, exam: str) -> str | None:
+    """もう一方の試験の科目名を、この試験の科目名に読み替える。
+
+    CBT の設問に国試の「小児科」が付いている、のような取り違えを直す。
+    汎用名を経由して1つに決まればそれを返す。「産婦人科」→ 国試の「産科」か
+    「婦人科・乳腺外科」のように候補が割れるときは本文で決め、決まらなければ
+    None（呼び出し側の推定に任せる）。
+    """
+    other = KOKUSHI if exam == CBT else CBT
+    if category not in CATEGORY_ORDER_BY_EXAM[other]:
+        return None
+    generics = tuple(
+        g
+        for g, name in GENERIC_BY_EXAM[other].items()
+        if name == category and g in GENERIC_BY_EXAM[exam]
+    )
+    targets = {GENERIC_BY_EXAM[exam][g] for g in generics}
+    if len(targets) == 1:
+        return targets.pop()
+    if len(targets) > 1:
+        return _to_category(classify(text, generics), exam)
+    return None
 
 
 def _normalize_raw(
@@ -818,6 +858,10 @@ def _normalize_raw(
     order = CATEGORY_ORDER_BY_EXAM[exam]
     if category in order:
         return category
+
+    from_other = _from_other_exam(category, text, exam)
+    if from_other:
+        return from_other
 
     if category in SPLIT_SOURCES:
         allowed, fallback = SPLIT_SOURCES[category]

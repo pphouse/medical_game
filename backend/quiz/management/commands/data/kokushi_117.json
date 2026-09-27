@@ -931,7 +931,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-B-3",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "医師の職業倫理に反するのはどれか。",
       "choices": [
@@ -1645,7 +1645,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-B-27",
-      "category": "泌尿器科",
+      "category": "腎臓",
       "difficulty": "standard",
       "question_text": "35歳の男性。血尿を主訴に来院した。昨日初めてフルマラソンを完走し、その3時間後から尿の色が赤黒くなり持続している。下肢の筋肉痛があるが、その他の症状はない。既往歴に特記すべきことはない。身長170cm、体重68kg。脈拍72/分、整。血圧132/60mmHg。胸腹部に異常を認めない。両下肢全体に圧痛を認める。尿所見:蛋白(−)、ケトン体(−)、潜血3+、沈渣に赤血球、白血球、円柱を認めない。血液検査の結果はまだ報告されていない。最も考えられる疾患はどれか。",
       "choices": [
@@ -2223,7 +2223,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-C-4",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "災害医療について正しいのはどれか。",
       "choices": [
@@ -3141,7 +3141,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-C-45",
-      "category": "腎臓",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "24歳の男性。意識障害のため救急車で搬入された。3か月前から職場の上司にパワハラを受けていると悩んでいた。今朝、自宅のガレージで倒れているのを母親が発見し、救急車を要請した。本人の着衣と口腔内からは強い有機溶媒臭がしており、ガレージには灯油が残ったコップがあった。搬入後、次第に呼吸状態の悪化を認めた。 意識レベルはJCSIII-100。 体温36.8°C。 心拍数104/分、 整。 血圧120/80mmHg。呼吸数32/分。SpO288%(リザーバー付マスク10L/分酸素投与下)。次に行うべき適切な対応はどれか。",
       "choices": [
@@ -3549,7 +3549,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-D-6",
-      "category": "産科",
+      "category": "免疫・膠原病",
       "difficulty": "standard",
       "question_text": "抗リン脂質抗体症候群で正しいのはどれか。",
       "choices": [
@@ -3685,7 +3685,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-D-13",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "ボールなどによる前胸部打撲後の心停止について正しいのはどれか。",
       "choices": [
@@ -4637,7 +4637,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-E-4",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "トリアージタッグ〈識別札〉について誤っているのはどれか。",
       "choices": [
@@ -5079,7 +5079,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-E-20",
-      "category": "泌尿器科",
+      "category": "泌尿器",
       "difficulty": "standard",
       "question_text": "初発症状が肉眼的血尿とならないのはどれか。",
       "choices": [
@@ -5385,7 +5385,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-E-32",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "4歳の男児。自宅で径3cmのぶどうを食べたとき、急に激しくむせて顔色が悪くなったため救急車で搬入された。救急車内では、意識はあるが両手で首をつかんで苦しそうにしており、救急隊員によりHeimlich法が実施されたが状況は改善しなかった。病院到着直後にモニターを装着していると意識を失った。頸動脈を触知しない。直ちに行う処置として適切なのはどれか。",
       "choices": [
@@ -6303,7 +6303,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-F-19",
-      "category": "救急・中毒・麻酔",
+      "category": "麻酔",
       "difficulty": "standard",
       "question_text": "待期的に行う全身麻酔下の手術で、術前に確保すべき清澄水の絶飲時間はどれか。",
       "choices": [
@@ -7085,7 +7085,7 @@
       "exam_type": "KOKUSHI",
       "question_type": "M",
       "blueprint_code": "117-F-54",
-      "category": "救急・中毒・麻酔",
+      "category": "救急・中毒",
       "difficulty": "standard",
       "question_text": "1か月の女児。1か月健診で心雑音を指摘され、母親に連れられて来院した。普段は元気にしており、哺乳も良好だという。自宅で母乳を飲んでから約2時間30分が経過している。身長と体重の計測をしている際に目覚め、診察を待っている間に泣き出した。診察室で胸部の聴診を試みたが、母親に抱かれていても泣き続けており、聴診は困難である。心雑音を評価するために最も適切な対応はどれか。",
       "choices": [
