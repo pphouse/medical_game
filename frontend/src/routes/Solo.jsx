@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
+import BrandMark from "../components/BrandMark";
 import ProgressBar from "../components/ProgressBar";
 import ProgressDonut from "../components/ProgressDonut";
 import { useProfile } from "../context/ProfileContext";
@@ -81,6 +82,8 @@ export default function Solo() {
 
   return (
     <div className="screen">
+      <BrandMark />
+
       {summary && (
         <div className="summary-card">
           <ProgressDonut
@@ -155,6 +158,10 @@ export default function Solo() {
               </span>
               <span className="course-remaining">
                 {p.total - p.remaining}/{p.total}問
+              </span>
+              {/* 一度も解いていない分野は null なので「－」にする（0% と区別）。 */}
+              <span className="course-accuracy">
+                正答率 {p.correct_rate == null ? "－" : `${p.correct_rate}%`}
               </span>
             </div>
             <ProgressBar counts={p.counts} total={p.total} />

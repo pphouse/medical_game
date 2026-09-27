@@ -252,11 +252,16 @@ class PointsRankingView(APIView):
     対戦＋模試（週次/月次）合算ポイントのランキングとランク階層
     （SS/S/A/B/C/D, spec: 上位5/25/40/60/80/100%）。
 
-    scope=university は「同じ大学内での順位」に絞るが、各人のランク階層
-    バッチはあくまで全国母集団での位置（tier はランキング画面の他の指標と
-    同様、常に全国基準）。対象は ranked_matches>=1 のユーザーのみ
-    （一度もランク付き対戦・模試をしていないユーザーは母集団にも含めない）。
-    AI対戦相手のプロフィールは除外。
+    順位は演習ランキングと同じく「同学年の中での順位」。学年が違えば解いて
+    いる範囲も対戦相手の層も違うので、並べても比べにくい。scope=university は
+    さらに「同じ大学の同学年」に絞る。
+
+    ランク階層（SS〜D）は順位と違って常に全国母集団での位置。ランクは学年を
+    またいだ通算の実力を表すもので、学年ごとに基準が変わると意味が薄れる。
+
+    対象は ranked_matches>=1 のユーザーのみ（一度もランク付き対戦・模試を
+    していないユーザーは母集団にも含めない）。AI対戦相手のプロフィールは除外。
+    学年未設定のユーザーは順位表に出せないので、その旨を返す。
     """
 
     def get(self, request):
@@ -268,31 +273,43 @@ class PointsRankingView(APIView):
         if scope not in ("national", "university"):
             raise exceptions.ValidationError("scope が不正です")
 
+        # ランク階層の基準は全学年・全国の母集団（下の tier_of で使う）。
         national_qs = Profile.objects.filter(is_ai=False, ranked_matches__gte=1)
-        total = national_qs.count()
+        national_total = national_qs.count()
 
         def tier_of(p):
             strictly_better = national_qs.filter(points__gt=p.points).count()
-            return tier_for_top_fraction(strictly_better / total) if total else None
+            return (
+                tier_for_top_fraction(strictly_better / national_total)
+                if national_total
+                else None
+            )
 
+        def unavailable(reason):
+            return Response(
+                {
+                    "entries": [],
+                    "me": {
+                        "points": request.user.points,
+                        "tier": None,
+                        "ranked_matches": request.user.ranked_matches,
+                        "eligible": False,
+                        "reason": reason,
+                    },
+                    "total_ranked": 0,
+                }
+            )
+
+        if request.user.grade is None:
+            return unavailable("学年が未設定です。マイページから設定してください。")
+        if scope == "university" and not request.user.university_id:
+            return unavailable("学内ランキングには所属大学の設定が必要です。")
+
+        # 順位は同学年の中で付ける。
+        listing_qs = national_qs.filter(grade=request.user.grade)
         if scope == "university":
-            if not request.user.university_id:
-                return Response(
-                    {
-                        "entries": [],
-                        "me": {
-                            "points": request.user.points,
-                            "tier": None,
-                            "ranked_matches": request.user.ranked_matches,
-                            "eligible": False,
-                            "reason": "学内ランキングには所属大学の設定が必要です。",
-                        },
-                        "total_ranked": total,
-                    }
-                )
-            listing_qs = national_qs.filter(university_id=request.user.university_id)
-        else:
-            listing_qs = national_qs
+            listing_qs = listing_qs.filter(university_id=request.user.university_id)
+        total = listing_qs.count()
 
         listing_qs = listing_qs.select_related("university")
         ordered = listing_qs.order_by("-points", "id")[:limit]
@@ -432,7 +449,7 @@ class ExamStartView(APIView):
                 user=request.user, mock_exam__kind=MockExam.Kind.CBT_ONCE
             ).exists():
                 raise exceptions.ValidationError(
-                    "CBT模試はすでに受験済みです（生涯1回のみ受験できます）。"
+                    "CBT模試はすでに受験済みです（1度だけ受験できます）。"
                 )
         elif MockResult.objects.filter(user=request.user, mock_exam=exam).exists():
             raise exceptions.ValidationError("すでに受験を開始しています（二重受験不可）。")
@@ -633,6 +650,20 @@ class ExamResultView(APIView):
             return Response({"status": "grading", "message": "採点中です。しばらくお待ちください。"})
 
         review = build_review(exam, result)
+        # 定期開催の模試（月次・国試模試）の成績は、受験した月の翌月1日から
+        # 見せる。集計が終わった順に出すと、同じ回でも人によって見える
+        # タイミングが変わってしまう。
+        #
+        # CBT模試は「いつでも受験できて1度だけ」で、締切を共有しないため
+        # end_at が遠い未来に置かれている（翌月1日を出すと何十年も先になる）。
+        # 提出と同時に個別採点しているので、こちらは待たせない。
+        ranking_available_at = (
+            None
+            if exam.kind == MockExam.Kind.CBT_ONCE
+            else next_month_first_local(exam.end_at)
+        )
+        if graded and ranking_available_at and timezone.now() < ranking_available_at:
+            graded = False
         # 得点・正誤・解説は提出した時点で本人に返す。順位や偏差値と違って
         # 他の受験者の結果を待つ必要がなく、待たせるほど復習から遠ざかる。
         # result.score は採点コマンドが入れる値で、未採点なら 0 のままなので、
@@ -645,8 +676,8 @@ class ExamResultView(APIView):
             "score": my_score,
             "max_score": exam.mock_questions.count(),
             "review": review,
-            # 全国順位・偏差値は集計後にランキングタブへ出る。
-            "ranking_available_at": next_month_first_local(exam.end_at),
+            # 全国順位・偏差値は翌月1日からランキングタブへ出る。
+            "ranking_available_at": ranking_available_at,
         }
         if not graded:
             return Response({**common, "status": "submitted"})

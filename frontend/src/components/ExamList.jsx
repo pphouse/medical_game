@@ -14,14 +14,14 @@ const EXAM_TYPE_LABEL = { CBT: "CBT", KOKUSHI: "医師国家試験" };
 const KIND_ORDER = ["large", "cbt_once", "monthly"];
 const KIND_TITLE = {
   large: "国試模試（国試2ヶ月前に開催）",
-  cbt_once: "CBT模試（生涯1回・4年生のみ）",
+  cbt_once: "CBT模試（1度だけ・4年生のみ）",
   monthly: "月次実力テスト（毎月1日）",
 };
 // どんな模試なのかの概要。開催中の回が無い学年でも「何があるか」は
 // 分かるようにしたいので、模試の有無に関わらず常に出す。
 const KIND_SUMMARY = {
   large: "医師国家試験の2ヶ月前に1回だけ開催する100問・180分の総合模試。分野別と総合の偏差値が出ます。対象は5年生以上。",
-  cbt_once: "本番と同じ320問・6ブロック構成のCBT模試。生涯に1回だけ受験できます。対象は4年生。",
+  cbt_once: "本番と同じ320問・6ブロック構成のCBT模試。1度だけ受験できます。対象は4年生。",
   monthly: "毎月1日に開催する15問・20分の実力テスト。4年生以下はCBT版、5年生以上は医師国家試験版を受験できます。",
 };
 // その学年で受けられる回が無いときに、理由の見当がつくよう添える一言。
@@ -94,7 +94,7 @@ export default function ExamList() {
                 <p className="exam-meta">
                   {EXAM_TYPE_LABEL[exam.exam_type]} ・ {exam.question_count}問 ・{" "}
                   {exam.duration_minutes}分
-                  {exam.kind === "cbt_once" && " ・ 生涯1回のみ"}
+                  {exam.kind === "cbt_once" && " ・ 1度だけ受験できます"}
                   {exam.target_grade_min != null &&
                     exam.target_grade_min === exam.target_grade_max &&
                     ` ・ 対象 ${exam.target_grade_min}年`}
@@ -113,7 +113,19 @@ export default function ExamList() {
                   </button>
                 )}
                 {submitted && exam.status !== "graded" && (
-                  <p className="exam-meta">提出済み。採点をお待ちください。</p>
+                  <>
+                    {/* 得点・正誤・解説は提出直後から見られる。待つのは
+                        順位や偏差値（成績）だけなので、そう書き分ける。 */}
+                    <button
+                      className="cta-button"
+                      onClick={() => navigate(`/exams/${exam.id}/result`)}
+                    >
+                      採点結果を見る
+                    </button>
+                    <p className="exam-meta">
+                      成績は翌月1日に確認できます。
+                    </p>
+                  </>
                 )}
               </div>
             );

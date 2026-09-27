@@ -406,7 +406,7 @@ class Command(BaseCommand):
             picked = picked + filler
 
         exam = MockExam.objects.create(
-            title=options["title"] or "CBT全国模試（生涯1回）",
+            title=options["title"] or "CBT全国模試",
             kind=MockExam.Kind.CBT_ONCE, exam_type=Question.ExamType.CBT,
             start_at=start, end_at=end,
             question_count=len(picked), duration_minutes=duration,
