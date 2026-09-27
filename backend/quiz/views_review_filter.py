@@ -28,6 +28,7 @@ from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .categories import category_sort_key
 from .models import AnswerHistory, Question
 from .serializers import QuestionSerializer
 from .views import latest_answers
@@ -69,6 +70,8 @@ class ReviewFilterView(APIView):
         if source:
             if source not in SOURCE_VALUES:
                 raise exceptions.ValidationError(f"未知の出題元です: {source}")
+            if source == AnswerHistory.Context.MOCK:
+                self._backfill_mock_history(request.user)
             answered_ids = AnswerHistory.objects.filter(
                 user=request.user, context=source
             ).values_list("question_id", flat=True)
@@ -80,8 +83,11 @@ class ReviewFilterView(APIView):
 
         # 科目の絞り込みより前の集合から、選べる科目を出す。模試・対戦で
         # 解いた問題がまだ無い科目までチップに並べても選べないだけなので。
+        # 並びは分野一覧（ホーム）と同じにする。五十音順にすると、同じ科目を
+        # 画面ごとに違う位置から探すことになる。
         available_categories = sorted(
-            visible.values_list("category", flat=True).distinct()
+            visible.values_list("category", flat=True).distinct(),
+            key=lambda c: category_sort_key(c, exam_type or "CBT"),
         )
 
         categories = _csv_param(request, "categories")
@@ -126,6 +132,32 @@ class ReviewFilterView(APIView):
                 "results": serializer.data,
             }
         )
+
+    def _backfill_mock_history(self, user):
+        """提出済みの模試の解答を、解答履歴へ取り込み直す。
+
+        模試の解答は提出時に AnswerHistory(context=mock) へ複写している
+        （exams.grading.copy_result_to_history）が、その仕組みが入る前に
+        提出した回は複写されていない。受験したはずなのに模試復習が空になる
+        ので、模試復習を開いたときに取り込み直す。複写は冪等なので、
+        すでに入っている回は何もしない。
+        """
+        from django.apps import apps
+
+        from exams.grading import copy_result_to_history
+
+        MockResult = apps.get_model("exams", "MockResult")
+        results = (
+            MockResult.objects.filter(user=user, submitted_at__isnull=False)
+            .select_related("mock_exam")
+            .prefetch_related("answers")
+        )
+        for result in results:
+            questions = {
+                mq.question_id: mq.question
+                for mq in result.mock_exam.mock_questions.select_related("question")
+            }
+            copy_result_to_history(result, questions)
 
     def _mock_exam_question_ids(self, user, raw_id):
         """1回の模試で出題された問題のID。提出済みの模試だけ指定できる。

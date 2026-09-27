@@ -13,6 +13,7 @@ export default function QuizSession() {
   return (
     <QuizScreen
       title={state.title}
+      kicker={state.kicker}
       questions={state.questions}
       startIndex={state.startIndex ?? 0}
       context={state.context ?? "solo"}

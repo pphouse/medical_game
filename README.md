@@ -84,6 +84,33 @@ oxlint / vitest / vite build に加えて、**ビルド成果物に SERVICE_ROLE
 | `ANTHROPIC_API_KEY` | scripts | LLM 問題生成 CLI |
 | `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` | frontend | supabase-js（公開値のみ） |
 
+## 本番DBへの反映
+
+Vercel のデプロイは静的ファイルと関数を置き換えるだけで、データベースには
+触れない。科目の統合や設問の追加のように「マイグレーションで動かすデータ」は、
+下を流すまで画面に出てこない。
+
+GitHub Actions の **Migrate production database**（`.github/workflows/migrate.yml`）
+が main への push で自動的に流す。リポジトリの Secrets に
+`MIGRATION_DATABASE_URL`（Supabase の **直接接続 5432番**。プーラーの
+6543番はプリペアドステートメントを扱えず migrate が落ちる）を登録しておく。
+Actions タブから手で流すこともできる。
+
+手元から流す場合:
+
+```bash
+cd backend
+MIGRATION_DATABASE_URL='...' python manage.py migrate --settings=config.settings_migration
+MIGRATION_DATABASE_URL='...' python manage.py seed_editorial_questions --settings=config.settings_migration
+```
+
+DBへ直接つなげないときは、Supabase の SQL Editor に
+`backend/scripts/sql/apply_pending_migrations.sql` を貼って実行する。
+`manage.py migrate` + `seed_editorial_questions` と同じ結果になり、何度
+流しても同じ結果になる（どこまで当たっているか分からなくても流せる）。
+中身は `backend/scripts/gen_supabase_migration_sql.py` が生成するので、
+データマイグレーションを足したら生成し直す。
+
 ## DB を作り直す（開発）
 
 SQLite 時代のデータは存在しない前提（指示書 §9-1 で確認済み）なので、
@@ -128,3 +155,4 @@ python manage.py aggregate_rankings         # スナップショット集計
 | `manage.py send_habit_reminders` | 学習リマインドの Web Push を今の時刻の分だけ送る（本番は Vercel Cron が毎時 `/api/internal/send-reminders/`） |
 | `manage.py cleanup_student_id_images` | 承認後90日を過ぎた学生証画像の削除 |
 | `manage.py import_questions <json>` | 生成バッチの取り込み（**強制的に status=pending**） |
+| `manage.py seed_editorial_questions` | 同梱のレビュー済みバッチを公開状態で取り込む（重複なし・冪等） |

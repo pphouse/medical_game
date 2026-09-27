@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import characterUrl from "../assets/character.png";
 import { api } from "../api";
 import { useProfile } from "../context/ProfileContext";
 import { STUDENT_VERIFICATION_ENABLED } from "../features";
@@ -266,13 +267,14 @@ export default function MyPage() {
 
   const user = profile;
   const fullName = user.display_name || "表示名未設定";
-  const initial = (user.display_name || "?").charAt(0);
   const examPreference = user.exam_preference ?? "";
 
   return (
     <div className="screen">
       <div className="profile-hero">
-        <span className="profile-avatar">{initial}</span>
+        <span className="profile-avatar">
+          <img className="profile-avatar-character" src={characterUrl} alt="" />
+        </span>
         <div className="profile-hero-text">
           <span className="profile-hero-name">{fullName}</span>
           <span className="profile-hero-sub">

@@ -360,3 +360,26 @@ class TestLazyRefresh:
         res = client.get("/api/ranking/?scope=national&metric=solved")
         assert res.status_code == 200
         assert not RankingSnapshot.objects.exists()
+
+
+@pytest.mark.django_db
+class TestTierIsConsistent:
+    """一覧の各行のランクと「あなたのランク」は同じ求め方にする。
+
+    以前は一覧側だけが母集団の中での位置（上位何%）からランクを出していて、
+    自分の行のバッジと「あなたのランク」が食い違っていた。
+    """
+
+    def test_my_row_matches_my_rank(self):
+        me = Profile.objects.create(id=uuid.uuid4(), grade=4, points=320, ranked_matches=3)
+        for points in (900, 500, 100):
+            Profile.objects.create(
+                id=uuid.uuid4(), grade=4, points=points, ranked_matches=3
+            )
+        client, _ = auth_client(me)
+
+        body = client.get("/api/ranking/points/").json()
+
+        mine = next(e for e in body["entries"] if e["is_me"])
+        assert mine["tier"] == body["me"]["tier"]
+        assert body["me"]["tier"] is not None

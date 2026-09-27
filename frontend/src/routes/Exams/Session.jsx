@@ -117,8 +117,8 @@ export default function Session() {
   if (showReview) {
     return (
       <div className="screen">
-        <div className="quiz-topbar">
-          <span className="quiz-topbar-title">
+        <div className="exam-topbar">
+          <span className="exam-topbar-title">
             {isBlockExam ? `見直し一覧（第${block + 1}ブロック）` : "見直し一覧"}
           </span>
           <span className="progress">
@@ -163,8 +163,8 @@ export default function Session() {
 
   return (
     <div className="screen">
-      <div className="quiz-topbar">
-        <span className="quiz-topbar-title">
+      <div className="exam-topbar">
+        <span className="exam-topbar-title">
           {isBlockExam && `第${block + 1}ブロック（全${CBT_BLOCK_COUNT}ブロック）　`}
           第{index + 1}問 / {questions.length}
         </span>
