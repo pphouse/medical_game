@@ -73,6 +73,30 @@ python scripts/validate_questions.py --file backend/quiz/management/commands/dat
 `import_questions` では他の生成物と同様に **status=pending** で取り込まれる
 （デモ表示のみ `seed_demo --with-batch` が published として投入する）。
 
+### 科目を足す書き下ろしバッチ
+
+`cbt_batch_core_2026.json` は取り込み後に分野名や選択肢を直してあるので、
+`author_core_batch.py` で書き出し直すと直した内容が消える。科目を足すときは
+別のバッチにする。設問は Python のモジュールに書き、ビルダで JSON に書き出す
+（JSON は手で直さない）。
+
+| バッチ | 設問の本体 | ビルダ |
+|---|---|---|
+| `cbt_batch_gap_2026.json`（薄い科目の補充） | `scripts/cbt_gap_questions/` | `build_cbt_gap_batch.py --out …` |
+| `cbt_batch_basic_2026.json`（基礎医学 C-1〜C-5、単問のみ） | `scripts/cbt_basic_questions/` | `build_cbt_basic_batch.py` |
+
+```bash
+python scripts/build_cbt_basic_batch.py
+python scripts/validate_questions.py --file backend/quiz/management/commands/data/cbt_batch_basic_2026.json
+python scripts/build_category_fix_sql.py   # 同梱データが変わったら作り直す
+```
+
+- 正答の位置はビルダが通し番号で A〜E に散らす。モジュールの並びを変えると
+  正答の位置が変わるので、足すときは末尾に足す。
+- ビルダは同梱の他のバッチと実質同じ設問文（検証器と同じ正規化）があると書き出さない。
+- 基礎医学バッチは `tests/test_questions.py::TestBundledBasicScienceBatch` が、
+  書き出し直した結果と同梱 JSON が一致することまで見ている。
+
 ## 2b. 生成 — `generate_questions.py`（LLM API を使う場合）
 
 ```bash

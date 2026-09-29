@@ -1,4 +1,5 @@
 import json
+import re
 
 import pytest
 from django.core.management import call_command
@@ -271,6 +272,82 @@ class TestBundledCoreBatch:
         assert not imported.filter(question_type=Question.QuestionType.SEQUENTIAL).exists()
 
 
+class TestBundledBasicScienceBatch:
+    """書き下ろしのCBT基礎医学バッチ(cbt_batch_basic_2026.json)。
+
+    設問の本体は scripts/cbt_basic_questions/ にあり、JSON はそこから
+    scripts/build_cbt_basic_batch.py で書き出す。JSON だけを直すと次に
+    書き出したときに黙って消えるので、書き出し直した結果と一致することを見る。
+    """
+
+    def _scripts_dir(self):
+        from pathlib import Path
+
+        return Path(__file__).resolve().parents[2] / "scripts"
+
+    def _batch(self):
+        from pathlib import Path
+
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "quiz" / "management" / "commands" / "data" / "cbt_batch_basic_2026.json"
+        )
+        return path, json.loads(path.read_text(encoding="utf-8"))
+
+    def test_passes_validator_without_bias_warnings(self):
+        validator = TestBundledCoreBatch()._load_validator()
+        _, batch = self._batch()
+        report = validator.Report()
+        validator.validate_schema(batch, report)
+        validator.validate_items(batch, report)
+        assert report.failures == [], report.failures
+        # 正答の位置の偏りと「正答が最長」の偏りは、このバッチでは警告も出さない
+        assert report.warnings == [], report.warnings
+
+    def test_single_basic_science_questions_only(self):
+        _, batch = self._batch()
+        questions = batch["questions"]
+        assert len(questions) >= 500
+        assert not batch.get("question_sets")  # 四連問は作らない
+        assert {q["question_type"] for q in questions} == {"M"}
+        assert {q["category"] for q in questions} == {"基礎医学"}
+        assert {q["blueprint_code"].split("-")[0] for q in questions} == {"C"}
+        for q in questions:
+            # 誤答4つそれぞれに理由がある（画面で選択肢の横に出す）
+            wrong = {c["id"] for c in q["choices"]} - {q["correct_choice_id"]}
+            assert set(q["distractor_rationale"]) == wrong, q["id"]
+
+    def test_json_matches_source(self, tmp_path):
+        import importlib.util
+        import sys
+
+        scripts_dir = self._scripts_dir()
+        sys.path.insert(0, str(scripts_dir))
+        try:
+            spec = importlib.util.spec_from_file_location(
+                "build_cbt_basic_batch", scripts_dir / "build_cbt_basic_batch.py"
+            )
+            builder = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(builder)
+            out = tmp_path / "basic.json"
+            builder.main(str(out))
+        finally:
+            sys.path.remove(str(scripts_dir))
+        _, shipped = self._batch()
+        assert json.loads(out.read_text(encoding="utf-8")) == shipped, (
+            "scripts/cbt_basic_questions/ と同梱JSONがずれている。"
+            "python scripts/build_cbt_basic_batch.py で書き出し直すこと"
+        )
+
+    def test_imports_as_pending(self):
+        path, batch = self._batch()
+        call_command("import_questions", "--file", str(path))
+        imported = Question.objects.filter(source=Question.Source.LLM)
+        assert imported.count() == len(batch["questions"])
+        assert not imported.exclude(status=Question.Status.PENDING).exists()
+        assert set(imported.values_list("category", flat=True)) == {"基礎医学"}
+
+
 class TestBundledKokushiBatches:
     """同梱の国試バッチ(kokushi_*.json)に文字化けが混ざっていないことを保証する。
 
@@ -280,7 +357,7 @@ class TestBundledKokushiBatches:
     取り込まれていた。見た目が日本語のままなので気づきにくく、CIで止める。
     """
 
-    EXAMS = (114, 115, 116, 117, 118, 119)
+    EXAMS = tuple(range(106, 120))  # 第106〜119回
 
     def _batch_path(self, exam):
         from pathlib import Path
@@ -330,10 +407,40 @@ class TestBundledKokushiBatches:
             assert len(set(texts)) == len(texts), q["id"]  # 選択肢の重複なし
             assert all(texts), q["id"]
 
+    # 連問の症例文の続き（「その後の経過 ： …」「現症 ： …」）は、PDFでは前の
+    # 設問の ｅ の直後に組まれる。取り込みで ｅ の続きとして読むと、選択肢が
+    # 数百字になり、続きを要る次の設問からは症例が欠ける（第114回B43・B44）。
+    CASE_SECTION = re.compile(r"現病歴\s*[:：]|その後の経過|検査所見\s*[:：]|現\s*症\s*[:：]|既往歴\s*[:：]")
+
+    @pytest.mark.parametrize("exam", EXAMS)
+    def test_choices_do_not_carry_case_text(self, exam):
+        bad = []
+        for q, _ in self._bodies(exam):
+            for c in q["choices"]:
+                text = c["text"]
+                if len(text) > 150 or (len(text) > 60 and self.CASE_SECTION.search(text)):
+                    bad.append(f"{q['id']} {c['id']}: {text[:40]}…（{len(text)}字）")
+        assert not bad, "選択肢に症例文が付いている:\n" + "\n".join(bad)
+
+    # 和文どうしの間の空白は、均等割りや字間調整の抜け殻（"総コレステロ ー ル"）。
+    # 本文の和文に空白を置くことはない（出典表記の「ホームページ 第114回」の
+    # ような空白は解説側にあり、ここでは見ない）。
+    JAPANESE_GAP = re.compile(r"(?<=[ぁ-んァ-ヶー一-龥々]) (?=[ぁ-んァ-ヶー一-龥々])")
+
+    @pytest.mark.parametrize("exam", EXAMS)
+    def test_no_space_between_japanese_characters(self, exam):
+        bad = [
+            f"{q['id']}: …{body[max(0, m.start() - 8):m.end() + 8]}…"
+            for q, body in self._bodies(exam)
+            for m in [self.JAPANESE_GAP.search(q["question_text"] + "\n" + "\n".join(c["text"] for c in q["choices"]))]
+            if m
+        ]
+        assert not bad, "和文の間に空白が残っている:\n" + "\n".join(bad)
+
     def test_corpus_size(self):
         # 縮小したら気づけるように下限を固定する
         total = sum(len(list(self._bodies(e))) for e in self.EXAMS)
-        assert total >= 1000, total
+        assert total >= 3300, total
 
 
 class TestExamTypeFilter:

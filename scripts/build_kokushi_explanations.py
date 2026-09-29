@@ -13,6 +13,11 @@ scripts/kokushi_explanations/*.json に書いた解説の本体（point と誤�
 選択肢であって、ここで書く解説は及ばない。解説を出典の一部に見せてしまうと
 出所を偽ることになるので、段落を分けてアプリ作成であることを明記する。
 
+解説の項目には、分野の付け直し（"category"）と、今の診療に照らして正答が
+成り立たなくなった設問の除外（"exclude": "理由"）も書ける。除外は本番に
+まだ入っていない回（第106〜113回）に限る。scripts/import_kokushi.py も
+同じ項目を読んで、取り込み直したときに除外した設問を戻さない。
+
 使い方:
     python scripts/build_kokushi_explanations.py              # 検証のみ
     python scripts/build_kokushi_explanations.py --write      # 設問JSONに反映
@@ -29,6 +34,14 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_GLOB = os.path.join(ROOT, "backend/quiz/management/commands/data/kokushi_*.json")
 EXPL_DIR = os.path.join(ROOT, "scripts/kokushi_explanations")
+sys.path.insert(0, os.path.join(ROOT, "backend"))
+
+from quiz.categories import KOKUSHI_CATEGORIES, normalize  # noqa: E402
+from quiz.data_checks import DECODE_ARTIFACT, GLYPH_CORRUPTION  # noqa: E402
+
+# 本番にすでに入っている回。ここで設問を除外しても本番の行は消えないので、
+# 除外は受け付けない（非公開にするには SQL で status を変える）。
+PRODUCTION_ROUNDS = {str(n) for n in range(114, 120)}
 
 DISCLAIMER = (
     "※この解説はアプリ編集部が作成したものです。"
@@ -50,7 +63,14 @@ def load_questions():
             continue
         payload = json.load(open(path, encoding="utf-8"))
         for q in payload["questions"]:
-            index[q["blueprint_code"]] = (path, q)
+            code = q["blueprint_code"]
+            if not code:
+                continue  # 番号の無い作成問題は解説の対象外
+            # 解説は blueprint_code で設問に当てるので、同じ番号が2問あると
+            # 片方に黙って当たる。
+            if code in index:
+                raise SystemExit(f"blueprint_code が重複している: {code}")
+            index[code] = (path, q)
     return index
 
 
@@ -70,6 +90,28 @@ def check_text(code, field, text):
         raise SystemExit(f"{code} の {field} に想定外の文字: {sorted(set(found))}")
     if not text.strip():
         raise SystemExit(f"{code} の {field} が空")
+    # 同梱データの検査（tests/test_shipped_data.py）は解説にも字化けの形を
+    # 探すので、「頻度qは」のように漢字に欧字が挟まる書き方はここで止める。
+    for pattern in (GLYPH_CORRUPTION, DECODE_ARTIFACT):
+        m = pattern.search(text)
+        if m:
+            raise SystemExit(f"{code} の {field} が字化けの形に見える: …{m.group()}…（「頻度（q）は」のように書く）")
+
+
+def check_category(code, question, category):
+    """付け直す分野が正規の科目名で、取り込み時の正規化でも変わらないこと。
+
+    設問の最後の一文に「放射線」「麻酔」などがあると、取り込み時にその科目へ
+    移される（quiz/categories.py の discipline）。食い違うと同梱データの検査で
+    落ちるので、ここで先に止める。
+    """
+    if category not in KOKUSHI_CATEGORIES:
+        raise SystemExit(f"{code}: 分野「{category}」は国試の科目名ではない")
+    text = "\n".join([question["question_text"], question.get("disease", question.get("topic", ""))]
+                     + [c["text"] for c in question["choices"]])
+    got = normalize(category, text, blueprint_code=code, exam_type="KOKUSHI")
+    if got != category:
+        raise SystemExit(f"{code}: 分野「{category}」は取り込み時に「{got}」へ移される")
 
 
 def compose(question, body):
@@ -176,18 +218,30 @@ def main():
     questions = load_questions()
     authored = load_authored()
 
+    excluded = {code: body["exclude"] for code, body in authored.items() if "exclude" in body}
+    for code, reason in excluded.items():
+        check_text(code, "exclude", reason)
+        if code.split("-")[0] in PRODUCTION_ROUNDS:
+            raise SystemExit(f"{code}: 本番に入っている回の設問は、ここでは除外できない")
+    authored = {code: body for code, body in authored.items() if code not in excluded}
+
     orphans = sorted(set(authored) - set(questions))
     if orphans:
         raise SystemExit(f"設問が見つからない解説: {orphans[:10]}")
 
     composed = {}
+    recategorized = {}
     for code, body in authored.items():
         _, question = questions[code]
         composed[code] = compose(question, body)
+        if "category" in body:
+            check_category(code, question, body["category"])
+            recategorized[code] = body["category"]
+    questions = {code: v for code, v in questions.items() if code not in excluded}
 
     done = len(composed)
     total = len(questions)
-    print(f"解説あり {done} / {total}問  (残り {total - done})")
+    print(f"解説あり {done} / {total}問  (残り {total - done})  除外 {len(excluded)}問")
     per = {}
     for code in questions:
         exam = code.split("-")[0]
@@ -203,15 +257,26 @@ def main():
         for code, text in composed.items():
             path, _ = questions[code]
             by_path.setdefault(path, {})[code] = text
-        for path, mapping in by_path.items():
+        for path in sorted(glob.glob(DATA_GLOB)):
+            if ".report." in path:
+                continue
             payload = json.load(open(path, encoding="utf-8"))
-            for q in payload["questions"]:
-                if q["blueprint_code"] in mapping:
-                    q["explanation"] = mapping[q["blueprint_code"]]
+            mapping = by_path.get(path, {})
+            kept = [q for q in payload["questions"] if q["blueprint_code"] not in excluded]
+            dropped = len(payload["questions"]) - len(kept)
+            if not mapping and not dropped:
+                continue
+            for q in kept:
+                code = q["blueprint_code"]
+                if code in mapping:
+                    q["explanation"] = mapping[code]
+                if code in recategorized:
+                    q["category"] = recategorized[code]
+            payload["questions"] = kept
             with open(path, "w", encoding="utf-8") as fh:
                 json.dump(payload, fh, ensure_ascii=False, indent=2)
                 fh.write("\n")
-            print(f"  書き込み: {os.path.basename(path)} ({len(mapping)}問)")
+            print(f"  書き込み: {os.path.basename(path)} (解説 {len(mapping)}問、除外 {dropped}問)")
 
     if args.sql:
         codes = sorted(composed)

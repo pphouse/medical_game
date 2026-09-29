@@ -18,6 +18,7 @@ from quiz.categories import CATEGORIES_BY_EXAM, normalize
 from quiz.data_checks import (
     BODY_KANJI_AFTER_DIGIT,
     BRACKET_LOOKALIKE,
+    DECODE_ARTIFACT,
     DROPPED_NUMBER,
     DROPPED_WORD_HEAD,
     FIGURE_REF,
@@ -101,6 +102,23 @@ class TestShippedData:
             if m
         ]
         assert not bad, "グリフ解決に失敗した字が残っている:\n" + "\n".join(bad)
+
+    def test_no_decode_artifacts(self, path):
+        """読める字の形をした抽出の化け（data_checks.DECODE_ARTIFACT）。
+
+        第106〜116回は括弧や符号がほかの記号に（「糖:−<」）、第109回は
+        ギリシャ文字が素の欧字に（「c-GTP」）なって公開まで残っていた。
+        第118・119回は欧字の最後の字が括弧の後ろへ出たまま（「Epstein-Bar〈r EB〉」）
+        公開されていた。
+        """
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        bad = [
+            f"{code}.{field}: …{text[max(0, m.start() - 10):m.end() + 10]}…"
+            for code, field, text in iter_texts(payload)
+            for m in [DECODE_ARTIFACT.search(text)]
+            if m
+        ]
+        assert not bad, "抽出の化けが残っている:\n" + "\n".join(bad)
 
     def test_no_foreign_script(self, path):
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -234,7 +252,8 @@ class TestShippedData:
         「疾患と症状の組合せ」型の設問は左右2列で組まれており、区切りが
         入らないと「葉酸小球性貧血」のように2列が続けて読めてしまう。
         字間から列の境目を判定しているため、間隔が狭い回では区切りが
-        入らないことがあった（第117回で9問）。
+        入らないことがあった（第117回で9問）。一部の選択肢だけ区切りが
+        落ちたものもあった（第109回で5問、「収縮期駆出性雑音大動脈弁狭窄症」）。
 
         2列組みは国試PDFの組版に由来するので、この検査は国試データだけに
         かける。CBTの設問は自作で、選択肢が文になっており2列ではない。
@@ -250,9 +269,9 @@ class TestShippedData:
             for q in payload.get("questions", [])
             if "組合せ" in q["question_text"]
             and q.get("blueprint_code") not in NOT_TWO_COLUMN
-            and not any("—" in c["text"] for c in q["choices"])
+            and not all("—" in c["text"] for c in q["choices"])
         ]
-        assert not bad, "組合せ問題に列の区切りが無い:\n" + "\n".join(bad)
+        assert not bad, "組合せ問題に列の区切りが無い選択肢がある:\n" + "\n".join(bad)
 
     def test_categories_belong_to_their_exam(self, path):
         """分野名はその試験種別の正規の科目名で、取り込み直しても変わらない。

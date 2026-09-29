@@ -40,9 +40,9 @@ MODULES = [
 FOREIGN_SCRIPT = re.compile(r"[Ѐ-ԯ가-힯฀-๿]")
 
 
-def collect():
+def collect(modules):
     out = []
-    for name in MODULES:
+    for name in modules:
         module = importlib.import_module(name)
         out.extend(module.QUESTIONS)
     return out
@@ -74,26 +74,51 @@ def check(items):
     return problems
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--out", required=True)
-    args = ap.parse_args()
+def check_against_shipped(items, id_prefix):
+    """同梱の他のバッチに、実質同じ設問文がないか。
 
-    questions = collect()
+    validate_questions.py の重複検査は1バッチの中しか見ないので、書き下ろしが
+    既存の設問と同じ問いになっていても通ってしまう。判定は検証器と同じ
+    正規化（数字・年齢・性別・記号を潰す）で行う。同じバッチの書き出し済みの
+    版（id が同じ接頭辞）は比べない。
+    """
+    from validate_questions import normalize_text
+
+    data_dir = os.path.join(ROOT, "backend/quiz/management/commands/data")
+    seen = {}
+    for name in sorted(os.listdir(data_dir)):
+        if not name.endswith(".json") or ".report." in name:
+            continue
+        with open(os.path.join(data_dir, name), encoding="utf-8") as fh:
+            for q in json.load(fh).get("questions", []):
+                if str(q.get("id", "")).startswith(f"{id_prefix}-"):
+                    continue
+                seen.setdefault(normalize_text(q["question_text"]), f"{name} {q.get('id')}")
+    return [
+        f"{item['id']}: {seen[key]} と実質同じ設問文"
+        for item in items
+        if (key := normalize_text(item["question_text"])) in seen
+    ]
+
+
+def build(modules, *, id_prefix, batch_id, generated_at, out):
+    """設問モジュールを集めてバッチJSONに書き出す。問題があれば書き出さない。"""
+    questions = collect(modules)
     # 正答の位置を A〜E に順番に割り当てる。科目ごとにまとめて書くと
     # 位置が偏るので、通し番号で機械的に散らす。
     items = [
-        q.to_json(f"gap2026-{i:03d}", target_key="ABCDE"[(i - 1) % 5])
+        q.to_json(f"{id_prefix}-{i:03d}", target_key="ABCDE"[(i - 1) % 5])
         for i, q in enumerate(questions, 1)
     ]
 
-    problems = check(items)
+    problems = check(items) + check_against_shipped(items, id_prefix)
     if problems:
         for p in problems:
             print(f"  ★ {p}")
         raise SystemExit(f"{len(problems)}件の問題があるので書き出さない")
 
     by_cat = collections.Counter(i["category"] for i in items)
+    by_code = collections.Counter(i["blueprint_code"] for i in items)
     keys = collections.Counter(i["correct_choice_id"] for i in items)
     longest = sum(
         1
@@ -105,24 +130,33 @@ def main():
     print(f"設問 {len(items)}問")
     for cat, n in by_cat.most_common():
         print(f"  {n:4d}  {cat}")
+    print("  出題基準: " + " ".join(f"{c}={n}" for c, n in sorted(by_code.items())))
     print("  正答キーの分布: " + " ".join(
         f"{k}={keys.get(k,0)}({keys.get(k,0)/len(items):.0%})" for k in "ABCDE"))
     print(f"  正答が最長の選択肢: {longest}/{len(items)} ({longest/len(items):.0%}、40%未満が目安)")
 
     payload = {
         "meta": {
-            "generated_at": "2026-09-01",
+            "generated_at": generated_at,
             "generator": "llm-authored-editorial",
             "blueprint_version": "CBT-model-core-curriculum",
-            "batch_id": "gap2026",
+            "batch_id": batch_id,
         },
         "questions": items,
     }
-    with open(args.out, "w", encoding="utf-8") as fh:
+    with open(out, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, indent=2)
         fh.write("\n")
-    print(f"  -> {args.out}")
+    print(f"  -> {out}")
     return 0
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", required=True)
+    args = ap.parse_args()
+    return build(MODULES, id_prefix="gap2026", batch_id="gap2026",
+                 generated_at="2026-09-01", out=args.out)
 
 
 if __name__ == "__main__":

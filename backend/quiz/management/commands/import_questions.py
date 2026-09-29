@@ -44,6 +44,76 @@ def build_explanation(item):
     return explanation, {**folded, **per_choice}
 
 
+def already_imported(fields):
+    """取り込み済みの設問か。
+
+    本文と選択肢が同じ行があれば取り込み済み。分野名を鍵に含めていたときは、
+    科目立てを直したあとに取り込み直すと、同じ設問が新しい分野名でもう1つ
+    作られ、古い分野名の行も残っていた（演習画面で同じ科目が2行に分かれる
+    原因になる）。本文だけで見ないのは、国試には「医師の職業倫理に反するのは
+    どれか。」のように本文が同じで選択肢の違う別の設問があるため。
+
+    国試は blueprint_code（回-ブロック-番号）が1問に1つなので、同じコードの
+    行があれば本文が違っても取り込み済みとみなす。本文を直した設問を取り込み
+    直すと、直す前の行と直した行が並んでしまう（直すのは SQL で行う。
+    scripts/build_kokushi_fix_sql.py）。本番に SQL で入れるとき
+    （scripts/build_question_import_sql.py）も同じ判定にしている。
+    """
+    if Question.objects.filter(
+        exam_type=fields["exam_type"],
+        question_text=fields["question_text"],
+        choices=fields["choices"],
+    ).exists():
+        return True
+    code = fields["blueprint_code"]
+    return (
+        fields["exam_type"] == Question.ExamType.KOKUSHI
+        and bool(code)
+        and Question.objects.filter(exam_type=fields["exam_type"], blueprint_code=code).exists()
+    )
+
+
+def question_fields(q):
+    """取り込む1問ぶんの列の値。
+
+    本番に SQL で入れるとき（scripts/build_question_import_sql.py）もこれを使う。
+    変換を二重に持つと、SQL で入れた行と import_questions で入れた行がずれる。
+    """
+    # バッチ JSON の分野名は作られた時期によってまちまちなので、
+    # 取り込み時に正規の科目立てへ寄せる（quiz/categories.py）。
+    # 科目立ては CBT と国試で違うので exam_type も渡す。
+    category = normalize_category(
+        q["category"],
+        "\n".join(
+            [q["question_text"], q.get("disease", q.get("topic", ""))]
+            + [str(c.get("text", "")) for c in q["choices"] if isinstance(c, dict)]
+        ),
+        blueprint_code=q.get("blueprint_code", ""),
+        exam_type=q["exam_type"],
+    )
+    explanation, choice_explanations = build_explanation(q)
+    return {
+        "category": category,
+        "question_text": q["question_text"],
+        "topic": q.get("disease", q.get("topic", "")),
+        "exam_type": q["exam_type"],
+        "difficulty": DIFFICULTY_MAP.get(
+            q.get("difficulty", "standard"), Question.Difficulty.NORMAL
+        ),
+        "question_type": q.get("question_type", Question.QuestionType.MULTIPLE_CHOICE),
+        "blueprint_code": q.get("blueprint_code", ""),
+        "class_group": q.get("class_group", ""),
+        "choices": convert_choices(q["choices"]),
+        "correct_choice_key": q["correct_choice_id"],
+        "explanation": explanation,
+        "choice_explanations": choice_explanations,
+        "visibility": Question.Visibility.PUBLIC,
+        # 強制 (spec 2-1): imported batches enter the review queue.
+        "status": Question.Status.PENDING,
+        "source": Question.Source.LLM,
+    }
+
+
 class Command(BaseCommand):
     help = (
         "Import questions from a JSON batch file. LLM-generated batches are "
@@ -61,8 +131,8 @@ class Command(BaseCommand):
             "--all",
             action="store_true",
             help=(
-                "同梱のバッチ（data/*.json）をすべて取り込む。国試は114〜119回の"
-                "1000問超が同梱されているが、既定のファイルはCBTの1本だけなので、"
+                "同梱のバッチ（data/*.json）をすべて取り込む。国試は106〜119回の"
+                "約2900問が同梱されているが、既定のファイルはCBTの1本だけなので、"
                 "問題数が足りないときはこちらを使う。"
             ),
         )
@@ -90,50 +160,10 @@ class Command(BaseCommand):
         created_sets = 0
 
         for q in payload.get("questions", []):
-            # バッチ JSON の分野名は作られた時期によってまちまちなので、
-            # 取り込み時に正規の科目立てへ寄せる（quiz/categories.py）。
-            # 科目立ては CBT と国試で違うので exam_type も渡す。
-            category = normalize_category(
-                q["category"],
-                "\n".join(
-                    [q["question_text"], q.get("disease", q.get("topic", ""))]
-                    + [str(c.get("text", "")) for c in q["choices"] if isinstance(c, dict)]
-                ),
-                blueprint_code=q.get("blueprint_code", ""),
-                exam_type=q["exam_type"],
-            )
-            explanation, choice_explanations = build_explanation(q)
-            choices = convert_choices(q["choices"])
-            # 取り込み済みかどうかは本文と選択肢で見る。分野名を鍵に含めて
-            # いたときは、科目立てを直したあとに取り込み直すと、同じ設問が
-            # 新しい分野名でもう1つ作られ、古い分野名の行も残っていた
-            # （演習画面で同じ科目が2行に分かれる原因になる）。本文だけで
-            # 見ないのは、国試には「医師の職業倫理に反するのはどれか。」の
-            # ように本文が同じで選択肢の違う別の設問があるため。
-            if Question.objects.filter(
-                exam_type=q["exam_type"], question_text=q["question_text"], choices=choices
-            ).exists():
+            fields = question_fields(q)
+            if already_imported(fields):
                 continue
-            Question.objects.create(
-                category=category,
-                question_text=q["question_text"],
-                topic=q.get("disease", q.get("topic", "")),
-                exam_type=q["exam_type"],
-                difficulty=DIFFICULTY_MAP.get(
-                    q.get("difficulty", "standard"), Question.Difficulty.NORMAL
-                ),
-                question_type=q.get("question_type", Question.QuestionType.MULTIPLE_CHOICE),
-                blueprint_code=q.get("blueprint_code", ""),
-                class_group=q.get("class_group", ""),
-                choices=choices,
-                correct_choice_key=q["correct_choice_id"],
-                explanation=explanation,
-                choice_explanations=choice_explanations,
-                visibility=Question.Visibility.PUBLIC,
-                # 強制 (spec 2-1): imported batches enter the review queue.
-                status=Question.Status.PENDING,
-                source=Question.Source.LLM,
-            )
+            Question.objects.create(**fields)
             created_questions += 1
 
         for s in payload.get("question_sets", []):

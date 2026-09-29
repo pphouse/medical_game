@@ -83,10 +83,52 @@ DROPPED_WORD_HEAD = re.compile(r"(?<![倦])怠感|(?<![末])梢血|(?<![大下])
 # 語中に紛れ込んだ列区切り。組合せ問題の左右2列を見分けるため、字間が
 # 広い箇所に "—" を差し込んでいる（scripts/import_kokushi.py）。均等割りで
 # 広がった字間まで列の間隔と誤認され、「急性好酸球性— 肺炎」のように語の
-# 途中に入っていた。正当な列区切りは前後に空白があるので、空白を伴わない
-# "—" だけを拾う。
+# 途中に入っていた。正当な列区切りは前後に空白があるので、前か後ろに空白を
+# 伴わない "—" を拾う（後ろ側は「打 —診」「動脈血ガス分 —析」の形）。
 # コロンの直前の "—" も、区切りが二重に入ったもの（「水分 — : 30mL/kg/日」）。
-STRAY_SEPARATOR = re.compile(r"(?:(?<=[^\s])|^)—|—\s*[:：]")
+STRAY_SEPARATOR = re.compile(r"(?:(?<=[^\s])|^)—|—(?=\S)|—\s*[:：]")
+
+_SEPARATOR_IN_WORD = re.compile(r"(?<=\S)—\s*")
+_SEPARATOR_BEFORE_WORD = re.compile(r"\s+—(?=\S)")
+_SEPARATOR_AT_HEAD = re.compile(r"^—\s*")
+_SEPARATOR_BEFORE_COLON = re.compile(r"—\s*([:：])")
+
+
+def strip_stray_separators(text, *, keep_as_separator=False):
+    """語の途中に紛れ込んだ "—" を取り除く（quiz/0020 と同じ直し方）。
+
+    組合せ問題の選択肢（keep_as_separator=True）は、"—" が左右2列の境目
+    そのものなので、前後に空白のある正しい区切り " — " に直す。
+    """
+    if not text or "—" not in text:
+        return text
+    replacement = " — " if keep_as_separator else ""
+    fixed = _SEPARATOR_BEFORE_COLON.sub(r"\1", text)
+    fixed = _SEPARATOR_IN_WORD.sub(replacement, fixed)
+    fixed = _SEPARATOR_BEFORE_WORD.sub(replacement, fixed)
+    return _SEPARATOR_AT_HEAD.sub("", fixed)
+
+# 読める字の形をした抽出の化け。どれも国試PDFから実際に取り込まれていた形で、
+# 字化けの網（上の規則や、取り込み時の文字の白名簿）には掛からなかった。
+#   - 第109回の版下の情報: "TP01doc-Aor-11" "山田山企画-医師-本冊Ａ2.indd"
+#   - 第109回の数式フォントのギリシャ文字が素の欧字になったもの:
+#     "c-GTP"（γ-GTP）、"b遮断薬"（β遮断薬）、"nU/mL"（μU/mL）
+#   - 同じフォントの ± が "!" になったもの: "潜血(!)"
+#   - 符号の直後の括弧が別の記号になったもの: "糖:−<"（糖（−））、"蛋白8−:"
+#   - 欧文の語間が落ちたもの: "Thepatientfeltfaintwhilewalkingonthebeach"
+#   - 括弧が数字の最後の桁と入れ替わったもの: "白血球10,20(0 桿状核"（第109回G64、
+#     "10,200(" の括弧の字形が0とほぼ同じ位置にあり、左端の順に並べて前に出た）
+#   - 同じく欧字の最後の字と入れ替わったもの: "Epstein-Bar〈r EB〉"、"350mg/gC(r 基準"、
+#     "resistan(t 耐性)"（第109・118・119回）。括弧どうしでも起きる: "({ 140−年齢)"
+DECODE_ARTIFACT = re.compile(
+    r"TP\d+doc-|\.indd\b"
+    r"|(?<![A-Za-z])[a-c]-GTP|(?<![A-Za-z])[ab]遮断|(?<![A-Za-z])nU/mL"
+    r"|[（(]![）)]"
+    r"|[−±+][:;<>=]"
+    r"|[a-z]{25,}"
+    r"|\d,\d{1,2}[（(]\d\s"
+    r"|[A-Za-z][（(〈][A-Za-z]\s|[（(][{｛]\s"
+)
 
 # 図表を参照しているのに参照先が本文に無い設問（scripts/import_kokushi.py と対）。
 FIGURE_REF = re.compile(r"(家系図|図|写真|画像|グラフ|シェーマ|電気泳動|カレンダー)を(以下に|別に)?示す")

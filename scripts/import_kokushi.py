@@ -21,8 +21,16 @@
 フォントがあり、"RhD(安)"（正しくは "RhD(−)"）、"全身Ø怠感"（倦怠感）、
 "末Ü神経"（末梢神経）のように何食わぬ顔で別の字になる。
 
+第106〜116回はさらに厄介で、PDFが名乗る文字そのものが誤っている。数字・
+括弧・一部の漢字が ToUnicode では空白や U+FFFD に、pdfplumber の既定の符号表
+では別の記号や数字になり（"蛋白8−:"、"紫斑病=ITP>"、"糖:−<"）、読める字の
+形をしているため網に掛からず公開まで残っていた。
+
 そこで次の順に解決し、決まらなかった文字を含む設問は取り込まない。
 
+0. 埋め込みフォントから字形（輪郭）を取り出し、目視で同定した字形の表
+   （GLYPH_OUTLINES）にあればその字にする。ほかのどの解決よりも優先し、
+   表に無い字形なのにPDFが文字を名乗っていなければ解決できなかったとみなす。
 1. 抽出器が解決できたものはそれを使う（記号フォントの既知の誤りだけ補正）。
 2. /Encoding /Differences のグリフ名から復元する。ただし信用するのは実際に
    描画して同定した Adobe-Japan1 のCID名（cNNNN）と AGL の標準名だけで、
@@ -46,10 +54,11 @@
 - 本文の抽出に失敗したもの: グリフを解決できなかった箇所が残るもの、および
   グリフが別の字に化けたもの。誤読の原因になるため落とす。
 - 選択肢が ａ〜ｅ の5個そろわないもの: 抽出失敗の可能性があるため落とす。
+  ｆ 以降まである設問（6択以上）もここで落とす。
 
 使い方
 ------
-    for e in 119 118 117 116 115 114; do
+    for e in 119 118 117 116 115 114 113 112 111 110 109 108 107 106; do
         python scripts/import_kokushi.py --exam $e \
             --out backend/quiz/management/commands/data/kokushi_$e.json
     done
@@ -58,12 +67,32 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import io
 import json
+import logging
 import re
 import sys
 import unicodedata
 import urllib.request
 from pathlib import Path
+
+# 同梱データの検査（backend/tests/test_shipped_data.py）と同じ正規表現を使い、
+# 検査で落ちる設問は取り込みの時点で落とす。quiz.data_checks は正規表現だけで
+# Django に依存しない。
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
+from quiz.data_checks import (  # noqa: E402
+    BODY_KANJI_AFTER_DIGIT,
+    BRACKET_LOOKALIKE,
+    DECODE_ARTIFACT,
+    DROPPED_NUMBER,
+    DROPPED_WORD_HEAD,
+    GLYPH_CORRUPTION,
+    KANJI_DIGIT_KANJI,
+    POSITION_KANJI_THEN_LATIN,
+    STRAY_SEPARATOR,
+    strip_stray_separators,
+)
 
 try:
     import pdfplumber
@@ -73,21 +102,62 @@ except ImportError:  # pragma: no cover - 実行環境の案内
         "（pypdf は本PDFのフォント埋め込みを解決できず文字化けするため使わないこと）"
     )
 
-# 回ごとの公開ページとPDFの命名規則。厚労省は回ごとにURLが変わるため表で持つ。
-# 注意: PDF の接頭辞はページ名と一致しないことがある。第117回はページが
-# tp230502-01.html なのに PDF は tp220502-01*.pdf である。回を追加するときは
-# 必ず公開ページの href を確認すること（推測すると404になる）。
+# 回ごとの公開ページとPDF。厚労省は回ごとにURLも命名も変わるため表で持つ。
+# 回を足すときは、公開ページの href と各PDFの表紙（「指示があるまで開かない
+# こと。」の下の「107 Ｅ」など）で、どれがどのブロックの問題冊子かを確かめる
+# こと。推測すると404になるか、別冊（画像）や別のブロックを読んでしまう。
+#  - 第117回はページが tp230502-01.html なのに PDF は tp220502-01*.pdf。
+#  - 第107・108回は a〜s の連番で、問題冊子（a,c,e,…,q）と別冊（b,d,…,r）が
+#    交互に並び、s が正答値表。
+#  - 第106回は tp_siken_106_ishi_{a〜i}1.pdf が問題冊子、無印が正答値表。
+#  - 第111回までは500問（A〜I の9ブロック）、第112回からは400問（A〜F）。
+#  - 第105回以前のPDFは紙をスキャンした画像で文字が入っていない。読み取り
+#    （OCR）は字を取り違えるので扱わない。
 _BASE = "https://www.mhlw.go.jp/seisakunitsuite/bunya/kenkou_iryou/iryou/topics"
-EXAMS = {
-    119: {"page": f"{_BASE}/tp250428-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp250428-01"},
-    118: {"page": f"{_BASE}/tp240424-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp240424-01"},
-    117: {"page": f"{_BASE}/tp230502-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp220502-01"},
-    116: {"page": f"{_BASE}/tp220421-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp220421-01"},
-    115: {"page": f"{_BASE}/tp210416-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp210416-01"},
-    114: {"page": f"{_BASE}/tp200421-01.html", "pdf_base": f"{_BASE}/dl", "prefix": "tp200421-01"},
-}
+_DL = f"{_BASE}/dl"
 
-BLOCKS = "abcdef"  # 甲乙丙丁戊己 → 正答表の A〜F に対応
+
+def _standard(page: str, prefix: str, letters: str) -> dict:
+    """第109回以降の命名。問題冊子が {prefix}{a}_01.pdf、正答値表が {prefix}seitou.pdf。"""
+    return {
+        "page": f"{_BASE}/{page}",
+        "answers": f"{_DL}/{prefix}seitou.pdf",
+        "blocks": {c.upper(): f"{_DL}/{prefix}{c}_01.pdf" for c in letters},
+    }
+
+
+def _alternating(page: str, prefix: str) -> dict:
+    """第107・108回。問題冊子と別冊が交互に並び、最後の s が正答値表。"""
+    return {
+        "page": f"{_BASE}/{page}",
+        "answers": f"{_DL}/{prefix}s.pdf",
+        "blocks": {b: f"{_DL}/{prefix}{c}.pdf" for b, c in zip("ABCDEFGHI", "acegikmoq")},
+    }
+
+
+_TOPICS_2012 = "https://www.mhlw.go.jp/topics/2012/04"
+
+EXAMS = {
+    119: _standard("tp250428-01.html", "tp250428-01", "abcdef"),
+    118: _standard("tp240424-01.html", "tp240424-01", "abcdef"),
+    117: _standard("tp230502-01.html", "tp220502-01", "abcdef"),
+    116: _standard("tp220421-01.html", "tp220421-01", "abcdef"),
+    115: _standard("tp210416-01.html", "tp210416-01", "abcdef"),
+    114: _standard("tp200421-01.html", "tp200421-01", "abcdef"),
+    113: _standard("tp190415-01.html", "tp190415-01", "abcdef"),
+    112: _standard("tp180511-01.html", "tp180511-01", "abcdef"),
+    111: _standard("tp170425-01.html", "tp170425-01", "abcdefghi"),
+    110: _standard("tp160411-01.html", "tp160411-01", "abcdefghi"),
+    109: _standard("tp150511-01.html", "tp150511-01", "abcdefghi"),
+    108: _alternating("tp140512-01.html", "tp140512-01"),
+    107: _alternating("tp130723-01.html", "tp130723-01"),
+    106: {
+        "page": f"{_TOPICS_2012}/tp0420-01.html",
+        "answers": f"{_TOPICS_2012}/dl/tp_siken_106_ishi.pdf",
+        "blocks": {c.upper(): f"{_TOPICS_2012}/dl/tp_siken_106_ishi_{c}1.pdf"
+                   for c in "abcdefghi"},
+    },
+}
 
 CHOICE_MARKS = "ａｂｃｄｅ"
 CHOICE_KEYS = ["A", "B", "C", "D", "E"]
@@ -118,7 +188,7 @@ MULTI_SELECT = re.compile(r"[２2３3４4]\s*つ選べ")
 # 連問の導入。「次の文を読み、47、48の問いに答えよ。」に続く症例文を複数の設問が
 # 共有する形式。個々の設問文は「診断はどれか。」のように単独では成立しないため、
 # 現状は取り込まない（将来 question_set として扱う余地はある）。
-SERIES_HEAD = re.compile(r"次の文を読み[、,]\s*([0-9０-９、,〜～\-]+?)\s*の問いに答えよ")
+SERIES_HEAD = re.compile(r"次の文を読み[、,]\s*([0-9０-９、,〜～~\-]+?)\s*の問いに答えよ")
 
 # pdfplumber がグリフを解決できなかった箇所。本文に "(cid:7674)" の形で残る。
 CID_ARTIFACT = re.compile(r"\(cid:\d+\)")
@@ -278,8 +348,22 @@ def fetch(url: str, dest: Path) -> Path:
     return dest
 
 
+# 第109回のPDFには版下の情報（"TP01doc-Aor-11" と "山田山企画-医師-本冊Ａ2.indd
+# 11 — 2014/12/23 9:42"）が本文として残っていて、直前に数字だけの行（台紙の
+# 通し番号）が付く。ページ末の設問では最後の選択肢にそのままつながり、
+# 「…有用である。1 TP01doc-Aor-11山田山企画…」になっていた。
+SLUG_LINE = re.compile(r"^TP\d+doc-|\.indd\b")
+
+
 def _clean(lines: list[str]) -> list[str]:
-    return [ln.rstrip() for ln in lines if not NOISE_LINE.search(ln)]
+    out = []
+    for i, ln in enumerate(lines):
+        if NOISE_LINE.search(ln) or SLUG_LINE.search(ln):
+            continue
+        if re.fullmatch(r"\s*\d{1,3}\s*", ln) and i + 1 < len(lines) and SLUG_LINE.search(lines[i + 1]):
+            continue
+        out.append(ln.rstrip())
+    return out
 
 
 # --- グリフの解決 --------------------------------------------------------
@@ -310,7 +394,7 @@ _CID_CHAR = re.compile(r"^\(cid:(\d+)\)$")
 # 対応が下表で、いずれも検査所見でよく使う記号だった（"RhD(−)" が正しい）。
 PI_STD_FONT = "ZZ-PIStd"
 PI_STD_GLYPHS = {
-    "粟": "↓", "或": "→", "袷": "+", "安": "−", "庵": "×", "案": "±",
+    "粟": "↓", "或": "→", "袷": "+", "安": "−", "庵": "×", "案": "±", "鮎": "↑",
 }
 
 
@@ -442,7 +526,14 @@ def _crossref_table(path: Path) -> dict[tuple[str, int], str]:
 
     doc = pymupdf.open(path)
     for page in doc:
-        page.set_cropbox(page.mediabox)
+        try:
+            page.set_cropbox(page.mediabox)
+        except ValueError:
+            # 第106・107回の正答値表は MediaBox の原点が (0,0) でなく
+            # （[-14.2 14.17 711.8 1040.9]）、PyMuPDF はこれを CropBox に
+            # 設定できない。CropBox は元から MediaBox と同じなのでそのまま使う。
+            # 座標がずれていれば突き合わせが減って設問が落ちるだけで、誤読は増えない。
+            pass
 
     learned: dict[tuple[str, int], str] = {}
     conflicts: set[tuple[str, int]] = set()
@@ -491,6 +582,356 @@ def _crossref_table(path: Path) -> dict[tuple[str, int], str]:
     return learned
 
 
+# --- 字形で決める --------------------------------------------------------
+#
+# 上の解決はどれも「PDFが名乗る文字」を頼りにしている。ところが第106〜116回の
+# PDFには、名乗る文字そのものが誤っているフォントが混ざっていた。数字・括弧・
+# 一部の漢字が、ToUnicode では空白や U+FFFD に、pdfplumber が代わりに使う
+# 既定の符号表では無関係な記号や別の数字になる。
+#
+#   "尿所見:蛋白8−:、糖8−:"          正しくは 蛋白（−）、糖（−）   第106回
+#   "特発性血小板減少性紫斑病=ITP>"    正しくは 〈ITP〉              第106回
+#   "SpO2 99%:マスク L/分酸素投与下<"  括弧が化け、数字も欠けている   第114回
+#   "両下)の浮腫"                      正しくは 両下腿（グリフ名の誤り） 第116回
+#   "レニン活性鮎"                     正しくは ↑                   第110回
+#   "c-GTP"、"b遮断薬"                 正しくは γ-GTP、β遮断薬      第109回
+#
+# どれも読める文字なので、字化けの網（has_broken_glyph や data_checks の検査）
+# には掛からない。第114〜116回はこのまま公開されていた。
+#
+# そこでPDFに埋め込まれたフォントから字形（輪郭）を取り出し、輪郭で文字を
+# 決める。GLYPH_OUTLINES は第106〜119回の全PDFを調べ、PDFが文字を名乗って
+# いない字形（空白・U+FFFD・制御文字なのに輪郭がある）と、小さな記号・数式
+# フォントの全字形を描画して、目視で同定した表（輪郭の指紋 -> 文字）である。
+# 確かさは2通りで確かめた。
+#
+#   - 同じ字形を /Differences のグリフ名（CID_GLYPHS）からも復元できる箇所が
+#     約1万7千あり、2種類11か所を除いてすべて一致した。食い違った11か所は
+#     グリフ名のほうが誤っていた（上の「両下)」と、「末梢」が「末這」）。
+#   - 第106〜119回で使われる約6千の字形について、同じ輪郭が回やフォントを
+#     またいでも同じ文字になることを確かめた。
+#
+# 輪郭で決まった文字は、ほかのどの解決よりも優先する。表に無い字形なのに
+# PDFが文字を名乗っていないものは UNRESOLVED にして設問ごと落とす（抽出器が
+# 補った字には根拠がない）。回を足して落ちる設問が増えたら、その字形を描画して
+# 表に足すこと。
+
+# 輪郭の指紋 -> 文字。指紋は _outline_key() で作る。コメントは、その字形が
+# 現れる回と、PDFがその字形に名乗らせていた文字（ToUnicode・PyMuPDF 側）。
+# 同じ字でも書体（明朝・ゴシック）や回によって輪郭が違うので行が分かれる。
+GLYPH_OUTLINES: dict[str, str] = {
+    # 数字
+    "7f20a8629e99eeda": "0",  # 第106〜107回（PDFの文字: U+FFFD）
+    "66dc771da508278b": "0",  # 第106〜107・110〜116回（PDFの文字: U+FFFD空白）
+    "7ccc056f3bd46406": "1",  # 第106〜107・110〜112・114〜116回（PDFの文字: U+FFFD）
+    "177161704ae99410": "1",  # 第106〜107・116回（PDFの文字: U+FFFD）
+    "a6574813217e75f4": "1",  # 第113回（PDFの文字: 空白）
+    "d8809526e299bde3": "2",  # 第106〜107・110〜112・114〜116回（PDFの文字: U+FFFD）
+    "a7c9069d96e2cd6c": "2",  # 第106〜107・110〜116回（PDFの文字: U+FFFD઄）
+    "330b3eb510f22460": "2",  # 第113回（PDFの文字: 空白）
+    "e132d83c2bb91b7f": "3",  # 第106〜107・110〜116回（PDFの文字: U+FFFD空白）
+    "66f57bd54f46225c": "3",  # 第106〜107・110〜116回（PDFの文字: U+FFFDઅ）
+    "1124215129019025": "4",  # 第106〜107・110〜112・114〜116回（PDFの文字: U+FFFD）
+    "4273ece882bb153c": "4",  # 第110〜112・114〜116回（PDFの文字: U+FFFD）
+    "d376f3d6c94cc578": "4",  # 第113回（PDFの文字: 空白）
+    "d9f81f69b3393974": "4",  # 第113回（PDFの文字: આ）
+    "68880704ff6c480b": "5",  # 第106〜107・110〜116回（PDFの文字: U+FFFD空白）
+    "2be56a5396ecff9d": "5",  # 第115〜116回（PDFの文字: U+FFFD）
+    "ea66f398b520d277": "6",  # 第106〜107・110〜116回（PDFの文字: U+FFFD空白）
+    "b04a4df2a0da3164": "6",  # 第112・116回（PDFの文字: U+FFFD）
+    "03299fb0a3550699": "7",  # 第106〜107・110〜116回（PDFの文字: U+FFFD空白）
+    "b0c5b4764fbb8832": "8",  # 第106〜107・110〜116回（PDFの文字: U+FFFD空白）
+    "38b328767d744ad5": "8",  # 第106〜107・112・116回（PDFの文字: U+FFFD）
+    "8dece395412f7788": "9",  # 第106〜107・110〜116回（PDFの文字: U+FFFD空白）
+    # 括弧
+    "997fcc9d90f4f342": "（",  # 第106〜107・110〜112・114〜116回（PDFの文字: U+FFFD(）
+    "0dfa4da2caceb4da": "（",  # 第110〜112回（PDFの文字: U+FFFD）
+    "f40f503cf3947267": "（",  # 第113回（PDFの文字: 空白;(）
+    "258009818a349c75": "）",  # 第106〜107・110〜116回（PDFの文字: U+FFFD空白=)）
+    "0af4d765434427fe": "）",  # 第110〜112回（PDFの文字: U+FFFD）
+    "c184abb9f578e005": "〈",  # 第106〜107・110〜112・114〜116・119回（PDFの文字: U+FFFD〈）
+    "f827fd52b2d9119c": "〈",  # 第113回（PDFの文字: ÜôÎìJ空白）
+    "5eeeea659053af5c": "〉",  # 第106〜107・109〜112・114〜119回（PDFの文字: U+FFFD〉）
+    "775d642f4908ab5c": "〉",  # 第113回（PDFの文字: Þý×íO空白）
+    "22ee6c1a4b1c4814": "[",  # 第107・110〜112・114〜116回（PDFの文字: U+FFFD[）
+    "bd322c4ee928c7ff": "]",  # 第107・110〜112・114〜116回（PDFの文字: U+FFFD]）
+    "d3678b139776c5a8": "『",  # 第112・116回（PDFの文字: U+FFFD）
+    "ca52fe66189936ba": "』",  # 第112・116・119回（PDFの文字: U+FFFD』）
+    "99666cc0e17bfb97": "【",  # 第113回（PDFの文字: ò）
+    "ba0aebe59f0dfa75": "【",  # 第114回（PDFの文字: U+FFFD）
+    "c911934ff4411934": "】",  # 第113回（PDFの文字: ø）
+    "a86897e82e804e11": "】",  # 第114回（PDFの文字: U+FFFD）
+    # 漢字
+    "bad2524edfa4acad": "XIII",  # 第106・112・114・117回（PDFの文字: U+FFFDX）
+    "3486298d5f159ce6": "倦",  # 第106〜107・109〜119回（PDFの文字: U+FFFD倦.S4）
+    "e25e87ffb95d1c38": "屑",  # 第113回（PDFの文字: ×）
+    "f800b85915a6537b": "扁",  # 第106〜107・109〜112・114〜119回（PDFの文字: U+FFFD扁）
+    "cfb3205eb634548d": "扁",  # 第113回（PDFの文字: 空白）
+    "11f55d39d359809e": "梢",  # 第106〜107・109〜112・114〜119回（PDFの文字: U+FFFD梢）
+    "d048c32fbde5e086": "梢",  # 第113回（PDFの文字: ¢Î*9:）
+    "e8b80578a40f4ac2": "溢",  # 第110回（PDFの文字: U+FFFD）
+    "439245d803c6f6a7": "牙",  # 第111・115回（PDFの文字: U+FFFD）
+    "9cc661adaaa2be96": "疼",  # 第106〜107・110〜112・114〜119回（PDFの文字: U+FFFD疼）
+    "c1200039eb0fad1e": "疼",  # 第113回（PDFの文字: 空白）
+    "b527bac3df8e5817": "穿",  # 第106〜107・109〜119回（PDFの文字: U+FFFD穿空白）
+    "7d0e686693e3bb13": "腔",  # 第107回（PDFの文字: U+FFFD）
+    "fa545558f9b3612f": "腿",  # 第107・109〜112・114〜119回（PDFの文字: U+FFFD腿）
+    "c949366377ea9fd6": "腿",  # 第113回（PDFの文字: üdwSU+FFFD&）
+    "25a31084d4035582": "這",  # 第111〜112・116・119回（PDFの文字: U+FFFD這）
+    "134d6cc684a44471": "這",  # 第113回（PDFの文字: .）
+    "2dd287446448c2f9": "鞘",  # 第106〜107・109〜110・116・118回（PDFの文字: U+FFFD鞘）
+    # 記号
+    "95d6a1d5a6fc5713": "↓",  # 第106〜107・110〜112・114〜117回（PDFの文字: 粟）
+    "a87dbaf4aa899ef8": "↓",  # 第113回（PDFの文字: 粟）
+    "352794308f0ec503": "→",  # 第106〜107・110〜112・114〜119回（PDFの文字: 或→）
+    "5e45a6b6a88bebbb": "→",  # 第113回（PDFの文字: 或）
+    "c7af2eb23d90de3d": "−",  # 第106〜107・110〜112・114〜116回（PDFの文字: 安）
+    "4a00a77208947bda": "−",  # 第113回（PDFの文字: 安）
+    "3e73fbb5c6ae7663": "+",  # 第106〜107・110〜112・114〜116回（PDFの文字: 袷）
+    "ffcb0d3ce4ab335e": "+",  # 第113回（PDFの文字: 袷）
+    "f9844656991023f4": "±",  # 第106〜107・110〜112・114〜115回（PDFの文字: 案）
+    "f7d794f04718184c": "±",  # 第109回（PDFの文字: !）
+    "b8aaab3b85bc6d5b": "±",  # 第113回（PDFの文字: 案）
+    "2e0712b2b4935405": "×",  # 第106〜107・110〜112・114〜116回（PDFの文字: 庵）
+    "c3e30acc1e4bac44": "×",  # 第109回（PDFの文字: #×）
+    "7fe90e7823433560": "×",  # 第113回（PDFの文字: 庵）
+    "f57c01e408fb1f4f": "↑",  # 第110回（PDFの文字: 鮎）
+    "50ce59fa429f3c91": "=",  # 第113回（PDFの文字: 暗）
+    # ギリシャ文字（第109回の数式フォント）
+    "ac0e3150571100af": "α",  # 第109回（PDFの文字: a）
+    "a70df77541ca86b0": "α",  # 第109回（PDFの文字: a）
+    "1b5694b85d9b5e3e": "β",  # 第109回（PDFの文字: b）
+    "e4f0d76e3a5ec413": "β",  # 第109回（PDFの文字: b）
+    "656a8eacdfa8ff96": "γ",  # 第109回（PDFの文字: c）
+    "41f56932c7a113af": "γ",  # 第109回（PDFの文字: c）
+    "97f652f4298ba519": "μ",  # 第109回（PDFの文字: n）
+    "e6baf5911d7aa279": "μ",  # 第109回（PDFの文字: n）
+}
+
+# フォントの読み込みで fontTools が出す警告（"'created' timestamp out of
+# range" など）は字形に関係しないので黙らせる。
+logging.getLogger("fontTools").setLevel(logging.ERROR)
+
+
+def _outline_key(commands: list) -> str:
+    """輪郭（fontTools の RecordingPen の記録）の指紋。輪郭が無ければ ""。
+
+    座標を 0.1 単位に丸めて文字列にし、SHA-1 の先頭16桁を取る。同じ書体の
+    同じ字なら、部分集合や回が違っても同じ指紋になる。
+    """
+    if not commands:
+        return ""
+    shape = tuple(
+        (op, tuple(tuple(round(float(v), 1) for v in pt) for pt in args if pt is not None))
+        for op, args in commands
+    )
+    return hashlib.sha1(repr(shape).encode()).hexdigest()[:16]
+
+
+def _load_glyphs(doc, xref: int):
+    """埋め込みフォントから、グリフ番号 -> 字形 を引く関数を作る。読めなければ None。"""
+    from fontTools.cffLib import CFFFontSet
+    from fontTools.ttLib import TTFont
+
+    try:
+        _name, ext, _type, buf = doc.extract_font(xref)
+        if not buf:
+            return None
+        if ext in ("ttf", "otf"):
+            font = TTFont(io.BytesIO(buf))
+            order = font.getGlyphOrder()
+            glyph_set = font.getGlyphSet()
+            return lambda gid: glyph_set[order[gid]] if 0 <= gid < len(order) else None
+        if ext in ("cff", "cid"):
+            cff = CFFFontSet()
+            cff.decompile(io.BytesIO(buf), None)
+            top = cff[cff.fontNames[0]]
+            strings = top.CharStrings
+            order = top.getGlyphOrder()
+            if hasattr(top, "ROS"):
+                # CIDで引く形式のCFF。MuPDF はCIDをそのままグリフ番号として返す。
+                by_cid = {int(n[3:]) if n.startswith("cid") else gid: n
+                          for gid, n in enumerate(order)}
+                return lambda cid: strings[by_cid[cid]] if cid in by_cid else None
+            return lambda gid: strings[order[gid]] if 0 <= gid < len(order) else None
+    except Exception:  # 壊れたフォントは字形で決めないだけ
+        return None
+    return None
+
+
+class _GlyphShapes:
+    """PDF1冊ぶんの、(フォントの xref, グリフ番号) -> 輪郭の指紋。"""
+
+    def __init__(self, doc):
+        self.doc = doc
+        self.fonts: dict[int, object] = {}
+        self.keys: dict[tuple[int, int], str | None] = {}
+
+    def key(self, xref: int, gid: int) -> str | None:
+        """指紋。輪郭が無ければ ""、フォントやグリフが読めなければ None。"""
+        from fontTools.pens.recordingPen import RecordingPen
+
+        if (xref, gid) not in self.keys:
+            if xref not in self.fonts:
+                self.fonts[xref] = _load_glyphs(self.doc, xref)
+            lookup = self.fonts[xref]
+            glyph = lookup(gid) if lookup else None
+            key = None
+            if glyph is not None:
+                pen = RecordingPen()
+                try:
+                    glyph.draw(pen)
+                    key = _outline_key(pen.value)
+                except Exception:
+                    key = None
+            self.keys[(xref, gid)] = key
+        return self.keys[(xref, gid)]
+
+
+def _page_shapes(page, shapes: _GlyphShapes) -> list[tuple]:
+    """1ページの字を PyMuPDF で見たもの。
+
+    (x0, x1, y0, 原点x, 原点y, 名乗る文字, 字形で決めた文字) の並び。
+    字形で決めた文字は、GLYPH_OUTLINES にあればその字、表に無い字形なのに
+    PDFが文字を名乗っていなければ UNRESOLVED、それ以外は None（名乗る文字
+    のままでよい）。
+    """
+    programs: dict[str, set[int]] = {}
+    for font in page.get_fonts():
+        programs.setdefault(re.sub(r"^[A-Z]{6}\+", "", font[3]), set()).add(font[0])
+    out = []
+    for span in page.get_texttrace():
+        xrefs = programs.get(span["font"], ())
+        for uc, gid, origin, bbox in span["chars"]:
+            ch = chr(uc) if uc >= 0 else UNRESOLVED
+            # 同じ名前のフォントが複数あって字形が食い違うときは決めない
+            keys = {shapes.key(xref, gid) for xref in xrefs}
+            key = keys.pop() if len(keys) == 1 else None
+            out.append((bbox[0], bbox[2], bbox[1], origin[0], origin[1], ch, shape_decision(ch, key)))
+    return out
+
+
+def shape_decision(ch: str, key: str | None) -> str | None:
+    """PDFが名乗る文字 ch と字形の指紋 key から、使う文字を決める。
+
+    表にある字形ならその字。表に無い字形なのに、PDFが文字を名乗っていない
+    （空白・U+FFFD・制御文字なのに輪郭がある）なら UNRESOLVED。フォントが
+    読めず字形が分からない（key が None）ときは、U+FFFD と制御文字だけを
+    UNRESOLVED にし、空白は空白のままにする。それ以外は None（名乗るとおり）。
+    """
+    if key and key in GLYPH_OUTLINES:
+        return GLYPH_OUTLINES[key]
+    blank = ch in (" ", "\u3000")
+    unnamed = blank or ch == UNRESOLVED or unicodedata.category(ch) in _UNUSABLE_CATEGORIES
+    if unnamed and (key or (key is None and not blank)):
+        return UNRESOLVED
+    return None
+
+
+def _shape_fixes_by_origin(doc) -> list[dict[tuple[float, float], list[str | None]]]:
+    """PyMuPDF で読むとき用。ページごとに 字の原点 -> 字形で決めた文字の列。
+
+    「）（」のように同じ原点に2字が描かれることがあるので、原点ごとに描画の
+    順で並べておき、_take_shape_fix() で前から1つずつ取り出す。
+    """
+    shapes = _GlyphShapes(doc)
+    pages = []
+    for page in doc:
+        fixes: dict[tuple[float, float], list[str | None]] = {}
+        for rec in _page_shapes(page, shapes):
+            fixes.setdefault((round(rec[3], 1), round(rec[4], 1)), []).append(rec[6])
+        pages.append(fixes)
+    return pages
+
+
+def _take_shape_fix(ch: dict, fixes: dict[tuple[float, float], list[str | None]]) -> str | None:
+    """rawdict の1文字に対応する、字形で決めた文字（無ければ None）。"""
+    queue = fixes.get((round(ch["origin"][0], 1), round(ch["origin"][1], 1)))
+    return queue.pop(0) if queue else None
+
+
+def _shape_fixes(path: Path) -> list[dict[int, str]]:
+    """pdfplumber で読むとき用。ページごとに page.chars の添字 -> 字形で決めた文字。
+
+    pdfplumber の文字は字形を持たないので、PyMuPDF で見た字と座標で突き合わせる
+    （_crossref_table と同じく y のずれを中央値で求める）。
+
+    - 左端だけで合わせると取り違える。和文の「（」は字面の左側が空いていて、
+      直前の半角数字と左端が重なる（"8,900（桿状核" の 0 と （ が同じ x0）。
+      右端まで合わせる。
+    - 「）（」と続くところは2字がまったく同じ枠に描かれていて、座標では
+      区別できない。どちらの抽出器も描画の順に字を返すので、1つの字には
+      1つの字形だけを割り当て、同じ近さなら順番どおりに組にする。
+
+    突き合わせられなかった字は、同じフォントの同じ符号が突き合わせられた
+    箇所の結果に従う。そこで結果が割れていれば決めずに UNRESOLVED にする。
+    """
+    import pymupdf
+
+    doc = pymupdf.open(path)
+    for page in doc:
+        try:
+            page.set_cropbox(page.mediabox)
+        except ValueError:
+            pass  # _crossref_table と同じ（第106・107回の正答値表）
+    shapes = _GlyphShapes(doc)
+
+    result: list[dict[int, str]] = []
+    learned: dict[tuple[str, str], set[str | None]] = {}
+    unaligned: list[tuple[int, int, tuple[str, str]]] = []
+    with pdfplumber.open(path) as pdf:
+        for pno, plumber_page in enumerate(pdf.pages):
+            fixes: dict[int, str] = {}
+            result.append(fixes)
+            mu = _page_shapes(doc[pno], shapes) if pno < doc.page_count else []
+            by_x: dict[float, list[int]] = {}
+            for n, rec in enumerate(mu):
+                by_x.setdefault(round(rec[0], 1), []).append(n)
+            chars = plumber_page.chars
+            deltas = sorted(
+                mu[n][2] - ch["top"]
+                for ch in chars
+                for n in by_x.get(round(ch["x0"], 1), ())
+                if mu[n][5] == ch["text"]
+            )
+            dy = deltas[len(deltas) // 2] if deltas else None
+            pairs: list[tuple[float, int, int]] = []
+            if dy is not None:
+                for i, ch in enumerate(chars):
+                    x = round(ch["x0"], 1)
+                    for bx in (x - 0.1, x, x + 0.1):
+                        for n in by_x.get(round(bx, 1), ()):
+                            rec = mu[n]
+                            dist = abs(rec[2] - dy - ch["top"])
+                            if dist >= 1.0 or abs(rec[0] - ch["x0"]) >= 0.15:
+                                continue
+                            dist += abs(rec[0] - ch["x0"]) + abs(rec[1] - ch["x1"])
+                            pairs.append((round(dist, 3), i, n))
+            matched: dict[int, int] = {}
+            used: set[int] = set()
+            for _dist, i, n in sorted(pairs):
+                if i not in matched and n not in used:
+                    matched[i] = n
+                    used.add(n)
+            for i, ch in enumerate(chars):
+                ident = (ch["fontname"], ch["text"])
+                if i not in matched:
+                    unaligned.append((pno, i, ident))
+                    continue
+                fixed = mu[matched[i]][6]
+                learned.setdefault(ident, set()).add(fixed)
+                if fixed is not None:
+                    fixes[i] = fixed
+    doc.close()
+
+    for pno, i, ident in unaligned:
+        seen = learned.get(ident)
+        if not seen or seen == {None}:
+            continue
+        result[pno][i] = next(iter(seen)) if len(seen) == 1 else UNRESOLVED
+    return result
+
+
 # 組合せ問題（"蕁麻疹 —— H1受容体拮抗薬内服"）の左右2列の間隔。実測では
 # 列の境目が 73〜109pt あるのに対し、行内のふつうの字間は 2.5pt しかない。
 # 20pt に置けばどちらとも十分に離れている。
@@ -504,18 +945,95 @@ LINE_Y_TOLERANCE = 6.0
 
 # 均等割りで開いた字間（"疥 癬"）。列の区切りは上で COLUMN_SEPARATOR に
 # 置き換えたあとなので、ここに残る和文どうしの1個の空白は字間調整でしかない。
-KINSOKU_SPACE = re.compile(r"(?<=[ぁ-んァ-ヶ一-龥々]) (?=[ぁ-んァ-ヶ一-龥々])")
+# 長音符 ー（U+30FC）はカタカナの範囲 ァ-ヶ の外にあるので別に入れる。入れて
+# いなかったときは "総コレステロ ー ル" "アミラ ー ゼ" が残っていた。
+KINSOKU_SPACE = re.compile(r"(?<=[ぁ-んァ-ヶー一-龥々]) (?=[ぁ-んァ-ヶー一-龥々])")
+
+
+# 欧文の語間。国試PDFの英文は空白の字を持たず、語と語の間を 0.3em ほど
+# （10pt で約3pt）空けて組んであるだけで、extract_text() の既定の閾値（3pt）を
+# わずかに下回る。そのため "The patient felt faint" が "Thepatientfeltfaint"
+# に、"room air" が "roomair" になっていた。語の中の字間は 0 なので、英字の
+# 手前が 0.15em 以上空いていれば空白を補う。和文や数字の前後は対象にしない
+# （"40歳" "SpO298%" の組み方は変えない）。
+#
+# 見かけの隙間には語間でないものが2つ混ざる。
+#   - 添字や、ベースラインが少しずれた字が隙間に描かれている（"mmH2O" の 2、
+#     "FIO2" の I、第113回の "MRI" の R は 0.6pt 高い）。行の組み分けで別の
+#     行に入り、隣どうしに見えてしまう。隙間に字があれば語間ではない。
+#   - 字間を広げて組んだ行（第117回の "Na 136mEq/L" は字ごとに 1.6pt 空く）。
+#     その行の英字どうしの字間の中央値の2倍に届かなければ語間ではない。
+# また "/" を含む単位のあと（"8.7g/gCr"）は、隙間があっても1つの単位として続ける。
+WORD_GAP_EM = 0.15
+_WORD_END = re.compile(r"[A-Za-z.,;:'’\")]")
+_WORD_START = re.compile(r"[A-Za-z]")
+
+
+def _line_key(ch: dict) -> int:
+    return round(ch["top"] / LINE_Y_TOLERANCE)
+
+
+def _word_gaps(ordered: list[dict]) -> set[int]:
+    """ordered（行ごと・左から）のうち、手前に語間の空白を補う字の添字。"""
+    tracking: dict[int, float] = {}
+    lines: dict[int, list[dict]] = {}
+    for ch in ordered:
+        lines.setdefault(_line_key(ch), []).append(ch)
+    for key, line in lines.items():
+        gaps = sorted(
+            b["x0"] - a["x1"] for a, b in zip(line, line[1:])
+            if _WORD_START.fullmatch(a["text"]) and _WORD_START.fullmatch(b["text"])
+        )
+        tracking[key] = gaps[len(gaps) // 2] if gaps else 0.0
+
+    def occupied(left: dict, right: dict) -> bool:
+        for key in (_line_key(right) - 1, _line_key(right), _line_key(right) + 1):
+            for other in lines.get(key, ()):
+                if (other is not left and other is not right
+                        and abs(other["top"] - right["top"]) < LINE_Y_TOLERANCE
+                        and other["x1"] > left["x1"] + 0.1 and other["x0"] < right["x0"] - 0.1):
+                    return True
+        return False
+
+    starts: set[int] = set()
+    for i in range(1, len(ordered)):
+        prev, ch = ordered[i - 1], ordered[i]
+        if _line_key(prev) != _line_key(ch):
+            continue
+        if not (_WORD_END.fullmatch(prev["text"]) and _WORD_START.fullmatch(ch["text"])):
+            continue
+        gap = ch["x0"] - prev["x1"]
+        if gap < max(WORD_GAP_EM * ch["size"], 2 * tracking[_line_key(ch)]) or gap > COLUMN_GAP:
+            continue
+        if occupied(prev, ch) or "/" in _word_before(ordered, i):
+            continue
+        starts.add(i)
+    return starts
+
+
+def _word_before(ordered: list[dict], i: int) -> str:
+    """ordered[i] の手前に隙間なく続いている字（同じ行の、字間 0.5pt 未満）。"""
+    word = []
+    k = i - 1
+    while k >= 0 and _line_key(ordered[k]) == _line_key(ordered[i]):
+        word.append(ordered[k]["text"])
+        if k == 0 or ordered[k]["x0"] - ordered[k - 1]["x1"] >= 0.5:
+            break
+        k -= 1
+    return "".join(reversed(word))
 
 
 def _with_column_separators(chars: list[dict]) -> list[dict]:
-    """左右2列に組まれた箇所へ区切りを差し込む。
+    """左右2列に組まれた箇所へ区切りを、欧文の語間へ空白を差し込む。
 
     extract_text() は語を1個の空白でつなぐため、そのままでは列の境目が
     字間と区別できなくなる（"疥 癬 外陰部" が「疥/癬/外陰部」に見える）。
     間隔が空いている箇所に印を入れてから渡す。
     """
+    ordered = sorted(chars, key=lambda c: (_line_key(c), c["x0"]))
+    word_starts = _word_gaps(ordered)
     out: list[dict] = []
-    for ch in sorted(chars, key=lambda c: (round(c["top"] / LINE_Y_TOLERANCE), c["x0"])):
+    for i, ch in enumerate(ordered):
         if out:
             prev = out[-1]
             same_line = abs(prev["top"] - ch["top"]) < LINE_Y_TOLERANCE
@@ -523,6 +1041,8 @@ def _with_column_separators(chars: list[dict]) -> list[dict]:
                 mid = (prev["x1"] + ch["x0"]) / 2
                 out.append({**prev, "text": COLUMN_SEPARATOR,
                             "x0": mid - 1, "x1": mid + 1})
+            elif i in word_starts:
+                out.append({**prev, "text": " ", "x0": prev["x1"], "x1": ch["x0"]})
         out.append(ch)
     return out
 
@@ -532,18 +1052,23 @@ def _pdfplumber_lines(path: Path) -> list[str]:
 
     page.extract_text() は文字単位のフォント情報を捨ててしまうので、
     page.chars を直接直してから同じ抽出関数に渡す。行の切り方は変わらない。
+    字形で決まった文字（_shape_fixes）はほかの解決より優先する。
     """
     from pdfplumber.utils import extract_text
 
     enc = _encoding_tables(path)
     xref = _crossref_table(path)
+    shape = _shape_fixes(path)
     pages: list[str] = []
     with pdfplumber.open(path) as pdf:
-        for page in pdf.pages:
+        for pno, page in enumerate(pdf.pages):
+            fixes = shape[pno] if pno < len(shape) else {}
             chars = []
-            for ch in page.chars:
+            for i, ch in enumerate(page.chars):
                 m = _CID_CHAR.match(ch["text"])
-                if m:
+                if i in fixes:
+                    ch = {**ch, "text": fixes[i]}
+                elif m:
                     code = int(m.group(1))
                     table = enc.get(ch["fontname"], {})
                     # /Differences を持たないフォント（Identity-H）では、
@@ -582,20 +1107,15 @@ def _pymupdf_lines(path: Path) -> list[str]:
 
     enc = _encoding_tables(path)
     doc = pymupdf.open(path)
+    shape = _shape_fixes_by_origin(doc)
     out: list[str] = []
-    for page in doc:
+    for pno, page in enumerate(doc):
         rows: dict[int, list[tuple[float, str]]] = {}
         for blk in page.get_text("rawdict")["blocks"]:
             for ln in blk.get("lines", []):
-                # PyMuPDF は ToUnicode の無いグリフを生のコード（制御文字）で
-                # 返す。span のフォント名から /Differences を引いて直す。
                 text = "".join(
-                    _fix_symbol_font(sp["font"], "".join(
-                        ch["c"] if not is_unusable(ch["c"])
-                        else enc.get(sp["font"], {}).get(ord(ch["c"]), UNRESOLVED)
-                        for ch in sp["chars"]
-                    ))
-                    for sp in ln["spans"]
+                    _mupdf_char(ch, sp["font"], enc, shape[pno])
+                    for sp in ln["spans"] for ch in sp["chars"]
                 )
                 if not text.strip():
                     continue
@@ -614,16 +1134,31 @@ def _pymupdf_lines(path: Path) -> list[str]:
             joined = "".join(buf)
             # 均等割りで開いた字間（"肥 満"）を詰める。和文どうしの間の空白だけを
             # 落とすので、"FDG-PET での…" のような欧文と和文の間は保つ。
-            joined = re.sub(r"(?<=[ぁ-んァ-ヶ一-龥])\s+(?=[ぁ-んァ-ヶ一-龥])", "", joined)
+            joined = re.sub(r"(?<=[ぁ-んァ-ヶー一-龥々])\s+(?=[ぁ-んァ-ヶー一-龥々])", "", joined)
             out.append(joined)
     doc.close()
     return _clean(out)
 
 
+def _mupdf_char(ch: dict, font: str, enc: dict[str, dict[int, str]],
+                fixes: dict[tuple[float, float], list[str | None]]) -> str:
+    """PyMuPDF の1文字を直す。字形で決まった文字があればそれを使う。
+
+    PyMuPDF は ToUnicode の無いグリフを生のコード（制御文字）で返すので、
+    span のフォント名から /Differences を引いて直す。
+    """
+    fixed = _take_shape_fix(ch, fixes)
+    if fixed is not None:
+        return fixed
+    if is_unusable(ch["c"]):
+        return enc.get(font, {}).get(ord(ch["c"]), UNRESOLVED)
+    return _fix_symbol_font(font, ch["c"])
+
+
 def _usable_count(lines: list[str]) -> int:
     """その抽出結果から何問取り出せるかを数える（採用判定用）。"""
     n = 0
-    for _num, stem, texts in parse_block(lines):
+    for _num, stem, texts, _interlude in parse_block(lines):
         body = stem + "".join(texts)
         if stem and not is_unusable(body) and not has_broken_glyph(body):
             n += 1
@@ -659,7 +1194,17 @@ def flat_pymupdf_text(path: Path) -> str:
         return ""
     try:
         with pymupdf.open(path) as doc:
-            raw = "".join(pg.get_text() for pg in doc)
+            # 本文と同じく、字形で決まった文字に置き換えてから比べる。置き換え
+            # ないと、数字が空白になっていた第113回では本文だけに数字が戻って
+            # 照合が合わなくなる。
+            shape = _shape_fixes_by_origin(doc)
+            raw = "\n".join(
+                "".join(_take_shape_fix(ch, fixes) or ch["c"]
+                        for sp in ln["spans"] for ch in sp["chars"])
+                for pg, fixes in zip(doc, shape)
+                for blk in pg.get_text("rawdict")["blocks"]
+                for ln in blk.get("lines", [])
+            )
     except Exception:  # pragma: no cover - 壊れたPDFでも取り込みは続ける
         return ""
     # 第114〜116回は PyMuPDF 側が ToUnicode を持たないフォントを読めず、
@@ -705,7 +1250,7 @@ def parse_answers(text: str) -> dict[str, list[str]]:
     answers: dict[str, list[str]] = {}
     current: str | None = None
     for token in text.split():
-        if re.fullmatch(r"[A-F]\d{3}", token):
+        if re.fullmatch(r"[A-I]\d{3}", token):  # 第111回までは I ブロックまで
             current = token
             answers[current] = []
         elif current is not None and re.fullmatch(r"[A-E]+|\d+", token):
@@ -714,6 +1259,31 @@ def parse_answers(text: str) -> dict[str, list[str]]:
 
 
 CHOICE_LINE = re.compile(rf"^([{CHOICE_MARKS}])[ 　]+(\S.*)$")
+
+# ｅ より後ろの選択肢（ｆ〜ｉ）。6択以上の設問（第116回F75、第118回F68）は
+# 5択の形に入らない。ｅ の続きとして読むと「早産 — 死産届不要ｆ 早産 — 死産届
+# 必要」のように2つの選択肢が1つにつながるので、別の選択肢として数えて落とす。
+EXTRA_CHOICE_LINE = re.compile(r"^[ｆｇｈｉ][ 　]+(\S.*)$")
+
+# 選択肢の行が折り返しているとみなす長さ（字数）。本文の1行は34〜53字で、
+# 選択肢は字下げのぶん短い。
+CHOICE_WRAP_MIN = 30
+
+
+def _starts_interlude(choice_line: str, rest: list[str]) -> bool:
+    """ｅ の行（choice_line）のあとの行（rest）が、選択肢の続きでなく次の段落か。
+
+    ｅ の行が折り返していない（短い、または文が「。」で終わっている）うえで、
+    続く行が段落の形（長い行、または「。」で終わる1文）のとき。別冊の案内
+    （「別冊 No.12」）は今の設問の画像なので、段落として次へ回さない。
+    """
+    if not rest or IMAGE_REF.search(rest[0]):
+        return False
+    # 半角の「｣」「｡」で組まれた回があるので、字形をそろえてから文末を見る。
+    ends = lambda s: unicodedata.normalize("NFKC", s).endswith(("。", "」"))  # noqa: E731
+    choice_ended = len(choice_line) < CHOICE_WRAP_MIN or ends(choice_line)
+    paragraph = len(rest[0]) >= CHOICE_WRAP_MIN or ends(rest[0])
+    return choice_ended and paragraph and len("".join(rest)) >= CHOICE_WRAP_MIN
 
 
 # 照合でぶつかる字形の揺れ。NFKC では寄らないものだけをここで潰す。
@@ -744,9 +1314,14 @@ def text_in_reference(text: str, reference: str) -> bool:
     pdfplumber の抽出には字の入れ替わり（「25,000(」が「25,00(0 」になる等）
     が混じることがある。空白を除いて突き合わせれば、そうした壊れ方を
     まとめて弾ける。参照が取れなかったときは判定しない（True）。
+
+    表の列の間に差し込んだ区切り（COLUMN_SEPARATOR）は PyMuPDF の描画には
+    無いので、外してから比べる。外さないと、表を含む症例文（第115回B43の
+    尤度比の表など）は中身が正しくても必ず落ちる。
     """
     if not reference:
         return True
+    text = re.sub(rf"\s{COLUMN_SEPARATOR}\s", "", text)
     return _for_compare(text) in reference
 
 
@@ -767,18 +1342,7 @@ def series_groups(lines: list[str]) -> dict[int, str]:
     """
     groups: dict[int, str] = {}
     for i, line in enumerate(lines):
-        m = SERIES_HEAD.search(line)
-        if not m:
-            continue
-        spec = unicodedata.normalize("NFKC", m.group(1))
-        nums: set[int] = set()
-        for part in re.split(r"[、,]", spec):
-            part = part.strip()
-            rng = re.fullmatch(r"(\d+)\s*[〜～\-]\s*(\d+)", part)
-            if rng:
-                nums.update(range(int(rng.group(1)), int(rng.group(2)) + 1))
-            elif part.isdigit():
-                nums.add(int(part))
+        nums = _series_head_numbers(line)
         if not nums:
             continue
 
@@ -807,17 +1371,29 @@ def series_numbers(lines: list[str]) -> set[int]:
     """
     nums: set[int] = set()
     for line in lines:
-        m = SERIES_HEAD.search(line)
-        if not m:
-            continue
-        spec = unicodedata.normalize("NFKC", m.group(1))
-        for part in re.split(r"[、,]", spec):
-            part = part.strip()
-            rng = re.fullmatch(r"(\d+)\s*[〜～\-]\s*(\d+)", part)
-            if rng:
-                nums.update(range(int(rng.group(1)), int(rng.group(2)) + 1))
-            elif part.isdigit():
-                nums.add(int(part))
+        nums |= _series_head_numbers(line)
+    return nums
+
+
+def _series_head_numbers(line: str) -> set[int]:
+    """連問の導入行なら、その組の設問番号を返す（導入行でなければ空）。
+
+    範囲の「～」（全角チルダ）は NFKC で半角の "~" になる。これを範囲と
+    読めずにいたため、第108回B50〜61のような3問組は症例文が付かず、
+    B57 は「最も適切な麻酔法はどれか。」だけの設問になっていた。
+    """
+    m = SERIES_HEAD.search(line)
+    if not m:
+        return set()
+    spec = unicodedata.normalize("NFKC", m.group(1))
+    nums: set[int] = set()
+    for part in re.split(r"[、,]", spec):
+        part = part.strip()
+        rng = re.fullmatch(r"(\d+)\s*[〜~\-]\s*(\d+)", part)
+        if rng:
+            nums.update(range(int(rng.group(1)), int(rng.group(2)) + 1))
+        elif part.isdigit():
+            nums.add(int(part))
     return nums
 
 
@@ -853,8 +1429,15 @@ def _is_choice_line(line: str) -> tuple[str, str] | None:
     return m.group(1), m.group(2)
 
 
-def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
-    """1ブロックの行列から (設問番号, 設問文, 選択肢5個) を切り出す。
+def parse_block(lines: list[str]) -> list[tuple[int, str, list[str], str]]:
+    """1ブロックの行列から (設問番号, 設問文, 選択肢, 幕間) を切り出す。
+
+    選択肢はふつう5個。ｆ以降がある設問はそれも別の選択肢として返す（取り込みで落とす）。
+
+    幕間は、ｅ の行のあとに続く段落。連問では症例文が設問の間で続くことがあり
+    （「その後の経過 ： …」「現症 ： …」）、PDFでは前の設問の ｅ の直後に
+    組まれる。ｅ の行が短い（折り返していない）のに長い行が続いていれば、それは
+    選択肢の続きではない。どう扱うかは連問の組を知っている main() が決める。
 
     設問番号の行を起点にすると、受験上の注意ページのマークシート見本
     （"0 1 2 3 4 5 …" が延々と並ぶ）を設問と誤認する。そこで
@@ -893,9 +1476,12 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
 
         # 各選択肢の本文＝記号行 + 折り返し行（次の記号行の手前まで）
         texts = []
+        interlude = ""
         for j, li in enumerate(run):
             stop = run[j + 1] if j + 1 < len(run) else next_start
             parts = [marks[li][1]]
+            last = j == len(run) - 1
+            extra_seen = False
             for cont in lines[li + 1 : stop]:
                 # 次の設問の番号行、または連問の導入文に達したら打ち切る。
                 # これを見ないと最後の選択肢が次の症例文を丸ごと飲み込む。
@@ -903,7 +1489,16 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
                     break
                 if _is_choice_line(cont):
                     break
+                extra = EXTRA_CHOICE_LINE.match(cont) if last else None
+                if extra:
+                    texts.append(_join_wrapped(parts))
+                    parts = [extra.group(1)]
+                    extra_seen = True
+                    continue
                 parts.append(cont)
+            if last and not extra_seen and _starts_interlude(lines[li], parts[1:]):
+                interlude = _join_wrapped(parts[1:])
+                parts = parts[:1]
             texts.append(_join_wrapped(parts))
 
         # 設問文＝直前の設問の選択肢が終わってから ａ 行の手前まで
@@ -933,8 +1528,78 @@ def parse_block(lines: list[str]) -> list[tuple[int, str, list[str]]]:
         num = int(m.group(1))
         last_num = num
         stem = _join_wrapped([m.group(2)] + stem_lines[1:])
-        out.append((num, stem, texts))
+        out.append((num, stem, texts, interlude))
     return out
+
+
+def attach_interludes(parsed, groups: dict[int, str]) -> list[tuple[int, str, list[str], list[str]]]:
+    """parse_block の結果に、連問の症例文とその続き（幕間）を割り振る。
+
+    (設問番号, 設問文, 選択肢, 頭に付ける症例文の段落) を返す。連問でなければ
+    段落は空。幕間は、同じ症例文の次の設問があるときだけ症例文の続きとして
+    後ろの設問に付ける（第114回B43の ｅ のあとの「家族への病歴聴取や…」は
+    B44 の症例の一部）。それ以外はこれまでどおり ｅ の続きとして読み、
+    落とすかどうかは後段の検査に任せる。幕間を持つ設問自体が落ちても次の
+    設問には要るので、検査より先にここで割り振る。
+    """
+    interludes: dict[str, list[str]] = {}
+    out = []
+    for num, stem, texts, interlude in parsed:
+        case = groups.get(num)
+        earlier = list(interludes.get(case, [])) if case is not None else []
+        if interlude:
+            if case is not None and groups.get(num + 1) == case:
+                interludes.setdefault(case, []).append(interlude)
+            else:
+                texts = texts[:-1] + [_join_wrapped([texts[-1], interlude])]
+        out.append((num, stem, texts, [case, *earlier] if case is not None else []))
+    return out
+
+
+def text_defect(stem: str, texts: list[str]) -> str | None:
+    """同梱データの検査で落ちる字の化け・欠けがあれば、その種類を返す。
+
+    どれもグリフの解決に失敗した痕跡で、文としては読めてしまうため目視では
+    気づけない（「生後4週未満」が「生後週未満」、「〈」が「~」など）。直せる
+    かどうかは1問ずつ違うので、取り込みでは落とす。
+    """
+    for text in [stem, *texts]:
+        for name, pattern in (
+            ("glyph", GLYPH_CORRUPTION),
+            ("kanji_digit", KANJI_DIGIT_KANJI),
+            ("kanji_digit", BODY_KANJI_AFTER_DIGIT),
+            ("kanji_digit", POSITION_KANJI_THEN_LATIN),
+            ("bracket_lookalike", BRACKET_LOOKALIKE),
+            ("word_head", DROPPED_WORD_HEAD),
+            ("dropped_number", DROPPED_NUMBER),
+            ("separator", STRAY_SEPARATOR),
+            ("artifact", DECODE_ARTIFACT),
+        ):
+            if pattern.search(text):
+                return name
+        for opener, closer in (("(", ")"), ("〈", "〉"), ("「", "」")):
+            if text.count(opener) != text.count(closer):
+                return "brackets"
+        if any("。" in inner for inner in re.findall(r"\(([^()]*)\)", text)):
+            return "brackets"
+    if "組合せ" in stem and not any("—" in t for t in texts):
+        # 左右2列の区切りが入らず、2列が続けて読めてしまう。
+        return "combination"
+    return None
+
+
+def excluded_codes(exam: int) -> dict[str, str]:
+    """解説の作成時に除外した設問（blueprint_code -> 理由）。
+
+    今の診療に照らして正答が成り立たなくなった設問などを、解説の置き場
+    （scripts/kokushi_explanations/）に "exclude" として書いている。取り込み
+    直したときにそれらを戻さないように読む。
+    """
+    path = Path(__file__).resolve().parent / "kokushi_explanations" / f"{exam}.json"
+    if not path.exists():
+        return {}
+    items = json.loads(path.read_text(encoding="utf-8"))
+    return {code: body["exclude"] for code, body in items.items() if "exclude" in body}
 
 
 def build_explanation(exam: int, block: str, num: int, answer_key: str,
@@ -982,36 +1647,36 @@ def main() -> int:
     cfg = EXAMS[args.exam]
     cache = Path(args.cache) / str(args.exam)
 
-    seitou = fetch(f"{cfg['pdf_base']}/{cfg['prefix']}seitou.pdf", cache / "seitou.pdf")
+    seitou = fetch(cfg["answers"], cache / "seitou.pdf")
     answers = parse_answers(pdf_text(seitou))
     print(f"正答値表: {len(answers)} 問")
 
     questions: list[dict] = []
     seen: dict[str, int] = {}
     stats = {"total": 0, "series": 0, "image": 0, "multi": 0, "cid": 0,
-             "bad_stem": 0, "duplicate": 0, "bad_choices": 0, "no_answer": 0, "ok": 0}
+             "bad_stem": 0, "duplicate": 0, "bad_choices": 0, "no_answer": 0,
+             "defect": 0, "excluded": 0, "ok": 0}
+    excluded = excluded_codes(args.exam)
 
-    for i, block in enumerate(BLOCKS):
-        letter = chr(ord("A") + i)
-        pdf = fetch(f"{cfg['pdf_base']}/{cfg['prefix']}{block}_01.pdf",
-                    cache / f"{block}.pdf")
+    for letter, url in cfg["blocks"].items():
+        pdf = fetch(url, cache / f"{letter.lower()}.pdf")
         lines = pdf_lines(pdf)
         groups = series_groups(lines)
         reference = flat_pymupdf_text(pdf)
-        for num, stem, texts in parse_block(lines):
+        for num, stem, texts, case_parts in attach_interludes(parse_block(lines), groups):
             stats["total"] += 1
             qid = f"{letter}{num:03d}"
 
-            if num in groups:
+            if case_parts:
                 # 症例文を共有する連問。設問文だけでは成立しないので、
-                # 症例文を頭に付けて1問ずつ解ける形にする。
-                case = groups[num]
-                if not text_in_reference(case, reference):
+                # 症例文（と、前の設問のあとに続いた段落）を頭に付けて
+                # 1問ずつ解ける形にする。
+                if not all(text_in_reference(t, reference) for t in case_parts):
                     # pdfplumber の抽出に字の入れ替わりなどが混じっている。
                     # 症例文は長く誤りが目立つので、照合できないものは落とす。
                     stats["series"] += 1
                     continue
-                stem = case + "\n" + stem
+                stem = "\n".join([*case_parts, stem])
 
             body = stem + "".join(texts)
             if IMAGE_REF.search(body):
@@ -1035,6 +1700,9 @@ def main() -> int:
                 stats["bad_stem"] += 1
                 continue
             seen[qid] = seen.get(qid, 0) + 1
+            if f"{args.exam}-{letter}-{num}" in excluded:
+                stats["excluded"] += 1
+                continue
 
             ans = answers.get(qid, [])
             if len(ans) != 1 or not re.fullmatch(r"[A-E]", ans[0]):
@@ -1045,8 +1713,17 @@ def main() -> int:
 
             stem = normalize(stem)
             texts = [normalize(t) for t in texts]
-            if len(set(texts)) != len(texts) or any(not t for t in texts):
+            if (len(texts) != len(CHOICE_KEYS) or len(set(texts)) != len(texts)
+                    or any(not t for t in texts)):
                 stats["bad_choices"] += 1
+                continue
+
+            # 列区切りの "—" が語の途中に入ったものを直してから検査する。
+            stem = strip_stray_separators(stem)
+            combination = "組合せ" in stem
+            texts = [strip_stray_separators(t, keep_as_separator=combination) for t in texts]
+            if text_defect(stem, texts):
+                stats["defect"] += 1
                 continue
 
             correct_text = texts[CHOICE_KEYS.index(key)]
@@ -1106,6 +1783,8 @@ def main() -> int:
     print(f"  設問文不備で除外: {stats['bad_stem']}")
     print(f"  番号重複で除外 : {stats['duplicate']}")
     print(f"  選択肢不備で除外: {stats['bad_choices']}")
+    print(f"  表記の検査で除外: {stats['defect']}")
+    print(f"  解説の作成時に除外: {stats['excluded']}")
     print(f"取り込み        : {stats['ok']}")
     print(f"written -> {out}")
     return 0
