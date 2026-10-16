@@ -301,8 +301,11 @@ class TestBundledBasicScienceBatch:
         validator.validate_schema(batch, report)
         validator.validate_items(batch, report)
         assert report.failures == [], report.failures
-        # 正答の位置の偏りと「正答が最長」の偏りは、このバッチでは警告も出さない
-        assert report.warnings == [], report.warnings
+        # 正答の位置の偏りと「正答が最長」の偏りは、このバッチでは警告も出さない。
+        # 解説の厚み（explanation_depth）はバッチ全体の課題なので対象外。
+        bias = [w for w in report.warnings if w["check"].endswith("_bias")
+                or w["check"] == "key_distribution"]
+        assert bias == [], bias
 
     def test_single_basic_science_questions_only(self):
         _, batch = self._batch()

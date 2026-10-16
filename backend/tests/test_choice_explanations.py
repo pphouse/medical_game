@@ -269,3 +269,58 @@ class TestTumorMarkerChoicesUseAbbreviations:
         assert "癌胎児性抗原" not in imported.explanation
         # 誤答の解説はそのまま（もともと和名を使っていない）
         assert set(imported.choice_explanations) == {"B", "C", "D", "E"}
+
+
+@pytest.mark.django_db
+class TestExplanationDepth:
+    """解説の厚み（画面に出る行数）を数える。
+
+    解説欄に出るのは「本文の段落」＋「選択肢ごとの解説1行ずつ」なので、
+    本文が1段落しかないと誤答4つぶんを足しても5行にしかならない。
+    """
+
+    def question(self, explanation, notes):
+        from quiz.models import Question
+
+        return Question.objects.create(
+            category="循環器",
+            exam_type="CBT",
+            difficulty=2,
+            question_text="設問",
+            choices=[{"key": k, "text": k} for k in "ABCDE"],
+            correct_choice_key="A",
+            explanation=explanation,
+            choice_explanations=notes,
+            status=Question.Status.PUBLISHED,
+        )
+
+    def test_counts_body_paragraphs_and_choice_notes(self):
+        from quiz.management.commands.choice_explanation_coverage import shown_lines
+
+        q = self.question("一段落目。\n\n二段落目。", {"B": "誤り", "C": "誤り"})
+
+        assert shown_lines(q) == 4
+
+    def test_blank_notes_do_not_count(self):
+        from quiz.management.commands.choice_explanation_coverage import shown_lines
+
+        q = self.question("本文。", {"B": "誤り", "C": "   "})
+
+        assert shown_lines(q) == 2
+
+    def test_thin_questions_are_counted_per_category(self):
+        from quiz.management.commands.choice_explanation_coverage import (
+            MIN_SHOWN_LINES,
+            coverage_rows,
+        )
+
+        self.question("本文。", {"B": "x", "C": "x", "D": "x", "E": "x"})  # 5行
+        self.question(
+            "\n".join(f"段落{i}。" for i in range(MIN_SHOWN_LINES)),
+            {"B": "x", "C": "x", "D": "x", "E": "x"},
+        )
+
+        row = next(r for r in coverage_rows("CBT") if r["category"] == "循環器")
+        assert row["total"] == 2
+        assert row["thin"] == 1
+        assert row["full"] == 2

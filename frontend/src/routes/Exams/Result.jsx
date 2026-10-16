@@ -33,7 +33,7 @@ function formatDate(iso) {
 function BackButton({ onClick }) {
   return (
     <button className="back-link" onClick={onClick}>
-      ← 戻る
+      ← 模試一覧へ
     </button>
   );
 }
@@ -42,10 +42,13 @@ export default function Result() {
   const { examId } = useParams();
   const navigate = useNavigate();
 
-  // 履歴があれば1つ前へ。URLを直接開かれたときは戻る先が無いので模試一覧へ。
+  // 履歴を1つ戻るのではなく、いつでも模試一覧へ出る。
+  //
+  // この画面からは「間違った問題を復習する」で問題演習へ行き、その戻る先が
+  // またこの画面なので、履歴を1つ戻ると結果と演習を行き来するだけになって
+  // 抜け出せなかった。行き先を決め打ちにすれば必ず一覧まで出られる。
   function goBack() {
-    if (window.history.length > 1) navigate(-1);
-    else navigate("/exams");
+    navigate("/exams");
   }
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -91,13 +94,16 @@ export default function Result() {
       ? `成績を見る（${rankingDate}から）`
       : "成績を見る";
 
-  // 見直しの設問をそのまま問題演習へ渡す（解説つきで解き直せる）。
-  function practiceAll() {
+  // 間違えた問題（無解答も含む）だけを問題演習へ渡す。全問やり直すより、
+  // 落とした問題に絞ったほうが復習になる。
+  const wrongQuestions = (data.review ?? []).filter((row) => !row.correct);
+
+  function practiceWrong() {
     navigate("/quiz", {
       state: {
         kicker: "模試の復習",
         title: data.title,
-        questions: data.review,
+        questions: wrongQuestions,
         context: "review",
         backTo: `/exams/${examId}/result`,
       },
@@ -237,12 +243,18 @@ export default function Result() {
 
       <h3 className="exam-section-heading">見直し</h3>
       <div className="exam-review-actions">
-        <button className="cta-button" onClick={practiceAll}>
-          この模試の問題を演習する ▶
+        <button
+          className="cta-button"
+          onClick={practiceWrong}
+          disabled={wrongQuestions.length === 0}
+        >
+          {wrongQuestions.length === 0
+            ? "全問正解です"
+            : `間違った問題を復習する（${wrongQuestions.length}問）▶`}
         </button>
         <p className="exam-meta">
-          出題された問題を問題演習の画面で解き直せます。評価（◎○△✕）を付けると
-          復習デッキにも入ります。
+          間違えた問題（解答しなかった問題を含む）を問題演習の画面で解き直せます。
+          評価（◎○△✕）を付けると復習デッキにも入ります。
         </p>
       </div>
       {data.review.map((row) => {

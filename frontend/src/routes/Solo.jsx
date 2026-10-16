@@ -139,9 +139,7 @@ export default function Solo() {
       {!progress && !error && <p>読み込み中...</p>}
       {progress?.length === 0 && <p>この試験種別の問題はまだありません。</p>}
       {progress?.length > 0 && (
-        <p className="course-count">
-          {progress.length}分野 / {totalQuestions}問
-        </p>
+        <p className="course-count">{totalQuestions}問</p>
       )}
 
       <div className="course-list">

@@ -43,6 +43,9 @@ QUESTION_TEXT_RANGE = (40, 600)
 # 連結してしまう抽出失敗を拾える範囲として余裕を持たせる。
 VERBATIM_QUESTION_RANGE = (6, 1500)
 EXPLANATION_RANGE = (80, 600)
+# 解説欄に出る行数の下限（本文の段落＋選択肢ごとの解説）。
+# backend の choice_explanation_coverage と同じ基準。
+MIN_SHOWN_EXPLANATION_LINES = 7
 KEY_DISTRIBUTION_RANGE = (0.15, 0.25)
 LONGEST_CORRECT_WARN_RATIO = 0.40
 TRIGRAM_THRESHOLD = 0.75
@@ -181,6 +184,29 @@ def validate_items(batch, report):
             for pattern in BANNED_PATTERNS:
                 if re.search(pattern, haystack):
                     report.fail(item_id, "banned_phrase", f"禁止パターン: {pattern}")
+
+        # 解説欄に出るのは「本文の段落」＋「選択肢ごとの解説1行ずつ」。本文が
+        # 1段落しかないと、誤答4つぶんを足しても5行にしかならず読みごたえが
+        # 出ない。落とすほどではないので warn にとどめる。
+        rationale = {
+            k: v for k, v in (item.get("distractor_rationale") or {}).items() if str(v).strip()
+        }
+        missing_rationale = sorted(set(choice_ids) - {correct} - set(rationale))
+        if missing_rationale:
+            report.warn(
+                item_id,
+                "choice_explanation",
+                f"選択肢ごとの解説が無い: {', '.join(missing_rationale)}",
+            )
+        body_lines = len([ln for ln in item.get("explanation", "").split("\n") if ln.strip()])
+        shown = body_lines + len(rationale)
+        if shown < MIN_SHOWN_EXPLANATION_LINES:
+            report.warn(
+                item_id,
+                "explanation_depth",
+                f"解説が{shown}行（本文{body_lines}段落＋選択肢{len(rationale)}）— "
+                f"{MIN_SHOWN_EXPLANATION_LINES}行以上にしたい",
+            )
 
         digest = hashlib.md5(
             normalize_text(item.get("question_text", "")).encode()

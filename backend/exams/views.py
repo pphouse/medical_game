@@ -611,6 +611,10 @@ def build_review(exam, result):
         rows.append(
             {
                 "order": mq.order,
+                # 問題演習の画面（QuizScreen）は設問を id で見るので、
+                # question_id と両方入れる。片方だけだと解答の送信先が
+                # undefined になってエラーになる。
+                "id": question.id,
                 "question_id": question.id,
                 "category": question.category,
                 "exam_type": question.exam_type,
