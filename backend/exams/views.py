@@ -267,6 +267,11 @@ class PointsRankingView(APIView):
     ランク階層（SS〜D）は順位と違って累計ポイントだけで決まる。学年や母集団に
     よらず同じ基準なので、「あなたのランク」と一覧の各行のバッジは必ず一致する。
 
+    自分の順位は2つ返す。``rank`` は一覧と同じ母集団（同学年、学内なら同じ
+    大学）での順位、``national_rank`` は学年も大学も問わない全国での順位。
+    ランクが全国の累計ポイントで決まるので、並べて見たときに話が合うよう
+    全国の順位も出す。
+
     対象は ranked_matches>=1 のユーザーのみ（一度もランク付き対戦・模試を
     していないユーザーは母集団にも含めない）。AI対戦相手のプロフィールは除外。
     学年未設定のユーザーは順位表に出せないので、その旨を返す。
@@ -284,6 +289,16 @@ class PointsRankingView(APIView):
         # ランク対象は一度でもランク付き対戦・模試をしたユーザー。
         national_qs = Profile.objects.filter(is_ai=False, ranked_matches__gte=1)
 
+        def rank_of(profile, among):
+            """`among` の中での順位。並びは一覧と同じ（ポイントの多い順）。
+
+            同点はIDの若い順に並ぶので、自分より前に来るのは
+            「ポイントが多い人」＋「同点でIDが若い人」。
+            """
+            ahead = among.filter(points__gt=profile.points).count()
+            ahead += among.filter(points=profile.points, id__lt=profile.id).count()
+            return ahead + 1
+
         def unavailable(reason):
             return Response(
                 {
@@ -291,6 +306,10 @@ class PointsRankingView(APIView):
                     "me": {
                         "points": request.user.points,
                         "tier": None,
+                        "rank": None,
+                        "out_of": 0,
+                        "national_rank": None,
+                        "national_out_of": 0,
                         "ranked_matches": request.user.ranked_matches,
                         "eligible": False,
                         "reason": reason,
@@ -329,6 +348,7 @@ class PointsRankingView(APIView):
         ]
 
         my_state = rank_state(request.user)
+        eligible = my_state["tier"] is not None
         return Response(
             {
                 "entries": entries,
@@ -338,8 +358,18 @@ class PointsRankingView(APIView):
                     # ランク内の進捗%（100を超えると次のランクへ上がって0%に戻る）
                     "progress": my_state["progress"],
                     "next_tier": my_state["next_tier"],
+                    # 一覧と同じ母集団（同学年、学内なら同じ大学）での順位。
+                    "rank": rank_of(request.user, listing_qs) if eligible else None,
+                    "out_of": total,
+                    # 学年も大学も問わない全国での順位。ランク（SS〜D）が
+                    # 累計ポイントだけで決まるのと同じ母集団なので、ランクと
+                    # 並べて見たときに話が合う。
+                    "national_rank": (
+                        rank_of(request.user, national_qs) if eligible else None
+                    ),
+                    "national_out_of": national_qs.count(),
                     "ranked_matches": request.user.ranked_matches,
-                    "eligible": my_state["tier"] is not None,
+                    "eligible": eligible,
                 },
                 "total_ranked": total,
             }

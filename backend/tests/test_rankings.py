@@ -383,3 +383,74 @@ class TestTierIsConsistent:
         mine = next(e for e in body["entries"] if e["is_me"])
         assert mine["tier"] == body["me"]["tier"]
         assert body["me"]["tier"] is not None
+
+
+@pytest.mark.django_db
+class TestPointsRankingShowsMyPlace:
+    """対戦・模試のランクでも自分の順位を出す。
+
+    ランク（SS〜D）は全国の累計ポイントだけで決まるので、順位も全国で
+    出さないと話が合わない。一覧の母集団（同学年）での順位も合わせて返す。
+    """
+
+    def profile(self, *, points, grade=4, university=None):
+        return Profile.objects.create(
+            id=uuid.uuid4(),
+            grade=grade,
+            points=points,
+            ranked_matches=3,
+            university=university,
+        )
+
+    def test_national_rank_counts_every_grade(self):
+        me = self.profile(points=300, grade=4)
+        self.profile(points=900, grade=6)  # 学年は違うが全国では上
+        self.profile(points=500, grade=4)
+        self.profile(points=100, grade=3)
+        client, _ = auth_client(me)
+
+        body = client.get("/api/ranking/points/").json()["me"]
+
+        assert body["national_rank"] == 3  # 900, 500, 自分(300)
+        assert body["national_out_of"] == 4
+
+    def test_scoped_rank_counts_only_the_same_grade(self):
+        me = self.profile(points=300, grade=4)
+        self.profile(points=900, grade=6)
+        self.profile(points=500, grade=4)
+        client, _ = auth_client(me)
+
+        body = client.get("/api/ranking/points/").json()["me"]
+
+        assert body["rank"] == 2  # 同学年では 500 の次
+        assert body["out_of"] == 2
+
+    def test_ties_follow_the_listing_order(self):
+        """同点はIDの若い順。一覧の並びと順位がずれないようにする。"""
+        first = Profile.objects.create(
+            id=uuid.UUID(int=1), grade=4, points=300, ranked_matches=3
+        )
+        second = Profile.objects.create(
+            id=uuid.UUID(int=2), grade=4, points=300, ranked_matches=3
+        )
+        for profile, expected in ((first, 1), (second, 2)):
+            client, _ = auth_client(profile)
+            assert client.get("/api/ranking/points/").json()["me"]["rank"] == expected
+
+    def test_unranked_users_get_no_rank(self):
+        me = Profile.objects.create(id=uuid.uuid4(), grade=4, points=0, ranked_matches=0)
+        client, _ = auth_client(me)
+
+        body = client.get("/api/ranking/points/").json()["me"]
+
+        assert body["national_rank"] is None
+        assert body["rank"] is None
+
+    def test_a_user_without_a_grade_is_told_why(self):
+        me = Profile.objects.create(id=uuid.uuid4(), points=300, ranked_matches=3)
+        client, _ = auth_client(me)
+
+        body = client.get("/api/ranking/points/").json()["me"]
+
+        assert body["eligible"] is False
+        assert body["national_rank"] is None

@@ -123,6 +123,28 @@ describe("ランキング画面", () => {
     expect(screen.queryByRole("button", { name: "月間" })).not.toBeInTheDocument();
   });
 
+  it("対戦タブはランクと一緒に全国順位も出す", async () => {
+    // ランク（SS〜D）は全国の累計ポイントで決まるので、順位も全国で出す。
+    api.pointsRanking.mockResolvedValue({
+      entries: [],
+      me: {
+        points: 320,
+        tier: "A",
+        rank: 2,
+        out_of: 12,
+        national_rank: 7,
+        national_out_of: 140,
+        eligible: true,
+      },
+    });
+
+    renderRanking();
+    fireEvent.click(screen.getByRole("button", { name: "対戦" }));
+
+    expect(await screen.findByText("全国 7位 / 140人中")).toBeInTheDocument();
+    expect(screen.getByText("同学年 2位 / 12人中")).toBeInTheDocument();
+  });
+
   it("模試タブは受験できる模試の一覧も表示する", async () => {
     api.ranking.mockResolvedValue({ entries: [], me: null });
     api.rankingExams.mockResolvedValue([]);
