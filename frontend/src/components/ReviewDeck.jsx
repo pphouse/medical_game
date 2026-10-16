@@ -306,7 +306,9 @@ function MockExamPicker({ selected, onSelect, rows, taken }) {
 export default function ReviewDeck() {
   const navigate = useNavigate();
   const onStartSession = (session) =>
-    navigate("/quiz", { state: { ...session, backTo: "/review" } });
+    navigate("/quiz", {
+      state: { ...session, backTo: "/review", backLabel: "総合演習へ" },
+    });
   const { profile } = useProfile();
   const [tabKey, setTabKey] = useState(null);
   // null は「すべての模試」。模試を選ぶとその1回だけが対象になる。
