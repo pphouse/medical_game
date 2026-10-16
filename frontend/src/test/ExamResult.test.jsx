@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Result from "../routes/Exams/Result";
@@ -50,6 +50,7 @@ function renderResult() {
     <MemoryRouter initialEntries={["/exams/1/result"]}>
       <Routes>
         <Route path="/exams/:examId/result" element={<Result />} />
+        <Route path="/exams" element={<div>模試一覧</div>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -238,7 +239,9 @@ describe("模試の結果画面", () => {
     expect(screen.queryByRole("button", { name: /成績を見る/ })).not.toBeInTheDocument();
   });
 
-  it("左上の戻るで一つ前の画面に戻れる", async () => {
+  it("左上の戻るで模試一覧まで出られる", async () => {
+    // 履歴を1つ戻る作りだと、「間違った問題を復習する」で演習へ行った後に
+    // 結果と演習を行き来するだけになって抜け出せなかった。
     api.examResult.mockResolvedValue({
       status: "submitted",
       title: "月次実力テスト（CBT）",
@@ -250,7 +253,9 @@ describe("模試の結果画面", () => {
 
     renderResult();
 
-    expect(await screen.findByRole("button", { name: "← 戻る" })).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: "← 模試一覧へ" }));
+
+    expect(await screen.findByText("模試一覧")).toBeInTheDocument();
   });
 
   it("集計前は順位や偏差値の枠を出さない", async () => {
@@ -271,7 +276,7 @@ describe("模試の結果画面", () => {
     expect(screen.queryByText("分野別スコア")).not.toBeInTheDocument();
   });
 
-  it("模試の問題を問題演習で解き直す導線を出す", async () => {
+  it("間違えた問題だけを解き直す導線を出す", async () => {
     api.examResult.mockResolvedValue({
       status: "submitted",
       title: "月次実力テスト（CBT）",
@@ -283,9 +288,25 @@ describe("模試の結果画面", () => {
 
     renderResult();
 
+    // 2問中1問だけ間違えているので「1問」
     expect(
-      await screen.findByRole("button", { name: "この模試の問題を演習する ▶" }),
+      await screen.findByRole("button", { name: "間違った問題を復習する（1問）▶" }),
     ).toBeInTheDocument();
+  });
+
+  it("全問正解なら復習の導線は押せない", async () => {
+    api.examResult.mockResolvedValue({
+      status: "submitted",
+      title: "月次実力テスト（CBT）",
+      score: 2,
+      max_score: 2,
+      review: REVIEW.map((row) => ({ ...row, correct: true, answered: true })),
+      ranking_available_at: "2026-10-01T00:00:00+09:00",
+    });
+
+    renderResult();
+
+    expect(await screen.findByRole("button", { name: "全問正解です" })).toBeDisabled();
   });
 
   it("採点後は順位・偏差値・分野別スコアも出す", async () => {

@@ -1122,3 +1122,76 @@ class TestCbtGradeNeedsEnoughExaminees:
         body = client.get(f"/api/exams/{exam.id}/result/").json()
 
         assert body["examinees"] == CBT_RANKING_MIN_EXAMINEES - 1
+
+
+@pytest.mark.django_db
+class TestReviewRowsCanBePracticed:
+    """見直しの設問は、そのまま問題演習の画面へ渡せる形で返す。
+
+    問題演習は設問を `id` で見る（解答の送信先・報告フォーム）。
+    `question_id` しか入っていないと送信先が undefined になってエラーに
+    なっていた。
+    """
+
+    def test_each_row_carries_the_question_id_as_id(self):
+        from exams.views import build_review
+
+        exam, result = self._submitted_exam()
+
+        rows = build_review(exam, result)
+
+        assert rows
+        for row in rows:
+            assert row["id"] == row["question_id"]
+            # 問題演習が参照する項目がそろっていること
+            for key in ("choices", "correct_choice_key", "category", "difficulty"):
+                assert key in row
+
+    def test_wrong_rows_are_distinguishable(self):
+        """「間違った問題だけ復習する」ための印。無解答も間違い扱い。"""
+        from exams.views import build_review
+
+        exam, result = self._submitted_exam()
+
+        rows = build_review(exam, result)
+
+        assert any(not row["correct"] for row in rows)
+        for row in rows:
+            if not row["answered"]:
+                assert row["correct"] is False
+
+    def _submitted_exam(self):
+        from django.utils import timezone
+
+        from exams.models import MockExam, MockQuestion, MockResult
+        from quiz.models import Question
+        from tests.helpers import auth_client
+
+        _, profile = auth_client()
+        exam = MockExam.objects.create(
+            title="テスト模試",
+            kind=MockExam.Kind.MONTHLY,
+            exam_type="CBT",
+            start_at=timezone.now() - datetime.timedelta(days=2),
+            end_at=timezone.now() - datetime.timedelta(days=1),
+            question_count=2,
+            duration_minutes=30,
+        )
+        for i in range(2):
+            question = Question.objects.create(
+                category="循環器",
+                exam_type="CBT",
+                difficulty=2,
+                question_text=f"設問{i}",
+                choices=[{"key": k, "text": k} for k in "ABCDE"],
+                correct_choice_key="A",
+                explanation="解説",
+                status=Question.Status.PUBLISHED,
+            )
+            MockQuestion.objects.create(mock_exam=exam, question=question, order=i + 1)
+        result = MockResult.objects.create(
+            user=profile, mock_exam=exam, submitted_at=timezone.now()
+        )
+        first = exam.mock_questions.order_by("order").first()
+        result.answers.create(question=first.question, selected_choice_key="B")
+        return exam, result
