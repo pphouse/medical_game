@@ -265,6 +265,7 @@ export default function QuestionPicker() {
                 title: category,
                 questions: filtered,
                 backTo: pickerUrl,
+                backLabel: "問題一覧へ",
                 // まだ解いていない最初の問題から始める。
                 startIndex: resumeIndex,
               },
@@ -283,6 +284,7 @@ export default function QuestionPicker() {
                 title: category,
                 questions: shuffled(filtered),
                 backTo: pickerUrl,
+                backLabel: "問題一覧へ",
               },
             })
           }
@@ -312,6 +314,7 @@ export default function QuestionPicker() {
                     title: category,
                     questions: filtered,
                     backTo: pickerUrl,
+                    backLabel: "問題一覧へ",
                     startIndex: i,
                   },
                 })

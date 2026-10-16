@@ -65,8 +65,10 @@ export default function Verify() {
 
   return (
     <div className="screen">
-      <button className="back-link" onClick={() => navigate(-1)}>
-        ← 戻る
+      {/* 履歴ではなくマイページへ出る。申請の導線はマイページにあり、
+          履歴を1つ戻ると申請後にこの画面へ戻ってきてしまう。 */}
+      <button className="back-link" onClick={() => navigate("/mypage")}>
+        ← マイページへ
       </button>
       <h2>学生証認証</h2>
 

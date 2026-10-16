@@ -106,6 +106,7 @@ export default function Result() {
         questions: wrongQuestions,
         context: "review",
         backTo: `/exams/${examId}/result`,
+        backLabel: "採点結果へ",
       },
     });
   }

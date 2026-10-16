@@ -34,6 +34,9 @@ export default function QuizScreen({
   // タイトルに「種別: 名前」と書き込むと、どの画面も同じ見た目になって
   // 何を解いているのかが読み取りにくい。
   kicker,
+  // 戻るボタンの文言。どの画面へ出るのかが分かるよう、行き先の名前を入れる
+  // （履歴を1つ戻るのではなく、決まった親の画面へ1段階ずつ上がるため）。
+  backLabel = "メニューに戻る",
   questions,
   onBack,
   previewMode = false,
@@ -70,7 +73,7 @@ export default function QuizScreen({
     return (
       <div className="screen">
         <button className="back-link" onClick={onBack}>
-          ← 戻る
+          ← {backLabel}
         </button>
         <p>出題できる問題がありません。</p>
       </div>
@@ -82,7 +85,7 @@ export default function QuizScreen({
     return (
       <div className="screen">
         <button className="back-link" onClick={onBack}>
-          ← メニューに戻る
+          ← {backLabel}
         </button>
         <div className="score-card">
           <h2>お疲れさまでした！</h2>
@@ -164,7 +167,7 @@ export default function QuizScreen({
   return (
     <div className="screen">
       <button className="back-link" onClick={onBack}>
-        ← メニューに戻る
+        ← {backLabel}
       </button>
 
       <div className="quiz-topbar">
