@@ -1856,12 +1856,21 @@
 .ranking-me-card {
   display: flex;
   align-items: baseline;
+  /* 順位を添えると1行に収まらないので折り返す。 */
+  flex-wrap: wrap;
   gap: 12px;
   padding: 12px 16px;
   border-radius: 14px;
   background: var(--accent-grad);
   color: white;
   box-shadow: var(--shadow-sm);
+}
+
+/* ランクの下に添える順位（全国・同学年）。 */
+.ranking-me-sub {
+  font-size: 12px;
+  opacity: 0.9;
+  font-variant-numeric: tabular-nums;
 }
 
 .ranking-me-label {

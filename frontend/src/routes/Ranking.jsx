@@ -159,6 +159,19 @@ function PointsRanking({ scope }) {
                 <TierBadge tier={data.me.tier} large />
               </span>
               <span className="ranking-me-value">{data.me.points}pt</span>
+              {/* ランク（SS〜D）は全国の累計ポイントで決まるので、順位も
+                  全国で出す。学年や学内での順位はその下に添える。 */}
+              {data.me.national_rank && (
+                <span className="ranking-me-sub">
+                  全国 {data.me.national_rank}位 / {data.me.national_out_of}人中
+                </span>
+              )}
+              {data.me.rank && (
+                <span className="ranking-me-sub">
+                  {scope === "university" ? "学内" : "同学年"} {data.me.rank}位 /{" "}
+                  {data.me.out_of}人中
+                </span>
+              )}
             </>
           )}
         </div>
