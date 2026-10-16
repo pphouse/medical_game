@@ -698,3 +698,35 @@ class TestRoomHoldsTwoPlayers:
 
         assert third.post(f"/api/battle/rooms/{code}/join/").status_code == 200
         assert BattleRoom.objects.get(room_code=code).participants.count() == 2
+
+
+class TestAiStrengthLadder:
+    """AIの強さはランクが上がるほど強くなる並びを保つ。
+
+    下位ランク（D〜A）の正答率は当初 0.55〜0.80 で低すぎた。半分近く落とす
+    相手では歯応えがなく、こちらが数問外しても勝ててしまうので引き上げた。
+    """
+
+    def test_accuracy_rises_with_the_tier(self):
+        from battle.ai import AI_TIER_PROFILE
+
+        ladder = ["D", "C", "B", "A", "S", "SS"]
+        rates = [AI_TIER_PROFILE[t]["accuracy"] for t in ladder]
+        assert rates == sorted(rates)
+        assert len(set(rates)) == len(rates)
+
+    def test_the_lower_tiers_are_not_coin_flips(self):
+        from battle.ai import AI_TIER_PROFILE
+
+        for tier in ("D", "C", "B", "A"):
+            assert AI_TIER_PROFILE[tier]["accuracy"] >= 0.65
+
+    def test_slower_tiers_read_slower_and_think_longer(self):
+        """速さの並びは据え置き（強いAIほど速く読み、早く答える）。"""
+        from battle.ai import AI_TIER_PROFILE
+
+        ladder = ["D", "C", "B", "A", "S", "SS"]
+        speeds = [AI_TIER_PROFILE[t]["chars_per_sec"] for t in ladder]
+        thinks = [AI_TIER_PROFILE[t]["think_seconds"] for t in ladder]
+        assert speeds == sorted(speeds)
+        assert thinks == sorted(thinks, reverse=True)

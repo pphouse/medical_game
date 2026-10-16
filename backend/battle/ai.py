@@ -31,16 +31,21 @@ from quiz.models import AnswerHistory
 #   think_seconds … 問題を読み終えてから答えるまでの思考時間
 #   chars_per_sec … 読む速さ（強いAIほど速く読む）
 #   sd_seconds    … ばらつき
+#
+# 下位ランク（D〜A）の正答率は、当初 0.55〜0.80 としていたが低すぎた。
+# 半分近く落とす相手と当たっても歯応えがなく、こちらが数問外しても勝てて
+# しまう。0.68〜0.85 に引き上げてある。ランクが上がるほど強くなる並びは
+# 保つ（D < C < B < A < S < SS）。
 # 人間は問題文を読む時間が要るので、合計の待ち時間は
 #   「問題文の長さ ÷ 読む速さ」＋「思考時間」＋ ばらつき
 # で決める。短い問題でも最低 MIN_ANSWER_SECONDS は待つ。
 AI_TIER_PROFILE = {
     "SS": {"accuracy": 0.95, "think_seconds": 2.0, "chars_per_sec": 20.0, "sd_seconds": 0.8},
     "S": {"accuracy": 0.88, "think_seconds": 2.6, "chars_per_sec": 17.0, "sd_seconds": 1.0},
-    "A": {"accuracy": 0.80, "think_seconds": 3.2, "chars_per_sec": 14.0, "sd_seconds": 1.2},
-    "B": {"accuracy": 0.72, "think_seconds": 3.8, "chars_per_sec": 12.0, "sd_seconds": 1.4},
-    "C": {"accuracy": 0.63, "think_seconds": 4.4, "chars_per_sec": 10.0, "sd_seconds": 1.6},
-    "D": {"accuracy": 0.55, "think_seconds": 5.0, "chars_per_sec": 8.5, "sd_seconds": 1.8},
+    "A": {"accuracy": 0.85, "think_seconds": 3.2, "chars_per_sec": 14.0, "sd_seconds": 1.2},
+    "B": {"accuracy": 0.80, "think_seconds": 3.8, "chars_per_sec": 12.0, "sd_seconds": 1.4},
+    "C": {"accuracy": 0.74, "think_seconds": 4.4, "chars_per_sec": 10.0, "sd_seconds": 1.6},
+    "D": {"accuracy": 0.68, "think_seconds": 5.0, "chars_per_sec": 8.5, "sd_seconds": 1.8},
 }
 
 # 一瞬で答えると明らかに不自然なので、どんなに短い問題でもこれだけは待つ。
