@@ -29,6 +29,14 @@ DAMAGE_SLOWER = 10
 # この秒数応答がない参加者は切断とみなす (spec 4-2)
 PARTICIPANT_TIMEOUT_SECONDS = 30
 
+# 対戦に出す設問文の長さの上限（文字数）。
+#
+# 1問 ROUND_TIME_LIMIT_SECONDS 秒の勝負なので、長い症例文を読んでいるうちに
+# 時間が尽きてしまう。目安は携帯の画面で6行で、日本語は1行あたり20字ほど
+# 入るので 120字を上限にする。同梱の問題バンクでは、どの科目でも
+# この範囲に十数問以上が残る。
+MAX_BATTLE_QUESTION_CHARS = 120
+
 
 def score_delta(*, correct, rank):
     """正解 +100（そのラウンドで最初に解答していれば +20）、誤答 −30。"""

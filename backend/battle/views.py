@@ -23,6 +23,7 @@ import datetime
 import secrets
 
 from django.db import IntegrityError, transaction
+from django.db.models.functions import Length
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import exceptions
@@ -55,6 +56,7 @@ from .matchmaking import (
 from .models import BattleBuzz, BattleParticipant, BattleRoom, BattleRound, MatchmakingTicket
 from .scoring import (
     BATTLE_QUESTION_COUNT,
+    MAX_BATTLE_QUESTION_CHARS,
     PARTICIPANT_TIMEOUT_SECONDS,
     apply_score,
     resolve_round_damage,
@@ -351,7 +353,17 @@ def start_room(room):
     qs = Question.objects.published().filter(visibility=Question.Visibility.PUBLIC)
     if room.category:
         qs = qs.filter(category=room.category)
-    questions = list(qs.order_by("?")[: room.question_count])
+
+    # 設問文が長い問題は外す。1問 20秒の勝負なので、長い症例文を読んで
+    # いるうちに時間が尽きてしまう。
+    short = qs.annotate(stem_length=Length("question_text")).filter(
+        stem_length__lte=MAX_BATTLE_QUESTION_CHARS
+    )
+    questions = list(short.order_by("?")[: room.question_count])
+    if len(questions) < room.question_count:
+        # 短い問題だけでは足りない分野もありうる。対戦が始められないより
+        # 長い問題が混ざるほうがましなので、そのときだけ上限を外す。
+        questions = list(qs.order_by("?")[: room.question_count])
     if len(questions) < room.question_count:
         raise exceptions.ValidationError(
             f"出題できる問題が不足しています（{len(questions)}/{room.question_count}問）。"

@@ -730,3 +730,71 @@ class TestAiStrengthLadder:
         thinks = [AI_TIER_PROFILE[t]["think_seconds"] for t in ladder]
         assert speeds == sorted(speeds)
         assert thinks == sorted(thinks, reverse=True)
+
+
+@pytest.mark.django_db
+class TestBattleSkipsLongQuestions:
+    """対戦には設問文の長い問題を出さない。
+
+    1問20秒の勝負なので、長い症例文を読んでいるうちに時間が尽きる。
+    """
+
+    def make(self, length, *, category="循環器"):
+        from quiz.models import Question
+
+        return Question.objects.create(
+            category=category,
+            exam_type="CBT",
+            difficulty=2,
+            question_text="あ" * length,
+            choices=[{"key": k, "text": k} for k in "ABCDE"],
+            correct_choice_key="A",
+            explanation="",
+            status=Question.Status.PUBLISHED,
+            visibility=Question.Visibility.PUBLIC,
+        )
+
+    def room_with(self, profiles):
+        from battle.models import BattleParticipant, BattleRoom
+
+        room = BattleRoom.objects.create(
+            host=profiles[0], room_code="654321", question_count=2
+        )
+        for p in profiles:
+            BattleParticipant.objects.create(room=room, user=p)
+        return room
+
+    def two_profiles(self):
+        import uuid
+
+        from accounts.models import Profile
+
+        return [Profile.objects.create(id=uuid.uuid4()) for _ in range(2)]
+
+    def test_long_questions_are_left_out(self):
+        from battle.scoring import MAX_BATTLE_QUESTION_CHARS
+        from battle.views import start_room
+
+        short = [self.make(MAX_BATTLE_QUESTION_CHARS) for _ in range(2)]
+        for _ in range(5):
+            self.make(MAX_BATTLE_QUESTION_CHARS + 1)
+
+        room = self.room_with(self.two_profiles())
+        start_room(room)
+
+        picked = {r.question_id for r in room.rounds.all()}
+        assert picked == {q.id for q in short}
+
+    def test_it_falls_back_when_there_are_not_enough_short_ones(self):
+        """短い問題だけでは足りない分野もある。始められないよりはましなので、
+        そのときだけ上限を外す。"""
+        from battle.scoring import MAX_BATTLE_QUESTION_CHARS
+        from battle.views import start_room
+
+        self.make(MAX_BATTLE_QUESTION_CHARS)
+        self.make(MAX_BATTLE_QUESTION_CHARS + 200)
+
+        room = self.room_with(self.two_profiles())
+        start_room(room)
+
+        assert room.rounds.count() == 2
