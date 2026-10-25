@@ -113,6 +113,11 @@ body {
     calc(16px + env(safe-area-inset-left));
 }
 
+/* iPad アプリ: ウィンドウ左上の操作ボタンにロゴや見出しが隠れないように空ける。 */
+html.native-ipad #root {
+  padding-top: calc(56px + env(safe-area-inset-top));
+}
+
 /* iOS は文字サイズが 16px 未満の入力欄にフォーカスすると勝手にズームし、
    戻してくれない。個別指定のない入力欄をまとめて 16px 以上にしておく。 */
 input,

@@ -72,3 +72,22 @@ describe("ExplanationText", () => {
     expect(container.firstChild).toBeNull();
   });
 });
+
+describe("ExplanationText の出典・参考文献", () => {
+  it("どの解説にも出典・参考文献の一覧と免責を出す", () => {
+    render(<ExplanationText text="CBT の解説。" />);
+    expect(screen.getByText("出典・参考文献")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Minds ガイドラインライブラリ（日本医療機能評価機構）" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/実際の診療では/)).toBeInTheDocument();
+  });
+
+  it("URL の無い国試の出典行に厚労省の公表ページを添える", () => {
+    render(<ExplanationText text={"解説。\n\n出典：厚生労働省ホームページ 第116回医師国家試験 D007"} />);
+    expect(screen.getByRole("link", { name: "公表ページ" })).toHaveAttribute(
+      "href",
+      "https://www.mhlw.go.jp/topics/2005/10/tp1028-3/index.html",
+    );
+  });
+});

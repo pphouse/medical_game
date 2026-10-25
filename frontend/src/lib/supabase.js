@@ -25,3 +25,24 @@ export const supabase =
   url && anonKey ? createClient(url, anonKey, authOptions ? { auth: authOptions } : {}) : null;
 
 export const isSupabaseConfigured = Boolean(supabase);
+
+// パスワード再設定メールのリンクから戻ると PASSWORD_RECOVERY が届く。届いた
+// 時点ではまだ画面が出来ていないことがある（Web は起動直後の URL 処理で
+// 発火する）ので、ここで覚えておき、App の RecoveryRedirect が拾って
+// 新しいパスワードの入力画面へ送る。
+export const RECOVERY_EVENT = "medquiz:password-recovery";
+let recoveryPending = false;
+
+export function isRecoveryPending() {
+  return recoveryPending;
+}
+
+export function clearRecoveryPending() {
+  recoveryPending = false;
+}
+
+supabase?.auth.onAuthStateChange((event) => {
+  if (event !== "PASSWORD_RECOVERY") return;
+  recoveryPending = true;
+  window.dispatchEvent(new Event(RECOVERY_EVENT));
+});

@@ -27,6 +27,13 @@ async function setUp() {
     import("@capacitor/local-notifications"),
   ]);
 
+  // iPad の WKWebView は UA が Mac と同じになる。iPadOS 26 のウィンドウ表示では
+  // 左上に閉じる・最小化のボタンが重なるが safe-area には含まれないので、CSS
+  // （index.css の .native-ipad）で上の余白を足す。
+  if (/iPad|Macintosh/.test(navigator.userAgent)) {
+    document.documentElement.classList.add("native-ipad");
+  }
+
   // Style.Default = 端末のライト/ダーク設定に追従する。アプリの配色も
   // prefers-color-scheme で切り替わるので、これで文字が背景に溶けない。
   await StatusBar.setStyle({ style: Style.Default }).catch(() => {});

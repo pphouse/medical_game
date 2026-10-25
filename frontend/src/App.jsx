@@ -1,10 +1,12 @@
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate } from "react-router-dom";
 import BottomNav from "./components/BottomNav";
 import MyPage from "./components/MyPage";
 import QuestionPicker from "./components/QuestionPicker";
 import ReviewDeck from "./components/ReviewDeck";
 import { ProfileProvider } from "./context/ProfileContext";
 import { useSession } from "./hooks/useSession";
+import { isRecoveryPending, RECOVERY_EVENT } from "./lib/supabase";
 import AdminDashboard from "./routes/Admin/Dashboard";
 import AdminLayout from "./routes/Admin/Layout";
 import AdminQuestionEdit from "./routes/Admin/QuestionEdit";
@@ -21,7 +23,9 @@ import ExamResult from "./routes/Exams/Result";
 import ExamSession from "./routes/Exams/Session";
 import QuizSession from "./routes/QuizSession";
 import Privacy from "./routes/Privacy";
+import Sources from "./routes/Sources";
 import Ranking from "./routes/Ranking";
+import ResetPassword from "./routes/ResetPassword";
 import Solo from "./routes/Solo";
 import Verify from "./routes/Verify";
 import { STUDENT_VERIFICATION_ENABLED } from "./features";
@@ -64,14 +68,29 @@ function FullScreenShell() {
   );
 }
 
+/** パスワード再設定のリンクから戻ってきたら、新しいパスワードの入力画面へ送る。 */
+function RecoveryRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const go = () => navigate("/reset-password", { replace: true });
+    if (isRecoveryPending()) go();
+    window.addEventListener(RECOVERY_EVENT, go);
+    return () => window.removeEventListener(RECOVERY_EVENT, go);
+  }, [navigate]);
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <RecoveryRedirect />
       <Routes>
         <Route path="/auth" element={<Auth />} />
         {/* ログイン前でも読めるようにしておく。App Store Connect に
             登録する URL であり、審査担当者も未ログインで開く。 */}
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/sources" element={<Sources />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route element={<Protected />}>
           <Route element={<TabShell />}>
             <Route path="/" element={<Solo />} />
