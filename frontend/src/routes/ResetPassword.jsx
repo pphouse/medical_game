@@ -49,8 +49,7 @@ export default function ResetPassword() {
         {!session ? (
           <>
             <p className="error">
-              リンクの有効期限が切れたか、すでに使われています。もう一度、
-              ログイン画面の「パスワードを忘れた方」からメールを送ってください。
+              リンクの有効期限が切れたか、すでに使われています。もう一度、ログイン画面の「パスワードを忘れた方」からメールを送ってください。
             </p>
             <Link className="cta-button" to="/auth">
               ログイン画面へ

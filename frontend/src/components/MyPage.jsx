@@ -4,6 +4,7 @@ import characterUrl from "../assets/character.png";
 import { api } from "../api";
 import { useProfile } from "../context/ProfileContext";
 import { STUDENT_VERIFICATION_ENABLED } from "../features";
+import LegalLinks from "../legal/LegalLinks";
 import { supabase } from "../lib/supabase";
 import HabitSettings from "./HabitSettings";
 import TierBadge from "./TierBadge";
@@ -481,13 +482,7 @@ export default function MyPage() {
       </div>
 
       <div className="mypage-section">
-        <Link className="mypage-legal-link" to="/sources">
-          出典・参考文献
-        </Link>
-        {" ・ "}
-        <Link className="mypage-legal-link" to="/privacy">
-          プライバシーポリシー
-        </Link>
+        <LegalLinks />
       </div>
 
       <div className="mypage-section danger-zone">

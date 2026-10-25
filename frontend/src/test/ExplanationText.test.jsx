@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import ExplanationText from "../components/ExplanationText";
 
@@ -74,13 +74,14 @@ describe("ExplanationText", () => {
 });
 
 describe("ExplanationText の出典・参考文献", () => {
-  it("どの解説にも出典・参考文献の一覧と免責を出す", () => {
+  it("参考文献・出典は1行のリンクにして、押すと一覧を重ねて出す", () => {
     render(<ExplanationText text="CBT の解説。" />);
-    expect(screen.getByText("出典・参考文献")).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "参考文献・出典" }));
+    expect(screen.getByRole("dialog", { name: "参考文献・出典" })).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Minds ガイドラインライブラリ（日本医療機能評価機構）" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/実際の診療では/)).toBeInTheDocument();
   });
 
   it("URL の無い国試の出典行に厚労省の公表ページを添える", () => {

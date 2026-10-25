@@ -151,3 +151,8 @@ button {
   font: inherit;
   cursor: pointer;
 }
+
+/* iPad アプリ: 規約などのモーダルも、ウィンドウ左上の操作ボタンの下から出す。 */
+html.native-ipad .legal-modal-backdrop {
+  padding-top: calc(56px + env(safe-area-inset-top));
+}

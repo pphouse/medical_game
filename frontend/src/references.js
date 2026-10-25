@@ -82,6 +82,3 @@ export const REFERENCE_GROUPS = [
     ],
   },
 ];
-
-export const MEDICAL_DISCLAIMER =
-  "解説は医学生の試験対策のための学習用です。実際の診療では、最新の診療ガイドラインや添付文書を確認してください。";
