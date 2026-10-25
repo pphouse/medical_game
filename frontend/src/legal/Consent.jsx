@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { authErrorMessage } from "../lib/authErrors";
 import { supabase } from "../lib/supabase";
 import { LEGAL_DOCS, TERMS_VERSION } from "./documents";
 import LegalModal from "./LegalModal";
@@ -28,7 +29,7 @@ export default function Consent() {
       });
       if (err) throw err;
     } catch (err) {
-      setError(err.message ?? String(err));
+      setError(authErrorMessage(err));
       setBusy(false);
     }
   }

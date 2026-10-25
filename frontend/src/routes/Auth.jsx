@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import LegalLinks from "../legal/LegalLinks";
 import { api } from "../api";
 import { useSession } from "../hooks/useSession";
+import { authErrorMessage } from "../lib/authErrors";
 import { isRecoveryPending, isSupabaseConfigured, supabase } from "../lib/supabase";
 import { authRedirectUrl } from "../native";
 
@@ -25,7 +26,10 @@ export default function Auth() {
   });
   // iOS アプリではメールのリンクがアプリを開き直す形で戻ってくる。その処理に
   // 失敗したとき、nativeBootstrap.js がここに理由を渡してくる。
-  const [error, setError] = useState(params.get("authError"));
+  const [error, setError] = useState(() => {
+    const reason = params.get("authError");
+    return reason ? authErrorMessage(reason) : null;
+  });
   const [busy, setBusy] = useState(false);
   // ログイン完了処理（Profile 作成 → ホームへ）を二重に走らせない見張り。
   const completing = useRef(false);
@@ -55,7 +59,7 @@ export default function Auth() {
     // パスワード再設定のリンクで入ったときはホームではなく再設定画面へ
     // （App の RecoveryRedirect が送る）。
     if (!session || isRecoveryPending()) return;
-    completeSignIn("").catch((err) => setError(err.message ?? String(err)));
+    completeSignIn("").catch((err) => setError(authErrorMessage(err)));
   }, [session, completeSignIn]);
 
   if (!isSupabaseConfigured) {
@@ -109,7 +113,7 @@ export default function Auth() {
         await completeSignIn(displayName);
       }
     } catch (err) {
-      setError(err.message ?? String(err));
+      setError(authErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -130,7 +134,7 @@ export default function Auth() {
       if (err) throw err;
       setNotice("ログイン用リンクをメールで送信しました。");
     } catch (err) {
-      setError(err.message ?? String(err));
+      setError(authErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -152,7 +156,7 @@ export default function Auth() {
         "パスワード再設定用のリンクをメールで送信しました。リンクを開くと、新しいパスワードを設定できます。",
       );
     } catch (err) {
-      setError(err.message ?? String(err));
+      setError(authErrorMessage(err));
     } finally {
       setBusy(false);
     }

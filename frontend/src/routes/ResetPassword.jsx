@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession } from "../hooks/useSession";
+import { authErrorMessage } from "../lib/authErrors";
 import { clearRecoveryPending, supabase } from "../lib/supabase";
 
 /** パスワード再設定メールのリンクから来たときの、新しいパスワードの入力画面。
@@ -28,7 +29,7 @@ export default function ResetPassword() {
       clearRecoveryPending();
       navigate("/", { replace: true });
     } catch (err) {
-      setError(err.message ?? String(err));
+      setError(authErrorMessage(err));
     } finally {
       setBusy(false);
     }
