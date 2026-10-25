@@ -1081,17 +1081,18 @@
   margin-bottom: 0;
 }
 
-.explanation-refs {
-  margin: 6px 0;
-}
-
-.explanation-refs summary {
+.explanation-refs-link {
+  margin-top: 2px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 12px;
+  text-decoration: underline;
   cursor: pointer;
-  color: var(--text-h);
-  font-weight: 700;
 }
 
-/* 出典・参考文献の一覧（解説の下と /sources）。 */
+/* 参考文献・出典の一覧（/sources と規約類のモーダル）。 */
 .reference-list h3 {
   margin: 12px 0 4px;
   font-size: 13px;
@@ -1673,8 +1674,19 @@
    赤は「不正解」に使っていない（--incorrect はアンバー）ので、ここだけは
    破壊的操作の色として素の赤を使う。押し間違えたくない場所なので、他の
    ボタンと同じ見た目にはしない。 */
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 14px;
+}
+
 .mypage-legal-link {
   display: inline-block;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
   color: var(--text-muted);
   font-size: 13px;
   text-decoration: underline;
@@ -4089,4 +4101,142 @@
   color: var(--accent);
   font-size: 12px;
   font-weight: 700;
+}
+
+/* 規約類を画面の上に重ねて読むモーダル。 */
+.legal-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+  background: rgba(10, 20, 40, 0.45);
+}
+
+.legal-modal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 640px;
+  max-height: 100%;
+  border-radius: 18px;
+  background: var(--card-bg);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.legal-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.legal-modal-head h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.legal-modal-close {
+  flex: none;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-h);
+  font-weight: 700;
+}
+
+.legal-modal-body {
+  padding: 14px 18px 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: 14px;
+}
+
+/* 特定商取引法に基づく表記の表。 */
+.legal-table {
+  display: grid;
+  grid-template-columns: minmax(7em, auto) 1fr;
+  gap: 8px 14px;
+  margin: 12px 0 0;
+}
+
+.legal-table dt {
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.legal-table dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+  .legal-table {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .legal-table dd {
+    margin-bottom: 10px;
+  }
+}
+
+/* 初回ログイン時の同意画面。 */
+.consent-screen {
+  min-height: 80svh;
+  justify-content: center;
+}
+
+.consent-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.consent-title {
+  margin: 0;
+  font-size: 22px;
+  color: var(--accent);
+}
+
+.consent-lead {
+  margin: 0;
+  line-height: 1.8;
+}
+
+.consent-docs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.consent-doc {
+  padding: 12px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-bg);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.consent-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.consent-check input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  accent-color: var(--accent);
 }

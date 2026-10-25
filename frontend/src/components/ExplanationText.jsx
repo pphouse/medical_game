@@ -1,5 +1,6 @@
-import { MEDICAL_DISCLAIMER, MHLW_EXAM_URL } from "../references";
-import ReferenceList from "./ReferenceList";
+import { useState } from "react";
+import LegalModal from "../legal/LegalModal";
+import { MHLW_EXAM_URL } from "../references";
 
 const URL_RE = /(https?:\/\/[^\s）)]+)/g;
 
@@ -47,6 +48,7 @@ function withLinks(line, keyPrefix, addMhlwLink = false) {
  *
  * 出典と免責は本文と分けて小さく出す。 */
 export default function ExplanationText({ text, notes, correctKey, myKey }) {
+  const [refsOpen, setRefsOpen] = useState(false);
   const lines = (text || "")
     .split("\n")
     .map((line) => line.trim())
@@ -94,18 +96,18 @@ export default function ExplanationText({ text, notes, correctKey, myKey }) {
           })}
         </div>
       )}
-      {/* 医療情報の出典は見つけやすい所に置く（App Store Guideline 1.4.1）。
-          一覧は開閉式にして、解説本文より目立たないようにする。 */}
+      {/* 出典の一覧と免責は初回の同意画面で読んでもらっているので、ここでは
+          1行のリンクだけにする（App Store Guideline 1.4.1 は、出典が見つけやすい
+          ことを求めている）。 */}
       <div className="explanation-note">
         {sources.map((line, i) => (
           <p key={`n${i}`}>{withLinks(line, `n${i}`, !hasSourceUrl)}</p>
         ))}
-        <details className="explanation-refs">
-          <summary>出典・参考文献</summary>
-          <ReferenceList />
-        </details>
-        <p>※{MEDICAL_DISCLAIMER}</p>
+        <button type="button" className="explanation-refs-link" onClick={() => setRefsOpen(true)}>
+          参考文献・出典
+        </button>
       </div>
+      {refsOpen && <LegalModal docKey="sources" onClose={() => setRefsOpen(false)} />}
     </div>
   );
 }

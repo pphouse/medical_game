@@ -6,6 +6,9 @@ import QuestionPicker from "./components/QuestionPicker";
 import ReviewDeck from "./components/ReviewDeck";
 import { ProfileProvider } from "./context/ProfileContext";
 import { useSession } from "./hooks/useSession";
+import Consent, { hasAgreed } from "./legal/Consent";
+import { LEGAL_DOCS } from "./legal/documents";
+import LegalPage from "./legal/LegalPage";
 import { isRecoveryPending, RECOVERY_EVENT } from "./lib/supabase";
 import AdminDashboard from "./routes/Admin/Dashboard";
 import AdminLayout from "./routes/Admin/Layout";
@@ -22,8 +25,6 @@ import ExamList from "./routes/Exams/List";
 import ExamResult from "./routes/Exams/Result";
 import ExamSession from "./routes/Exams/Session";
 import QuizSession from "./routes/QuizSession";
-import Privacy from "./routes/Privacy";
-import Sources from "./routes/Sources";
 import Ranking from "./routes/Ranking";
 import ResetPassword from "./routes/ResetPassword";
 import Solo from "./routes/Solo";
@@ -42,6 +43,8 @@ function Protected() {
     );
   }
   if (!session) return <Navigate to="/auth" replace />;
+  // 規約・免責・出典への同意が済むまでは、どの画面にも入れない。
+  if (!hasAgreed(session)) return <Consent />;
   return (
     <ProfileProvider>
       <Outlet />
@@ -88,8 +91,9 @@ export default function App() {
         <Route path="/auth" element={<Auth />} />
         {/* ログイン前でも読めるようにしておく。App Store Connect に
             登録する URL であり、審査担当者も未ログインで開く。 */}
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/sources" element={<Sources />} />
+        {LEGAL_DOCS.map((doc) => (
+          <Route key={doc.key} path={doc.path} element={<LegalPage docKey={doc.key} />} />
+        ))}
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route element={<Protected />}>
           <Route element={<TabShell />}>

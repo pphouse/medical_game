@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import LegalLinks from "../legal/LegalLinks";
 import { api } from "../api";
 import { useSession } from "../hooks/useSession";
 import { isRecoveryPending, isSupabaseConfigured, supabase } from "../lib/supabase";
@@ -241,12 +242,7 @@ export default function Auth() {
         )}
       </div>
 
-      <Link className="mypage-legal-link" to="/sources">
-        出典・参考文献
-      </Link>
-      <Link className="mypage-legal-link" to="/privacy">
-        プライバシーポリシー
-      </Link>
+      <LegalLinks />
     </div>
   );
 }
