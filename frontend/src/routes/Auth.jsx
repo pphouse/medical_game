@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { useSession } from "../hooks/useSession";
-import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { isRecoveryPending, isSupabaseConfigured, supabase } from "../lib/supabase";
 import { authRedirectUrl } from "../native";
 
 export default function Auth() {
@@ -51,7 +51,9 @@ export default function Auth() {
   // 踏んだとき（deepLink.js）と、ログイン済みで /auth を開き直したとき。
   // どちらもここで拾ってホームへ送る。
   useEffect(() => {
-    if (!session) return;
+    // パスワード再設定のリンクで入ったときはホームではなく再設定画面へ
+    // （App の RecoveryRedirect が送る）。
+    if (!session || isRecoveryPending()) return;
     completeSignIn("").catch((err) => setError(err.message ?? String(err)));
   }, [session, completeSignIn]);
 
@@ -84,6 +86,16 @@ export default function Auth() {
           },
         });
         if (err) throw err;
+        // 登録済みのアドレスだと、Supabase はエラーにせず identities が空の
+        // user を返すだけでメールも送らない。黙っていると「確認メールが
+        // 来ない」になるので、ログインか再設定へ案内する。
+        if (data.user && data.user.identities?.length === 0) {
+          setMode("login");
+          setNotice(
+            "このメールアドレスは登録済みです。ログインするか、「パスワードを忘れた方」から再設定してください。",
+          );
+          return;
+        }
         if (data.session) {
           await completeSignIn(displayName);
         } else {
@@ -116,6 +128,28 @@ export default function Auth() {
       });
       if (err) throw err;
       setNotice("ログイン用リンクをメールで送信しました。");
+    } catch (err) {
+      setError(err.message ?? String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleResetPassword() {
+    if (!email) {
+      setError("パスワードを再設定するメールアドレスを入力してください。");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: authRedirectUrl(),
+      });
+      if (err) throw err;
+      setNotice(
+        "パスワード再設定用のリンクをメールで送信しました。リンクを開くと、新しいパスワードを設定できます。",
+      );
     } catch (err) {
       setError(err.message ?? String(err));
     } finally {
@@ -195,8 +229,21 @@ export default function Auth() {
         <button className="auth-magic-link" onClick={handleMagicLink} disabled={busy} type="button">
           パスワードなしでログイン（Magic Link をメールで受け取る）
         </button>
+        {mode === "login" && (
+          <button
+            className="auth-magic-link"
+            onClick={handleResetPassword}
+            disabled={busy}
+            type="button"
+          >
+            パスワードを忘れた方（再設定メールを受け取る）
+          </button>
+        )}
       </div>
 
+      <Link className="mypage-legal-link" to="/sources">
+        出典・参考文献
+      </Link>
       <Link className="mypage-legal-link" to="/privacy">
         プライバシーポリシー
       </Link>

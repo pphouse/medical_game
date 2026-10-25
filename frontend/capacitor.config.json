@@ -1,6 +1,6 @@
 {
   "appId": "jp.pphouse.medquiz",
-  "appName": "CBT国試クイズ",
+  "appName": "医トレ",
   "webDir": "dist",
   "ios": {
     "contentInset": "never",

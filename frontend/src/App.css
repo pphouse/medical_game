@@ -1081,6 +1081,42 @@
   margin-bottom: 0;
 }
 
+.explanation-refs {
+  margin: 6px 0;
+}
+
+.explanation-refs summary {
+  cursor: pointer;
+  color: var(--text-h);
+  font-weight: 700;
+}
+
+/* 出典・参考文献の一覧（解説の下と /sources）。 */
+.reference-list h3 {
+  margin: 12px 0 4px;
+  font-size: 13px;
+}
+
+.reference-list ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.reference-list a {
+  color: var(--accent);
+}
+
+.reference-list li {
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
+.reference-note {
+  display: block;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .progress-donut { flex-shrink: 0; }
 .progress-donut-label {
   fill: white;
@@ -1275,6 +1311,8 @@
 
 .bottom-nav-item {
   flex: 1;
+  /* 幅 320px の端末で5項目のラベル幅が足りず、ナビが画面の外へ押し出されていた。 */
+  min-width: 0;
   max-width: 96px;
   display: flex;
   flex-direction: column;
@@ -1303,6 +1341,10 @@
 }
 
 .bottom-nav-label {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -1909,8 +1951,18 @@
   gap: 8px;
 }
 
+/* 入力欄は既定で文字数分の幅を譲らないので、狭い画面ではボタンが押し出されて
+   画面の外へはみ出していた。入力欄を縮め、ボタンは文字幅で固定する。 */
+.battle-join-form .cta-button {
+  flex: none;
+  width: auto;
+  padding-inline: 18px;
+  white-space: nowrap;
+}
+
 .battle-code-input {
   flex: 1;
+  min-width: 0;
   font: inherit;
   font-size: 20px;
   letter-spacing: 4px;
